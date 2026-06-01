@@ -231,7 +231,7 @@
                 datosCartas = await respuesta.json();
                 renderizarBiblioteca();
             } catch (error) {
-                console.error("Error al cargar el archivo cartas.json. Recuerda usar un servidor local (Live Server):", error);
+                console.error("Error al cargar el archivo cartas.json:", error);
             }
         }
 
@@ -253,34 +253,19 @@
             const ge = document.getElementById('grid-extras');
             const gt = document.getElementById('grid-tokens');
             
-            gl.innerHTML = ""; 
-            gu.innerHTML = "";
-            ge.innerHTML = "";
-            gt.innerHTML = "";
+            gl.innerHTML = ""; gu.innerHTML = ""; ge.innerHTML = ""; gt.innerHTML = "";
 
             datosCartas.forEach((c, i) => {
                 c.esEvo = false; 
-
-                const cardHtml = `
-                    <div class="card" style="border-color: ${obtenerColorBorde(c.color)}" onclick="abrirPanel(${i})">
-                        ${c.img ? `<img src="${c.img}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">` : ''}
-                        <div class="card-name-fallback" style="display:none; color: white; padding: 20px; text-align: center; font-weight: bold; height: 100%; align-items: center; justify-content: center; background: #111;">
-                            ${c.nombre}
-                        </div>
-                    </div>
-                `;
-
+                const cardHtml = `<div class="card" style="border-color: ${obtenerColorBorde(c.color)}" onclick="abrirPanel(${i})">
+                    ${c.img ? `<img src="${c.img}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">` : ''}
+                    <div class="card-name-fallback" style="display:none; color: white; padding: 20px; text-align: center; font-weight: bold; height: 100%; align-items: center; justify-content: center; background: #111;">${c.nombre}</div>
+                </div>`;
                 const claseCarta = c.clase ? c.clase.toLowerCase() : "";
-
-                if (claseCarta === "líder" || claseCarta === "lider") {
-                    gl.innerHTML += cardHtml;
-                } else if (claseCarta === "unidad") {
-                    gu.innerHTML += cardHtml;
-                } else if (claseCarta === "extra") {
-                    ge.innerHTML += cardHtml;
-                } else if (claseCarta === "token") {
-                    gt.innerHTML += cardHtml;
-                }
+                if (claseCarta === "líder" || claseCarta === "lider") gl.innerHTML += cardHtml;
+                else if (claseCarta === "unidad") gu.innerHTML += cardHtml;
+                else if (claseCarta === "extra") ge.innerHTML += cardHtml;
+                else if (claseCarta === "token") gt.innerHTML += cardHtml;
             });
         }
 
@@ -303,26 +288,21 @@
             document.getElementById('info-panel').classList.add('open');
         }
 
-function actualizarPanel(c) {
+        function actualizarPanel(c) {
             document.getElementById('p-img').src = c.esEvo ? c.imgEvo : (c.img || "");
             document.getElementById('p-nombre').innerText = c.esEvo ? (c.nombreEvo || c.nombre) : c.nombre;
-            document.getElementById('p-lore').innerText = c.lore || "Sin descripción de lore en este prototipo.";
+            document.getElementById('p-lore').innerText = c.lore || "Sin descripción de lore.";
             document.getElementById('p-clase').innerText = c.clase;
             document.getElementById('p-personaje').innerText = c.personaje || "Desconocido";
             document.getElementById('p-tipo').innerText = c.tipo || "Ninguno";
             document.getElementById('p-origen').innerText = c.origen || "Desconocido";
             document.getElementById('p-rareza').innerText = c.rareza || "Común";
-
-            if (c.esEvo && c.poderEvo) {
-                document.getElementById('p-poder').innerText = c.poderEvo;
-            } else {
-                document.getElementById('p-poder').innerText = c.poder || "0";
-            }
+            document.getElementById('p-poder').innerText = (c.esEvo && c.poderEvo) ? c.poderEvo : (c.poder || "0");
 
             const boxCoste = document.getElementById('box-coste');
             const boxCombo = document.getElementById('box-combo');
             const boxRareza = document.getElementById('box-rareza');
-
+            const pCoste = document.getElementById('p-coste');
             const claseCarta = c.clase ? c.clase.toLowerCase() : "";
 
             if (claseCarta === "líder" || claseCarta === "lider") {
@@ -331,18 +311,8 @@ function actualizarPanel(c) {
                 boxRareza.style.gridColumn = "span 2";
             } else {
                 boxCoste.style.display = "block";
-                
-                // MÁGIA AQUÍ: Juntamos el coste total y el específico en la misma casilla de siempre
-                if (c.costeTotal !== undefined) {
-                    if (c.costeColor && c.costeColor > 0) {
-                        const colorMinuscula = c.color ? c.color.toLowerCase() : "";
-                        document.getElementById('p-coste').innerText = `${c.costeTotal} (${c.costeColor} ${colorMinuscula})`;
-                    } else {
-                        document.getElementById('p-coste').innerText = c.costeTotal;
-                    }
-                } else {
-                    document.getElementById('p-coste').innerText = "-";
-                }
+                pCoste.innerText = (c.costeTotal !== undefined) ? 
+                    (c.costeColor ? `${c.costeTotal} (${c.costeColor} ${c.color.toLowerCase()})` : c.costeTotal) : "-";
                 
                 if (c.combo) {
                     boxCombo.style.display = "block";
@@ -356,19 +326,12 @@ function actualizarPanel(c) {
 
             const sc = document.getElementById('skill-container'); 
             sc.innerHTML = "";
-            
             const skills = c.esEvo ? c.habilidadesEvo : c.habilidades;
             if (skills) {
                 skills.forEach(s => {
-                    sc.innerHTML += `
-                        <div class="skill-box">
-                            <span class="skill-tag ${s.css}">${s.tag}</span>
-                            <div class="skill-desc">${s.desc}</div>
-                        </div>
-                    `;
+                    sc.innerHTML += `<div class="skill-box"><span class="skill-tag ${s.css}">${s.tag}</span><div class="skill-desc">${s.desc}</div></div>`;
                 });
             }
-            
             document.getElementById('flip-btn').style.display = (c.imgEvo || c.nombreEvo) ? "inline-block" : "none";
         }
 
@@ -378,36 +341,24 @@ function actualizarPanel(c) {
             actualizarPanel(c); 
         }
 
-        function cerrarPanel() { 
-            document.getElementById('info-panel').classList.remove('open'); 
-        }
+        function cerrarPanel() { document.getElementById('info-panel').classList.remove('open'); }
 
         const modal = document.getElementById('zoom-modal');
         const zoomImg = document.getElementById('zoom-img');
-
         function abrirZoom() {
             const src = document.getElementById('p-img').src;
             if (!src || src.includes('undefined')) return;
-            zoomImg.src = src;
-            modal.style.display = 'flex';
+            zoomImg.src = src; modal.style.display = 'flex';
         }
+        function cerrarZoom() { modal.style.display = 'none'; zoomImg.style.transform = "scale(1) translate(0,0)"; }
 
-        function cerrarZoom() {
-            modal.style.display = 'none';
-            zoomImg.style.transform = "scale(1) translate(0,0)";
-        }
-
-        if(modal) {
-            modal.addEventListener('mousemove', (e) => {
-                if (modal.style.display === 'flex') {
-                    const { clientX: x, clientY: y } = e;
-                    const { innerWidth: width, innerHeight: height } = window;
-                    const moveX = (x / width - 0.5) * -120; 
-                    const moveY = (y / height - 0.5) * -120;
-                    zoomImg.style.transform = `scale(1.8) translate(${moveX}%, ${moveY}%)`;
-                }
-            });
-        }
+        modal.addEventListener('mousemove', (e) => {
+            if (modal.style.display === 'flex') {
+                const { clientX: x, clientY: y } = e;
+                const { innerWidth: w, innerHeight: h } = window;
+                zoomImg.style.transform = `scale(1.8) translate(${(x / w - 0.5) * -120}%, ${(y / h - 0.5) * -120}%)`;
+            }
+        });
     </script>
 </body>
 </html>
