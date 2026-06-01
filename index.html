@@ -303,7 +303,7 @@
             document.getElementById('info-panel').classList.add('open');
         }
 
-        function actualizarPanel(c) {
+function actualizarPanel(c) {
             document.getElementById('p-img').src = c.esEvo ? c.imgEvo : (c.img || "");
             document.getElementById('p-nombre').innerText = c.esEvo ? (c.nombreEvo || c.nombre) : c.nombre;
             document.getElementById('p-lore').innerText = c.lore || "Sin descripción de lore en este prototipo.";
@@ -331,7 +331,18 @@
                 boxRareza.style.gridColumn = "span 2";
             } else {
                 boxCoste.style.display = "block";
-                document.getElementById('p-coste').innerText = c.coste !== undefined ? c.coste : "-";
+                
+                // MÁGIA AQUÍ: Juntamos el coste total y el específico en la misma casilla de siempre
+                if (c.costeTotal !== undefined) {
+                    if (c.costeColor && c.costeColor > 0) {
+                        const colorMinuscula = c.color ? c.color.toLowerCase() : "";
+                        document.getElementById('p-coste').innerText = `${c.costeTotal} (${c.costeColor} ${colorMinuscula})`;
+                    } else {
+                        document.getElementById('p-coste').innerText = c.costeTotal;
+                    }
+                } else {
+                    document.getElementById('p-coste').innerText = "-";
+                }
                 
                 if (c.combo) {
                     boxCombo.style.display = "block";
