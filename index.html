@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gaming Club TCG - Edición Definitiva</title>
+    <style>
+        :root {
+            --gold: #ffd700;
+            --gold-light: #fff3a0;
+            --table-green: #143a22;
+            --dark-panel: rgba(10, 10, 10, 0.98);
+            --gold-gradient: linear-gradient(145deg, #d4af37, #8a6d3b);
+            --text-gradient: linear-gradient(180deg, #ffd700 0%, #b8860b 100%);
+        }
+
+        body {
+            margin: 0; padding: 0;
+            background: radial-gradient(circle, rgba(0,0,0,0) 0%, rgba(0,0,0,0.6) 100%),
+                        url('https://www.transparenttextures.com/patterns/dark-matter.png'),
+                        var(--table-green);
+            height: 100vh; display: flex; flex-direction: column;
+            font-family: 'Segoe UI', Roboto, sans-serif; color: white;
+            border: 20px solid #2c1a0b; box-sizing: border-box; overflow: hidden;
+        }
+
+        .hidden { display: none !important; }
+
+        /* --- MENÚ PRINCIPAL --- */
+        #main-menu { 
+            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            gap: 40px; padding-bottom: 50px;
+        }
+
+        .logo-container { position: relative; animation: float 4s ease-in-out infinite; }
+        .logo-img { width: 350px; height: auto; filter: drop-shadow(0 0 20px rgba(0,0,0,0.8)); }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+
+        .menu-grid { display: flex; flex-direction: column; gap: 20px; align-items: center; }
+        .main-btns { display: flex; gap: 25px; }
+        .sub-btns { display: flex; gap: 15px; }
+
+        .plate-btn {
+            padding: 18px 45px; font-size: 18px; font-weight: 900; text-transform: uppercase;
+            cursor: pointer; border: 2px solid rgba(255, 215, 0, 0.5); border-radius: 12px;
+            background: var(--gold-gradient); color: #2c1a0b;
+            box-shadow: 0 6px #5e4a26; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            min-width: 200px; letter-spacing: 1px;
+        }
+        .plate-btn:hover { transform: scale(1.05); filter: brightness(1.1); border-color: var(--gold); }
+        .plate-btn:active { transform: translateY(4px); box-shadow: 0 2px #5e4a26; }
+        
+        .btn-blue { background: linear-gradient(145deg, #2193b0, #6dd5ed); color: white; box-shadow: 0 6px #166d83; }
+        .btn-nav { background: linear-gradient(145deg, #4e342e, #2c1a0b); color: #ffe0b2; box-shadow: 0 6px #1a0f06; min-width: 160px; }
+
+        /* --- CABECERA COLECCIÓN --- */
+        .top-bar {
+            display: flex; justify-content: flex-end; align-items: center;
+            padding: 15px 40px; background: rgba(0,0,0,0.4);
+            border-bottom: 2px solid rgba(255, 215, 0, 0.2); z-index: 100; height: 60px;
+        }
+
+        /* --- SECCIÓN COLECCIÓN --- */
+        #collection-screen { flex: 1; display: flex; flex-direction: row; overflow: hidden; }
+        .grid-wrapper { flex: 1; overflow-y: auto; padding: 20px 40px 100px 40px; }
+
+        .main-title {
+            text-align: center; font-size: 48px; font-weight: 900; text-transform: uppercase;
+            letter-spacing: 4px; background: var(--text-gradient);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5)); margin: 20px 0 50px 0;
+        }
+
+        .section-title { 
+            color: var(--gold); font-size: 24px; text-transform: uppercase; 
+            border-bottom: 2px solid var(--gold); padding-bottom: 8px; margin: 40px 0 25px 0;
+            display: flex; align-items: center; gap: 15px;
+        }
+        .section-title::before { content: ''; width: 10px; height: 10px; background: var(--gold); transform: rotate(45deg); }
+
+        .grid-cartas { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 30px; }
+
+        .card {
+            background: #000; border-radius: 12px; border: 3px solid rgba(255,255,255,0.8);
+            height: 260px; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer; overflow: hidden; position: relative;
+        }
+        .card:hover { transform: translateY(-10px) scale(1.05); border-color: var(--gold); }
+        .card img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* --- PANEL DE DETALLE --- */
+        #info-panel {
+            width: 0; background: var(--dark-panel); border-left: 2px solid var(--gold);
+            box-shadow: -15px 0 35px rgba(0,0,0,0.8), -2px 0 10px rgba(255,215,0,0.2);
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden; display: flex; flex-direction: column;
+        }
+        #info-panel.open { width: 550px; }
+        .panel-content { padding: 30px 40px; min-width: 470px; overflow-y: auto; }
+        
+        .panel-img-slot { 
+            width: 380px; height: 530px; background: #000; border: 1px solid rgba(255,215,0,0.3); 
+            border-radius: 15px; margin: 0 auto 30px auto; overflow: hidden; cursor: zoom-in; flex-shrink: 0;
+            position: relative;
+        }
+        .panel-img-slot img { width: 100%; height: 100%; object-fit: contain; }
+
+        .panel-header { font-size: 30px; color: white; text-align: center; font-weight: 800; text-transform: uppercase; margin-bottom: 5px; }
+        .panel-lore { font-size: 16px; line-height: 1.6; font-style: italic; color: #aaa; text-align: center; margin-bottom: 30px; padding: 0 20px; border-bottom: 1px solid rgba(255,215,0,0.1); padding-bottom: 20px;}
+
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 35px; }
+        .info-box { background: rgba(40, 40, 40, 0.6); padding: 15px; border-radius: 10px; border: 1px solid rgba(255,215,0,0.1); text-align: center; }
+        .info-label { display: block; font-size: 11px; color: var(--gold); text-transform: uppercase; margin-bottom: 8px; }
+        .info-value { font-size: 17px; font-weight: 600; }
+        .rarity-val { color: #f1c40f; text-shadow: 0 0 5px rgba(241, 196, 15, 0.3); }
+
+        .skill-box { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 20px; border-radius: 12px; margin-bottom: 20px; }
+        .skill-tag { display: inline-block; padding: 4px 15px; border-radius: 50px; font-size: 13px; font-weight: 800; text-transform: uppercase; margin-bottom: 12px; }
+        
+        .tag-auto { background: #00a2ff; color: white; }
+        .tag-trans { background: #ffcc00; color: #000; }
+        .tag-active { background: #ff5e00; color: white; }
+        .tag-perm { background: #8e44ad; color: white; }
+
+        .skill-desc { font-size: 15px; line-height: 1.5; color: #ddd; }
+        
+        .close-btn { position: absolute; top: 20px; right: 25px; background: none; border: none; color: white; font-size: 40px; cursor: pointer; opacity: 0.5; z-index: 100; }
+        .close-btn:hover { opacity: 1; color: var(--gold); }
+
+        /* --- ZOOM MODAL DINÁMICO --- */
+        #zoom-modal { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.98); z-index: 1000; display: none; 
+            align-items: center; justify-content: center; cursor: zoom-out; 
+            overflow: hidden;
+        }
+        #zoom-container {
+            position: relative; width: 85vh; height: 85vh; 
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden; border: 2px solid var(--gold); border-radius: 20px;
+        }
+        #zoom-img { 
+            height: 100%; width: auto;
+            transition: transform 0.1s ease-out;
+            transform-origin: center;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="zoom-modal" onclick="cerrarZoom()">
+        <div id="zoom-container">
+            <img id="zoom-img" src="" alt="Zoom">
+        </div>
+    </div>
+
+    <main id="main-menu">
+        <div class="logo-container">
+            <img src="https://i.postimg.cc/y6pH3tbL/1776704252476.webp" alt="Logo Gaming Club" class="logo-img">
+        </div>
+        <div class="menu-grid">
+            <div class="main-btns">
+                <button class="plate-btn">JUGAR</button>
+                <button class="plate-btn btn-blue">AMIGOS</button>
+            </div>
+            <div class="sub-btns">
+                <button class="plate-btn btn-nav" onclick="irAColeccion()">COLECCIÓN</button>
+                <button class="plate-btn btn-nav">MAZOS</button>
+                <button class="plate-btn btn-nav">TIENDA</button>
+            </div>
+        </div>
+    </main>
+
+    <div id="collection-wrapper" class="hidden" style="height: 100%; display: flex; flex-direction: column;">
+        <header class="top-bar">
+            <button class="plate-btn btn-nav" onclick="irAlMenu()">Volver al Inicio</button>
+        </header>
+
+        <main id="collection-screen">
+            <div class="grid-wrapper">
+                <h1 class="main-title">Biblioteca de Cartas</h1>
+                <h2 class="section-title">Líderes</h2>
+                <div id="grid-lideres" class="grid-cartas"></div>
+                <h2 class="section-title">Unidades</h2>
+                <div id="grid-unidades" class="grid-cartas"></div>
+            </div>
+
+            <aside id="info-panel">
+                <button class="close-btn" onclick="cerrarPanel()">×</button>
+                <div class="panel-content">
+                    <div class="panel-img-slot" onclick="abrirZoom()">
+                        <img id="p-img" src="" alt="Carta">
+                    </div>
+                    <div style="text-align: center; margin-bottom: 30px;">
+                        <button id="flip-btn" class="plate-btn btn-nav" onclick="toggleEvo()">Dar la Vuelta 🔄</button>
+                    </div>
+                    <div id="p-nombre" class="panel-header"></div>
+                    <div id="p-lore" class="panel-lore"></div>
+                    <div class="info-grid">
+                        <div class="info-box"><span class="info-label">Clase</span><span id="p-clase" class="info-value"></span></div>
+                        <div class="info-box"><span class="info-label">Personaje</span><span id="p-personaje" class="info-value"></span></div>
+                        <div class="info-box"><span class="info-label">Tipo</span><span id="p-tipo" class="info-value"></span></div>
+                        <div class="info-box"><span class="info-label">Origen</span><span id="p-origen" class="info-value"></span></div>
+                        <div class="info-box" style="grid-column: span 2;"><span class="info-label">Rareza</span><span id="p-rareza" class="info-value rarity-val"></span></div>
+                    </div>
+                    <div id="skill-container"></div>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <script>
+        let datosCartas = []; 
+        let indexActual = null;
+
+        async function cargarBaseDeDatos() {
+            try {
+                const respuesta = await fetch('cartas.json');
+                datosCartas = await respuesta.json();
+                renderizarBiblioteca();
+            } catch (error) {
+                console.error("Error al cargar el archivo cartas.json. Recuerda usar un servidor local (Live Server):", error);
+            }
+        }
+
+        function irAColeccion() {
+            document.getElementById('main-menu').classList.add('hidden');
+            document.getElementById('collection-wrapper').classList.remove('hidden');
+            cargarBaseDeDatos();
+        }
+
+        function irAlMenu() {
+            cerrarPanel();
+            document.getElementById('collection-wrapper').classList.add('hidden');
+            document.getElementById('main-menu').classList.remove('hidden');
+        }
+
+        function renderizarBiblioteca() {
+            const gl = document.getElementById('grid-lideres');
+            const gu = document.getElementById('grid-unidades');
+            gl.innerHTML = ""; 
+            gu.innerHTML = "";
+
+            datosCartas.forEach((c, i) => {
+                c.esEvo = false; 
+
+                const cardHtml = `
+                    <div class="card" style="border-color: ${obtenerColorBorde(c.color)}" onclick="abrirPanel(${i})">
+                        ${c.img ? `<img src="${c.img}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">` : ''}
+                        <div class="card-name-fallback" style="display:none; color: white; padding: 20px; text-align: center; font-weight: bold; height: 100%; align-items: center; justify-content: center; background: #111;">
+                            ${c.nombre}
+                        </div>
+                    </div>
+                `;
+
+                if (c.clase.toLowerCase() === "líder" || c.clase.toLowerCase() === "lider") {
+                    gl.innerHTML += cardHtml;
+                } else {
+                    gu.innerHTML += cardHtml;
+                }
+            });
+        }
+
+        function obtenerColorBorde(color) {
+            if (!color) return 'rgba(255,255,255,0.8)';
+            switch (color.toLowerCase()) {
+                case 'rojo': return '#ff4d4d';
+                case 'azul': return '#4da6ff';
+                case 'verde': return '#4dff88';
+                case 'negro': return '#666666';
+                default: return 'rgba(255,255,255,0.8)';
+            }
+        }
+
+        function abrirPanel(i) {
+            indexActual = i;
+            const c = datosCartas[i];
+            c.esEvo = false; 
+            actualizarPanel(c);
+            document.getElementById('info-panel').classList.add('open');
+        }
+
+        function actualizarPanel(c) {
+            document.getElementById('p-img').src = c.esEvo ? c.imgEvo : (c.img || "");
+            document.getElementById('p-nombre').innerText = c.esEvo ? (c.nombreEvo || c.nombre) : c.nombre;
+            document.getElementById('p-lore').innerText = c.lore || "Sin descripción de lore en este prototipo.";
+            document.getElementById('p-clase').innerText = c.clase;
+            document.getElementById('p-personaje').innerText = c.personaje || "Desconocido";
+            document.getElementById('p-tipo').innerText = c.tipo || "Ninguno";
+            document.getElementById('p-origen').innerText = c.origen || "Desconocido";
+            document.getElementById('p-rareza').innerText = c.rareza || "Común";
+
+            const sc = document.getElementById('skill-container'); 
+            sc.innerHTML = "";
+            
+            const skills = c.esEvo ? c.habilidadesEvo : c.habilidades;
+            if (skills) {
+                skills.forEach(s => {
+                    sc.innerHTML += `
+                        <div class="skill-box">
+                            <span class="skill-tag ${s.css}">${s.tag}</span>
+                            <div class="skill-desc">${s.desc}</div>
+                        </div>
+                    `;
+                });
+            }
+            
+            document.getElementById('flip-btn').style.display = (c.imgEvo || c.nombreEvo) ? "inline-block" : "none";
+        }
+
+        function toggleEvo() { 
+            const c = datosCartas[indexActual]; 
+            c.esEvo = !c.esEvo; 
+            actualizarPanel(c); 
+        }
+
+        function cerrarPanel() { 
+            document.getElementById('info-panel').classList.remove('open'); 
+        }
+
+        const modal = document.getElementById('zoom-modal');
+        const zoomImg = document.getElementById('zoom-img');
+
+        function abrirZoom() {
+            const src = document.getElementById('p-img').src;
+            if (!src || src.includes('undefined')) return;
+            zoomImg.src = src;
+            modal.style.display = 'flex';
+        }
+
+        function cerrarZoom() {
+            modal.style.display = 'none';
+            zoomImg.style.transform = "scale(1) translate(0,0)";
+        }
+
+        if(modal) {
+            modal.addEventListener('mousemove', (e) => {
+                if (modal.style.display === 'flex') {
+                    const { clientX: x, clientY: y } = e;
+                    const { innerWidth: width, innerHeight: height } = window;
+                    const moveX = (x / width - 0.5) * -120; 
+                    const moveY = (y / height - 0.5) * -120;
+                    zoomImg.style.transform = `scale(1.8) translate(${moveX}%, ${moveY}%)`;
+                }
+            });
+        }
+    </script>
+</body>
+</html>

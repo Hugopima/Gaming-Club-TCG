@@ -1,0 +1,201 @@
+[
+  {
+    "id": "red_lider_01",
+    "nombre": "Adivina el Animatrónico",
+    "nombreEvo": "Adivina el Animatrónico Experto",
+    "clase": "Líder",
+    "color": "Rojo",
+    "personaje": "Adivina el Animatrónico",
+    "tipo": "Animatrónico",
+    "origen": "Meme",
+    "rareza": "Rara",
+    "img": "imagenes/LR1.png",
+    "imgEvo": "imagenes/LR2.png",
+    "poder": 10000,
+    "poderEvo": 15000,
+    "lore": "Si escuchas la canción 'Hidden In The Sand', significa que viene... Corre... No le des juego, porque incluso si intentas adivinarlo, nunca te dará la respuesta.",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando este Líder ataca, roba 1 carta. Luego, puedes mirar la carta superior de tu mazo; si es de tipo <Animatrónico>, puedes revelarla y sumarla a tu mano si descartas otra carta." },
+      { "tag": "Transformación", "css": "tag-trans", "desc": "A las 4 vidas o menos: roba 2 cartas y dale la vuelta." }
+    ],
+    "habilidadesEvo": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando este Líder ataca, roba 1 carta." },
+      { "tag": "Activar: Principal", "css": "tag-active", "desc": "[Una vez por turno] Mira las 3 primeras cartas de tu mazo. Puedes elegir una carta de tipo <Animatrónico> de coste 3 o menos y jugarla gratis. Pon el resto en el fondo de la baraja en cualquier orden." }
+    ]
+  },
+  {
+    "id": "red_lider_02",
+    "nombre": "Mr Greedy & Trump",
+    "nombreEvo": "Capitalismo Salvaje",
+    "clase": "Líder",
+    "color": "Rojo",
+    "personaje": "Donald Trump & Mr Greedy",
+    "tipo": "Humano",
+    "origen": "Celebridades",
+    "rareza": "Común",
+    "img": "imagenes/LR3.png",
+    "imgEvo": "imagenes/LR4.png",
+    "poder": 10000,
+    "poderEvo": 15000,
+    "lore": "Esto es lo que ocurre cuando los dos capitalistas mas influyentes del planeta se juntan.",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando este Líder ataca, roba 1 carta." },
+      { "tag": "Activar: Principal", "css": "tag-active", "desc": "[Una vez por turno] Si tienes 5 o más cartas en tu mano: Elige una de tus unidades rojas en juego y gana +5000 de poder durante este turno." },
+      { "tag": "Transformación", "css": "tag-trans", "desc": "A las 4 vidas o menos: roba 2 cartas y dale la vuelta." }
+    ],
+    "habilidadesEvo": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando este Líder ataca, roba 1 carta." },
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cada vez que tu oponente use una habilidad [Counter], debe poner la carta superior de su mazo en su pila de descartes a modo de impuesto, o el Counter se niega." }
+    ]
+  },
+  {
+    "id": "blue_lider_01",
+    "nombre": "INFINITYCRAFT",
+    "nombreEvo": "INFINITYCRAFT, loco del cobre",
+    "clase": "Líder",
+    "color": "Azul",
+    "personaje": "Manuel",
+    "tipo": "Humano",
+    "origen": "Grupo",
+    "rareza": "Rara",
+    "img": "imagenes/LA1.png",
+    "imgEvo": "imagenes/LA2.png",
+    "poder": 10000,
+    "poderEvo": 15000,
+    "lore": "Este gran youtuber de éxito no tiene trabajo, por eso le dedica todo su tiempo a ver fanfics, a minar cobre, y estudiarse el diccionario... creo... Causó el Big Bang sonándose los mocos.",
+    "habilidades": [
+      { "tag": "Permanente", "css": "tag-perm", "desc": "Este Líder no puede declarar ataques contra cartas de batalla del oponente. (Solo puede golpear al líder rival)." },
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando este Líder ataca, ambos jugadores deben elegir una carta de su mano y colocarla en su respectiva pila de descartes." },
+      { "tag": "Transformación", "css": "tag-trans", "desc": "Al llegar a cuatro vidas o menos: roba 2 cartas y dale la vuelta a esta carta." }
+    ],
+    "habilidadesEvo": [
+      { "tag": "Permanente", "css": "tag-perm", "desc": "Este Líder no puede declarar ataques contra cartas de batalla del oponente." },
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando este Líder ataca, roba 1 carta. Luego, ambos jugadores deben elegir una carta de su mano y colocarla en su respectiva pila de descartes." }
+    ]
+  },
+  {
+    "id": "blue_lider_02",
+    "nombre": "Hugopima, el maestro",
+    "nombreEvo": "Hugopima y sus Withers",
+    "clase": "Líder",
+    "color": "Azul",
+    "personaje": "Hugo",
+    "tipo": "Humano",
+    "origen": "Grupo",
+    "rareza": "Común",
+    "img": "imagenes/LA3.png",
+    "imgEvo": "imagenes/LA4.png",
+    "poder": 10000,
+    "poderEvo": 15000,
+    "lore": "Después de 6 años en el instituto decidió volver a primaria, creemos que echaba de menos jugar a la pelota en clase.",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando este Líder ataca, roba 1 carta." },
+      { "tag": "Activar: Principal", "css": "tag-active", "desc": "[Una vez por turno] Elige 1 carta de tu mano y colócala en tu pila de descartes: Roba 1 carta y tu Líder gana +5000 de poder durante este turno." },
+      { "tag": "Transformación", "css": "tag-trans", "desc": "A las 4 vidas o menos: roba 2 cartas y dale la vuelta." }
+    ],
+    "habilidadesEvo": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando este Líder ataca, roba 1 carta." },
+      { "tag": "Activar: Principal", "css": "tag-active", "desc": "[Una vez por turno] Elige 1 carta de origen <Grupo> o <Minecraft> en tu pila de descartes y devuélvela al fondo de tu mazo: Elige hasta 1 de tus manás azules en modo descanso y cámbialo a modo activo." },
+      { "tag": "Automático", "css": "tag-auto", "desc": "[Una vez por turno] Cuando tu oponente juega una unidad usando una habilidad (es decir, que la invoque gratis o por efectos, no pagando su coste normal de maná), tu oponente debe elegir 1 carta de su mano y mandarla a la pila de descartes." }
+    ]
+  },
+  {
+    "id": "green_lider_01",
+    "nombre": "Toñi, la panadera",
+    "nombreEvo": "Toñi, la infectada",
+    "clase": "Líder",
+    "color": "Verde",
+    "personaje": "Toñi",
+    "tipo": "Humano",
+    "origen": "Minecraft",
+    "rareza": "Infrecuente",
+    "img": "imagenes/LV1.png",
+    "imgEvo": "imagenes/LV2.png",
+    "poder": 10000,
+    "poderEvo": 15000,
+    "lore": "Una vez una joven con el sueño de abrir una panadería. Cuando su mundo se infectó, ella fue la paciente cero. Esa misma cosa la transportó a un nuevo mundo, sin memorias.",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando esta carta ataca, roba 1 carta." },
+      { "tag": "Activar: Principal", "css": "tag-active", "desc": "[Una vez por turno] Descarta 1 carta de tu mano: Elige un maná de tu pila de descartes o de tu mano y llévalo a tu zona de maná en modo descanso." },
+      { "tag": "Transformación", "css": "tag-trans", "desc": "A las 4 vidas o menos: roba 2 cartas y dale la vuelta." }
+    ],
+    "habilidadesEvo": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando esta carta ataca, roba 1 carta." },
+      { "tag": "Automático", "css": "tag-auto", "desc": "Al inicio de tu fase principal, elige una unidad del rival en modo activo y cámbiala a modo descanso. No puede enderezarse en el siguiente turno del rival a menos que este pague 1 de maná." }
+    ]
+  },
+  {
+    "id": "green_lider_02",
+    "nombre": "Xiao",
+    "nombreEvo": "Xiao, Pirómano",
+    "clase": "Líder",
+    "color": "Verde",
+    "personaje": "Xiao",
+    "tipo": "Zombie",
+    "origen": "Minecraft",
+    "rareza": "Rara",
+    "img": "imagenes/LV3.png",
+    "imgEvo": "imagenes/LV4.png",
+    "poder": 10000,
+    "poderEvo": 15000,
+    "lore": "Este Zombie causó demasiados problemas en MegaDeath. Quemó bases, e hizo sentir a la gente culpable de lo que él hacía. Probablemente causó que los caballos fueran explosivos dándoles TNT de comer.",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando este Líder ataca, roba 1 carta." },
+      { "tag": "Activar: Principal", "css": "tag-active", "desc": "[Una vez por turno] Si tu oponente tiene unidades en modo descanso, una de tus unidades verdes gana +5000 de poder durante este turno." },
+      { "tag": "Transformación", "css": "tag-trans", "desc": "A las 4 vidas o menos: roba 2 cartas y dale la vuelta." }
+    ],
+    "habilidadesEvo": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando este Líder ataca, roba 1 carta." },
+      { "tag": "Automático", "css": "tag-auto", "desc": "[Una vez por turno] Al final de una batalla en la que una de tus unidades verdes haya derrotado a una unidad del rival en combate, inflige 1 punto de daño al Líder de tu oponente." }
+    ]
+  },
+  {
+    "id": "black_lider_01",
+    "nombre": "Iniciador, el desafiante",
+    "nombreEvo": "Iniciador, el headmaster",
+    "clase": "Líder",
+    "color": "Negro",
+    "personaje": "Iniciador",
+    "tipo": "Místico",
+    "origen": "Discord",
+    "rareza": "Infrecuente",
+    "img": "imagenes/LN1.png",
+    "imgEvo": "imagenes/LN2.png",
+    "poder": 10000,
+    "poderEvo": 15000,
+    "lore": "El iniciador suele retar a sus oponentes a realizar los desafíos del Club. Tienen que competir a ver quién los termina más rápido.",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando este Líder ataca, roba 1 carta. Si juegas una carta con [Desafío], elige una unidad propia o a tu Líder y gana +5000 de poder durante este turno." },
+      { "tag": "Transformación", "css": "tag-trans", "desc": "A las 4 vidas o menos: roba 2 cartas y dale la vuelta." }
+    ],
+    "habilidadesEvo": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando este Líder ataca, roba 1 carta. Si es una carta de [Desafío], puedes revelarla para que tu Líder gane +5000 y [Crítico] durante este turno." },
+      { "tag": "Activar: Batalla", "css": "tag-active", "desc": "[Una vez por turno] Descarta una carta de [Desafío] de tu mano: Elige una unidad de tu rival y redúcela en -10000 de poder durante esta batalla." }
+    ]
+  },
+  {
+    "id": "black_lider_02",
+    "nombre": "Mari",
+    "nombreEvo": "SOMETHING",
+    "clase": "Líder",
+    "color": "Negro",
+    "personaje": "Mari",
+    "tipo": "Humano",
+    "origen": "OMORI",
+    "rareza": "Rara",
+    "img": "imagenes/LN3.png",
+    "imgEvo": "imagenes/LN4.png",
+    "poder": 10000,
+    "poderEvo": 15000,
+    "lore": "Mari cuida mucho de sus amigos, y siempre intenta tener cosas para ellos cuando reciben daño… Espera… ¿Qué es eso detrás de ti?",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando este Líder ataca, roba 1 carta." },
+      { "tag": "Automático", "css": "tag-auto", "desc": "Una vez por turno, cuando una de tus unidades de origen <OMORI> sea atacada, puedes mirar la carta superior de tu mazo y decidir si la dejas ahí o la mandas a la pila de descartes." },
+      { "tag": "Transformación", "css": "tag-trans", "desc": "Al llegar a cuatro vidas, dale la vuelta a esta carta." }
+    ],
+    "habilidadesEvo": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando este Líder ataca, roba 1 carta." },
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando este Líder ataca o es atacado, el oponente debe elegir una carta de su mano y colocarla en su respectiva pila de descartes a menos que rinda una de sus unidades en juego cambiándola a modo descanso." }
+    ]
+  }
+]
