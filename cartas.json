@@ -8,7 +8,7 @@
     "personaje": "Adivina el Animatrónico",
     "tipo": "Animatrónico",
     "origen": "Meme",
-    "rareza": "Rara",
+    "rareza": "Infrecuente",
     "img": "imagenes/LR1.png",
     "imgEvo": "imagenes/LR2.png",
     "poder": 10000,
@@ -32,7 +32,7 @@
     "personaje": "Donald Trump & Mr Greedy",
     "tipo": "Humano",
     "origen": "Celebridades",
-    "rareza": "Común",
+    "rareza": "Rara",
     "img": "imagenes/LR3.png",
     "imgEvo": "imagenes/LR4.png",
     "poder": 10000,
@@ -82,7 +82,7 @@
     "personaje": "Hugo",
     "tipo": "Humano",
     "origen": "Grupo",
-    "rareza": "Común",
+    "rareza": "Infrecuente",
     "img": "imagenes/LA3.png",
     "imgEvo": "imagenes/LA4.png",
     "poder": 10000,
@@ -197,5 +197,23 @@
       { "tag": "Automático", "css": "tag-auto", "desc": "Cuando este Líder ataca, roba 1 carta." },
       { "tag": "Automático", "css": "tag-auto", "desc": "Cuando este Líder ataca o es atacado, el oponente debe elegir una carta de su mano y colocarla en su respectiva pila de descartes a menos que rinda una de sus unidades en juego cambiándola a modo descanso." }
     ]
-  }
+  },
+  {
+    "id": "agus",
+    "nombre": "Agustin",
+    "clase": "Unidad",
+    "color": "Azul",
+    "personaje": "Agustín",
+    "tipo": "Humano",             
+    "origen": "Grupo",
+    "rareza": "Común",
+    "img": "imagenes/Aagus.png",
+    "coste": 2,                  
+    "poder": 10000,               
+    "combo": "0+5000",         
+    "lore": "Tiene cierta mala suerte y condición geográfica para encontrarse con furros.",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Busca en tu baraja una carta de origen <Animal> y añádela a tu mano." },
+    ]
+  } 
 ]
