@@ -304,7 +304,6 @@
         }
 
         function actualizarPanel(c) {
-            // Textos e imágenes base
             document.getElementById('p-img').src = c.esEvo ? c.imgEvo : (c.img || "");
             document.getElementById('p-nombre').innerText = c.esEvo ? (c.nombreEvo || c.nombre) : c.nombre;
             document.getElementById('p-lore').innerText = c.lore || "Sin descripción de lore en este prototipo.";
@@ -314,25 +313,23 @@
             document.getElementById('p-origen').innerText = c.origen || "Desconocido";
             document.getElementById('p-rareza').innerText = c.rareza || "Común";
 
-            // Control Dinámico de Poder (Muestra poder de evolución en Líderes despertados)
             if (c.esEvo && c.poderEvo) {
                 document.getElementById('p-poder').innerText = c.poderEvo;
             } else {
                 document.getElementById('p-poder').innerText = c.poder || "0";
             }
 
-            // Control Dinámico de Coste, Combo y Rareza según la Clase de carta
             const boxCoste = document.getElementById('box-coste');
             const boxCombo = document.getElementById('box-combo');
             const boxRareza = document.getElementById('box-rareza');
 
-            if (c.clase.toLowerCase() === "líder" || c.clase.toLowerCase() === "lider") {
+            const claseCarta = c.clase ? c.clase.toLowerCase() : "";
+
+            if (claseCarta === "líder" || claseCarta === "lider") {
                 boxCoste.style.display = "none";
                 boxCombo.style.display = "none";
-                boxRareza.style.styleFloat = "none"; // Reset layout
                 boxRareza.style.gridColumn = "span 2";
             } else {
-                // Unidades, Extras o Tokens
                 boxCoste.style.display = "block";
                 document.getElementById('p-coste').innerText = c.coste !== undefined ? c.coste : "-";
                 
@@ -346,7 +343,6 @@
                 }
             }
 
-            // Contenedor de habilidades
             const sc = document.getElementById('skill-container'); 
             sc.innerHTML = "";
             
@@ -362,7 +358,6 @@
                 });
             }
             
-            // Mostrar botón de dar la vuelta solo si tiene mecánicas de evolución (Líderes)
             document.getElementById('flip-btn').style.display = (c.imgEvo || c.nombreEvo) ? "inline-block" : "none";
         }
 
