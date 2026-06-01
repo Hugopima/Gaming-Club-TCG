@@ -179,10 +179,18 @@
         <main id="collection-screen">
             <div class="grid-wrapper">
                 <h1 class="main-title">Biblioteca de Cartas</h1>
+                
                 <h2 class="section-title">Líderes</h2>
                 <div id="grid-lideres" class="grid-cartas"></div>
+                
                 <h2 class="section-title">Unidades</h2>
                 <div id="grid-unidades" class="grid-cartas"></div>
+
+                <h2 class="section-title">Extras</h2>
+                <div id="grid-extras" class="grid-cartas"></div>
+
+                <h2 class="section-title">Tokens</h2>
+                <div id="grid-tokens" class="grid-cartas"></div>
             </div>
 
             <aside id="info-panel">
@@ -196,12 +204,16 @@
                     </div>
                     <div id="p-nombre" class="panel-header"></div>
                     <div id="p-lore" class="panel-lore"></div>
+                    
                     <div class="info-grid">
                         <div class="info-box"><span class="info-label">Clase</span><span id="p-clase" class="info-value"></span></div>
                         <div class="info-box"><span class="info-label">Personaje</span><span id="p-personaje" class="info-value"></span></div>
                         <div class="info-box"><span class="info-label">Tipo</span><span id="p-tipo" class="info-value"></span></div>
                         <div class="info-box"><span class="info-label">Origen</span><span id="p-origen" class="info-value"></span></div>
-                        <div class="info-box" style="grid-column: span 2;"><span class="info-label">Rareza</span><span id="p-rareza" class="info-value rarity-val"></span></div>
+                        <div class="info-box"><span class="info-label">Poder</span><span id="p-poder" class="info-value"></span></div>
+                        <div class="info-box" id="box-coste"><span class="info-label">Coste</span><span id="p-coste" class="info-value"></span></div>
+                        <div class="info-box" id="box-combo" style="grid-column: span 2;"><span class="info-label">Combo</span><span id="p-combo" class="info-value"></span></div>
+                        <div class="info-box" id="box-rareza" style="grid-column: span 2;"><span class="info-label">Rareza</span><span id="p-rareza" class="info-value rarity-val"></span></div>
                     </div>
                     <div id="skill-container"></div>
                 </div>
@@ -238,8 +250,13 @@
         function renderizarBiblioteca() {
             const gl = document.getElementById('grid-lideres');
             const gu = document.getElementById('grid-unidades');
+            const ge = document.getElementById('grid-extras');
+            const gt = document.getElementById('grid-tokens');
+            
             gl.innerHTML = ""; 
             gu.innerHTML = "";
+            ge.innerHTML = "";
+            gt.innerHTML = "";
 
             datosCartas.forEach((c, i) => {
                 c.esEvo = false; 
@@ -253,10 +270,16 @@
                     </div>
                 `;
 
-                if (c.clase.toLowerCase() === "líder" || c.clase.toLowerCase() === "lider") {
+                const claseCarta = c.clase ? c.clase.toLowerCase() : "";
+
+                if (claseCarta === "líder" || claseCarta === "lider") {
                     gl.innerHTML += cardHtml;
-                } else {
+                } else if (claseCarta === "unidad") {
                     gu.innerHTML += cardHtml;
+                } else if (claseCarta === "extra") {
+                    ge.innerHTML += cardHtml;
+                } else if (claseCarta === "token") {
+                    gt.innerHTML += cardHtml;
                 }
             });
         }
@@ -281,6 +304,7 @@
         }
 
         function actualizarPanel(c) {
+            // Textos e imágenes base
             document.getElementById('p-img').src = c.esEvo ? c.imgEvo : (c.img || "");
             document.getElementById('p-nombre').innerText = c.esEvo ? (c.nombreEvo || c.nombre) : c.nombre;
             document.getElementById('p-lore').innerText = c.lore || "Sin descripción de lore en este prototipo.";
@@ -290,6 +314,39 @@
             document.getElementById('p-origen').innerText = c.origen || "Desconocido";
             document.getElementById('p-rareza').innerText = c.rareza || "Común";
 
+            // Control Dinámico de Poder (Muestra poder de evolución en Líderes despertados)
+            if (c.esEvo && c.poderEvo) {
+                document.getElementById('p-poder').innerText = c.poderEvo;
+            } else {
+                document.getElementById('p-poder').innerText = c.poder || "0";
+            }
+
+            // Control Dinámico de Coste, Combo y Rareza según la Clase de carta
+            const boxCoste = document.getElementById('box-coste');
+            const boxCombo = document.getElementById('box-combo');
+            const boxRareza = document.getElementById('box-rareza');
+
+            if (c.clase.toLowerCase() === "líder" || c.clase.toLowerCase() === "lider") {
+                boxCoste.style.display = "none";
+                boxCombo.style.display = "none";
+                boxRareza.style.styleFloat = "none"; // Reset layout
+                boxRareza.style.gridColumn = "span 2";
+            } else {
+                // Unidades, Extras o Tokens
+                boxCoste.style.display = "block";
+                document.getElementById('p-coste').innerText = c.coste !== undefined ? c.coste : "-";
+                
+                if (c.combo) {
+                    boxCombo.style.display = "block";
+                    document.getElementById('p-combo').innerText = c.combo;
+                    boxRareza.style.gridColumn = "span 2";
+                } else {
+                    boxCombo.style.display = "none";
+                    boxRareza.style.gridColumn = "span 1";
+                }
+            }
+
+            // Contenedor de habilidades
             const sc = document.getElementById('skill-container'); 
             sc.innerHTML = "";
             
@@ -305,6 +362,7 @@
                 });
             }
             
+            // Mostrar botón de dar la vuelta solo si tiene mecánicas de evolución (Líderes)
             document.getElementById('flip-btn').style.display = (c.imgEvo || c.nombreEvo) ? "inline-block" : "none";
         }
 
