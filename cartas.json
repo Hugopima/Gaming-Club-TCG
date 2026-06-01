@@ -213,7 +213,7 @@
     "combo": "0+5000",         
     "lore": "Tiene cierta mala suerte y condición geográfica para encontrarse con furros.",
     "habilidades": [
-      { "tag": "Automático", "css": "tag-auto", "desc": "Busca en tu baraja una carta de origen <Animal> y añádela a tu mano." },
+      { "tag": "Automático", "css": "tag-auto", "desc": "Busca en tu baraja una carta de origen <Animal> y añádela a tu mano." }
     ]
   } 
 ]
