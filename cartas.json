@@ -15,12 +15,12 @@
     "poderEvo": 15000,
     "lore": "Si escuchas la canción 'Hidden In The Sand', significa que viene... Corre... No le des juego, porque incluso si intentas adivinarlo, nunca te dará la respuesta.",
     "habilidades": [
-      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando este Líder ataca, roba 1 carta. Luego, puedes mirar la carta superior de tu mazo; si es de tipo <Animatrónico>, puedes revelarla y sumarla a tu mano si descartas otra carta." },
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando este Líder ataca, roba 1 carta. Luego, puedes mirar la carta superior de tu mazo; si es de tipo \"Animatrónico\", puedes revelarla y sumarla a tu mano si descartas otra carta." },
       { "tag": "Transformación", "css": "tag-trans", "desc": "A las 4 vidas o menos: roba 2 cartas y dale la vuelta." }
     ],
     "habilidadesEvo": [
       { "tag": "Automático", "css": "tag-auto", "desc": "Cuando este Líder ataca, roba 1 carta." },
-      { "tag": "Activar: Principal", "css": "tag-active", "desc": "[Una vez por turno] Mira las 3 primeras cartas de tu mazo. Puedes elegir una carta de tipo <Animatrónico> de coste 3 o menos y jugarla gratis. Pon el resto en el fondo de la baraja en cualquier orden." }
+      { "tag": "Activar: Principal", "css": "tag-active", "desc": "[Una vez por turno] Mira las 3 primeras cartas de tu mazo. Puedes elegir una carta de tipo \"Animatrónico\" de coste 3 o menos y jugarla gratis. Pon el resto en el fondo de la baraja en cualquier orden." }
     ]
   },
   {
@@ -190,7 +190,7 @@
     "lore": "Mari cuida mucho de sus amigos, y siempre intenta tener cosas para ellos cuando reciben daño… Espera… ¿Qué es eso detrás de ti?",
     "habilidades": [
       { "tag": "Automático", "css": "tag-auto", "desc": "Cuando este Líder ataca, roba 1 carta." },
-      { "tag": "Automático", "css": "tag-auto", "desc": "Una vez por turno, cuando una de tus unidades de origen <OMORI> sea atacada, puedes mirar la carta superior de tu mazo y decidir si la dejas ahí o la mandas a la pila de descartes." },
+      { "tag": "Automático", "css": "tag-auto", "desc": "Una vez por turno, cuando una de tus unidades de origen \"OMORI\" sea atacada, puedes mirar la carta superior de tu mazo y decidir si la dejas ahí o la mandas a la pila de descartes." },
       { "tag": "Transformación", "css": "tag-trans", "desc": "Al llegar a cuatro vidas, dale la vuelta a esta carta." }
     ],
     "habilidadesEvo": [
@@ -236,5 +236,431 @@
     "habilidades": [
       { "tag": "Automático", "css": "tag-auto", "desc": "Busca en tu baraja una carta de origen \"Animal\" o un personaje \"Lucas\" y añádela a tu mano." }
     ]
-  } 
+  },
+  [
+  {
+    "id": "anillo",
+    "nombre": "Anillo de cobre",
+    "clase": "Extra",
+    "color": "Azul",
+    "rareza": "Común",
+    "img": "imagenes/Aanillo.png",
+    "costeTotal": 1,
+    "costeColor": 1,   
+    "lore": "Este anillo contiene restos de la energía de Manuel León, ya que él lo robó para prometerse con el a su antiguo amor.",
+    "habilidades": [
+      { "tag": "Campo", "css": "tag-campo", "desc": "Al jugar esta carta, colócala en tu Zona de Campo. Esta carta permanece en juego hasta que sea destruida o reemplazada por otra carta de Campo." },
+      { "tag": "Permanente", "css": "tag-perm", "desc": "Si tienes esta carta en campo, y tu líder es \"INFINITYCRAFT\", no deberás descartar carta cuando él ataca." }
+    ]
+  },
+  {
+    "id": "jorlol207",
+    "nombre": "Jorlol207",
+    "clase": "Unidad",
+    "color": "Azul",
+    "personaje": "Manuel",
+    "tipo": "Humano",
+    "origen": "Grupo",
+    "rareza": "Común",
+    "img": "imagenes/Ajorlol.png",
+    "costeTotal": 2,
+    "costeColor": 1,
+    "poder": 10000,
+    "combo": "0+5000",
+    "lore": "Uno de los Alter Ego de Manuel León, esta versión de Manuel León no puede consumir fideos.",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando juegas esta carta, si llevas una carta de tu mano a la pila de descartes, puedes coger un \"Anillo de Cobre\" de tu baraja y llevártelo a la mano. Después, baraja tu mazo." }
+    ]
+  },
+  {
+    "id": "hugopima",
+    "nombre": "Hugopima",
+    "clase": "Unidad",
+    "color": "Azul",
+    "personaje": "Hugo",
+    "tipo": "Humano",
+    "origen": "Grupo",
+    "rareza": "Común",
+    "img": "imagenes/Ahugo.png",
+    "costeTotal": 1,
+    "costeColor": 1,
+    "poder": 5000,
+    "combo": "0+5000",
+    "lore": "Carismático personaje del Gaming Club, algunos lo percibían como un duende del bosque mientras que otros como una torre gemela.",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Mira las siete primeras cartas. Si es alguien de origen \"Grupo\", súbela a tu mano. Baraja el mazo." }
+    ]
+  },
+  {
+    "id": "alejandro",
+    "nombre": "Alejandro",
+    "clase": "Unidad",
+    "color": "Azul",
+    "personaje": "Alejandro",
+    "tipo": "Humano",
+    "origen": "Grupo",
+    "rareza": "Infrecuente",
+    "img": "imagenes/Aalex.png",
+    "costeTotal": 3,
+    "costeColor": 1,
+    "poder": 15000,
+    "combo": "0+5000",
+    "lore": "FP de Chapa y Pintura 🔥🔥🔥",
+    "habilidades": [
+      { "tag": "Permanente", "css": "tag-perm", "desc": "Si hay 2 o más cartas con origen \"Grupo\" en tu pila de descartes, reduce el coste de energía de esta carta en tu mano en 2." }
+    ]
+  },
+  {
+    "id": "andrea",
+    "nombre": "Andrea",
+    "clase": "Unidad",
+    "color": "Azul",
+    "personaje": "Andrea",
+    "tipo": "Humano",
+    "origen": "Grupo",
+    "rareza": "Súper Rara",
+    "img": "imagenes/Aandrea.png",
+    "costeTotal": 5,
+    "costeColor": 3,
+    "poder": 20000,
+    "combo": "1+10000",
+    "lore": "Vive en el culo del mundo, en un pueblo que se llama Legua Completa… ¿Que es una legua?",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Invoca una carta ficha \"Deku\" y juégala sin coste. (Deku es una carta sin habilidades que pega de 15000)." },
+      { "tag": "Permanente", "css": "tag-perm", "desc": "Si tienes 4 cartas o menos en tu mano, esta carta y todas tus fichas de Deku obtienen doble golpe." }
+    ]
+  },
+  {
+    "id": "sergio",
+    "nombre": "Sergio el Saltarín",
+    "clase": "Unidad",
+    "color": "Azul",
+    "personaje": "Sergio",
+    "tipo": "Humano",
+    "origen": "Grupo",
+    "rareza": "Infrecuente",
+    "img": "imagenes/Asergio.png",
+    "costeTotal": 3,
+    "costeColor": 2,
+    "poder": 15000,
+    "combo": "0+5000",
+    "lore": "Este individuo ama las volteretas y ganó la medalla de oro en el salto olímpico a la fuente de Juan 23, ahora nombrada “Fuente de Sergio” en honor a tal hazaña.",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando juegas esta carta, puedes elegir cualquier carta en el campo de batalla del oponente y devolvérsela a la mano." }
+    ]
+  },
+  {
+    "id": "victor-hugo",
+    "nombre": "Víctor Hugo",
+    "clase": "Unidad",
+    "color": "Azul",
+    "personaje": "Victor Hugo",
+    "tipo": "Humano",
+    "origen": "Grupo",
+    "rareza": "Rara",
+    "img": "imagenes/Avictor.png",
+    "costeTotal": 8,
+    "costeColor": 5,
+    "poder": 25000,
+    "combo": "1+10000",
+    "lore": "Maestro inversor, hace inversiones de alto riesgo en empresas petroleras árabes, aunque nunca le salen bien.",
+    "habilidades": [
+      { "tag": "Permanente", "css": "tag-perm", "desc": "Si tienes en tu mano solo 3 cartas o menos además de esta carta, reduce el coste de maná de esta carta a 6." },
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando esta carta derrota a la unidad de tu oponente, inflige 1 punto de daño a tu oponente." },
+      { "tag": "Automático", "css": "tag-doble", "desc": "Si esta carta inflige daño, inflige 2 puntos de daño en lugar de 1." }
+    ]
+  },
+  {
+    "id": "lucas",
+    "nombre": "Lucas",
+    "clase": "Unidad",
+    "color": "Azul",
+    "personaje": "Lucas",
+    "tipo": "Humano",
+    "origen": "Grupo",
+    "rareza": "Rara",
+    "img": "imagenes/Alucas.png",
+    "costeTotal": 3,
+    "costeColor": 1,
+    "poder": 5000,
+    "combo": "0+5000",
+    "lore": "Gran artista, pero con un gran fallo, es furro.",
+    "habilidades": [
+      { "tag": "Permanente", "css": "tag-perm", "desc": "Gana +5000 por cada carta tipo \"Animal\" en juego (en ambos bandos)." }
+    ]
+  },
+  {
+    "id": "carlospro",
+    "nombre": "Carlospro",
+    "clase": "Unidad",
+    "color": "Azul",
+    "personaje": "CarlosProYT34",
+    "tipo": "Humano",
+    "origen": "Grupo",
+    "rareza": "Común",
+    "img": "imagenes/Acarlos.png",
+    "costeTotal": 2,
+    "costeColor": 2,
+    "poder": 15000,
+    "combo": "0+5000",
+    "lore": "Vive en un pequeño pueblo de ¿Mordor? No lo sé, pero tiene que ir a por agua a un pozo.",
+    "habilidades": [
+      { "tag": "Crítico", "css": "tag-critico", "desc": "i esta carta inflige daño a un Líder, la carta de vida se coloca en la pila de descartes en lugar de ir a la mano del rival." }
+    ]
+  },
+  {
+    "id": "momolac",
+    "nombre": "Momolac",
+    "clase": "Unidad",
+    "color": "Azul",
+    "personaje": "Momolac",
+    "tipo": "Humano",
+    "origen": "Grupo",
+    "rareza": "Infrecuente",
+    "img": "imagenes/Amomolac.png",
+    "costeTotal": 3,
+    "costeColor": 2,
+    "poder": 15000,
+    "combo": "0+5000",
+    "lore": "Le encantan los juegos basura, como el ARK, nadie lo entiende, aunque es un secuaz acérrimo de Manuel León.",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando esta carta se coloca en la pila de descartes desde el Área de Batalla, si tu Carta de Líder es \"INFINITYCRAFT\", puedes colocar 1 carta de tu mano en la pila de descartes. Si lo haces, juega esta carta." }
+    ]
+  },
+  {
+    "id": "fideos",
+    "nombre": "Fideos Malvados",
+    "clase": "Unidad",
+    "color": "Azul",
+    "personaje": "Fideos",
+    "tipo": "Comida",
+    "origen": "meme",
+    "rareza": "Infrecuente",
+    "img": "imagenes/Afideo.png",
+    "costeTotal": 2,
+    "costeColor": 2,
+    "poder": 12000,
+    "combo": "0+0",
+    "lore": "Los fideos duros de Manuel León, hay que tener un buen estómago para comerlos.",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando haces un Combo con esta carta, si tu Carta de Líder es azul y tu vida es 4 o menos, roba 1 carta y agrega +10000 al Combo de esta carta durante el resto del turno." }
+    ]
+  },
+  {
+    "id": "lumi",
+    "nombre": "Lumi es Support",
+    "clase": "Extra",
+    "color": "Azul",
+    "rareza": "Común",
+    "img": "imagenes/Alumi.png",
+    "costeTotal": 1,
+    "costeColor": 1,
+    "lore": "Antiguo cántico de Manuel León que con el paso de los años se volvió realidad gracias a su inmenso poder.",
+    "habilidades": [
+      { "tag": "Counter Ataque", "css": "tag-counter", "desc": "Niega el ataque, luego endereza un maná azul." }
+    ]
+  },
+  {
+    "id": "cristian",
+    "nombre": "Cristian",
+    "clase": "Unidad",
+    "color": "Azul",
+    "personaje": "Cristian",
+    "tipo": "Humano",
+    "origen": "Grupo",
+    "rareza": "Infrecuente",
+    "img": "imagenes/Acris.png",
+    "costeTotal": 2,
+    "costeColor": 1,
+    "poder": 15000,
+    "combo": "0+5000",
+    "lore": "Bailarín, especialmente de K-Pop, habla mucho de “los del baile”, creemos que es un Cartel de México.",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando esta carta ataca o es atacada, obliga a tu oponente a cambiar una de sus unidades activas a modo descanso." }
+    ]
+  },
+  {
+    "id": "angel",
+    "nombre": "Angel",
+    "clase": "Unidad",
+    "color": "Azul",
+    "personaje": "Angel",
+    "tipo": "Humano",
+    "origen": "Grupo",
+    "rareza": "Infrecuente",
+    "img": "imagenes/Aangel.png",
+    "costeTotal": 1,
+    "costeColor": 1,
+    "poder": 5000,
+    "combo": "0+5000",
+    "lore": "Nadie sabe porque está en el grupo, pero tiene 14 añitos recién cumplidos, se escapa de la guardería para jugar con los demás.",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando esta carta ataca, puedes tomar una vida y añadirla a tu mano. Si lo haces, esta carta gana +10000 y [Doble Golpe]." }
+    ]
+  },
+  {
+    "id": "hog",
+    "nombre": "Hog128",
+    "clase": "Unidad",
+    "color": "Azul",
+    "personaje": "Óscar",
+    "tipo": "Humano",
+    "origen": "Grupo",
+    "rareza": "Infrecuente",
+    "img": "imagenes/Ahog.png",
+    "costeTotal": 3,
+    "costeColor": 3,
+    "poder": 15000,
+    "combo": "0+5000",
+    "lore": "Lleva más de un año construyendo un juego, que de momento es una habitación sin terminar, compite contra FNAMP.",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando juegas esta carta, si tienes 4 o más de maná, elige hasta 2 de tus manás azules en modo descanso y cámbialos a modo activo." }
+    ]
+  },
+  {
+    "id": "nyx",
+    "nombre": "Nyx",
+    "clase": "Unidad",
+    "color": "Azul",
+    "personaje": "Nyx",
+    "tipo": "Humano",
+    "origen": "Grupo",
+    "rareza": "Común",
+    "img": "imagenes/Anyx.png",
+    "costeTotal": 3,
+    "costeColor": 2,
+    "poder": 15000,
+    "combo": "0+5000",
+    "lore": "Femboy, Polaco y Judío. ¿Quién dijo que la vida no castiga dos veces? En este caso son tres.",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando juegas esta carta, si tu líder es Azul, ambos jugadores eligen 1 carta de su mano y la mandan a la pila de descartes. Luego, tú robas 1 carta." }
+    ]
+  },
+  {
+    "id": "vagabundo",
+    "nombre": "Infinitycraft, vagabundo",
+    "clase": "Unidad",
+    "color": "Azul",
+    "personaje": "INFINITYCRAFT",
+    "tipo": "Humano",
+    "origen": "Grupo",
+    "rareza": "Rara",
+    "img": "imagenes/Amanuel.png",
+    "costeTotal": 4,
+    "costeColor": 3,
+    "poder": 15000,
+    "combo": "0+5000",
+    "lore": "Al pasar los años y seguir atendiendo a entrevistas del Burger King sin éxito se dio por vencido y ahora vive por las calles de Cartagena.",
+    "habilidades": [
+      { "tag": "Permanente", "css": "tag-perm", "desc": "Esta carta no puede ser destruida por habilidades de cartas de tu oponente." },
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando esta carta es atacada por una unidad con más poder que ella, puedes devolver este vagabundo a tu mano en lugar de ir a la pila de descartes." }
+    ]
+  },
+  {
+    "id": "correas",
+    "nombre": "Alejandro (¿Correas?)",
+    "clase": "Unidad",
+    "color": "Azul",
+    "personaje": "Alejandro",
+    "tipo": "Humano",
+    "origen": "Grupo",
+    "rareza": "Rara",
+    "img": "imagenes/Acorrea.png",
+    "costeTotal": 3,
+    "costeColor": 3,
+    "poder": 15000,
+    "combo": "0+5000",
+    "lore": "La gente dice que tiene correa (incluso cuando no ha estado en una relación). El lo niega intensamente.",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando esta carta ataca, si tu oponente no usa un \"Bloqueador\", esta carta gana +5000 de poder durante la batalla." },
+      { "tag": "Crítico", "css": "tag-critico", "desc": "Si esta carta inflige daño a un Líder, la carta de vida se coloca en la pila de descartes en lugar de ir a la mano del rival" }
+    ]
+  },
+  {
+    "id": "impostor",
+    "nombre": "Megalberto Impostor",
+    "clase": "Unidad",
+    "color": "Azul",
+    "personaje": "Megalberto",
+    "tipo": "Humano",
+    "origen": "Grupo",
+    "rareza": "Súper Rara",
+    "img": "imagenes/Aimpostor.png",
+    "costeTotal": 5,
+    "costeColor": 3,
+    "poder": 15000,
+    "combo": "1+10000",
+    "lore": "Cuando le dicen que no puede jugar mas minecraft, se hace pasar por jesucristobeibe.",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Al entrar al campo, si tu líder es Azul, copia el poder y habilidades de cualquier unidad que el rival tenga en juego hasta el final del turno." }
+    ]
+  },
+  {
+    "id": "grito",
+    "nombre": "Carlospro gritando",
+    "clase": "Unidad",
+    "color": "Azul",
+    "personaje": "CarlosProYT34",
+    "tipo": "Humano",
+    "origen": "Grupo",
+    "rareza": "Rara",
+    "img": "imagenes/Agrito.png",
+    "costeTotal": 4,
+    "costeColor": 3,
+    "poder": 20000,
+    "combo": "1+10000",
+    "lore": "Devastador grito, se dice que por Órgiva varias casas fueron destruidas a causa de este acontecimiento.",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando esta carta ataca, puedes elegir 1 carta de tus propias vidas y añadirla a tu mano. Si lo haces, esta carta gana +10000 de poder durante este turno." },
+      { "tag": "Doble Ataque", "css": "tag-doble", "desc": "Esta carta tiene Doble Ataque." }
+    ]
+  },
+  {
+    "id": "brawlera",
+    "nombre": "Andrea, la Brawlera",
+    "clase": "Unidad",
+    "color": "Azul",
+    "personaje": "Andrea",
+    "tipo": "Humano",
+    "origen": "Grupo",
+    "rareza": "Común",
+    "img": "imagenes/Abrawl.png",
+    "costeTotal": 2,
+    "costeColor": 1,
+    "poder": 10000,
+    "combo": "0+5000",
+    "lore": "En su currículum tiene dos cosas: Juega en TrollPicks Gaming y tiene muchos prestigios en el Brawl Stars.",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando juegas esta carta, puedes buscar en tu mazo otra copia de una carta de coste 2 o menos de origen \"Grupo\", jugarla en modo descanso, y barajar el mazo." }
+    ]
+  },
+  {
+    "id": "echen",
+    "nombre": "Echen a Ana",
+    "clase": "Extra",
+    "color": "Azul",
+    "rareza": "Común",
+    "img": "imagenes/Aechen.png",
+    "costeTotal": 2,
+    "costeColor": 1,
+    "lore": "Siempre echar a Ana es el primer paso hacia la victoria.",
+    "habilidades": [
+      { "tag": "Activar", "css": "tag-active", "desc": "Principal. Ambos jugadores deben elegir una unidad de su propio campo (que no sea el Líder) y mandarla directamente a la pila de descartes. Si no controlas unidades, tu oponente debe descartar la carta superior de su mazo." }
+    ]
+  },
+  {
+    "id": "fnaf",
+    "nombre": "Five Nights at Patatas Maria",
+    "clase": "Extra",
+    "color": "Azul",
+    "rareza": "Común",
+    "img": "imagenes/Afive.png",
+    "costeTotal": 1,
+    "costeColor": 1,
+    "lore": "Candidato al GOTY de 2026, este gran juego trata temas filosóficos como la pérdida de alguien importante, la depresión, el sentido de la vida, el estoicismo y ver la vida desde un punto más crítico.",
+    "habilidades": [
+      { "tag": "Activar", "css": "tag-active", "desc": "Batalla: Elige hasta 1 de tus Líderes o unidades en combate; gana +5000 de poder por el resto del turno. Luego, elige hasta 1 de tus manás azules y cámbialo a modo activo." }
+    ]
+  }
+]
 ]
