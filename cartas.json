@@ -199,6 +199,27 @@
     ]
   },
   {
+    "id": "alberto",
+    "nombre": "Megalberto Mewing",
+    "clase": "Unidad",
+    "color": "Azul",
+    "personaje": "Alberto",
+    "tipo": "Humano",             
+    "origen": "Grupo",
+    "rareza": "Infrecuente",
+    "img": "imagenes/Aalberto.png",
+    "costeTotal": 2,
+    "costeColor": 1,                  
+    "poder": 10000,               
+    "combo": "0+5000",         
+    "lore": "Un sigma como Patrick Bateman, su barbilla puede hacer cortes limpios.",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Endereza un maná con el poder de su afilada mandíbula." },
+      { "tag": "Bloqueador", "css": "tag-bloqueo", "desc": "Cuando el rival ataca, puedes cambiar esta carta a modo descanso para convertirla en el nuevo objetivo del ataque." }
+    ]
+  },
+   },
+  {
     "id": "agus",
     "nombre": "Agustin",
     "clase": "Unidad",
