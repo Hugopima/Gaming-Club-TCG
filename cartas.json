@@ -237,7 +237,6 @@
       { "tag": "Automático", "css": "tag-auto", "desc": "Busca en tu baraja una carta de origen \"Animal\" o un personaje \"Lucas\" y añádela a tu mano." }
     ]
   },
-  [
   {
     "id": "anillo",
     "nombre": "Anillo de cobre",
@@ -662,5 +661,4 @@
       { "tag": "Activar", "css": "tag-active", "desc": "Batalla: Elige hasta 1 de tus Líderes o unidades en combate; gana +5000 de poder por el resto del turno. Luego, elige hasta 1 de tus manás azules y cámbialo a modo activo." }
     ]
   }
-]
 ]
