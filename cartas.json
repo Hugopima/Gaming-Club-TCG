@@ -218,7 +218,6 @@
       { "tag": "Bloqueador", "css": "tag-bloqueo", "desc": "Cuando el rival ataca, puedes cambiar esta carta a modo descanso para convertirla en el nuevo objetivo del ataque." }
     ]
   },
-   },
   {
     "id": "agus",
     "nombre": "Agustin",
