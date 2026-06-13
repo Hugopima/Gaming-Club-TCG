@@ -661,7 +661,6 @@
       { "tag": "Activar", "css": "tag-active", "desc": "Batalla: Elige hasta 1 de tus Líderes o unidades en combate; gana +5000 de poder por el resto del turno. Luego, elige hasta 1 de tus manás azules y cámbialo a modo activo." }
     ]
   },
-  [
   {
     "id": "freddy",
     "nombre": "Freddy Fazbear",
@@ -796,7 +795,7 @@
     "combo": "1+10000",
     "lore": "Matar a cinco niños en una pizzería siempre te lleva a acabar convertido en carta…",
     "habilidades": [
-      { "tag": "Permanente", "css": "tag-perm", "desc": "Para jugar esta carta necesitas en juego al menos 3 \"Animatrónicos"\ },
+      { "tag": "Permanente", "css": "tag-perm", "desc": "Para jugar esta carta necesitas en juego al menos 3 \"Animatrónicos" },
       { "tag": "Automático", "css": "tag-auto", "desc": "Destruye una carta de la mesa de tu rival o elimina una vida al líder, las cartas de animatrónicos empleadas vuelven a tu mazo. Después baraja tu mazo" },
       { "tag": "Crítico", "css": "tag-critico", "desc": "Si esta carta inflige daño a un Líder, la carta de vida se coloca en la pila de descartes en lugar de ir a la mano del rival." }
     ]
