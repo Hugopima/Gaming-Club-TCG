@@ -611,7 +611,7 @@
     "lore": "Devastador grito, se dice que por Órgiva varias casas fueron destruidas a causa de este acontecimiento.",
     "habilidades": [
       { "tag": "Automático", "css": "tag-auto", "desc": "Cuando esta carta ataca, puedes elegir 1 carta de tus propias vidas y añadirla a tu mano. Si lo haces, esta carta gana +10000 de poder durante este turno." },
-      { "tag": "Doble Ataque", "css": "tag-doble", "desc": "Esta carta tiene Doble Ataque." }
+      { "tag": "Doble Golpe", "css": "tag-doble", "desc": "Si esta carta inflige daño, inflige 2 puntos de daño en lugar de 1" }
     ]
   },
   {
@@ -660,5 +660,1443 @@
     "habilidades": [
       { "tag": "Activar", "css": "tag-active", "desc": "Batalla: Elige hasta 1 de tus Líderes o unidades en combate; gana +5000 de poder por el resto del turno. Luego, elige hasta 1 de tus manás azules y cámbialo a modo activo." }
     ]
+  },
+  [
+  {
+    "id": "freddy",
+    "nombre": "Freddy Fazbear",
+    "clase": "Unidad",
+    "color": "Rojo",
+    "personaje": "Freddy Fazbear",
+    "tipo": "Animatrónico",
+    "origen": "FNAF",
+    "rareza": "Común",
+    "img": "imagenes/Rfreddy.png",
+    "costeTotal": 1,
+    "costeColor": 1,
+    "poder": 5000,
+    "combo": "0+5000",
+    "lore": "O cholera, czy to Freddy Fazbear",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Mira las siete primeras cartas. Si es alguien de tipo \"Animatrónico\", subela a tu mano. Baraja el mazo." }
+    ]
+  },
+  {
+    "id": "bonnie",
+    "nombre": "Bonnie",
+    "clase": "Unidad",
+    "color": "Rojo",
+    "personaje": "Bonnie",
+    "tipo": "Animatrónico",
+    "origen": "FNAF",
+    "rareza": "Infrecuente",
+    "img": "imagenes/Rbonnie.png",
+    "costeTotal": 2,
+    "costeColor": 1,
+    "poder": 10000,
+    "combo": "0+5000",
+    "lore": "¿Te has fijado que todos los Jeremys de FNAF tienen de animatrónico favorito a Bonnie y acaban siempre fatal?",
+    "habilidades": [
+      { "tag": "Permanente", "css": "tag-perm", "desc": "Si no hay ninguna carta de tipo \"Animatrónico\" en juego, excepto en los 2 primeros turnos, entra sin coste." },
+      { "tag": "Bloqueador", "css": "tag-bloqueo", "desc": "Cuando el rival ataca, puedes cambiar esta carta a modo descanso para convertirla en el nuevo objetivo del ataque." }
+    ]
+  },
+  {
+    "id": "chica",
+    "nombre": "Chica",
+    "clase": "Unidad",
+    "color": "Rojo",
+    "personaje": "Chica",
+    "tipo": "Animatrónico",
+    "origen": "FNAF",
+    "rareza": "Rara",
+    "img": "imagenes/Rchica.png",
+    "costeTotal": 2,
+    "costeColor": 2,
+    "poder": 15000,
+    "combo": "0+5000",
+    "lore": "Fue la primera. Lo ha visto todo.",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Al entrar busca en la baraja una carta de de \"Pizza Slice\" y subela a tu mano. Luego baraja." }
+    ]
+  },
+  {
+    "id": "foxy",
+    "nombre": "Foxy",
+    "clase": "Unidad",
+    "color": "Rojo",
+    "personaje": "Foxy",
+    "tipo": "Animatrónico",
+    "origen": "FNAF",
+    "rareza": "Común",
+    "img": "imagenes/Rfoxy.png",
+    "costeTotal": 4,
+    "costeColor": 3,
+    "poder": 20000,
+    "combo": "1+10000",
+    "lore": "¡Vigila tu puerta! O no… Porque con tener las luces apagadas te sirve para que no te ataque.",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando juegas esta carta, tu oponente descarta 1 carta." }
+    ]
+  },
+  {
+    "id": "springtrap",
+    "nombre": "Springtrap",
+    "clase": "Unidad",
+    "color": "Rojo",
+    "personaje": "Springtrap",
+    "tipo": "Animatrónico",
+    "origen": "FNAF",
+    "rareza": "Super Rara",
+    "img": "imagenes/Rspringtrap.png",
+    "costeTotal": 6,
+    "costeColor": 4,
+    "poder": 25000,
+    "combo": "1+10000",
+    "lore": "Él siempre vuelve… Ah no, ya murió en el lore.",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando juegas esta carta, todas las unidades rivales con 15000 de poder o menos son destruidas" },
+      { "tag": "Doble Golpe", "css": "tag-doble", "desc": "Si esta carta inflige daño, inflige 2 puntos de daño en lugar de 1." }
+    ]
+  },
+  {
+    "id": "clyde",
+    "nombre": "Bonnie & Bonnie & Clyde",
+    "clase": "Unidad",
+    "color": "Rojo",
+    "personaje": "Bonnie",
+    "tipo": "Animatrónico",
+    "origen": "FNAF",
+    "rareza": "Rara",
+    "img": "imagenes/Rclyde.png",
+    "costeTotal": 7,
+    "costeColor": 4,
+    "poder": 25000,
+    "combo": "1+10000",
+    "lore": "Un Bonnie no era suficiente. Cuantos más Bonnies mejor.",
+    "habilidades": [
+      { "tag": "Triple Golpe", "css": "tag-doble", "desc": "Si esta carta inflige daño, inflige 3 puntos de daño en lugar de 1."},
+      { "tag": "Permanente", "css": "tag-perm", "desc": "Todas las unidades de tu oponente obtienen blocker durante la batalla de esta carta." },
+      { "tag": "Evolución", "css": "tag-evolucion", "desc": "Pon esta carta sobre una carta de personaje \"Bonnie\" pagando solo 5 de maná (3 de ellos deben de ser rojos) ."}
+    ]
+  },
+  {
+    "id": "purple",
+    "nombre": "Purple guy",
+    "clase": "Unidad",
+    "color": "Rojo",
+    "personaje": "Purple Guy",
+    "tipo": "Humano",
+    "origen": "FNAF",
+    "rareza": "Rara",
+    "img": "imagenes/Rpurple.png",
+    "costeTotal": 4,
+    "costeColor": 3,
+    "poder": 20000,
+    "combo": "1+10000",
+    "lore": "Matar a cinco niños en una pizzería siempre te lleva a acabar convertido en carta…",
+    "habilidades": [
+      { "tag": "Permanente", "css": "tag-perm", "desc": "Para jugar esta carta necesitas en juego al menos 3 \"Animatrónicos"\ },
+      { "tag": "Automático", "css": "tag-auto", "desc": "Destruye una carta de la mesa de tu rival o elimina una vida al líder, las cartas de animatrónicos empleadas vuelven a tu mazo. Después baraja tu mazo" },
+      { "tag": "Crítico", "css": "tag-critico", "desc": "Si esta carta inflige daño a un Líder, la carta de vida se coloca en la pila de descartes en lugar de ir a la mano del rival." }
+    ]
+  },
+  {
+    "id": "phone",
+    "nombre": "Phone guy",
+    "clase": "Unidad",
+    "color": "Rojo",
+    "personaje": "Phone Guy",
+    "tipo": "Humano",
+    "origen": "FNAF",
+    "rareza": "Común",
+    "img": "imagenes/Rphone.png",
+    "costeTotal": 2,
+    "costeColor": 1,
+    "poder": 10000,
+    "combo": "0+5000",
+    "lore": "uh… Hello? Hello hello! I have a message for you…",
+    "habilidades": [
+      { "tag": "Activar", "css": "tag-active", "desc": "Principal : Durante tu turno, cuando hagas un combo con esta carta de tu mano, elige hasta 1 de las cartas de tu oponente con Bloqueador y un coste de energía de 3 o menos, y elimínala." }
+    ]
+  },
+  {
+    "id": "vecino",
+    "nombre": "Vecino Animatrónico",
+    "clase": "Unidad",
+    "color": "Rojo",
+    "personaje": "Vecino",
+    "tipo": "Animatrónico",
+    "origen": "Hello Neighbor",
+    "rareza": "Común",
+    "img": "imagenes/Rvecino.png",
+    "costeTotal": 1,
+    "costeColor": 1,
+    "poder": 5000,
+    "combo": "0+5000",
+    "lore": "Sugerido por Carlosproyt34. Él ha creado a esta aberración.",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Roba una carta." }
+    ]
+  },
+  {
+    "id": "pizza",
+    "nombre": "Pizza slice",
+    "clase": "Extra",
+    "color": "Rojo",
+    "rareza": "Común",
+    "img": "imagenes/Rpizza.png",
+    "costeTotal": 1,
+    "costeColor": 1,
+    "lore": "La pizza es de plástico. Siempre fue de plástico.",
+    "habilidades": [
+      { "tag": "Activar", "css": "tag-active", "desc": "Principal: Elige hasta 1 de tus cartas. Esta gana +5000 de poder durante el resto del turno. Luego, elige hasta 2 de tu maná y cambialo a modo activo" }
+    ]
+  },
+  {
+    "id": "golden",
+    "nombre": "Golden Freddy",
+    "clase": "Unidad",
+    "color": "Rojo",
+    "personaje": "Golden Freddy",
+    "tipo": "Animatrónico",
+    "origen": "FNAF",
+    "rareza": "Infrecuente",
+    "img": "imagenes/Rgolden.png",
+    "costeTotal": 2,
+    "costeColor": 2,
+    "poder": 12000,
+    "combo": "0+0",
+    "lore": "It’s me.",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando haces un Combo con esta carta, si tu Carta de Líder es rojo y tu vida es 4 o menos, roba 1 carta y agrega +10000 al Combo de esta carta durante el resto del turno." }
+    ]
+  },
+  {
+    "id": "shadow",
+    "nombre": "RWQFSFASXC",
+    "clase": "Extra",
+    "color": "Rojo",
+    "rareza": "Común",
+    "img": "imagenes/Rshadow.png",
+    "costeTotal": 1,
+    "costeColor": 1,
+    "lore": "¡Deletrea su nombre! Son solo letras al azar de la parte superior izquierda del teclado.",
+    "habilidades": [
+      { "tag": "Counter Ataque", "css": "tag-counter", "desc": "Niega el ataque. Después, endereza un maná rojo" }
+    ]
+  },
+  {
+    "id": "balloon",
+    "nombre": "Balloon Boy",
+    "clase": "Unidad",
+    "color": "Rojo",
+    "personaje": "Balloon Boy",
+    "tipo": "Animatrónico",
+    "origen": "FNAF",
+    "rareza": "Rara",
+    "img": "imagenes/Rballoon.png",
+    "costeTotal": 1,
+    "costeColor": 1,
+    "poder": 5000,
+    "combo": "0+5000",
+    "lore": "Él solo quiere tus baterías… Daselas y te dejará tranquilo.",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando juegas esta carta, elige una unidad del rival en juego de coste 3 o menos; esa unidad pierde sus habilidades hasta el próximo turno del rival y no puede realizar combos hasta el final del turno de tu oponente" }
+    ]
+  },
+  {
+    "id": "jeffrey",
+    "nombre": "Jeffrey Epstein",
+    "clase": "Unidad",
+    "color": "Rojo",
+    "personaje": "Jeffrey Epstein",
+    "tipo": "Humano",
+    "origen": "Celebridades",
+    "rareza": "Infrecuente",
+    "img": "imagenes/Rjeffrey.png",
+    "costeTotal": 3,
+    "costeColor": 2,
+    "poder": 15000,
+    "combo": "0+5000",
+    "lore": "Tiene una isla muy bonita… Con un ascensor precioso…",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando juegas esta carta, tu oponente debe elegir una carta de batalla de coste 2 o menos de su mano y descartala." }
+    ]
+  },
+  {
+    "id": "Rdiddy",
+    "nombre": "P. Diddy",
+    "clase": "Unidad",
+    "color": "Rojo",
+    "personaje": "P. Diddy",
+    "tipo": "Humano",
+    "origen": "Celebridades",
+    "rareza": "Súper Rara",
+    "img": "imagenes/Rdiddy.png",
+    "costeTotal": 4,
+    "costeColor": 2,
+    "poder": 20000,
+    "combo": "0+5000",
+    "lore": "Cuidado con su aceite de bebé. Es muy resbaladizo…",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Al activar su bloqueador, puedes mover 1 carta de la zona de combo del rival a su pila de descartes."},
+      { "tag": "Bloqueador", "css": "tag-bloqueo", "desc": "Cuando el rival ataca, puedes cambiar esta carta a modo descanso para convertirla en el nuevo objetivo del ataque." }
+    ]
+  },
+  {
+    "id": "kirk",
+    "nombre": "Charlie Kirk",
+    "clase": "Unidad",
+    "color": "Rojo",
+    "personaje": "Charlie Kirk",
+    "tipo": "Humano",
+    "origen": "Celebridades",
+    "rareza": "Raro",
+    "img": "imagenes/Rkirk.png",
+    "costeTotal": 3,
+    "costeColor": 2,
+    "poder": 15000,
+    "combo": "0+5000",
+    "lore": "¿Por qué veo su cara en todas partes? Que en paz descanse…",
+    "habilidades": [
+      { "tag": "Permanente", "css": "tag-perm", "desc": "Cada vez que tu oponente use un [Counter], debe pagar 1 maná adicional o el Counter se niega."},
+      { "tag": "Permanente", "css": "tag-perm", "desc": "Esta carta puede ser atacada por otras en modo activo" }
+    ]
+  },
+  {
+    "id": "musk",
+    "nombre": "Elon Musk",
+    "clase": "Unidad",
+    "color": "Rojo",
+    "personaje": "Elon Musk",
+    "tipo": "Humano",
+    "origen": "Celebridades",
+    "rareza": "Raro",
+    "img": "imagenes/Rmusk.png",
+    "costeTotal": 6,
+    "costeColor": 4,
+    "poder": 30000,
+    "combo": "1+10000",
+    "lore": "¡El poder de la tecnología! Si aprendes a pronunciar el nombre completo de su hijo te hago bizum.",
+    "habilidades": [
+      { "tag": "Activar", "css": "tag-active", "desc": "Principal : Una vez por turno, puedes pagar 1 maná azul para robar 2 cartas y luego descartar 1."},
+      { "tag": "Doble Golpe", "css": "tag-doble", "desc": "Si esta carta inflige daño, inflige 2 puntos de daño en lugar de 1." }
+    ]
+  },
+  {
+    "id": "hasnain",
+    "nombre": "Hasnain",
+    "clase": "Unidad",
+    "color": "Rojo",
+    "personaje": "Hasnain",
+    "tipo": "Humano",
+    "origen": "Celebridades",
+    "rareza": "Infrecuente",
+    "img": "imagenes/Rhasnain.png",
+    "costeTotal": 1,
+    "costeColor": 1,
+    "poder": 5000,
+    "combo": "0+5000",
+    "lore": "¿Hasnain? ¡Noooo!",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Al entrar al campo, puedes mirar las 3 primeras cartas de tu mazo, tomar una y ordenar tu mazo como quieras y poner una de ellas en la parte superior." }
+    ]
+  },
+  {
+    "id": "coolboy",
+    "nombre": "Coolboy",
+    "clase": "Unidad",
+    "color": "Rojo",
+    "personaje": "Coolboy",
+    "tipo": "Humano",
+    "origen": "Celebridades",
+    "rareza": "Infrecuente",
+    "img": "imagenes/Rcoolboy.png",
+    "costeTotal": 2,
+    "costeColor": 1,
+    "poder": 10000,
+    "combo": "0+5000",
+    "lore": "Es demasiado cool para que le golpeen. ¡Coolboy!",
+    "habilidades": [
+      { "tag": "Permanente", "css": "tag-perm", "desc": "Esta carta no puede ser atacada por unidades rivales que tengan un poder base de 20000 o más." }
+    ]
+  },
+  {
+    "id": "muzammill",
+    "nombre": "Muzammill",
+    "clase": "Unidad",
+    "color": "Rojo",
+    "personaje": "Muzammill",
+    "tipo": "Humano",
+    "origen": "Celebridades",
+    "rareza": "Infrecuente",
+    "img": "imagenes/Rmuzammill.png",
+    "costeTotal": 5,
+    "costeColor": 3,
+    "poder": 20000,
+    "combo": "1+10000",
+    "lore": "Infravaloradisimo en Zeeshan Eating",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando juegas esta carta, si tu Carta de Líder es azul, puedes elegir hasta 2 unidades de tu oponente con un coste de maná de 2 o menos y regresarlas a la mano de su dueño." }
+    ]
+  },
+  {
+    "id": "random",
+    "nombre": "Hasnan (Brawl Stars)",
+    "clase": "Unidad",
+    "color": "Rojo",
+    "personaje": "Hasnan",
+    "tipo": "Humano",
+    "origen": "Meme",
+    "rareza": "Infrecuente",
+    "img": "imagenes/Rrandom.png",
+    "costeTotal": 2,
+    "costeColor": 1,
+    "poder": 5000,
+    "combo": "0+5000",
+    "lore": "Te trollea la partida y luego te da like, pues reportada que se lleva.",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Al entrar al campo, obliga a ambos jugadores a tirar un dado. El jugador que saque la puntuación más baja debe elegir una unidad de su propio campo y destruirla." }
+    ]
+  },
+  {
+    "id": "biggy",
+    "nombre": "Little Biggy",
+    "clase": "Unidad",
+    "color": "Rojo",
+    "personaje": "Little Biggy",
+    "tipo": "Humano",
+    "origen": "Celebridades",
+    "rareza": "Común",
+    "img": "imagenes/Rbiggy.png",
+    "costeTotal": 1,
+    "costeColor": 1,
+    "poder": 10000,
+    "combo": "0+5000",
+    "lore": "Biggy era tan bueno que tuvieron que hacer una versión little.",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando esta carta es destruida en batalla, roba 1 carta." }
+    ]
+  },
+  {
+    "id": "twit",
+    "nombre": "Cancelado en Twitter",
+    "clase": "Extra",
+    "color": "Rojo",
+    "rareza": "Raro",
+    "img": "imagenes/Rtwit.png",
+    "costeTotal": 2,
+    "costeColor": 2,
+    "lore": "Todo el mundo lo sabía, solo hacía falta confirmación.",
+    "habilidades": [
+      { "tag": "Activar", "css": "tag-active", "desc": "Principal :Elige una unidad del rival en juego. Esa unidad pierde sus habilidades hasta el próximo turno del rival" }
+    ]
+  },
+  {
+    "id": "paloma",
+    "nombre": "Paloma de Palm Beach Pete",
+    "clase": "Unidad",
+    "color": "Rojo",
+    "personaje": "Paloma de Palm Beach Pete",
+    "tipo": "Animal",
+    "origen": "Celebridades",
+    "rareza": "Común",
+    "img": "imagenes/Rpaloma.png",
+    "costeTotal": 3,
+    "costeColor": 2,
+    "poder": 15000,
+    "combo": "0+5000",
+    "lore": "Palm Beach Pete no es Jeffrey Epstein. O eso dice…",
+    "habilidades": [
+      { "tag": "Permanente", "css": "tag-perm", "desc": "Esta carta no puede ser objetivo de las habilidades de las cartas de batalla de tu oponente." }
+    ]
+  },
+  {
+    "id": "juegos",
+    "nombre": "Juegos Indios",
+    "clase": "Extra",
+    "color": "Rojo",
+    "rareza": "Infrecuente",
+    "img": "imagenes/Rjuegos.png",
+    "costeTotal": 2,
+    "costeColor": 2,
+    "lore": "¿Podrás completar los juegos Indios para ser digno de usar esta carta?",
+    "habilidades": [
+      { "tag": "Counter Play", "css": "tag-counter", "desc": "Cuando tu rival vaya a jugar una unidad de coste 4 o menos, niega su invocación y mándala directamente a su pila de descartes." }
+    ]
+  },
+  {
+    "id": "todo",
+    "nombre": "Todo al verde",
+    "clase": "Extra",
+    "color": "Verde",
+    "rareza": "Común",
+    "img": "imagenes/Vtodo.png",
+    "costeTotal": 1,
+    "costeColor": 1,
+    "lore": "¡PON TODO TU DINERO AL VERDE! ¿QUE TE LO IMPIDE?",
+    "habilidades": [
+      { "tag": "Activar", "css": "tag-active", "desc": "Principal: Tira un dado, si este saca una puntuación de 20 suma 15000 de poder a una unidad." }
+    ]
+  },
+  {
+    "id": "ruleta",
+    "nombre": "Ruleta",
+    "clase": "Extra",
+    "color": "Verde",
+    "rareza": "Común",
+    "img": "imagenes/Vruleta.png",
+    "costeTotal": 1,
+    "costeColor": 1,
+    "lore": "¿Rojo o Negro? ¡ES TODO ALEATORIO! ¡LET’S GO GAMBLING!",
+    "habilidades": [
+      { "tag": "Activar", "css": "tag-active", "desc": "Principal: Tira un dado, si este saca puntuación entre 10-19 suma 5k de poder a una unidad." }
+    ]
+  },
+  {
+    "id": "cazon",
+    "nombre": "Cazón",
+    "clase": "Unidad",
+    "color": "Verde",
+    "personaje": "Juan",
+    "tipo": "Animal",
+    "origen": "Minecraft",
+    "rareza": "Rara",
+    "img": "imagenes/Vcazon.png",
+    "costeTotal": 4,
+    "costeColor": 3,
+    "poder": 20000,
+    "combo": "1+10000",
+    "lore": "Este zombie siempre fue muy temido en su tierra natal… Después fue motivo de burla… Ahora vuelve a ser temido…",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando esta carta destruye una unidad del rival en combate, descarta la carta de arriba de la baraja del rival." },
+      { "tag": "Doble Golpe", "css": "tag-doble", "desc": "Si esta carta inflige daño, inflige 2 puntos de daño en lugar de 1." },
+      { "tag": "Venganza", "css": "tag-venganza", "desc": "Si esta carta pierde una batalla, la carta ganadora es destruida automáticamente al final de la batalla." }
+    ]
+  },
+  {
+    "id": "juan",
+    "nombre": "Juan el Caballo",
+    "clase": "Unidad",
+    "color": "Verde",
+    "personaje": "Juan",
+    "tipo": "Animal",
+    "origen": "Minecraft",
+    "rareza": "Infrecuente",
+    "img": "imagenes/Vjuan.png",
+    "costeTotal": 3,
+    "costeColor": 2,
+    "poder": 15000,
+    "combo": "0+5000",
+    "lore": "Este caballo dió mucha guerra en su día. Aunque parezca un caballo normal, realmente sabe cosas que nadie más sabe…",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando juegas esta carta, si tienes 6 o más de maná, destruye una unidad del rival." },
+      { "tag": "Crítico", "css": "tag-critico", "desc": "Si esta carta inflige daño a un Líder, la carta de vida se coloca en la pila de descartes en lugar de ir a la mano del rival." }
+    ]
+  },
+  {
+    "id": "dymytry",
+    "nombre": "Dymytry",
+    "clase": "Unidad",
+    "color": "Verde",
+    "personaje": "DYMYTRY",
+    "tipo": "Robot",
+    "origen": "Minecraft",
+    "rareza": "Rara",
+    "img": "imagenes/Vdymytry.png",
+    "costeTotal": 3,
+    "costeColor": 2,
+    "poder": 15000,
+    "combo": "0+5000",
+    "lore": "DYMYTRY se enfrentó a Patroclo en las antiguas guerras de Patroclo… A día de hoy sigue dando guerra…",
+    "habilidades": [
+      { "tag": "Activar", "css": "tag-active", "desc": "Absorción: Coloca 1 \"Juan\" de tu mano debajo de esta carta: Elige hasta 1 “Dymytry” con un coste de energía de 5 o menos de tu mazo y colócala encima de esta carta." }
+    ]
+  },
+  {
+    "id": "juan2",
+    "nombre": "Juan, bajo control de DYMYTRY",
+    "clase": "Unidad",
+    "color": "Verde",
+    "personaje": "Juan",
+    "tipo": "Animal",
+    "origen": "Minecraft",
+    "rareza": "Infrecuente",
+    "img": "imagenes/Vjuan2.png",
+    "costeTotal": 5,
+    "costeColor": 2,
+    "poder": 20000,
+    "combo": "1+10000",
+    "lore": "Esto es lo que puede causar el control de DYMYTRY en un caballo normal… Pobre de él",
+    "habilidades": [
+      { "tag": "Activar", "css": "tag-active", "desc": "Absorción: Coloca 1 “Cazón” de tu mano debajo de esta carta. Busca un \"Patroclo\" de tu mazo y quédatelo." },
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando juegues esta carta por Absorción, roba 1 carta, luego elige hasta 1 unidad del oponente y destrúyela." },
+      { "tag": "Doble Golpe", "css": "tag-doble", "desc": "Si esta carta inflige daño, inflige 2 puntos de daño en lugar de 1." }
+    ]
+  },
+  {
+    "id": "patroclo",
+    "nombre": "Patroclo, derrotado",
+    "clase": "Unidad",
+    "color": "Verde",
+    "personaje": "Juan",
+    "tipo": "Animal",
+    "origen": "Minecraft",
+    "rareza": "Infrecuente",
+    "img": "imagenes/Vpatroclo.png",
+    "costeTotal": 7,
+    "costeColor": 4,
+    "poder": 25000,
+    "combo": "1+10000",
+    "lore": "Aun estando derrotando, consiguió despertarse cuando DYMYTRY transportó a los Core Suppression a la nueva tierra…",
+    "habilidades": [
+      { "tag": "Doble Golpe", "css": "tag-doble", "desc": "Si esta carta inflige daño, inflige 2 puntos de daño en lugar de 1." },
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando juegas esta carta, si tu Carta de Líder es de \"Minecraft\", tu oponente debe elegir cartas de su mano hasta que solo le queden 3, y colocar las cartas elegidas en la pila de descartes." },
+      { "tag": "Evolución", "css": "tag-evolucion", "desc": "Pon esta carta sobre una carta de personaje \"Patroclo\" pagando solo 5 de maná (3 de ellos deben de ser verdes) ."}
+    ]
+  },
+  {
+    "id": "energia",
+    "nombre": "Energía de Patroclo",
+    "clase": "Extra",
+    "color": "Verde",
+    "rareza": "Común",
+    "img": "imagenes/Venergia.png",
+    "costeTotal": 3,
+    "costeColor": 2,
+    "lore": "Patroclo en su máximo esplendor… Todo el mundo lo adoraba y veneraba…",
+    "habilidades": [
+      { "tag": "Campo", "css": "tag-campo", "desc": "Al jugar esta carta, colócala en tu Zona de Campo. Esta carta permanece en juego hasta que sea destruida o reemplazada por otra carta de Campo." },
+      { "tag": "Permanente", "css": "tag-perm", "desc": "Otorga +5000 a todas las unidades en el campo." }
+    ]
+  },
+  {
+    "id": "messi",
+    "nombre": "Messi",
+    "clase": "Unidad",
+    "color": "Verde",
+    "personaje": "Messi",
+    "tipo": "Animal",
+    "origen": "Minecraft",
+    "rareza": "Común",
+    "img": "imagenes/Vmessi.png",
+    "costeTotal": 1,
+    "costeColor": 1,
+    "poder": 5000,
+    "combo": "0+5000",
+    "lore": "¡LA CABRA! Ha conseguido sobrevivir a los gritos de su dueño Carlosproyt34.",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Mira las siete primeras cartas de la baraja, coge una carta de origen <Minecraft> y quedatela, baraja el resto." }
+    ]
+  },
+  {
+    "id": "podrido",
+    "nombre": "Podrido",
+    "clase": "Unidad",
+    "color": "Verde",
+    "personaje": "Podrido",
+    "tipo": "Animal / Zombie",
+    "origen": "Minecraft",
+    "rareza": "Rara",
+    "img": "imagenes/Vpodrido.png",
+    "costeTotal": 2,
+    "costeColor": 2,
+    "poder": 10000,
+    "combo": "0+5000",
+    "lore": "En su fase normal es solo un personaje un poco lento pero tanque… Si matas al cerdo, sufrirás su cólera.",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando esta carta es destruida en batalla mientras defiende, invoca gratis una unidad ficha llamada 'Podrido Rabioso' (15000 Poder / Doble Golpe) en modo activo. Luego baraja." },
+      { "tag": "Bloqueador", "css": "tag-bloqueo", "desc": "Cuando el rival ataca, puedes cambiar esta carta a modo descanso para convertirla en el nuevo objetivo del ataque." }
+    ]
+  },
+  {
+    "id": "juanfalso",
+    "nombre": "Juan Falso",
+    "clase": "Unidad",
+    "color": "Verde",
+    "personaje": "Juan",
+    "tipo": "Animal",
+    "origen": "Minecraft",
+    "rareza": "Infrecuente",
+    "img": "imagenes/Vjuanfalso.png",
+    "costeTotal": 2,
+    "costeColor": 1,
+    "poder": 12000,
+    "combo": "0+0",
+    "lore": "Un caballo que intentó hacerse pasar por Juan… El Juan original lo sentenció a estar del revés para siempre.",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando haces un Combo con esta carta, si tu Carta de Líder es verde y tu vida es 4 o menos, roba 1 carta y agrega +10000 al Combo de esta carta durante el resto del turno." }
+    ]
+  },
+  {
+    "id": "creeper",
+    "nombre": "Creeper en la habitación",
+    "clase": "Extra",
+    "color": "Verde",
+    "rareza": "Común",
+    "img": "imagenes/Vcreeper.png",
+    "costeTotal": 1,
+    "costeColor": 1,
+    "lore": "A día de hoy Megalberto sigue diciendo que el Creeper lo siguió hasta la habitación y se metió cuando él abrió la puerta para entrar.",
+    "habilidades": [
+      { "tag": "Counter Ataque", "css": "tag-counter", "desc": "Niega el ataque, después, endereza un maná verde." }
+    ]
+  },
+  {
+    "id": "sniffer",
+    "nombre": "Sniffers",
+    "clase": "Unidad",
+    "color": "Verde",
+    "personaje": "Sniffers",
+    "tipo": "Animal",
+    "origen": "Minecraft",
+    "rareza": "Común",
+    "img": "imagenes/Vsniffer.png",
+    "costeTotal": 1,
+    "costeColor": 1,
+    "poder": 5000,
+    "combo": "0+5000",
+    "lore": "Carrearon la economía en la Season 3… Se merecían estar aquí.",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Al entrar al campo, mira las 3 primeras cartas de tu mazo. Puedes elegir una carta y sumarla a tu mano. Pon el resto al fondo." }
+    ]
+  },
+  {
+    "id": "aceituna",
+    "nombre": "Aceituna",
+    "clase": "Unidad",
+    "color": "Verde",
+    "personaje": "Aceituna",
+    "tipo": "Animal",
+    "origen": "Minecraft",
+    "rareza": "Común",
+    "img": "imagenes/Vaceituna.png",
+    "costeTotal": 2,
+    "costeColor": 1,
+    "poder": 10000,
+    "combo": "0+5000",
+    "lore": "El inigualable Aceituna, con el poder de… comer bayas dulces y ser adorable.",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando juegas esta carta, si controlas a Lucas o tu Líder es Verde, elige hasta 2 de tus manás en modo descanso y cámbiálos a modo activo." }
+    ]
+  },
+  {
+    "id": "uwu",
+    "nombre": "UwU el Creeper",
+    "clase": "Unidad",
+    "color": "Verde",
+    "personaje": "UwU",
+    "tipo": "Creeper",
+    "origen": "Minecraft",
+    "rareza": "Infrecuente",
+    "img": "imagenes/Vuwu.png",
+    "costeTotal": 3,
+    "costeColor": 2,
+    "poder": 15000,
+    "combo": "0+5000",
+    "lore": "Cuidado con los UwUs… Son conocidos por causar explosiones gigantescas y arruinar explanadas como la de Manuel.",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando esta carta es destruida en batalla, todas las unidades del rival de coste 2 o menos en juego son destruidas inmediatamente." },
+      { "tag": "Venganza", "css": "tag-venganza", "desc": "Si esta carta pierde una batalla, la carta ganadora es destruida automáticamente al final de la batalla." }
+    ]
+  },
+  {
+    "id": "bonesy",
+    "nombre": "Bonesy",
+    "clase": "Unidad",
+    "color": "Verde",
+    "personaje": "Bonesy",
+    "tipo": "Esqueleto",
+    "origen": "Minecraft",
+    "rareza": "Infrecuente",
+    "img": "imagenes/Vbonesy.png",
+    "costeTotal": 3,
+    "costeColor": 2,
+    "poder": 20000,
+    "combo": "0+5000",
+    "lore": "Bonesy es conocido por hacer daño residual con su efecto de Wither… Ten cuidado…",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando esta carta ataca al Líder rival, tu oponente debe elegir entre mandar la carta superior de su mazo a la pila de descartes o cambiar uno de sus manás activos a modo descanso." }
+    ]
+  },
+  {
+    "id": "hogrider",
+    "nombre": "Hog Rider",
+    "clase": "Unidad",
+    "color": "Verde",
+    "personaje": "Hog Rider",
+    "tipo": "Enderman / Animal",
+    "origen": "Minecraft",
+    "rareza": "Rara",
+    "img": "imagenes/Vhogrider.png",
+    "costeTotal": 4,
+    "costeColor": 3,
+    "poder": 20000,
+    "combo": "1+10000",
+    "lore": "Si saltas, te lanzará por los aires, ¡el poder del Montapuercos!",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando esta carta declara un ataque contra una unidad del rival, la unidad defensora pierde -10000 de poder durante esa batalla." },
+      { "tag": "Doble Golpe", "css": "tag-doble", "desc": "Si esta carta inflige daño, inflige 2 puntos de daño en lugar de 1" }
+    ]
+  },
+  {
+    "id": "phantom",
+    "nombre": "Mega Phantom",
+    "clase": "Unidad",
+    "color": "Verde",
+    "personaje": "Mega Phantom",
+    "tipo": "Phantom",
+    "origen": "Minecraft",
+    "rareza": "Común",
+    "img": "imagenes/Vphantom.png",
+    "costeTotal": 4,
+    "costeColor": 2,
+    "poder": 15000,
+    "combo": "1+10000",
+    "lore": "Infinitycraft le dice a Ángel por las noches que si no duerme, el Mega Phantom vendrá a por él y lo lanzará por los aires…",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando esta carta ataca, si tu oponente no tiene ninguna unidad en modo descanso en su campo, esta carta gana +10000 de poder durante esta batalla." }
+    ]
+  },
+  {
+    "id": "aquaman",
+    "nombre": "Aquaman",
+    "clase": "Unidad",
+    "color": "Verde",
+    "personaje": "Aquaman (Robilson)",
+    "tipo": "Zombie",
+    "origen": "Minecraft",
+    "rareza": "Infrecuente",
+    "img": "imagenes/Vaquaman.png",
+    "costeTotal": 5,
+    "costeColor": 3,
+    "poder": 20000,
+    "combo": "1+10000",
+    "lore": "Una criatura que vive en las profundidades del mar… Si entras al agua, te revienta. Balanceado, nerf al hierro.",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando esta carta ataca al Líder rival, si tu oponente tiene al menos 2 unidades en modo descanso en su campo, este ataque no puede ser countereado." }
+    ]
+  },
+  {
+    "id": "peppa",
+    "nombre": "Peppa Pig",
+    "clase": "Unidad",
+    "color": "Verde",
+    "personaje": "Peppa Pig",
+    "tipo": "Animal",
+    "origen": "Minecraft",
+    "rareza": "Súper Rara",
+    "img": "imagenes/Vpeppa.png",
+    "costeTotal": 4,
+    "costeColor": 3,
+    "poder": 15000,
+    "combo": "0+5000",
+    "lore": "Te va a reventar si tienes flechas alrededor de ti. Le gusta saltar en los charcos de barro cuando no está peleando.",
+    "habilidades": [
+      { "tag": "Permanente", "css": "tag-perm", "desc": "Durante una batalla en la que esta carta esté atacando, Peppa gana +2500 de poder por cada carta que coloques en tu Zona de Combo." }
+    ]
+  },
+  {
+    "id": "joe",
+    "nombre": "Joe",
+    "clase": "Unidad",
+    "color": "Verde",
+    "personaje": "Joe",
+    "tipo": "Animal",
+    "origen": "Minecraft",
+    "rareza": "Rara",
+    "img": "imagenes/Vjoe.png",
+    "costeTotal": 3,
+    "costeColor": 2,
+    "poder": 15000,
+    "combo": "0+5000",
+    "lore": "¿Familia? No te metas con mi familia… -Toretto",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando una de tus otras unidades de origen \"Minecraft\" es derrotada en batalla, Joe se enfurece: gana +5000 de poder y [Doble Golpe] hasta el final de tu siguiente turno." }
+    ]
+  },
+  {
+    "id": "araña",
+    "nombre": "Araña Madre",
+    "clase": "Unidad",
+    "color": "Verde",
+    "personaje": "Araña Malvada de Reto Malvado",
+    "tipo": "Animal",
+    "origen": "Minecraft",
+    "rareza": "Común",
+    "img": "imagenes/Varaña.png",
+    "costeTotal": 4,
+    "costeColor": 3,
+    "poder": 15000,
+    "combo": "0+5000",
+    "lore": "Aunque para nosotros sea un enemigo molesto que llena el campo de telarañas, es solo una madre que cuida de sus arañas…",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Al entrar al campo, elige una unidad del rival en juego. Esa unidad no puede declarar ataques ni ser utilizada para combos hasta el final del próximo turno de tu oponente." }
+    ]
+  },
+  {
+    "id": "calaveras",
+    "nombre": "Calaveras",
+    "clase": "Unidad",
+    "color": "Verde",
+    "personaje": "Calaveras",
+    "tipo": "Animal",
+    "origen": "Minecraft",
+    "rareza": "Infrecuente",
+    "img": "imagenes/Vcalaveras.png",
+    "costeTotal": 3,
+    "costeColor": 2,
+    "poder": 15000,
+    "combo": "0+5000",
+    "lore": "Si no tienes los recursos adecuados para pegar al Calaveras real, acabarás atacando a un clon y será una pérdida de tiempo.",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando esta carta es atacada por una unidad o Líder rival, tu oponente debe elegir una carta de su propia mano y colocarla en su pila de descartes; de lo contrario, el ataque se niega." },
+      { "tag": "Venganza", "css": "tag-venganza", "desc": "Si esta carta pierde una batalla, la carta ganadora es destruida automáticamente al final de la batalla." }
+    ]
+  },
+  {
+    "id": "leo",
+    "nombre": "Leopima, inmortal",
+    "clase": "Unidad",
+    "color": "Verde",
+    "personaje": "Leopima",
+    "tipo": "Humano",
+    "origen": "Grupo",
+    "rareza": "Súper Rara",
+    "img": "imagenes/Vleo.png",
+    "costeTotal": 7,
+    "costeColor": 5,
+    "poder": 30000,
+    "combo": "1+10000",
+    "lore": "Viene de las peligrosas tierras de MegaDeath, donde él era el único que podía revivir una cantidad ilimitada de veces.",
+    "habilidades": [
+      { "tag": "Permanente", "css": "tag-perm", "desc": "Esta carta no puede ser derrotada en batalla." },
+      { "tag": "Activar", "css": "tag-active", "desc": "Principal: Si te van a infligir un punto de daño que vacíe tu última vida y te haga perder la partida, puedes destruir a Leopima en su lugar para mantenerte a 1 vida." }
+    ]
+  },
+  {
+    "id": "ilegal",
+    "nombre": "Items ilegales",
+    "clase": "Extra",
+    "color": "Verde",
+    "rareza": "Común",
+    "img": "imagenes/Vilegal.png",
+    "costeTotal": 2,
+    "costeColor": 1,
+    "lore": "Astafalaja24000 obtuvo un cofre lleno de netherite ilegal y se lo quedó… Aquí se almacena todo lo peligroso, ojo que no te baneen.",
+    "habilidades": [
+      { "tag": "Activar", "css": "tag-active", "desc": "Principal: Elige una de tus unidades en juego; esa unidad gana [Triple Golpe] durante este turno. Al final del turno, destruye esa unidad y mándala a tu pila de descartes." }
+    ]
+  },
+  {
+    "id": "rostros",
+    "nombre": "Rostros pixelados",
+    "clase": "Extra",
+    "color": "Negro",
+    "rareza": "Común",
+    "img": "imagenes/Nrostros.png",
+    "costeTotal": 1,
+    "costeColor": 1,
+    "lore": "El desafío original… Crea un hilo privado para enviar la respuesta… Imagina no saber, Carlos.",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Mira las 3 cartas superiores del mazo de tu oponente. Puedes elegir una de ellas y mandarla directamente al fondo de su baraja. Luego, roba 1 carta." },
+      { "tag": "Desafío", "css": "tag-desafio", "desc": "Esta carta activa el efecto del líder “Iniciador”" }
+    ]
+  },
+  {
+    "id": "layton",
+    "nombre": "Desafío Reto de Layton",
+    "clase": "Extra",
+    "color": "Negro",
+    "rareza": "Común",
+    "img": "imagenes/Nlayton.png",
+    "costeTotal": 1,
+    "costeColor": 1,
+    "lore": "Realmente ese dibujo sin terminar ha entrado en este juego… ¡SOLO EL 99% PODRÁ RESOLVERLO!",
+    "habilidades": [
+      { "tag": "Counter Ataque", "css": "tag-counter", "desc": "Niega el ataque, después, endereza un maná negro." },
+      { "tag": "Desafío", "css": "tag-desafio", "desc": "Esta carta activa el efecto del líder “Iniciador”" }
+    ]
+  },
+  {
+    "id": "desafio",
+    "nombre": "Desafío Libro del Crafteo",
+    "clase": "Extra",
+    "color": "Negro",
+    "rareza": "Común",
+    "img": "imagenes/Nlibro.png",
+    "costeTotal": 1,
+    "costeColor": 1,
+    "lore": "Imagina no saber que la bola de estrella de fuegos artificiales se puede hacer con las cosas más random posibles.",
+    "habilidades": [
+      { "tag": "Principal", "css": "tag-active", "desc": "Si tu Líder es de color Negro, busca una carta de origen \"Minecraft\" en tu baraja, muéstrala y añádela a tu mano. Luego baraja. Si esa carta tenía un coste de maná de 1, puedes jugarla directamente al campo en modo descanso en lugar de añadirla a la mano." },
+      { "tag": "Desafío", "css": "tag-desafio", "desc": "Esta carta activa el efecto del líder “Iniciador”" }
+    ]
+  },
+  {
+    "id": "quiz",
+    "nombre": "Desafío Quiz del Club",
+    "clase": "Extra",
+    "color": "Negro",
+    "rareza": "Común",
+    "img": "imagenes/Nquiz.png",
+    "costeTotal": 2,
+    "costeColor": 1,
+    "lore": "Una serie de videos que guardaban lore de los servidores de Minecraft. En este juego hay referencias a ellos, ¿los has visto?",
+    "habilidades": [
+      { "tag": "Principal", "css": "tag-active", "desc": "Tu líder gana [Doble Golpe] hasta el final del turno. Luego, roba una carta." },
+      { "tag": "Desafío", "css": "tag-desafio", "desc": "Esta carta activa el efecto del líder “Iniciador”" }
+    ]
+  },
+  {
+    "id": "curriculum",
+    "nombre": "Currículum",
+    "clase": "Extra",
+    "color": "Negro",
+    "rareza": "Común",
+    "img": "imagenes/Ncurriculum.png",
+    "costeTotal": 1,
+    "costeColor": 1,
+    "lore": "¡AAAH, QUE MIEDO!",
+    "habilidades": [
+      { "tag": "Activar", "css": "tag-active", "desc": "Principal: Elige hasta 1 carta de tu mano y añádela a tu maná." }
+    ]
+  },
+  {
+    "id": "tung",
+    "nombre": "Tung Tung Tung Sahur",
+    "clase": "Unidad",
+    "color": "Negro",
+    "personaje": "Tung Tung Tung Sahur",
+    "tipo": "Criatura",
+    "origen": "Meme",
+    "rareza": "Infrecuente",
+    "img": "imagenes/Ntung.png",
+    "costeTotal": 2,
+    "costeColor": 1,
+    "poder": 10000,
+    "combo": "0+5000",
+    "lore": "Tres \"Tung\". Ni uno más, ni uno menos. Triple T para los amigos.",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando realizas un combo desde tu mano con esta carta, la unidad atacante gana [Doble Golpe]. Si inflige daño, endereza un maná." }
+    ]
+  },
+  {
+    "id": "skibidi",
+    "nombre": "Skibidi Toilet",
+    "clase": "Unidad",
+    "color": "Negro",
+    "personaje": "Skibidi Toilet",
+    "tipo": "Skibidi",
+    "origen": "Meme",
+    "rareza": "Común",
+    "img": "imagenes/Nskibidi.png",
+    "costeTotal": 1,
+    "costeColor": 1,
+    "poder": 5000,
+    "combo": "0+5000",
+    "lore": "Vamos. Piensa algo de descripción que no tenga a Manuel… ¡YA SE! Brrr Skibidi dop dop dop yes yes",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando juegas esta carta, si tu oponente tiene unidades en juego que no tengan el origen \"Meme\", esas unidades pierden -5000 de poder hasta el final del próximo turno del rival." }
+    ]
+  },
+  {
+    "id": "trabajo",
+    "nombre": "Trabajoman",
+    "clase": "Unidad",
+    "color": "Negro",
+    "personaje": "Trabajoman",
+    "tipo": "Humano",
+    "origen": "Meme",
+    "rareza": "Común",
+    "img": "imagenes/Ntrabajo.png",
+    "costeTotal": 2,
+    "costeColor": 1,
+    "poder": 15000,
+    "combo": "0+5000",
+    "lore": "Él mejor amigo de todo el mundo (menos de Manuel). Si no lo conoces… Eso dice mucho de ti.",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Al entrar al campo, busca un \"Currículum\" de tu baraja y súbelo a tu mano." }
+    ]
+  },
+  {
+    "id": "nexus",
+    "nombre": "Nexusgc",
+    "clase": "Unidad",
+    "color": "Negro",
+    "personaje": "Nexusgc",
+    "tipo": "Robot",
+    "origen": "Discord",
+    "rareza": "Rara",
+    "img": "imagenes/Nnexus.png",
+    "costeTotal": 3,
+    "costeColor": 2,
+    "poder": 20000,
+    "combo": "0+5000",
+    "lore": "Es el bot de Gaming Club… Ya sabes… El de los logros.. El de la economía… Sabes quién es, ¿verdad?...",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando esta carta declara un ataque, elige una unidad rival de coste 3 o menos; esa unidad no puede bloquear ni realizar combos." },
+      { "tag": "Crítico", "css": "tag-critico", "desc": "Si esta carta inflige daño a un Líder, la carta de vida se coloca en la pila de descartes en lugar de ir a la mano del rival" }
+    ]
+  },
+  {
+    "id": "gato",
+    "nombre": "Gato ganador",
+    "clase": "Unidad",
+    "color": "Negro",
+    "personaje": "Gato Ganador",
+    "tipo": "Animal",
+    "origen": "Meme",
+    "rareza": "Infrecuente",
+    "img": "imagenes/Ngato.png",
+    "costeTotal": 2,
+    "costeColor": 0,
+    "poder": 15000,
+    "combo": "0+5000",
+    "lore": "Ganó los Squid Games sin que nadie lo viera…",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Al jugar esta carta, puedes tomar una carta de tu vida. Si lo haces, esta carta gana [Doble Golpe]." }
+    ]
+  },
+  {
+    "id": "club",
+    "nombre": "Club de la Comedia",
+    "clase": "Unidad",
+    "color": "Negro",
+    "personaje": "Club de la Comedia",
+    "tipo": "Humano",
+    "origen": "Grupo",
+    "rareza": "Común",
+    "img": "imagenes/Ncomedia.png",
+    "costeTotal": 1,
+    "costeColor": 1,
+    "poder": 5000,
+    "combo": "0+5000",
+    "lore": "Algunos dicen que siguen llorando por los Squid Games. En verdad son buena gente, solo que juegan al Rocket League.",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Puedes descartar esta carta y robar una carta." }
+    ]
+  },
+  {
+    "id": "donpollo",
+    "nombre": "Don Pollo",
+    "clase": "Unidad",
+    "color": "Negro",
+    "personaje": "Don Pollo",
+    "tipo": "Humano",
+    "origen": "Meme",
+    "rareza": "Infrecuente",
+    "img": "imagenes/Ndonpollo.png",
+    "costeTotal": 4,
+    "costeColor": 2,
+    "poder": 15000,
+    "combo": "1+10000",
+    "lore": "Un video mas mi gente para perder el tiempo empecemos… Paren ya esas notificaciones Dios mio… Mmmmm…",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Invoca dos cartas ficha \"Pollo\" (Las cartas \"Pollo\" tienen solo 1000 de poder. Pero tienen un poder de combo de 0+10000)" }
+    ]
+  },
+  {
+    "id": "portal",
+    "nombre": "Tutorial Portal Nether",
+    "clase": "Unidad",
+    "color": "Negro",
+    "personaje": "Tutorial Portal Nether",
+    "tipo": "Objeto",
+    "origen": "Meme",
+    "rareza": "Rara",
+    "img": "imagenes/Nportal.png",
+    "costeTotal": 3,
+    "costeColor": 1,
+    "poder": 15000,
+    "combo": "0+5000",
+    "lore": "¿Qué? ¡NO TE ESCUCHO, HABLA MÁS ALTO! 10/10 la música.",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Al entrar al campo, roba 1 carta. Luego, puedes elegir 1 carta de origen <Minecraft> de tu mano de coste 2 o menos y jugarla en el campo en modo descanso sin pagar su coste." }
+    ]
+  },
+  {
+    "id": "omori",
+    "nombre": "Omori",
+    "clase": "Unidad",
+    "color": "Negro",
+    "personaje": "OMORI",
+    "tipo": "Humano",
+    "origen": "OMORI",
+    "rareza": "Infrecuente",
+    "img": "imagenes/Nomori.png",
+    "costeTotal": 4,
+    "costeColor": 3,
+    "poder": 20000,
+    "combo": "1+10000",
+    "lore": "Mentiroso… Ella te quería…",
+    "habilidades": [
+      { "tag": "Doble Golpe", "css": "tag-doble", "desc": "Si esta carta inflige daño, inflige 2 puntos de daño en lugar de 1." }
+    ]
+  },
+  {
+    "id": "kel",
+    "nombre": "Kel",
+    "clase": "Unidad",
+    "color": "Negro",
+    "personaje": "Kel",
+    "tipo": "Humano",
+    "origen": "OMORI",
+    "rareza": "Rara",
+    "img": "imagenes/Nkel.png",
+    "costeTotal": 3,
+    "costeColor": 2,
+    "poder": 15000,
+    "combo": "0+5000",
+    "lore": "Kel es un niño muy tonto e hiperactivo, pero todo el mundo lo quiere. ¡CAFÉ Y RUN N’ GUN SIIIII!",
+    "habilidades": [
+      { "tag": "Permanente", "css": "tag-perm", "desc": "Esta carta puede atacar a unidades del oponente que están en forma activa." }
+    ]
+  },
+  {
+    "id": "aubrey",
+    "nombre": "Aubrey",
+    "clase": "Unidad",
+    "color": "Negro",
+    "personaje": "Aubrey",
+    "tipo": "Humano",
+    "origen": "OMORI",
+    "rareza": "Infrecuente",
+    "img": "imagenes/Naubrey.png",
+    "costeTotal": 2,
+    "costeColor": 2,
+    "poder": 15000,
+    "combo": "0+5000",
+    "lore": "No te dejes engañar por su aspecto, es dura como una piedra. Cumple el rol de tanque estupendamente… Le gustan mucho los lagos",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando esta carta es destruida, tu oponente debe descartar una carta de su mano." },
+      { "tag": "Bloqueador", "css": "tag-bloqueo", "desc": "Cuando el rival ataca, puedes cambiar esta carta a modo descanso para convertirla en el nuevo objetivo del ataque" }
+    ]
+  },
+  {
+    "id": "hero",
+    "nombre": "Hero",
+    "clase": "Unidad",
+    "color": "Negro",
+    "personaje": "Hero",
+    "tipo": "Humano",
+    "origen": "OMORI",
+    "rareza": "Infrecuente",
+    "img": "imagenes/Nhero.png",
+    "costeTotal": 2,
+    "costeColor": 2,
+    "poder": 5000,
+    "combo": "0+5000",
+    "lore": "Gran cocinero y support, aunque no le enfrentes a ninguna araña o la cosa cambia…",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando esta carta ataca, puedes poner cualquier carta menos otro “Hero” o “Omori’s Gang” en forma activa otra vez." }
+    ]
+  },
+  {
+    "id": "basil",
+    "nombre": "Basil",
+    "clase": "Unidad",
+    "color": "Negro",
+    "personaje": "Basil",
+    "tipo": "Humano",
+    "origen": "OMORI",
+    "rareza": "Infrecuente",
+    "img": "imagenes/Nbasil.png",
+    "costeTotal": 2,
+    "costeColor": 1,
+    "poder": 12000,
+    "combo": "0+0",
+    "lore": "No le gusta mucho el agua, ¡Pero le encantan las plantas!... Ah… No recuerdas a Basil, ¿verdad?... ¿Quién es Basil?",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando haces un Combo con esta carta, si tu Carta de Líder es negro y tu vida es 4 o menos, roba 1 carta y agrega +10000 al Combo de esta carta durante el resto del turno." }
+    ]
+  },
+  {
+    "id": "release",
+    "nombre": "RELEASE ENERGY",
+    "clase": "Extra",
+    "color": "Negro",
+    "rareza": "Rara",
+    "img": "imagenes/Nrelease.png",
+    "costeTotal": 3,
+    "costeColor": 3,
+    "lore": "Guardia es la mejor habilidad y no estáis preparados para esta conversación…",
+    "habilidades": [
+      { "tag": "Campo", "css": "tag-campo", "desc": "Al jugar esta carta, colócala en tu Zona de Campo. Esta carta permanece en juego hasta que sea destruida o reemplazada por otra carta de Campo." },
+      { "tag": "Permanente", "css": "tag-perm", "desc": "Puedes colocar a Omori, Kel, Aubrey y Hero bajo esta carta. Si lo haces, busca un “Omori’s gang” de tu mano o baraja juegalo gratis." }
+    ]
+  },
+  {
+    "id": "gang",
+    "nombre": "Omori’s gang",
+    "clase": "Unidad",
+    "color": "Negro",
+    "personaje": "OMORI",
+    "tipo": "Humano",
+    "origen": "OMORI",
+    "rareza": "Súper Rara",
+    "img": "imagenes/Ngang.png",
+    "costeTotal": 15,
+    "costeColor": 5,
+    "poder": 35000,
+    "combo": "2+15000",
+    "lore": "¡Un equipo de ensueño! ¿Viste lo que hice ahí? ¿Eeeh? Es buena, ¿a que sí?",
+    "habilidades": [
+      { "tag": "Permanente", "css": "tag-perm", "desc": "Puede atacar a unidades activas." },
+      { "tag": "Bloqueador", "css": "tag-bloqueo", "desc": "Cuando el rival ataca, puedes cambiar esta carta a modo descanso para convertirla en el nuevo objetivo del ataque." },
+      { "tag": "Triple Golpe", "css": "tag-triple", "desc": "Esta carta inflige 3 puntos de daño en lugar de 1 al atacar." },
+      { "tag": "Doble Ataque", "css": "tag-doble", "desc": "Después de que esta carta ataque, puedes cambiarla de modo descanso a activo una vez por turno." }
+    ]
+  },
+  {
+    "id": "mewo",
+    "nombre": "Mewo",
+    "clase": "Unidad",
+    "color": "Negro",
+    "personaje": "Mewo",
+    "tipo": "Animal",
+    "origen": "OMORI",
+    "rareza": "Común",
+    "img": "imagenes/Nmewo.png",
+    "costeTotal": 1,
+    "costeColor": 1,
+    "poder": 5000,
+    "combo": "0+5000",
+    "lore": "Está esperando a que algo pase. Mewo ha sido un gato muy malo…",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Juegala y roba una carta." }
+    ]
+  },
+  {
+    "id": "pluto",
+    "nombre": "Pluto",
+    "clase": "Unidad",
+    "color": "Negro",
+    "personaje": "Pluto (Expanded)",
+    "tipo": "Criatura",
+    "origen": "OMORI",
+    "rareza": "Súper Rara",
+    "img": "imagenes/Npluto.png",
+    "costeTotal": 5,
+    "costeColor": 3,
+    "poder": 20000,
+    "combo": "1+10000",
+    "lore": "WHEN I FLEX, I FEEL MY BEST!!",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando esta carta declara un ataque, si tu oponente usar bloqueador, esta carta gana +10000 de poder durante esa batalla." },
+      { "tag": "Doble Golpe", "css": "tag-doble", "desc": "Si esta carta inflige daño, inflige 2 puntos de daño en lugar de 1." }
+    ]
+  },
+  {
+    "id": "sweetheart",
+    "nombre": "Sweetheart",
+    "clase": "Unidad",
+    "color": "Negro",
+    "personaje": "Sweetheart",
+    "tipo": "Comida",
+    "origen": "OMORI",
+    "rareza": "Común",
+    "img": "imagenes/Nsweetheart.png",
+    "costeTotal": 3,
+    "costeColor": 2,
+    "poder": 15000,
+    "combo": "0+5000",
+    "lore": "Fijate si es molesta, que el oponente descarta una carta para no escucharla. HOHOHOHOHOHOHOHOHOHO!!",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Al entrar al campo, obliga a tu oponente a descartar una carta o destruir una unidad suya de coste 4 o menos." }
+    ]
+  },
+  {
+    "id": "capitan",
+    "nombre": "Captain Spaceboy",
+    "clase": "Unidad",
+    "color": "Negro",
+    "personaje": "Capitán Spaceboy",
+    "tipo": "Humano",
+    "origen": "OMORI",
+    "rareza": "Rara",
+    "img": "imagenes/Ncapitan.png",
+    "costeTotal": 4,
+    "costeColor": 3,
+    "poder": 20000,
+    "combo": "1+10000",
+    "lore": "El temible pirata espacial. Cuando no está saliendo con nadie, claro…",
+    "habilidades": [
+      { "tag": "Activar", "css": "tag-active", "desc": "Principal: Si tu Líder es Negro, puedes descartar 1 Carta Extra: Gana [Doble Golpe] y cambia una unidad rival de coste 3 o menos a modo descanso." }
+    ]
+  },
+  {
+    "id": "sprout",
+    "nombre": "Sprout Mole",
+    "clase": "Unidad",
+    "color": "Negro",
+    "personaje": "Sprout Mole",
+    "tipo": "Criatura",
+    "origen": "OMORI",
+    "rareza": "Común",
+    "img": "imagenes/Nsprout.png",
+    "costeTotal": 1,
+    "costeColor": 1,
+    "poder": 5000,
+    "combo": "0+5000",
+    "lore": "Eeeh… ¿Esto debe dar miedo? Si parece un Bonsly mal hecho… Bueno, les gusta el tofu supongo. Eso da miedo.",
+    "habilidades": [
+      { "tag": "Automático", "css": "tag-auto", "desc": "Cuando es destruida, roba 1 carta. Luego, si tu Líder es \"Mari\" pon una carta de la pila de descartes al fondo del mazo. Después, baraja tu mazo." },
+      { "tag": "Bloqueador", "css": "tag-bloqueo", "desc": "Cuando el rival ataca, puedes cambiar esta carta a modo descanso para convertirla en el nuevo objetivo del ataque." }
+    ]
+  },
+  {
+    "id": "tokenz",
+    "nombre": "Podrido Rabioso",
+    "clase": "Unidad",
+    "color": "Token",
+    "personaje": "Podrido",
+    "tipo": "Zombie",
+    "origen": "Minecraft",
+    "rareza": "TOKEN",
+    "img": "imagenes/TOKENz.png",
+    "costeTotal": 1,
+    "costeColor": 0,
+    "poder": 15000,
+    "combo": "0+0",
+    "lore": "Podrido creció junto a su cerdo… Tú has acabado con él… Ahora él acabará contigo.",
+    "habilidades": [
+      { "tag": "Doble Golpe", "css": "tag-doble", "desc": "Si esta carta inflige daño, inflige 2 puntos de daño en lugar de 1." }
+    ]
+  },
+  {
+    "id": "tokend",
+    "nombre": "Deku",
+    "clase": "Unidad",
+    "color": "Token",
+    "personaje": "Deku",
+    "tipo": "Animal",
+    "origen": "Grupo",
+    "rareza": "TOKEN",
+    "img": "imagenes/TOKENd.png",
+    "costeTotal": 1,
+    "costeColor": 0,
+    "poder": 15000,
+    "combo": "0+0",
+    "lore": "Deku es el perro de Andrea… No dejas que se suba a tu cama o… Olvidalo, es demasiado tarde; ya no es tu cama.",
+    "habilidades": []
+  },
+  {
+    "id": "tokenp",
+    "nombre": "Pollo",
+    "clase": "Unidad",
+    "color": "Token",
+    "personaje": "Pollo",
+    "tipo": "Animal",
+    "origen": "Minecraft",
+    "rareza": "TOKEN",
+    "img": "imagenes/TOKENp.png",
+    "costeTotal": 1,
+    "costeColor": 0,
+    "poder": 1000,
+    "combo": "0+10000",
+    "lore": "Linganguliguliguli wacha lingangu lingangu… Linganguliguliguli wacha lingangu lingangu…",
+    "habilidades": []
   }
 ]
