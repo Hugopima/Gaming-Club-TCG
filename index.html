@@ -262,6 +262,136 @@
             .assigned-deck-card { grid-template-columns: 1fr; text-align: center; }
             .assigned-leader-img { margin: 0 auto; }
         }
+
+        /* --- TABLERO VISUAL V2 --- */
+        #game-screen {
+            background:
+                radial-gradient(circle at 16% 28%, rgba(255, 190, 58, 0.18), transparent 16%),
+                radial-gradient(circle at 78% 36%, rgba(31, 172, 255, 0.20), transparent 22%),
+                radial-gradient(circle at 52% 64%, rgba(119, 52, 210, 0.24), transparent 26%),
+                linear-gradient(135deg, rgba(5,14,20,0.96), rgba(8,46,28,0.93) 52%, rgba(24,10,7,0.96));
+        }
+        .game-topbar {
+            background: linear-gradient(90deg, rgba(0,0,0,0.74), rgba(5,22,23,0.82), rgba(0,0,0,0.74));
+            border-bottom: 1px solid rgba(255,215,0,0.28);
+            box-shadow: 0 8px 28px rgba(0,0,0,0.34);
+        }
+        .status-pill {
+            border-color: rgba(255,230,93,0.7);
+            background: rgba(0,0,0,0.42);
+            box-shadow: inset 0 0 14px rgba(255,215,0,0.08), 0 0 10px rgba(255,215,0,0.10);
+        }
+        .battlefield {
+            grid-template-rows: minmax(210px, 0.88fr) minmax(330px, 1.22fr);
+            gap: 12px;
+            padding: 16px 26px 20px;
+            background:
+                linear-gradient(90deg, rgba(255,215,0,0.08) 0 1px, transparent 1px 100%),
+                linear-gradient(0deg, rgba(255,215,0,0.06) 0 1px, transparent 1px 100%);
+            background-size: 64px 64px;
+        }
+        .player-board {
+            grid-template-columns: 164px minmax(0,1fr) 164px;
+            gap: 12px;
+        }
+        .player-board.rival {
+            transform: none;
+            opacity: 0.9;
+        }
+        .player-board.rival .zone,
+        .player-board.rival .side-stack {
+            transform: none;
+        }
+        .player-board.rival .center-zones {
+            grid-template-rows: 1fr 1fr;
+        }
+        .zone {
+            border: 1px solid rgba(107, 240, 255, 0.38);
+            background: linear-gradient(180deg, rgba(8,28,34,0.66), rgba(2,13,9,0.68));
+            box-shadow: inset 0 0 28px rgba(65,215,255,0.08), 0 0 0 1px rgba(255,215,0,0.08);
+            backdrop-filter: blur(2px);
+        }
+        .zone.black-zone {
+            border-color: rgba(223, 244, 255, 0.34);
+            background: linear-gradient(180deg, rgba(9,28,25,0.74), rgba(4,13,9,0.72));
+        }
+        .zone-title {
+            color: #fff07c;
+            background: linear-gradient(90deg, rgba(0,0,0,0.62), rgba(0,0,0,0.12));
+            text-shadow: 0 1px 4px #000;
+        }
+        .zone-content {
+            gap: 10px;
+        }
+        .game-card-mini {
+            width: 76px;
+            height: 108px;
+            border-radius: 7px;
+            border: 2px solid rgba(255,255,255,0.78);
+            box-shadow: 0 8px 18px rgba(0,0,0,0.45);
+            transition: transform 0.16s ease, box-shadow 0.16s ease;
+        }
+        .game-card-mini:hover {
+            transform: translateY(-9px) scale(1.08);
+            z-index: 8;
+            box-shadow: 0 14px 28px rgba(0,0,0,0.65), 0 0 18px rgba(255,215,0,0.22);
+        }
+        #player-leader-zone .game-card-mini {
+            width: 92px;
+            height: 132px;
+            border-color: var(--gold);
+            box-shadow: 0 0 22px rgba(255,215,0,0.18), 0 12px 22px rgba(0,0,0,0.54);
+        }
+        #player-hand-zone .game-card-mini {
+            width: 82px;
+            height: 118px;
+            margin-right: -14px;
+        }
+        #player-hand-zone .game-card-mini:hover {
+            margin-right: 0;
+        }
+        .mana-zone .game-card-mini {
+            width: 66px;
+            height: 94px;
+        }
+        .game-card-mini.rested {
+            transform: rotate(90deg);
+            margin: 0 20px;
+        }
+        .game-card-mini.rested:hover {
+            transform: rotate(90deg) translateY(-7px) scale(1.04);
+        }
+        .game-card-mini.back {
+            color: #fff07c;
+            background:
+                radial-gradient(circle, rgba(255,215,0,0.16), transparent 48%),
+                linear-gradient(145deg, #050505, #2f1809);
+            border-color: #ffd700;
+        }
+        .life-orb {
+            width: 74px;
+            height: 74px;
+            font-size: 34px;
+            box-shadow: 0 0 30px rgba(255,100,30,0.86), inset 0 0 18px rgba(255,255,255,0.32);
+        }
+        .hand-card-actions {
+            inset: auto 5px 5px 5px;
+        }
+        .hand-card-actions button {
+            background: rgba(11, 32, 37, 0.92);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.45);
+        }
+        .empty-zone-note {
+            color: rgba(218, 242, 255, 0.62);
+        }
+        @media (max-width: 950px) {
+            .battlefield { padding: 10px; }
+            .player-board { grid-template-columns: 112px minmax(0,1fr) 112px; }
+            .game-card-mini { width: 56px; height: 80px; }
+            #player-hand-zone .game-card-mini { width: 60px; height: 86px; margin-right: -10px; }
+            #player-leader-zone .game-card-mini { width: 64px; height: 92px; }
+            .life-orb { width: 54px; height: 54px; font-size: 26px; }
+        }
     </style>
 </head>
 <body>
@@ -406,6 +536,8 @@
             <div class="game-actions">
                 <button class="plate-btn btn-nav" onclick="robarCartaJugador()">Robar</button>
                 <button class="plate-btn btn-nav" onclick="pasarFase()">Siguiente fase</button>
+                <button class="plate-btn btn-nav" onclick="recibirDanoJugador()">Daño</button>
+                <button class="plate-btn btn-nav" onclick="despertarLider()">Despertar</button>
                 <button class="plate-btn btn-nav" onclick="finalizarTurno()">Fin turno</button>
                 <button class="plate-btn btn-nav" onclick="volverAlMenuDesdePartida()">Salir</button>
             </div>
@@ -874,7 +1006,30 @@
         function robarDe(zonaJugador) { const carta = zonaJugador.mazo.pop(); if (!carta) return null; zonaJugador.mano.push(carta); return carta; }
         function robarCartaJugador() { if (!estadoPartida) return; const carta = robarDe(estadoPartida.jugador); estadoPartida.log = carta ? `Robas ${getCardById(carta)?.nombre || 'una carta'}.` : 'No quedan cartas en tu mazo.'; renderizarPartida(); }
         function pasarFase() { if (!estadoPartida) return; estadoPartida.faseIndex = Math.min(estadoPartida.faseIndex + 1, fasesPartida.length - 1); estadoPartida.log = `Fase de ${fasesPartida[estadoPartida.faseIndex]}.`; renderizarPartida(); }
-        function finalizarTurno() { if (!estadoPartida) return; estadoPartida.turno += 1; estadoPartida.faseIndex = 0; estadoPartida.jugador.manaActivo = estadoPartida.jugador.mana.length; estadoPartida.jugador.manaUsadoEsteTurno = false; robarDe(estadoPartida.jugador); estadoPartida.log = 'Nuevo turno: enderezas tu mana y robas 1 carta.'; renderizarPartida(); }
+        function finalizarTurno() {
+            if (!estadoPartida) return;
+            estadoPartida.turno += 1;
+            estadoPartida.faseIndex = 0;
+            estadoPartida.jugador.mana.forEach(m => m.rested = false);
+            estadoPartida.jugador.batalla.forEach(c => c.rested = false);
+            estadoPartida.jugador.manaActivo = estadoPartida.jugador.mana.length;
+            estadoPartida.jugador.manaUsadoEsteTurno = false;
+            robarDe(estadoPartida.jugador);
+            estadoPartida.log = 'Nuevo turno: enderezas tus cartas y robas 1 carta.';
+            renderizarPartida();
+        }
+
+        function gastarMana(coste) {
+            let pendiente = coste;
+            for (const mana of estadoPartida.jugador.mana) {
+                if (pendiente <= 0) break;
+                if (!mana.rested) {
+                    mana.rested = true;
+                    pendiente -= 1;
+                }
+            }
+            estadoPartida.jugador.manaActivo = estadoPartida.jugador.mana.filter(m => !m.rested).length;
+        }
 
         function ponerManaDesdeMano(index) {
             if (!estadoPartida) return;
@@ -895,7 +1050,7 @@
             if (!carta || esLider(carta) || esToken(carta)) return;
             const coste = Number(carta.costeTotal || 0);
             if (estadoPartida.jugador.manaActivo < coste) return alert('No tienes mana activo suficiente.');
-            estadoPartida.jugador.manaActivo -= coste;
+            gastarMana(coste);
             const [jugada] = estadoPartida.jugador.mano.splice(index, 1);
             estadoPartida.jugador.batalla.push({ id: jugada, rested: false });
             estadoPartida.log = `Juegas ${carta.nombre} en el area de batalla.`;
