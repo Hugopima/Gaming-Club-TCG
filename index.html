@@ -218,6 +218,50 @@
             .deck-header { justify-content: center; }
             #deck-name { width: 100%; min-width: 0; }
         }
+
+        /* --- TABLERO DE PARTIDA --- */
+        #game-setup-screen, #game-screen { height: 100%; display: flex; flex-direction: column; overflow: hidden; }
+        .game-setup-main { flex: 1; overflow-y: auto; padding: 35px 45px 90px; display: flex; flex-direction: column; align-items: center; gap: 24px; }
+        .assigned-deck-card { width: min(620px, 94vw); border: 2px solid rgba(255,215,0,0.45); border-radius: 8px; background: rgba(0,0,0,0.62); padding: 24px; display: grid; grid-template-columns: 120px 1fr; gap: 22px; align-items: center; box-shadow: 0 12px 30px rgba(0,0,0,0.35); }
+        .assigned-leader-img { width: 120px; height: 168px; border-radius: 8px; border: 2px solid var(--gold); background: #050505; overflow: hidden; display: flex; align-items: center; justify-content: center; color: #aaa; }
+        .assigned-leader-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .assigned-deck-card h2 { margin: 0 0 10px; color: var(--gold); text-transform: uppercase; }
+        .assigned-deck-card p { margin: 6px 0; color: #ddd; }
+        .game-topbar { height: auto; min-height: 62px; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+        .game-status { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; font-weight: 900; color: var(--gold-light); }
+        .status-pill { border: 1px solid rgba(255,215,0,0.45); border-radius: 999px; background: rgba(0,0,0,0.45); padding: 8px 12px; }
+        .game-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        .game-actions .plate-btn { min-width: 130px; padding: 10px 14px; font-size: 13px; border-radius: 8px; }
+        .game-log { color: #ddd; font-size: 14px; max-width: 520px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .battlefield { flex: 1; padding: 14px 20px 18px; display: grid; grid-template-rows: 1fr 1fr; gap: 10px; min-height: 0; background: radial-gradient(circle at center, rgba(255,215,0,0.10), transparent 44%); }
+        .player-board { display: grid; grid-template-columns: 150px minmax(0,1fr) 150px; gap: 10px; min-height: 0; }
+        .player-board.rival { transform: rotate(180deg); }
+        .player-board.rival .zone, .player-board.rival .side-stack { transform: rotate(180deg); }
+        .center-zones { display: grid; grid-template-rows: 1fr 1fr; gap: 10px; min-width: 0; }
+        .side-stack { display: grid; grid-template-rows: 1fr 1fr; gap: 10px; min-height: 0; }
+        .zone { border: 2px solid rgba(255,215,0,0.42); border-radius: 8px; background: rgba(4,12,9,0.72); min-height: 0; position: relative; overflow: hidden; display: flex; flex-direction: column; }
+        .zone.black-zone { border-color: rgba(255,255,255,0.35); }
+        .zone-title { padding: 7px 10px; color: var(--gold); font-size: 12px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; background: rgba(0,0,0,0.35); display: flex; justify-content: space-between; gap: 8px; }
+        .zone-content { flex: 1; min-height: 0; padding: 8px; display: flex; gap: 8px; align-items: center; overflow-x: auto; overflow-y: hidden; }
+        .vertical-zone .zone-content { justify-content: center; flex-wrap: wrap; overflow: hidden; }
+        .game-card-mini { width: 64px; height: 92px; flex: 0 0 auto; border-radius: 6px; border: 2px solid rgba(255,255,255,0.65); background: #050505; overflow: hidden; position: relative; cursor: pointer; }
+        .game-card-mini img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .game-card-mini.rested { transform: rotate(90deg); margin: 0 14px; }
+        .game-card-mini.back { background: linear-gradient(145deg, #101010, #3b240e); border-color: var(--gold); display: flex; align-items: center; justify-content: center; color: var(--gold); font-weight: 900; }
+        .card-stack-count { position: absolute; right: 5px; bottom: 4px; background: rgba(0,0,0,0.85); color: var(--gold-light); border: 1px solid var(--gold); border-radius: 999px; padding: 2px 7px; font-size: 12px; font-weight: 900; }
+        .hand-zone { grid-column: 1 / span 3; min-height: 118px; }
+        .mana-zone .game-card-mini { width: 58px; height: 82px; }
+        .life-orb { width: 48px; height: 48px; border-radius: 50%; background: radial-gradient(circle, #fff6bc 0%, #ff6b35 42%, #9b1f12 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; font-weight: 900; text-shadow: 0 2px 4px #000; box-shadow: 0 0 18px rgba(255,100,30,0.7); }
+        .empty-zone-note { color: rgba(255,255,255,0.45); font-size: 13px; margin: auto; text-align: center; }
+        .hand-card-actions { position: absolute; inset: auto 4px 4px 4px; display: none; grid-template-columns: 1fr; gap: 3px; }
+        .game-card-mini:hover .hand-card-actions { display: grid; }
+        .hand-card-actions button { border: 1px solid var(--gold); border-radius: 5px; background: rgba(0,0,0,0.82); color: var(--gold-light); font-size: 10px; font-weight: 900; cursor: pointer; padding: 3px; }
+        @media (max-width: 950px) {
+            .player-board { grid-template-columns: 112px minmax(0,1fr) 112px; }
+            .game-card-mini { width: 52px; height: 75px; }
+            .assigned-deck-card { grid-template-columns: 1fr; text-align: center; }
+            .assigned-leader-img { margin: 0 auto; }
+        }
     </style>
 </head>
 <body>
@@ -234,7 +278,7 @@
         </div>
         <div class="menu-grid">
             <div class="main-btns">
-                <button class="plate-btn">JUGAR</button>
+                <button class="plate-btn" onclick="irAJugar()">JUGAR</button>
                 <button class="plate-btn btn-blue">AMIGOS</button>
             </div>
             <div class="sub-btns">
@@ -334,6 +378,71 @@
         </div>
     </div>
 
+
+    <div id="game-setup-screen" class="hidden">
+        <header class="top-bar">
+            <button class="plate-btn btn-nav" onclick="volverAlMenuDesdeJuegoSetup()">Volver al Inicio</button>
+        </header>
+        <main class="game-setup-main">
+            <h1 class="main-title">Preparar Partida</h1>
+            <div id="assigned-deck-preview" class="assigned-deck-card"></div>
+            <div class="game-actions">
+                <button class="plate-btn" onclick="iniciarPartida()">Empezar Partida</button>
+                <button class="plate-btn btn-nav" onclick="irAMazosDesdeJuego()">Cambiar Mazo</button>
+            </div>
+        </main>
+    </div>
+
+    <div id="game-screen" class="hidden">
+        <header class="top-bar game-topbar">
+            <div class="game-status">
+                <span class="status-pill" id="turn-indicator">Turno 1</span>
+                <span class="status-pill" id="phase-indicator">Carga</span>
+                <span class="status-pill" id="mana-indicator">Mana 0/0</span>
+                <span class="status-pill" id="life-indicator">Vidas 8</span>
+                <span class="status-pill" id="deck-indicator">Mazo 0</span>
+            </div>
+            <div class="game-log" id="game-log">Partida preparada.</div>
+            <div class="game-actions">
+                <button class="plate-btn btn-nav" onclick="robarCartaJugador()">Robar</button>
+                <button class="plate-btn btn-nav" onclick="pasarFase()">Siguiente fase</button>
+                <button class="plate-btn btn-nav" onclick="finalizarTurno()">Fin turno</button>
+                <button class="plate-btn btn-nav" onclick="volverAlMenuDesdePartida()">Salir</button>
+            </div>
+        </header>
+        <main class="battlefield">
+            <section class="player-board rival">
+                <div class="side-stack">
+                    <div class="zone vertical-zone"><div class="zone-title">Descarte rival <span id="op-drop-count">0</span></div><div class="zone-content" id="op-drop-zone"></div></div>
+                    <div class="zone vertical-zone"><div class="zone-title">Mazo rival <span id="op-deck-count">0</span></div><div class="zone-content" id="op-deck-zone"></div></div>
+                </div>
+                <div class="center-zones">
+                    <div class="zone"><div class="zone-title">Area de combo rival</div><div class="zone-content" id="op-combo-zone"></div></div>
+                    <div class="zone"><div class="zone-title">Area de batalla rival</div><div class="zone-content" id="op-battle-zone"></div></div>
+                </div>
+                <div class="side-stack">
+                    <div class="zone vertical-zone"><div class="zone-title">Mana rival <span id="op-mana-count">0</span></div><div class="zone-content" id="op-mana-zone"></div></div>
+                    <div class="zone vertical-zone"><div class="zone-title">Vidas rival</div><div class="zone-content"><div class="life-orb" id="op-life-count">8</div></div></div>
+                </div>
+            </section>
+            <section class="player-board">
+                <div class="side-stack">
+                    <div class="zone vertical-zone black-zone"><div class="zone-title">Vidas</div><div class="zone-content"><div class="life-orb" id="player-life-count">8</div></div></div>
+                    <div class="zone mana-zone black-zone"><div class="zone-title">Mana <span id="player-mana-count">0/0</span></div><div class="zone-content" id="player-mana-zone"></div></div>
+                </div>
+                <div class="center-zones">
+                    <div class="zone black-zone"><div class="zone-title">Lider y area de batalla</div><div class="zone-content"><div id="player-leader-zone"></div><div id="player-battle-zone" class="zone-content" style="padding:0;"></div></div></div>
+                    <div class="zone black-zone"><div class="zone-title">Area de combo</div><div class="zone-content" id="player-combo-zone"></div></div>
+                    <div class="zone hand-zone black-zone"><div class="zone-title">Mano de cartas <span id="hand-count">0</span></div><div class="zone-content" id="player-hand-zone"></div></div>
+                </div>
+                <div class="side-stack">
+                    <div class="zone vertical-zone black-zone"><div class="zone-title">Mazo <span id="player-deck-count">0</span></div><div class="zone-content" id="player-deck-zone"></div></div>
+                    <div class="zone vertical-zone black-zone"><div class="zone-title">Descarte <span id="player-drop-count">0</span></div><div class="zone-content" id="player-drop-zone"></div></div>
+                </div>
+            </section>
+        </main>
+    </div>
+
     <script>
         let datosCartas = [];
         let indexActual = null;
@@ -342,6 +451,9 @@
         let miMazo = { id: null, nombre: "", liderId: null, cartas: {} };
         let cartaDetalleMazo = null;
         let detalleMazoEvo = false;
+        let mazoAsignadoId = localStorage.getItem('gc_tcg_mazo_asignado') || null;
+        let estadoPartida = null;
+        const fasesPartida = ['Carga', 'Principal', 'Combate'];
 
         async function cargarBaseDeDatos() {
             if (datosCartas.length > 0) return;
@@ -684,6 +796,146 @@
             volverASelectorMazos();
         }
 
+
+        function ocultarPantallasPrincipales() {
+            ['main-menu','collection-wrapper','deck-menu-screen','deck-builder-screen','game-setup-screen','game-screen'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.add('hidden');
+            });
+        }
+
+        function mazoEsValido(mazo) {
+            if (!mazo || !mazo.liderId) return false;
+            const total = Object.values(mazo.cartas || {}).reduce((sum, n) => sum + n, 0);
+            return total >= 50 && total <= 60;
+        }
+
+        function obtenerMazoAsignado() {
+            cargarMazosGuardados();
+            let mazo = mazosGuardados.find(m => m.id === mazoAsignadoId && mazoEsValido(m));
+            if (!mazo) mazo = mazosGuardados.find(mazoEsValido);
+            if (mazo) {
+                mazoAsignadoId = mazo.id;
+                localStorage.setItem('gc_tcg_mazo_asignado', mazo.id);
+            }
+            return mazo || null;
+        }
+
+        async function irAJugar() {
+            ocultarPantallasPrincipales();
+            document.getElementById('game-setup-screen').classList.remove('hidden');
+            await cargarBaseDeDatos();
+            const mazo = obtenerMazoAsignado();
+            renderizarPreparacionPartida(mazo);
+        }
+
+        function renderizarPreparacionPartida(mazo) {
+            const panel = document.getElementById('assigned-deck-preview');
+            if (!mazo) {
+                panel.innerHTML = `<div class="assigned-leader-img">?</div><div><h2>No hay mazo asignado</h2><p>Necesitas guardar un mazo valido de 50 a 60 cartas y un lider antes de jugar.</p></div>`;
+                return;
+            }
+            const lider = getCardById(mazo.liderId);
+            const total = Object.values(mazo.cartas || {}).reduce((sum, n) => sum + n, 0);
+            panel.innerHTML = `<div class="assigned-leader-img">${lider && lider.img ? `<img src="${lider.img}" alt="${escapeHtml(lider.nombre)}">` : '?'}</div><div><h2>Vas a jugar con ${escapeHtml(mazo.nombre || 'Mazo sin nombre')}</h2><p>Lider: ${escapeHtml(lider ? lider.nombre : 'Sin lider')}</p><p>${total} cartas en el mazo principal.</p></div>`;
+        }
+
+        function irAMazosDesdeJuego() { ocultarPantallasPrincipales(); document.getElementById('deck-menu-screen').classList.remove('hidden'); cargarMazosGuardados(); renderizarSelectorMazos(); }
+        function volverAlMenuDesdeJuegoSetup() { ocultarPantallasPrincipales(); document.getElementById('main-menu').classList.remove('hidden'); }
+
+        function barajar(lista) {
+            const copia = [...lista];
+            for (let i = copia.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [copia[i], copia[j]] = [copia[j], copia[i]]; }
+            return copia;
+        }
+
+        function expandirCartasMazo(mazo) {
+            const cartas = [];
+            Object.entries(mazo.cartas || {}).forEach(([id, cantidad]) => { for (let i = 0; i < cantidad; i++) cartas.push(id); });
+            return barajar(cartas);
+        }
+
+        function crearRivalBasico() {
+            const mazo = obtenerMazoAsignado();
+            return { liderId: mazo.liderId, mazo: expandirCartasMazo(mazo), vida: [], mano: [], mana: [], batalla: [], combo: [], descarte: [] };
+        }
+
+        function iniciarPartida() {
+            const mazo = obtenerMazoAsignado();
+            if (!mazo) return alert('Necesitas un mazo valido para empezar la partida.');
+            const jugador = { liderId: mazo.liderId, mazo: expandirCartasMazo(mazo), vida: [], mano: [], mana: [], batalla: [], combo: [], descarte: [], manaActivo: 0, manaUsadoEsteTurno: false };
+            const rival = crearRivalBasico();
+            for (let i = 0; i < 8; i++) { jugador.vida.push(jugador.mazo.pop()); rival.vida.push(rival.mazo.pop()); }
+            for (let i = 0; i < 6; i++) { jugador.mano.push(jugador.mazo.pop()); rival.mano.push(rival.mazo.pop()); }
+            estadoPartida = { turno: 1, faseIndex: 0, jugadorActivo: 'jugador', jugador, rival, log: 'Has robado 6 cartas. Mulligan basico pendiente para mas adelante.' };
+            ocultarPantallasPrincipales(); document.getElementById('game-screen').classList.remove('hidden'); renderizarPartida();
+        }
+
+        function robarDe(zonaJugador) { const carta = zonaJugador.mazo.pop(); if (!carta) return null; zonaJugador.mano.push(carta); return carta; }
+        function robarCartaJugador() { if (!estadoPartida) return; const carta = robarDe(estadoPartida.jugador); estadoPartida.log = carta ? `Robas ${getCardById(carta)?.nombre || 'una carta'}.` : 'No quedan cartas en tu mazo.'; renderizarPartida(); }
+        function pasarFase() { if (!estadoPartida) return; estadoPartida.faseIndex = Math.min(estadoPartida.faseIndex + 1, fasesPartida.length - 1); estadoPartida.log = `Fase de ${fasesPartida[estadoPartida.faseIndex]}.`; renderizarPartida(); }
+        function finalizarTurno() { if (!estadoPartida) return; estadoPartida.turno += 1; estadoPartida.faseIndex = 0; estadoPartida.jugador.manaActivo = estadoPartida.jugador.mana.length; estadoPartida.jugador.manaUsadoEsteTurno = false; robarDe(estadoPartida.jugador); estadoPartida.log = 'Nuevo turno: enderezas tu mana y robas 1 carta.'; renderizarPartida(); }
+
+        function ponerManaDesdeMano(index) {
+            if (!estadoPartida) return;
+            if (estadoPartida.faseIndex !== 0) return alert('Solo puedes cargar mana en la fase de carga.');
+            if (estadoPartida.jugador.manaUsadoEsteTurno) return alert('Solo puedes poner una carta como mana por turno.');
+            const [id] = estadoPartida.jugador.mano.splice(index, 1);
+            estadoPartida.jugador.mana.push({ id, rested: false });
+            estadoPartida.jugador.manaActivo = estadoPartida.jugador.mana.length;
+            estadoPartida.jugador.manaUsadoEsteTurno = true;
+            estadoPartida.log = `${getCardById(id)?.nombre || 'Una carta'} pasa a tu zona de mana.`;
+            renderizarPartida();
+        }
+
+        function jugarUnidadBasica(index) {
+            if (!estadoPartida) return;
+            if (estadoPartida.faseIndex === 0) return alert('Avanza a fase principal para jugar cartas.');
+            const id = estadoPartida.jugador.mano[index]; const carta = getCardById(id);
+            if (!carta || esLider(carta) || esToken(carta)) return;
+            const coste = Number(carta.costeTotal || 0);
+            if (estadoPartida.jugador.manaActivo < coste) return alert('No tienes mana activo suficiente.');
+            estadoPartida.jugador.manaActivo -= coste;
+            const [jugada] = estadoPartida.jugador.mano.splice(index, 1);
+            estadoPartida.jugador.batalla.push({ id: jugada, rested: false });
+            estadoPartida.log = `Juegas ${carta.nombre} en el area de batalla.`;
+            renderizarPartida();
+        }
+
+        function recibirDanoJugador() { if (!estadoPartida || estadoPartida.jugador.vida.length === 0) return; const vida = estadoPartida.jugador.vida.pop(); estadoPartida.jugador.mano.push(vida); estadoPartida.log = 'Recibes dano: una vida pasa a tu mano.'; renderizarPartida(); }
+        function despertarLider() { if (!estadoPartida) return; if (estadoPartida.jugador.vida.length > 4) return alert('Solo puedes despertar con 4 vidas o menos.'); estadoPartida.jugador.liderDespierto = true; estadoPartida.log = 'Tu lider despierta y usa su cara evolucionada.'; renderizarPartida(); }
+        function volverAlMenuDesdePartida() { estadoPartida = null; ocultarPantallasPrincipales(); document.getElementById('main-menu').classList.remove('hidden'); }
+
+        function miniCarta(id, extra = '') { const carta = getCardById(typeof id === 'string' ? id : id.id); if (!carta) return `<div class="game-card-mini back">?</div>`; return `<div class="game-card-mini ${extra}"><img src="${carta.img || ''}" alt="${escapeHtml(carta.nombre)}"></div>`; }
+        function pilaDorso(cantidad) { return `<div class="game-card-mini back">GC<span class="card-stack-count">${cantidad}</span></div>`; }
+        function renderZona(id, contenido, vacio = 'Vacio') { const el = document.getElementById(id); if (!el) return; el.innerHTML = contenido || `<span class="empty-zone-note">${vacio}</span>`; }
+
+        function renderizarPartida() {
+            if (!estadoPartida) return;
+            const j = estadoPartida.jugador; const r = estadoPartida.rival; const fase = fasesPartida[estadoPartida.faseIndex];
+            document.getElementById('turn-indicator').innerText = `Turno ${estadoPartida.turno}`;
+            document.getElementById('phase-indicator').innerText = fase;
+            document.getElementById('mana-indicator').innerText = `Mana ${j.manaActivo}/${j.mana.length}`;
+            document.getElementById('life-indicator').innerText = `Vidas ${j.vida.length}`;
+            document.getElementById('deck-indicator').innerText = `Mazo ${j.mazo.length}`;
+            document.getElementById('game-log').innerText = estadoPartida.log || '';
+            document.getElementById('player-life-count').innerText = j.vida.length; document.getElementById('op-life-count').innerText = r.vida.length;
+            document.getElementById('player-deck-count').innerText = j.mazo.length; document.getElementById('op-deck-count').innerText = r.mazo.length;
+            document.getElementById('player-drop-count').innerText = j.descarte.length; document.getElementById('op-drop-count').innerText = r.descarte.length;
+            document.getElementById('player-mana-count').innerText = `${j.manaActivo}/${j.mana.length}`; document.getElementById('op-mana-count').innerText = r.mana.length;
+            document.getElementById('hand-count').innerText = j.mano.length;
+            const lider = getCardById(j.liderId); const liderImg = j.liderDespierto && lider?.imgEvo ? lider.imgEvo : lider?.img;
+            renderZona('player-leader-zone', `<div class="game-card-mini"><img src="${liderImg || ''}" alt="Lider"></div>`, 'Sin lider');
+            renderZona('player-battle-zone', j.batalla.map(c => miniCarta(c, c.rested ? 'rested' : '')).join(''), 'Sin unidades');
+            renderZona('player-combo-zone', j.combo.map(miniCarta).join(''), 'Sin combo');
+            renderZona('player-mana-zone', j.mana.map(m => miniCarta(m.id, m.rested ? 'rested' : '')).join(''), 'Sin mana');
+            renderZona('player-deck-zone', pilaDorso(j.mazo.length), 'Mazo vacio');
+            renderZona('player-drop-zone', j.descarte.length ? miniCarta(j.descarte[j.descarte.length - 1]) : '', 'Sin descarte');
+            renderZona('player-hand-zone', j.mano.map((id, index) => { const carta = getCardById(id); return `<div class="game-card-mini"><img src="${carta?.img || ''}" alt="${escapeHtml(carta?.nombre || 'Carta')}"><div class="hand-card-actions"><button onclick="ponerManaDesdeMano(${index})">Mana</button><button onclick="jugarUnidadBasica(${index})">Jugar</button></div></div>`; }).join(''), 'Sin mano');
+            renderZona('op-deck-zone', pilaDorso(r.mazo.length), 'Mazo rival'); renderZona('op-drop-zone', r.descarte.length ? miniCarta(r.descarte[r.descarte.length - 1]) : '', 'Sin descarte');
+            renderZona('op-mana-zone', r.mana.length ? r.mana.map(m => miniCarta(m.id)).join('') : '', 'Sin mana'); renderZona('op-combo-zone', r.combo.map(miniCarta).join(''), 'Sin combo'); renderZona('op-battle-zone', r.batalla.map(miniCarta).join(''), 'Sin unidades');
+        }
+
         function obtenerColorBorde(color) {
             if (!color) return 'rgba(255,255,255,0.8)';
             switch (color.toLowerCase()) {
@@ -777,6 +1029,7 @@
     </script>
 </body>
 </html>
+
 
 
 
