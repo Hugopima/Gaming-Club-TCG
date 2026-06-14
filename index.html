@@ -140,8 +140,80 @@
         #zoom-container { position: relative; width: 85vh; height: 85vh; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid var(--gold); border-radius: 20px; }
         #zoom-img { height: 100%; width: auto; transition: transform 0.1s ease-out; transform-origin: center; pointer-events: none; }
 
-        /* --- NUEVO CSS MAZOS --- */
-        #deck-cards { min-height: 150px; border: 2px dashed var(--gold); padding: 10px; margin-bottom: 20px; }
+        /* --- SISTEMA DE MAZOS --- */
+        #deck-menu-screen, #deck-builder-screen {
+            height: 100%; display: flex; flex-direction: column; overflow: hidden;
+        }
+        .deck-menu-main { flex: 1; overflow-y: auto; padding: 25px 45px 80px; }
+        .deck-menu-toolbar { display: flex; justify-content: center; margin-bottom: 30px; }
+        .deck-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 22px; max-width: 1100px; margin: 0 auto; }
+        .deck-tile {
+            min-height: 180px; padding: 22px; border-radius: 8px; border: 2px solid rgba(255,215,0,0.35);
+            background: rgba(0,0,0,0.55); box-shadow: 0 8px 20px rgba(0,0,0,0.35); color: white;
+            display: flex; flex-direction: column; justify-content: space-between; gap: 16px;
+        }
+        .deck-tile h3 { margin: 0; color: var(--gold); text-transform: uppercase; font-size: 22px; }
+        .deck-tile p { margin: 0; color: #ddd; line-height: 1.5; }
+        .deck-tile-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        .empty-decks { text-align: center; color: #ddd; font-size: 18px; margin-top: 25px; }
+        .plus-deck-btn { width: 86px; height: 86px; min-width: 86px; padding: 0; border-radius: 50%; font-size: 48px; line-height: 1; }
+
+        .deck-header { justify-content: space-between; gap: 12px; flex-wrap: wrap; height: auto; min-height: 60px; }
+        .deck-header-left, .deck-header-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        #deck-name {
+            min-width: 260px; max-width: 420px; padding: 14px 18px; border-radius: 8px; border: 1px solid var(--gold);
+            background: rgba(0,0,0,0.45); color: white; font-weight: 800; text-transform: none; box-shadow: none;
+        }
+        #deck-name::placeholder { color: rgba(255,255,255,0.65); }
+        .deck-status { color: var(--gold-light); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+        .deck-builder-main { flex: 1; overflow-y: auto; padding: 20px 35px 90px; }
+        .deck-top-zone { display: grid; grid-template-columns: 230px 1fr; gap: 24px; align-items: start; }
+        .leader-slot, .selected-cards-zone {
+            border: 2px dashed rgba(255,215,0,0.65); border-radius: 8px; background: rgba(0,0,0,0.35); padding: 14px; min-height: 220px;
+        }
+        .leader-slot-title, .deck-zone-title { color: var(--gold); font-weight: 900; text-transform: uppercase; margin-bottom: 12px; }
+        .leader-empty, .deck-empty { display: flex; align-items: center; justify-content: center; min-height: 160px; color: #ccc; text-align: center; border-radius: 8px; background: rgba(255,255,255,0.04); padding: 16px; }
+        .deck-selected-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 16px; }
+        .deck-library-section { margin-top: 30px; }
+        .deck-library-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 22px; }
+        .deck-card { background: #050505; border-radius: 8px; border: 3px solid rgba(255,255,255,0.75); overflow: hidden; position: relative; min-height: 225px; display: flex; flex-direction: column; }
+        .deck-card-img { height: 205px; background: #111; cursor: pointer; position: relative; overflow: hidden; }
+        .deck-card-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .deck-card:hover { border-color: var(--gold); transform: translateY(-4px); transition: all 0.2s ease; }
+        .copy-badge {
+            position: absolute; top: 8px; right: 8px; min-width: 34px; height: 28px; padding: 0 8px; border-radius: 999px;
+            background: rgba(0,0,0,0.88); border: 2px solid var(--gold); color: var(--gold-light); font-weight: 900;
+            display: flex; align-items: center; justify-content: center; z-index: 2;
+        }
+        .deck-card-name { font-size: 13px; line-height: 1.25; padding: 9px 8px; min-height: 38px; color: white; font-weight: 800; text-align: center; }
+        .deck-card-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 8px; }
+        .deck-card-actions .mini-btn, .single-action .mini-btn { border: 1px solid rgba(255,215,0,0.55); background: rgba(44,26,11,0.9); color: var(--gold-light); border-radius: 6px; padding: 8px 6px; font-weight: 900; cursor: pointer; }
+        .deck-card-actions .mini-btn:hover, .single-action .mini-btn:hover { background: rgba(212,175,55,0.25); }
+        .deck-card-actions .mini-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+        .single-action { padding: 8px; display: grid; }
+        .deck-invalid { color: #ff8080; }
+        .deck-valid { color: #8cffb3; }
+
+        #deck-card-modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.82); z-index: 900; display: none;
+            align-items: center; justify-content: center; padding: 24px;
+        }
+        #deck-card-modal.open { display: flex; }
+        .deck-modal-content {
+            position: relative; width: min(980px, 94vw); max-height: 90vh; overflow-y: auto; border: 2px solid var(--gold);
+            border-radius: 8px; background: var(--dark-panel); box-shadow: 0 20px 60px rgba(0,0,0,0.75); padding: 28px;
+        }
+        .deck-modal-body { display: grid; grid-template-columns: minmax(260px, 360px) 1fr; gap: 28px; }
+        .deck-modal-img { width: 100%; aspect-ratio: 0.72; background: #000; border-radius: 8px; border: 1px solid rgba(255,215,0,0.35); overflow: hidden; }
+        .deck-modal-img img { width: 100%; height: 100%; object-fit: contain; }
+        .deck-modal-actions { display: flex; gap: 10px; flex-wrap: wrap; margin: 16px 0 8px; justify-content: center; }
+        .deck-modal-actions .plate-btn { min-width: 150px; padding: 12px 18px; font-size: 14px; }
+        .deck-modal-close { position: absolute; top: 10px; right: 16px; }
+        @media (max-width: 850px) {
+            .deck-top-zone, .deck-modal-body { grid-template-columns: 1fr; }
+            .deck-header { justify-content: center; }
+            #deck-name { width: 100%; min-width: 0; }
+        }
     </style>
 </head>
 <body>
@@ -208,46 +280,103 @@
         </main>
     </div>
 
-    <div id="deck-builder-screen" class="hidden" style="height: 100%; display: flex; flex-direction: column; padding: 20px;">
+    <div id="deck-menu-screen" class="hidden">
         <header class="top-bar">
-            <input type="text" id="deck-name" placeholder="Nombre del mazo..." class="plate-btn btn-nav" style="background:transparent; border:1px solid var(--gold); margin-right: 10px;">
-            <button class="plate-btn btn-nav" onclick="guardarMazo()">Guardar</button>
-            <button class="plate-btn btn-nav" onclick="volverAlMenuDesdeMazos()">Volver</button>
+            <button class="plate-btn btn-nav" onclick="volverAlMenuDesdeSelectorMazos()">Volver al Inicio</button>
         </header>
-        <main style="flex: 1; overflow-y: auto; padding: 20px;">
-            <h2 class="section-title">Tu Mazo (<span id="deck-count">0</span>/60)</h2>
-            <div id="deck-cards" class="grid-cartas"></div>
-            <h2 class="section-title">Biblioteca</h2>
-            <div id="library-cards" class="grid-cartas"></div>
+        <main class="deck-menu-main">
+            <h1 class="main-title">Mis Mazos</h1>
+            <div class="deck-menu-toolbar">
+                <button class="plate-btn plus-deck-btn" onclick="crearMazoNuevo()" title="Crear mazo">+</button>
+            </div>
+            <div id="deck-list" class="deck-list"></div>
+            <p id="empty-decks" class="empty-decks hidden">Todavia no tienes ningun mazo creado.</p>
         </main>
     </div>
 
+    <div id="deck-builder-screen" class="hidden">
+        <header class="top-bar deck-header">
+            <div class="deck-header-left">
+                <input type="text" id="deck-name" placeholder="Nombre del mazo..." maxlength="40">
+                <span id="deck-status" class="deck-status deck-invalid">Sin lider - 0/60</span>
+            </div>
+            <div class="deck-header-right">
+                <button class="plate-btn btn-nav" onclick="guardarMazo()">Guardar</button>
+                <button class="plate-btn btn-nav" onclick="volverASelectorMazos()">Volver</button>
+            </div>
+        </header>
+        <main class="deck-builder-main">
+            <div class="deck-top-zone">
+                <section class="leader-slot">
+                    <div class="leader-slot-title">Lider</div>
+                    <div id="deck-leader-slot"></div>
+                </section>
+                <section class="selected-cards-zone">
+                    <div class="deck-zone-title">Cartas del mazo (<span id="deck-count">0</span>/60)</div>
+                    <div id="deck-cards" class="deck-selected-grid"></div>
+                </section>
+            </div>
+            <section class="deck-library-section">
+                <h2 class="section-title">Biblioteca</h2>
+                <div id="library-cards" class="deck-library-grid"></div>
+            </section>
+        </main>
+    </div>
+
+    <div id="deck-card-modal">
+        <div class="deck-modal-content">
+            <button class="close-btn deck-modal-close" onclick="cerrarDetalleMazo()">×</button>
+            <div id="deck-modal-body" class="deck-modal-body"></div>
+        </div>
+    </div>
+
     <script>
-        let datosCartas = []; 
+        let datosCartas = [];
         let indexActual = null;
-        let miMazo = { nombre: "", lider: null, cartas: [] };
+        let mazosGuardados = [];
+        let mazoActualId = null;
+        let miMazo = { id: null, nombre: "", liderId: null, cartas: {} };
+        let cartaDetalleMazo = null;
+        let detalleMazoEvo = false;
 
         async function cargarBaseDeDatos() {
+            if (datosCartas.length > 0) return;
             try {
                 const respuesta = await fetch('cartas.json');
                 datosCartas = await respuesta.json();
+                datosCartas.forEach(c => c.esEvo = false);
                 renderizarBiblioteca();
             } catch (error) {
                 console.error("Error al cargar el archivo cartas.json:", error);
             }
         }
 
+        function claseNormalizada(carta) {
+            return (carta.clase || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        }
+
+        function esLider(carta) { return claseNormalizada(carta) === "lider"; }
+        function getCardId(carta) { return carta.id || carta.nombre; }
+        function getCardById(id) { return datosCartas.find(c => getCardId(c) === id); }
+        function totalCartasMazo() { return Object.values(miMazo.cartas).reduce((sum, n) => sum + n, 0); }
+        function copiasEnMazo(id) { return miMazo.cartas[id] || 0; }
+
+        function escapeHtml(texto) {
+            return String(texto ?? "").replace(/[&<>'"]/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[ch]));
+        }
+
         function irAColeccion() {
             document.getElementById('main-menu').classList.add('hidden');
             document.getElementById('collection-wrapper').classList.remove('hidden');
-            cargarBaseDeDatos();
+            cargarBaseDeDatos().then(renderizarBiblioteca);
         }
 
-        function irAMazos() {
+        async function irAMazos() {
             document.getElementById('main-menu').classList.add('hidden');
-            document.getElementById('deck-builder-screen').classList.remove('hidden');
-            if(datosCartas.length === 0) cargarBaseDeDatos();
-            renderizarEditor();
+            document.getElementById('deck-menu-screen').classList.remove('hidden');
+            await cargarBaseDeDatos();
+            cargarMazosGuardados();
+            renderizarSelectorMazos();
         }
 
         function irAlMenu() {
@@ -256,9 +385,98 @@
             document.getElementById('main-menu').classList.remove('hidden');
         }
 
-        function volverAlMenuDesdeMazos() {
-            document.getElementById('deck-builder-screen').classList.add('hidden');
+        function volverAlMenuDesdeSelectorMazos() {
+            document.getElementById('deck-menu-screen').classList.add('hidden');
             document.getElementById('main-menu').classList.remove('hidden');
+        }
+
+        function volverASelectorMazos() {
+            cerrarDetalleMazo();
+            document.getElementById('deck-builder-screen').classList.add('hidden');
+            document.getElementById('deck-menu-screen').classList.remove('hidden');
+            cargarMazosGuardados();
+            renderizarSelectorMazos();
+        }
+
+        function volverAlMenuDesdeMazos() { volverASelectorMazos(); }
+
+        function cargarMazosGuardados() {
+            mazosGuardados = JSON.parse(localStorage.getItem('gc_tcg_mazos') || '[]');
+            const clavesAntiguas = Object.keys(localStorage).filter(k => k.startsWith('mazo_'));
+            clavesAntiguas.forEach(clave => {
+                try {
+                    const antiguo = JSON.parse(localStorage.getItem(clave));
+                    if (!antiguo || mazosGuardados.some(m => m.nombre === antiguo.nombre)) return;
+                    const cartas = {};
+                    (antiguo.cartas || []).forEach(c => {
+                        const id = getCardId(c);
+                        cartas[id] = (cartas[id] || 0) + 1;
+                    });
+                    mazosGuardados.push({ id: crypto.randomUUID(), nombre: antiguo.nombre || clave.replace('mazo_', ''), liderId: antiguo.lider ? getCardId(antiguo.lider) : null, cartas });
+                } catch (e) {}
+            });
+            guardarListaMazos();
+        }
+
+        function guardarListaMazos() {
+            localStorage.setItem('gc_tcg_mazos', JSON.stringify(mazosGuardados));
+        }
+
+        function renderizarSelectorMazos() {
+            const lista = document.getElementById('deck-list');
+            const vacio = document.getElementById('empty-decks');
+            lista.innerHTML = "";
+            vacio.classList.toggle('hidden', mazosGuardados.length > 0);
+
+            mazosGuardados.forEach(mazo => {
+                const lider = getCardById(mazo.liderId);
+                const total = Object.values(mazo.cartas || {}).reduce((sum, n) => sum + n, 0);
+                const valido = lider && total >= 50 && total <= 60;
+                lista.innerHTML += `
+                    <article class="deck-tile">
+                        <div>
+                            <h3>${escapeHtml(mazo.nombre || 'Mazo sin nombre')}</h3>
+                            <p>Lider: ${escapeHtml(lider ? lider.nombre : 'Sin lider')}</p>
+                            <p class="${valido ? 'deck-valid' : 'deck-invalid'}">${total}/60 cartas ${valido ? '- Listo para jugar' : '- Incompleto'}</p>
+                        </div>
+                        <div class="deck-tile-actions">
+                            <button class="plate-btn btn-nav" onclick="editarMazo('${mazo.id}')">Editar</button>
+                            <button class="plate-btn btn-nav" onclick="borrarMazo('${mazo.id}')">Borrar</button>
+                        </div>
+                    </article>`;
+            });
+        }
+
+        function crearMazoNuevo() {
+            mazoActualId = crypto.randomUUID();
+            miMazo = { id: mazoActualId, nombre: "", liderId: null, cartas: {} };
+            abrirEditorMazo();
+        }
+
+        function editarMazo(id) {
+            const guardado = mazosGuardados.find(m => m.id === id);
+            if (!guardado) return;
+            mazoActualId = id;
+            miMazo = JSON.parse(JSON.stringify(guardado));
+            miMazo.cartas = miMazo.cartas || {};
+            abrirEditorMazo();
+        }
+
+        function abrirEditorMazo() {
+            document.getElementById('deck-menu-screen').classList.add('hidden');
+            document.getElementById('deck-builder-screen').classList.remove('hidden');
+            document.getElementById('deck-name').value = miMazo.nombre || "";
+            renderizarEditor();
+            actualizarVistaMazo();
+        }
+
+        function borrarMazo(id) {
+            const mazo = mazosGuardados.find(m => m.id === id);
+            if (!mazo) return;
+            if (!confirm(`¿Borrar el mazo "${mazo.nombre || 'Mazo sin nombre'}"?`)) return;
+            mazosGuardados = mazosGuardados.filter(m => m.id !== id);
+            guardarListaMazos();
+            renderizarSelectorMazos();
         }
 
         function renderizarBiblioteca() {
@@ -266,16 +484,16 @@
             const gu = document.getElementById('grid-unidades');
             const ge = document.getElementById('grid-extras');
             const gt = document.getElementById('grid-tokens');
+            if (!gl || !gu || !ge || !gt) return;
             gl.innerHTML = ""; gu.innerHTML = ""; ge.innerHTML = ""; gt.innerHTML = "";
 
             datosCartas.forEach((c, i) => {
-                c.esEvo = false; 
                 const cardHtml = `<div class="card" style="border-color: ${obtenerColorBorde(c.color)}" onclick="abrirPanel(${i})">
                     ${c.img ? `<img src="${c.img}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">` : ''}
-                    <div class="card-name-fallback" style="display:none; color: white; padding: 20px; text-align: center; font-weight: bold; height: 100%; align-items: center; justify-content: center; background: #111;">${c.nombre}</div>
+                    <div class="card-name-fallback" style="display:none; color: white; padding: 20px; text-align: center; font-weight: bold; height: 100%; align-items: center; justify-content: center; background: #111;">${escapeHtml(c.nombre)}</div>
                 </div>`;
-                const claseCarta = c.clase ? c.clase.toLowerCase() : "";
-                if (claseCarta === "líder" || claseCarta === "lider") gl.innerHTML += cardHtml;
+                const claseCarta = claseNormalizada(c);
+                if (claseCarta === "lider") gl.innerHTML += cardHtml;
                 else if (claseCarta === "unidad") gu.innerHTML += cardHtml;
                 else if (claseCarta === "extra") ge.innerHTML += cardHtml;
                 else if (claseCarta === "token") gt.innerHTML += cardHtml;
@@ -286,45 +504,159 @@
             const libContainer = document.getElementById('library-cards');
             libContainer.innerHTML = "";
             datosCartas.forEach((c, i) => {
-                const cardHtml = `<div class="card" onclick="gestionarCartaMazo(${i})">
-                    ${c.img ? `<img src="${c.img}">` : ''}
-                </div>`;
-                libContainer.innerHTML += cardHtml;
+                const id = getCardId(c);
+                const copias = copiasEnMazo(id);
+                const lider = esLider(c);
+                const agotado = !lider && copias >= 4;
+                libContainer.innerHTML += `
+                    <div class="deck-card" style="border-color: ${obtenerColorBorde(c.color)}">
+                        <div class="deck-card-img" onclick="abrirDetalleMazo(${i})">
+                            ${c.img ? `<img src="${c.img}" alt="${escapeHtml(c.nombre)}">` : ''}
+                            <span class="copy-badge">${lider ? (miMazo.liderId === id ? 'L' : '-') : copias + '/4'}</span>
+                        </div>
+                        <div class="deck-card-name">${escapeHtml(c.nombre)}</div>
+                        <div class="single-action">
+                            <button class="mini-btn" ${agotado ? 'disabled' : ''} onclick="${lider ? `seleccionarLider('${id}')` : `anadirCarta('${id}')`}">${lider ? 'Elegir lider' : 'Añadir'}</button>
+                        </div>
+                    </div>`;
             });
         }
 
-        function gestionarCartaMazo(index) {
-            const carta = datosCartas[index];
-            if (carta.clase.toLowerCase() === 'líder' || carta.clase.toLowerCase() === 'lider') {
-                miMazo.lider = carta;
-                alert("Líder asignado: " + carta.nombre);
-                return;
-            }
-            if (miMazo.cartas.length >= 60) return alert("Máximo 60 cartas.");
-            miMazo.cartas.push(carta);
+        function seleccionarLider(id) {
+            miMazo.liderId = id;
             actualizarVistaMazo();
+            renderizarEditor();
+        }
+
+        function anadirCarta(id) {
+            const carta = getCardById(id);
+            if (!carta || esLider(carta)) return;
+            if (totalCartasMazo() >= 60) return alert("Maximo 60 cartas en el mazo.");
+            if (copiasEnMazo(id) >= 4) return alert("Solo puedes llevar hasta 4 copias de cada carta.");
+            miMazo.cartas[id] = copiasEnMazo(id) + 1;
+            actualizarVistaMazo();
+            renderizarEditor();
+        }
+
+        function quitarCartaPorId(id) {
+            if (!miMazo.cartas[id]) return;
+            miMazo.cartas[id] -= 1;
+            if (miMazo.cartas[id] <= 0) delete miMazo.cartas[id];
+            actualizarVistaMazo();
+            renderizarEditor();
+        }
+
+        function quitarLider() {
+            miMazo.liderId = null;
+            actualizarVistaMazo();
+            renderizarEditor();
         }
 
         function actualizarVistaMazo() {
+            const leaderSlot = document.getElementById('deck-leader-slot');
             const deckContainer = document.getElementById('deck-cards');
-            document.getElementById('deck-count').innerText = miMazo.cartas.length;
+            const total = totalCartasMazo();
+            document.getElementById('deck-count').innerText = total;
+
+            const lider = getCardById(miMazo.liderId);
+            leaderSlot.innerHTML = lider ? crearCartaMazo(lider, copiasEnMazo(getCardId(lider)), true) : `<div class="leader-empty">Elige un lider obligatorio desde la biblioteca.</div>`;
+
             deckContainer.innerHTML = "";
-            miMazo.cartas.forEach((c, i) => {
-                deckContainer.innerHTML += `<div class="card" onclick="quitarCarta(${i})"><img src="${c.img}"></div>`;
-            });
+            const ids = Object.keys(miMazo.cartas);
+            if (ids.length === 0) {
+                deckContainer.innerHTML = `<div class="deck-empty">Añade entre 50 y 60 cartas. Maximo 4 copias de cada una.</div>`;
+            } else {
+                ids.sort((a, b) => (getCardById(a)?.nombre || a).localeCompare(getCardById(b)?.nombre || b));
+                ids.forEach(id => {
+                    const carta = getCardById(id);
+                    if (carta) deckContainer.innerHTML += crearCartaMazo(carta, miMazo.cartas[id], false);
+                });
+            }
+
+            const valido = lider && total >= 50 && total <= 60;
+            const estado = document.getElementById('deck-status');
+            estado.className = `deck-status ${valido ? 'deck-valid' : 'deck-invalid'}`;
+            estado.innerText = `${lider ? 'Lider elegido' : 'Sin lider'} - ${total}/60${valido ? ' - Valido' : ''}`;
         }
 
-        function quitarCarta(index) {
-            miMazo.cartas.splice(index, 1);
-            actualizarVistaMazo();
+        function crearCartaMazo(carta, copias, lider) {
+            const id = getCardId(carta);
+            const index = datosCartas.findIndex(c => getCardId(c) === id);
+            return `
+                <div class="deck-card" style="border-color: ${obtenerColorBorde(carta.color)}">
+                    <div class="deck-card-img" onclick="abrirDetalleMazo(${index})">
+                        ${carta.img ? `<img src="${carta.img}" alt="${escapeHtml(carta.nombre)}">` : ''}
+                        <span class="copy-badge">${lider ? 'L' : 'x' + copias}</span>
+                    </div>
+                    <div class="deck-card-name">${escapeHtml(carta.nombre)}</div>
+                    <div class="deck-card-actions">
+                        <button class="mini-btn" onclick="abrirDetalleMazo(${index})">Ver</button>
+                        <button class="mini-btn" onclick="${lider ? 'quitarLider()' : `quitarCartaPorId('${id}')`}">Quitar</button>
+                    </div>
+                </div>`;
+        }
+
+        function abrirDetalleMazo(index) {
+            cartaDetalleMazo = datosCartas[index];
+            detalleMazoEvo = false;
+            pintarDetalleMazo();
+            document.getElementById('deck-card-modal').classList.add('open');
+        }
+
+        function cerrarDetalleMazo() {
+            document.getElementById('deck-card-modal').classList.remove('open');
+        }
+
+        function pintarDetalleMazo() {
+            if (!cartaDetalleMazo) return;
+            const c = cartaDetalleMazo;
+            const lider = esLider(c);
+            const id = getCardId(c);
+            const img = detalleMazoEvo ? (c.imgEvo || c.img) : c.img;
+            const nombre = detalleMazoEvo ? (c.nombreEvo || c.nombre) : c.nombre;
+            const poder = detalleMazoEvo && c.poderEvo ? c.poderEvo : (c.poder || "0");
+            const skills = detalleMazoEvo ? (c.habilidadesEvo || c.habilidades || []) : (c.habilidades || []);
+            const acciones = lider
+                ? `<button class="plate-btn btn-nav" onclick="seleccionarLider('${id}'); cerrarDetalleMazo();">Elegir lider</button>`
+                : `<button class="plate-btn btn-nav" onclick="anadirCarta('${id}'); pintarDetalleMazo();">Añadir (${copiasEnMazo(id)}/4)</button><button class="plate-btn btn-nav" onclick="quitarCartaPorId('${id}'); pintarDetalleMazo();">Quitar</button>`;
+
+            document.getElementById('deck-modal-body').innerHTML = `
+                <div>
+                    <div class="deck-modal-img"><img src="${img || ''}" alt="${escapeHtml(nombre)}"></div>
+                    <div class="deck-modal-actions">
+                        ${acciones}
+                        ${(c.imgEvo || c.nombreEvo) ? `<button class="plate-btn btn-nav" onclick="detalleMazoEvo = !detalleMazoEvo; pintarDetalleMazo();">Dar la vuelta</button>` : ''}
+                    </div>
+                </div>
+                <div>
+                    <div class="panel-header">${escapeHtml(nombre)}</div>
+                    <div class="panel-lore">${escapeHtml(c.lore || 'Sin descripcion de lore.')}</div>
+                    <div class="info-grid">
+                        <div class="info-box"><span class="info-label">Clase</span><span class="info-value">${escapeHtml(c.clase || '-')}</span></div>
+                        <div class="info-box"><span class="info-label">Personaje</span><span class="info-value">${escapeHtml(c.personaje || 'Desconocido')}</span></div>
+                        <div class="info-box"><span class="info-label">Tipo</span><span class="info-value">${escapeHtml(c.tipo || 'Ninguno')}</span></div>
+                        <div class="info-box"><span class="info-label">Origen</span><span class="info-value">${escapeHtml(c.origen || 'Desconocido')}</span></div>
+                        <div class="info-box"><span class="info-label">Poder</span><span class="info-value">${escapeHtml(poder)}</span></div>
+                        ${lider ? '' : `<div class="info-box"><span class="info-label">Coste</span><span class="info-value">${escapeHtml(c.costeTotal ?? '-')}</span></div>`}
+                        <div class="info-box" style="grid-column: span 2;"><span class="info-label">Rareza</span><span class="info-value rarity-val">${escapeHtml(c.rareza || 'Comun')}</span></div>
+                    </div>
+                    <div>${skills.map(s => `<div class="skill-box"><span class="skill-tag ${escapeHtml(s.css || '')}">${escapeHtml(s.tag || '')}</span><div class="skill-desc">${escapeHtml(s.desc || '')}</div></div>`).join('')}</div>
+                </div>`;
         }
 
         function guardarMazo() {
-            if (!miMazo.lider) return alert("¡Selecciona un Líder primero!");
-            if (miMazo.cartas.length < 50) return alert("Mínimo 50 cartas para un mazo válido.");
-            miMazo.nombre = document.getElementById('deck-name').value || "Mazo sin nombre";
-            localStorage.setItem('mazo_' + miMazo.nombre, JSON.stringify(miMazo));
-            alert("¡Mazo guardado correctamente!");
+            const total = totalCartasMazo();
+            if (!miMazo.liderId) return alert("Selecciona un lider primero.");
+            if (total < 50) return alert("Minimo 50 cartas para un mazo valido.");
+            if (total > 60) return alert("Maximo 60 cartas en el mazo.");
+            miMazo.nombre = document.getElementById('deck-name').value.trim() || "Mazo sin nombre";
+            const copia = JSON.parse(JSON.stringify(miMazo));
+            const existente = mazosGuardados.findIndex(m => m.id === copia.id);
+            if (existente >= 0) mazosGuardados[existente] = copia;
+            else mazosGuardados.push(copia);
+            guardarListaMazos();
+            alert("Mazo guardado correctamente.");
+            volverASelectorMazos();
         }
 
         function obtenerColorBorde(color) {
@@ -341,7 +673,7 @@
         function abrirPanel(i) {
             indexActual = i;
             const c = datosCartas[i];
-            c.esEvo = false; 
+            c.esEvo = false;
             actualizarPanel(c);
             document.getElementById('info-panel').classList.add('open');
         }
@@ -349,29 +681,29 @@
         function actualizarPanel(c) {
             document.getElementById('p-img').src = c.esEvo ? c.imgEvo : (c.img || "");
             document.getElementById('p-nombre').innerText = c.esEvo ? (c.nombreEvo || c.nombre) : c.nombre;
-            document.getElementById('p-lore').innerText = c.lore || "Sin descripción de lore.";
+            document.getElementById('p-lore').innerText = c.lore || "Sin descripcion de lore.";
             document.getElementById('p-clase').innerText = c.clase;
             document.getElementById('p-personaje').innerText = c.personaje || "Desconocido";
             document.getElementById('p-tipo').innerText = c.tipo || "Ninguno";
             document.getElementById('p-origen').innerText = c.origen || "Desconocido";
-            document.getElementById('p-rareza').innerText = c.rareza || "Común";
+            document.getElementById('p-rareza').innerText = c.rareza || "Comun";
             document.getElementById('p-poder').innerText = (c.esEvo && c.poderEvo) ? c.poderEvo : (c.poder || "0");
 
             const boxCoste = document.getElementById('box-coste');
             const boxCombo = document.getElementById('box-combo');
             const boxRareza = document.getElementById('box-rareza');
             const pCoste = document.getElementById('p-coste');
-            const claseCarta = c.clase ? c.clase.toLowerCase() : "";
+            const claseCarta = claseNormalizada(c);
 
-            if (claseCarta === "líder" || claseCarta === "lider") {
+            if (claseCarta === "lider") {
                 boxCoste.style.display = "none";
                 boxCombo.style.display = "none";
                 boxRareza.style.gridColumn = "span 2";
             } else {
                 boxCoste.style.display = "block";
-                pCoste.innerText = (c.costeTotal !== undefined) ? 
-                    (c.costeColor ? `${c.costeTotal} (${c.costeColor} ${c.color.toLowerCase()})` : c.costeTotal) : "-";
-                
+                pCoste.innerText = (c.costeTotal !== undefined) ?
+                    (c.costeColor ? `${c.costeTotal} (${c.costeColor} ${String(c.color || '').toLowerCase()})` : c.costeTotal) : "-";
+
                 if (c.combo) {
                     boxCombo.style.display = "block";
                     document.getElementById('p-combo').innerText = c.combo;
@@ -382,7 +714,7 @@
                 }
             }
 
-            const sc = document.getElementById('skill-container'); 
+            const sc = document.getElementById('skill-container');
             sc.innerHTML = "";
             const skills = c.esEvo ? c.habilidadesEvo : c.habilidades;
             if (skills) {
@@ -393,10 +725,10 @@
             document.getElementById('flip-btn').style.display = (c.imgEvo || c.nombreEvo) ? "inline-block" : "none";
         }
 
-        function toggleEvo() { 
-            const c = datosCartas[indexActual]; 
-            c.esEvo = !c.esEvo; 
-            actualizarPanel(c); 
+        function toggleEvo() {
+            const c = datosCartas[indexActual];
+            c.esEvo = !c.esEvo;
+            actualizarPanel(c);
         }
 
         function cerrarPanel() { document.getElementById('info-panel').classList.remove('open'); }
@@ -420,3 +752,4 @@
     </script>
 </body>
 </html>
+
