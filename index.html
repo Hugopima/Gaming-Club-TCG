@@ -154,7 +154,11 @@
         }
         .deck-tile h3 { margin: 0; color: var(--gold); text-transform: uppercase; font-size: 22px; }
         .deck-tile p { margin: 0; color: #ddd; line-height: 1.5; }
-        .deck-tile-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        .deck-tile-main { display: grid; grid-template-columns: 92px 1fr; gap: 16px; align-items: center; }
+        .deck-leader-cover { width: 92px; height: 128px; border-radius: 8px; border: 2px solid rgba(255,215,0,0.55); background: #070707; overflow: hidden; display: flex; align-items: center; justify-content: center; color: #aaa; font-size: 12px; text-align: center; }
+        .deck-leader-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .deck-tile-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+        .deck-tile-actions .deck-action-btn { min-width: 0; padding: 8px 12px; font-size: 12px; border-radius: 8px; box-shadow: 0 3px #1a0f06; }
         .empty-decks { text-align: center; color: #ddd; font-size: 18px; margin-top: 25px; }
         .plus-deck-btn { width: 86px; height: 86px; min-width: 86px; padding: 0; border-radius: 50%; font-size: 48px; line-height: 1; }
 
@@ -356,6 +360,7 @@
         }
 
         function esLider(carta) { return claseNormalizada(carta) === "lider"; }
+        function esToken(carta) { return claseNormalizada(carta) === "token"; }
         function getCardId(carta) { return carta.id || carta.nombre; }
         function getCardById(id) { return datosCartas.find(c => getCardId(c) === id); }
         function totalCartasMazo() { return Object.values(miMazo.cartas).reduce((sum, n) => sum + n, 0); }
@@ -432,16 +437,20 @@
                 const lider = getCardById(mazo.liderId);
                 const total = Object.values(mazo.cartas || {}).reduce((sum, n) => sum + n, 0);
                 const valido = lider && total >= 50 && total <= 60;
+                const liderImg = lider && lider.img ? `<img src="${lider.img}" alt="${escapeHtml(lider.nombre)}">` : 'Sin lider';
                 lista.innerHTML += `
                     <article class="deck-tile">
-                        <div>
-                            <h3>${escapeHtml(mazo.nombre || 'Mazo sin nombre')}</h3>
-                            <p>Lider: ${escapeHtml(lider ? lider.nombre : 'Sin lider')}</p>
-                            <p class="${valido ? 'deck-valid' : 'deck-invalid'}">${total}/60 cartas ${valido ? '- Listo para jugar' : '- Incompleto'}</p>
+                        <div class="deck-tile-main">
+                            <div class="deck-leader-cover">${liderImg}</div>
+                            <div>
+                                <h3>${escapeHtml(mazo.nombre || 'Mazo sin nombre')}</h3>
+                                <p>Lider: ${escapeHtml(lider ? lider.nombre : 'Sin lider')}</p>
+                                <p class="${valido ? 'deck-valid' : 'deck-invalid'}">${total}/60 cartas ${valido ? '- Listo para jugar' : '- Incompleto'}</p>
+                            </div>
                         </div>
                         <div class="deck-tile-actions">
-                            <button class="plate-btn btn-nav" onclick="editarMazo('${mazo.id}')">Editar</button>
-                            <button class="plate-btn btn-nav" onclick="borrarMazo('${mazo.id}')">Borrar</button>
+                            <button class="plate-btn btn-nav deck-action-btn" onclick="editarMazo('${mazo.id}')">Editar</button>
+                            <button class="plate-btn btn-nav deck-action-btn" onclick="borrarMazo('${mazo.id}')">Borrar</button>
                         </div>
                     </article>`;
             });
@@ -504,6 +513,7 @@
             const libContainer = document.getElementById('library-cards');
             libContainer.innerHTML = "";
             datosCartas.forEach((c, i) => {
+                if (esToken(c)) return;
                 const id = getCardId(c);
                 const copias = copiasEnMazo(id);
                 const lider = esLider(c);
@@ -530,7 +540,7 @@
 
         function anadirCarta(id) {
             const carta = getCardById(id);
-            if (!carta || esLider(carta)) return;
+            if (!carta || esLider(carta) || esToken(carta)) return;
             if (totalCartasMazo() >= 60) return alert("Maximo 60 cartas en el mazo.");
             if (copiasEnMazo(id) >= 4) return alert("Solo puedes llevar hasta 4 copias de cada carta.");
             miMazo.cartas[id] = copiasEnMazo(id) + 1;
@@ -752,4 +762,5 @@
     </script>
 </body>
 </html>
+
 
