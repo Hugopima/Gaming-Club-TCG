@@ -360,7 +360,19 @@
         }
 
         function esLider(carta) { return claseNormalizada(carta) === "lider"; }
-        function esToken(carta) { return claseNormalizada(carta) === "token"; }
+        function esToken(carta) {
+            const color = String(carta.color || "").toLowerCase();
+            const rareza = String(carta.rareza || "").toLowerCase();
+            const id = String(carta.id || "").toLowerCase();
+            return claseNormalizada(carta) === "token" || color === "token" || rareza === "token" || id.startsWith("token");
+        }
+
+        function limpiarTokensDelMazo() {
+            Object.keys(miMazo.cartas || {}).forEach(id => {
+                const carta = getCardById(id);
+                if (!carta || esToken(carta)) delete miMazo.cartas[id];
+            });
+        }
         function getCardId(carta) { return carta.id || carta.nombre; }
         function getCardById(id) { return datosCartas.find(c => getCardId(c) === id); }
         function totalCartasMazo() { return Object.values(miMazo.cartas).reduce((sum, n) => sum + n, 0); }
@@ -468,10 +480,12 @@
             mazoActualId = id;
             miMazo = JSON.parse(JSON.stringify(guardado));
             miMazo.cartas = miMazo.cartas || {};
+            limpiarTokensDelMazo();
             abrirEditorMazo();
         }
 
         function abrirEditorMazo() {
+            limpiarTokensDelMazo();
             document.getElementById('deck-menu-screen').classList.add('hidden');
             document.getElementById('deck-builder-screen').classList.remove('hidden');
             document.getElementById('deck-name').value = miMazo.nombre || "";
@@ -503,9 +517,9 @@
                 </div>`;
                 const claseCarta = claseNormalizada(c);
                 if (claseCarta === "lider") gl.innerHTML += cardHtml;
+                else if (esToken(c)) gt.innerHTML += cardHtml;
                 else if (claseCarta === "unidad") gu.innerHTML += cardHtml;
                 else if (claseCarta === "extra") ge.innerHTML += cardHtml;
-                else if (claseCarta === "token") gt.innerHTML += cardHtml;
             });
         }
 
@@ -655,6 +669,7 @@
         }
 
         function guardarMazo() {
+            limpiarTokensDelMazo();
             const total = totalCartasMazo();
             if (!miMazo.liderId) return alert("Selecciona un lider primero.");
             if (total < 50) return alert("Minimo 50 cartas para un mazo valido.");
@@ -762,5 +777,6 @@
     </script>
 </body>
 </html>
+
 
 
