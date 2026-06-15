@@ -517,6 +517,19 @@
         .attack-arrow.show { display: block; }
         .attackable { outline: 3px solid #fff07c; box-shadow: 0 0 24px rgba(255,240,124,.8); }
         .awaken-btn { position: absolute; left: -12px; right: -12px; bottom: -38px; z-index: 10; border: 1px solid #fff07c; border-radius: 999px; background: rgba(255,80,24,.92); color: white; font-weight: 900; padding: 6px 8px; cursor: pointer; box-shadow: 0 0 16px rgba(255,80,24,.7); }
+
+        /* --- AJUSTES MOTOR V4 --- */
+        .next-phase-tab { right: 0; position: absolute; top: 66px; height: 150px; border-radius: 12px 0 0 12px; }
+        .op-drop-stack { left: 278px; top: 126px; }
+        .op-deck-stack { left: 278px; top: 266px; }
+        .drop-stack .game-card-mini .card-cost-badge, .drop-stack .game-card-mini .card-power-badge, .drop-stack .game-card-mini .mana-dots { display: none; }
+        .plain-card .card-cost-badge, .plain-card .card-power-badge, .plain-card .mana-dots { display: none; }
+        .combo-card .card-cost-badge { transform: rotate(-90deg); top: 8px; left: -15px; }
+        .combo-card .card-power-badge { transform: rotate(-90deg); left: -27px; right: auto; bottom: 30px; }
+        .combo-card .mana-dots { display: none; }
+        .select-deck-btn.active { background: linear-gradient(145deg, #1fa56a, #9cffc8); color: #062915; }
+        .discard-view { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px,1fr)); gap: 14px; margin-top: 18px; }
+        .drop-open-btn { position:absolute; top:-24px; right:-8px; border:1px solid #fff07c; background:#06151d; color:#fff07c; border-radius:999px; cursor:pointer; font-weight:900; }
     </style>
 </head>
 <body>
@@ -660,23 +673,23 @@
             <section class="hud hud-top">
                 <div class="phase-chip" id="phase-chip">Carga</div>
                 <div class="hud-text" id="op-hud-text">Rival</div>
-                <button class="next-phase-tab" onclick="pasarFase()">Next</button>
+                <button class="next-phase-tab" onclick="pasarFase()">Siguiente</button>
             </section>
 
-            <section class="energy-hud enemy-energy"><span id="op-energy-active">0</span><b>/</b><span id="op-energy-total">0</span><em>ENERGY</em></section>
-            <section class="energy-hud player-energy" ondragover="permitirDrop(event)" ondrop="soltarEnMana(event)"><em>ENERGY</em><span id="player-energy-active">0</span><b>/</b><span id="player-energy-total">0</span></section>
-            <section class="life-hud enemy-life"><span id="op-life-count">8</span><em>LIFE</em></section>
-            <section class="life-hud player-life"><span id="player-life-count">8</span><em>LIFE</em></section>
+            <section class="energy-hud enemy-energy"><span id="op-energy-active">0</span><b>/</b><span id="op-energy-total">0</span><em>MANÁ</em></section>
+            <section class="energy-hud player-energy" ondragover="permitirDrop(event)" ondrop="soltarEnMana(event)"><em>MANÁ</em><span id="player-energy-active">0</span><b>/</b><span id="player-energy-total">0</span></section>
+            <section class="life-hud enemy-life"><span id="op-life-count">8</span><em>VIDAS</em></section>
+            <section class="life-hud player-life"><span id="player-life-count">8</span><em>VIDAS</em></section>
 
             <section class="stack-zone op-deck-stack"><div id="op-deck-zone"></div><span id="op-deck-count">0</span></section>
             <section class="stack-zone player-deck-stack"><div id="player-deck-zone"></div><span id="player-deck-count">0</span></section>
-            <section class="drop-stack op-drop-stack"><div id="op-drop-zone"></div><span>DROP</span></section>
-            <section class="drop-stack player-drop-stack"><div id="player-drop-zone"></div><span>DROP</span></section>
+            <section class="drop-stack op-drop-stack"><div id="op-drop-zone"></div><span>DESCARTE</span></section>
+            <section class="drop-stack player-drop-stack"><div id="player-drop-zone"></div><span>DESCARTE</span></section>
 
             <section class="playmat-zone op-combo-zone"><div class="mat-label">COMBO AREA</div><div class="mat-cards" id="op-combo-zone"></div></section>
             <section class="playmat-zone op-battle-zone"><div class="mat-label">BATTLE AREA</div><div class="leader-lane" id="op-leader-zone"></div><div class="mat-cards" id="op-battle-zone"></div></section>
             <section class="playmat-zone player-battle-zone" ondragover="permitirDrop(event)" ondrop="soltarEnBatalla(event)"><div class="mat-label">BATTLE AREA</div><div class="leader-lane" id="player-leader-zone"></div><div class="field-lane" id="player-field-zone"></div><div class="mat-cards" id="player-battle-zone"></div></section>
-            <section class="playmat-zone player-combo-zone"><div class="mat-label">COMBO AREA</div><div class="mat-cards" id="player-combo-zone"></div></section>
+            <section class="playmat-zone player-combo-zone" ondragover="permitirDrop(event)" ondrop="soltarEnCombo(event)"><div class="mat-label">COMBO AREA</div><div class="mat-cards" id="player-combo-zone"></div></section>
 
             <section class="hand-fan" id="player-hand-zone"></section>
 
@@ -684,7 +697,6 @@
                 <span id="turn-indicator">Turno 1</span>
                 <span id="mana-indicator">0/0</span>
                 <span id="life-indicator">Vidas 8</span>
-                <span id="deck-indicator">Mazo 0</span>
                 <button onclick="finalizarTurno()">Fin turno</button>
                 <button onclick="volverAlMenuDesdePartida()">Salir</button>
             </section>
@@ -716,9 +728,10 @@
         let miMazo = { id: null, nombre: "", liderId: null, cartas: {} };
         let cartaDetalleMazo = null;
         let detalleMazoEvo = false;
+        let detalleSoloInfo = false;
         let mazoAsignadoId = localStorage.getItem('gc_tcg_mazo_asignado') || null;
         let estadoPartida = null;
-        const fasesPartida = ['Carga', 'Principal', 'Combate'];
+        const fasesPartida = ['Carga', 'Principal', 'Combate', 'Combo'];
 
         async function cargarBaseDeDatos() {
             if (datosCartas.length > 0) return;
@@ -838,11 +851,17 @@
                             </div>
                         </div>
                         <div class="deck-tile-actions">
-                            <button class="plate-btn btn-nav deck-action-btn" onclick="editarMazo('${mazo.id}')">Editar</button>
+                            <button class="plate-btn btn-nav deck-action-btn select-deck-btn ${mazo.id === mazoAsignadoId ? 'active' : ''}" onclick="asignarMazoActivo('${mazo.id}')">Usar</button><button class="plate-btn btn-nav deck-action-btn" onclick="editarMazo('${mazo.id}')">Editar</button>
                             <button class="plate-btn btn-nav deck-action-btn" onclick="borrarMazo('${mazo.id}')">Borrar</button>
                         </div>
                     </article>`;
             });
+        }
+
+        function asignarMazoActivo(id) {
+            mazoAsignadoId = id;
+            localStorage.setItem('gc_tcg_mazo_asignado', id);
+            renderizarSelectorMazos();
         }
 
         function crearMazoNuevo() {
@@ -998,6 +1017,7 @@
         }
 
         function abrirDetalleMazo(index) {
+            detalleSoloInfo = false;
             cartaDetalleMazo = datosCartas[index];
             detalleMazoEvo = false;
             pintarDetalleMazo();
@@ -1017,9 +1037,9 @@
             const nombre = detalleMazoEvo ? (c.nombreEvo || c.nombre) : c.nombre;
             const poder = detalleMazoEvo && c.poderEvo ? c.poderEvo : (c.poder || "0");
             const skills = detalleMazoEvo ? (c.habilidadesEvo || c.habilidades || []) : (c.habilidades || []);
-            const acciones = lider
+            const acciones = detalleSoloInfo ? '' : (lider
                 ? `<button class="plate-btn btn-nav" onclick="seleccionarLider('${id}'); cerrarDetalleMazo();">Elegir lider</button>`
-                : `<button class="plate-btn btn-nav" onclick="anadirCarta('${id}'); pintarDetalleMazo();">Añadir (${copiasEnMazo(id)}/4)</button><button class="plate-btn btn-nav" onclick="quitarCartaPorId('${id}'); pintarDetalleMazo();">Quitar</button>`;
+                : `<button class="plate-btn btn-nav" onclick="anadirCarta('${id}'); pintarDetalleMazo();">Añadir (${copiasEnMazo(id)}/4)</button><button class="plate-btn btn-nav" onclick="quitarCartaPorId('${id}'); pintarDetalleMazo();">Quitar</button>`);
 
             document.getElementById('deck-modal-body').innerHTML = `
                 <div>
@@ -1159,6 +1179,7 @@
                 log: 'Mano inicial robada. Arrastra cartas al area de batalla o a ENERGY.', atacanteSeleccionado: null,
                 pagoPendiente: null
             };
+            estadoPartida.jugador.liderZona = { id: estadoPartida.jugador.liderId, rested: false, ataquesRestantes: 0 };
             ocultarPantallasPrincipales();
             document.getElementById('game-screen').classList.remove('hidden');
             mostrarFase('Carga');
@@ -1180,6 +1201,7 @@
 
         function pasarFase() {
             if (!estadoPartida) return;
+            if (estadoPartida.faseIndex === 3) return terminarAtaque();
             if (estadoPartida.faseIndex < fasesPartida.length - 1) estadoPartida.faseIndex += 1;
             const fase = fasesPartida[estadoPartida.faseIndex];
             estadoPartida.log = `Fase de ${fase}.`;
@@ -1189,11 +1211,14 @@
 
         function finalizarTurno() {
             if (!estadoPartida) return;
+            if (estadoPartida.faseIndex < 2) return alert('Solo puedes terminar el turno desde la fase de combate.');
+            if (estadoPartida.faseIndex === 3) return alert('Termina primero la fase de combo.');
             estadoPartida.turno += 1;
             estadoPartida.faseIndex = 0;
             estadoPartida.atacanteSeleccionado = null;
             estadoPartida.jugador.mana.forEach(m => m.rested = false);
-            estadoPartida.jugador.batalla.forEach(c => { c.rested = false; c.puedeAtacar = true; });
+            estadoPartida.jugador.batalla.forEach(c => { c.rested = false; c.ataquesRestantes = ataquesPorTurno(c.id); });
+            estadoPartida.jugador.liderZona = { id: estadoPartida.jugador.liderId, rested: false, ataquesRestantes: 1 };
             estadoPartida.jugador.manaActivo = estadoPartida.jugador.mana.length;
             estadoPartida.jugador.manaUsadoEsteTurno = false;
             robarDe(estadoPartida.jugador);
@@ -1227,8 +1252,17 @@
 
         function permitirDrop(event) { event.preventDefault(); }
         function arrastrarCartaMano(event, index) { event.dataTransfer.setData('hand-index', String(index)); }
+        function arrastrarCartaCampo(event, index) { event.dataTransfer.setData('battle-index', String(index)); }
         function soltarEnMana(event) { event.preventDefault(); const index = Number(event.dataTransfer.getData('hand-index')); if (!Number.isNaN(index)) ponerManaDesdeMano(index); }
         function soltarEnBatalla(event) { event.preventDefault(); const index = Number(event.dataTransfer.getData('hand-index')); if (!Number.isNaN(index)) intentarJugarDesdeMano(index); }
+        function soltarEnCombo(event) {
+            event.preventDefault();
+            if (!estadoPartida || estadoPartida.faseIndex !== 3 || !estadoPartida.ataqueActual) return;
+            const handIndex = Number(event.dataTransfer.getData('hand-index'));
+            const battleIndex = Number(event.dataTransfer.getData('battle-index'));
+            if (!Number.isNaN(handIndex)) intentarCombarDesdeMano(handIndex);
+            else if (!Number.isNaN(battleIndex)) intentarCombarDesdeCampo(battleIndex);
+        }
 
         function ponerManaDesdeMano(index) {
             if (!estadoPartida) return;
@@ -1238,8 +1272,50 @@
             estadoPartida.jugador.mana.push({ id, rested: false, seleccionado: false });
             estadoPartida.jugador.manaActivo = estadoPartida.jugador.mana.filter(m => !m.rested).length;
             estadoPartida.jugador.manaUsadoEsteTurno = true;
-            estadoPartida.log = `${getCardById(id)?.nombre || 'Una carta'} pasa a ENERGY.`;
+            estadoPartida.log = `${getCardById(id)?.nombre || 'Una carta'} pasa a MANÁ.`;
             renderizarPartida();
+        }
+
+        function colorNormalizadoCarta(carta) {
+            return String(carta?.color || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        }
+
+        function costeColorRequerido(carta) {
+            return Number(carta?.costeColor || 0);
+        }
+
+        function seleccionCumpleColor(carta, seleccion) {
+            const requerido = costeColorRequerido(carta);
+            if (requerido <= 0) return true;
+            const color = colorNormalizadoCarta(carta);
+            return seleccion
+                .map(i => estadoPartida.jugador.mana[i])
+                .filter(Boolean)
+                .filter(m => colorNormalizadoCarta(getCardById(m.id)) === color).length >= requerido;
+        }
+
+        function costeCombo(carta) {
+            const combo = String(carta?.combo || '0+0');
+            const partes = combo.split('+');
+            return Number(partes[0] || 0);
+        }
+
+        function poderCombo(carta) {
+            const combo = String(carta?.combo || '0+0');
+            const partes = combo.split('+');
+            return Number(partes[1] || 0);
+        }
+
+        function tieneTag(carta, texto) {
+            const needle = texto.toLowerCase();
+            return (carta?.habilidades || []).some(h => String(h.tag || '').toLowerCase().includes(needle));
+        }
+
+        function danoDeCarta(id) {
+            const carta = getCardById(id);
+            if (tieneTag(carta, 'triple golpe')) return 3;
+            if (tieneTag(carta, 'doble golpe')) return 2;
+            return 1;
         }
 
         function intentarJugarDesdeMano(index) {
@@ -1249,14 +1325,14 @@
             const carta = getCardById(id);
             if (!carta || esLider(carta) || esToken(carta)) return;
             const coste = Number(carta.costeTotal || 0);
-            if (coste > estadoPartida.jugador.manaActivo) return alert('No tienes ENERGY activa suficiente.');
+            if (coste > estadoPartida.jugador.manaActivo) return alert('No tienes maná activo suficiente.');
             if (coste <= 0) return resolverJugarCarta(index, []);
-            abrirPagoMana(index, coste);
+            abrirPagoMana({ tipo: 'jugar', handIndex: index, cardId: id, coste });
         }
 
-        function abrirPagoMana(handIndex, coste) {
-            estadoPartida.pagoPendiente = { handIndex, coste, seleccion: [] };
-            document.getElementById('mana-pay-text').innerText = `Elige ${coste} mana para pagar.`;
+        function abrirPagoMana(pago) {
+            estadoPartida.pagoPendiente = { ...pago, seleccion: [] };
+            document.getElementById('mana-pay-text').innerText = `Elige ${pago.coste} maná para pagar.`;
             pintarOpcionesMana();
             document.getElementById('mana-pay-modal').classList.remove('hidden');
         }
@@ -1265,9 +1341,9 @@
             const cont = document.getElementById('mana-pay-options');
             const p = estadoPartida.pagoPendiente;
             cont.innerHTML = estadoPartida.jugador.mana.map((m, i) => {
-                const carta = getCardById(m.id);
                 const selected = p.seleccion.includes(i);
-                return `<div class="mana-option ${selected ? 'selected' : ''}" onclick="toggleManaPago(${i})">${miniCarta(m.id)}</div>`;
+                const unavailable = m.rested ? ' unavailable' : '';
+                return `<div class="mana-option ${selected ? 'selected' : ''}${unavailable}" onclick="event.stopPropagation(); toggleManaPago(${i})">${miniCarta(m.id, 'plain-card', { noInfo: true })}</div>`;
             }).join('');
         }
 
@@ -1282,11 +1358,25 @@
         function confirmarPagoMana() {
             const p = estadoPartida.pagoPendiente;
             if (!p || p.seleccion.length < p.coste) return alert('Selecciona todos los manas necesarios.');
-            resolverJugarCarta(p.handIndex, p.seleccion);
+            const cartaPago = getCardById(p.cardId);
+            if (p.tipo === 'jugar' && !seleccionCumpleColor(cartaPago, p.seleccion)) return alert('No has pagado el coste de color necesario.');
+            if (p.tipo === 'combo') resolverComboPendiente(p.seleccion);
+            else resolverJugarCarta(p.handIndex, p.seleccion);
             cerrarPagoMana();
         }
 
         function cerrarPagoMana() { document.getElementById('mana-pay-modal').classList.add('hidden'); estadoPartida.pagoPendiente = null; }
+
+        function abrirDescarte(quien) {
+            const lista = quien === 'rival' ? estadoPartida.rival.descarte : estadoPartida.jugador.descarte;
+            detalleSoloInfo = true;
+            document.getElementById('deck-card-modal').classList.add('open');
+            document.getElementById('deck-modal-body').innerHTML = `
+                <div style="grid-column: span 2;">
+                    <div class="panel-header">Descarte ${quien === 'rival' ? 'rival' : 'propio'}</div>
+                    <div class="discard-view">${lista.map(id => miniCarta(id, '', { onClick: `abrirDetalleJuego('${id}')` })).join('') || '<p>Sin cartas</p>'}</div>
+                </div>`;
+        }
 
         function resolverJugarCarta(index, manaIndexes) {
             manaIndexes.forEach(i => estadoPartida.jugador.mana[i].rested = true);
@@ -1299,51 +1389,109 @@
                 else estadoPartida.jugador.descarte.push(jugada);
                 estadoPartida.log = esCampo ? `${carta.nombre} queda como carta de campo.` : `${carta.nombre} se usa y va al descarte.`;
             } else {
-                estadoPartida.jugador.batalla.push({ id: jugada, rested: false, puedeAtacar: false });
+                estadoPartida.jugador.batalla.push({ id: jugada, rested: false, ataquesRestantes: ataquesPorTurno(jugada) });
                 estadoPartida.log = `Juegas ${carta.nombre} en el area de batalla.`;
             }
             renderizarPartida();
         }
 
+        function ataquesPorTurno(id) {
+            return tieneTag(getCardById(id), 'doble ataque') ? 2 : 1;
+        }
+
+        function puedeAtacarAhora(cartaZona) {
+            if (!estadoPartida || estadoPartida.turno <= 1 || estadoPartida.faseIndex !== 2) return false;
+            return cartaZona && !cartaZona.rested && (cartaZona.ataquesRestantes ?? 1) > 0;
+        }
+
         function seleccionarAtacante(index) {
-            if (!estadoPartida || estadoPartida.faseIndex !== 2) return;
             const unidad = estadoPartida.jugador.batalla[index];
-            if (!unidad || unidad.rested || unidad.puedeAtacar === false) return;
-            estadoPartida.atacanteSeleccionado = index;
+            if (!estadoPartida || estadoPartida.faseIndex !== 2) return abrirDetalleJuego(unidad?.id);
+            if (!puedeAtacarAhora(unidad)) return abrirDetalleJuego(unidad?.id);
+            estadoPartida.atacanteSeleccionado = { tipo: 'unidad', index };
             estadoPartida.log = 'Elige objetivo: lider rival o una unidad rival girada.';
             renderizarPartida();
         }
 
-        function atacarLiderRival() {
-            if (estadoPartida.atacanteSeleccionado === null) return;
-            const atacante = estadoPartida.jugador.batalla[estadoPartida.atacanteSeleccionado];
-            atacante.rested = true;
-            atacante.puedeAtacar = false;
-            estadoPartida.rival.vida.pop();
-            mostrarChoque(poderCarta(atacante.id), poderCarta(estadoPartida.rival.liderId), 'Atacante', true);
-            estadoPartida.log = 'El ataque impacta al lider rival: pierde 1 vida.';
-            estadoPartida.atacanteSeleccionado = null;
+        function seleccionarLiderAtacante() {
+            if (!estadoPartida || estadoPartida.faseIndex !== 2) return abrirDetalleJuego(estadoPartida?.jugador?.liderId);
+            const liderZona = estadoPartida.jugador.liderZona || (estadoPartida.jugador.liderZona = { id: estadoPartida.jugador.liderId, rested: false, ataquesRestantes: 1 });
+            if (!puedeAtacarAhora(liderZona)) return abrirDetalleJuego(liderZona.id);
+            estadoPartida.atacanteSeleccionado = { tipo: 'lider' };
+            estadoPartida.log = 'Tu lider declara ataque. Elige objetivo.';
             renderizarPartida();
         }
 
+        function iniciarAtaque(objetivo) {
+            if (!estadoPartida.atacanteSeleccionado) return;
+            const atacante = obtenerAtacanteActual();
+            if (!atacante) return;
+            estadoPartida.ataqueActual = {
+                atacanteRef: estadoPartida.atacanteSeleccionado,
+                objetivo,
+                atacanteId: atacante.id,
+                atacanteBase: poderCarta(atacante.id),
+                atacanteCombo: 0
+            };
+            estadoPartida.faseIndex = 3;
+            estadoPartida.log = 'Fase de combo: arrastra cartas de tu mano o campo al area de combo.';
+            mostrarFase('Combo');
+            renderizarPartida();
+        }
+
+        function atacarLiderRival() {
+            if (!estadoPartida.atacanteSeleccionado) return abrirDetalleJuego(estadoPartida.rival.liderId);
+            iniciarAtaque({ tipo: 'lider' });
+        }
+
         function atacarUnidadRival(index) {
-            if (estadoPartida.atacanteSeleccionado === null) return;
+            if (!estadoPartida.atacanteSeleccionado) return abrirDetalleJuego(estadoPartida.rival.batalla[index]?.id);
             const defensor = estadoPartida.rival.batalla[index];
             if (!defensor || !defensor.rested) return alert('Solo puedes atacar unidades rivales giradas.');
-            const atacante = estadoPartida.jugador.batalla[estadoPartida.atacanteSeleccionado];
-            const pa = poderCarta(atacante.id), pd = poderCarta(defensor.id);
-            atacante.rested = true; atacante.puedeAtacar = false;
+            iniciarAtaque({ tipo: 'unidad', index });
+        }
+
+        function obtenerAtacanteActual() {
+            const ref = estadoPartida.atacanteSeleccionado || estadoPartida.ataqueActual?.atacanteRef;
+            if (!ref) return null;
+            if (ref.tipo === 'lider') return estadoPartida.jugador.liderZona || (estadoPartida.jugador.liderZona = { id: estadoPartida.jugador.liderId, rested: false, ataquesRestantes: 1 });
+            return estadoPartida.jugador.batalla[ref.index];
+        }
+
+        function terminarAtaque() {
+            const ataque = estadoPartida.ataqueActual;
+            if (!ataque) return;
+            const atacante = obtenerAtacanteActual();
+            if (!atacante) return;
+            const pa = ataque.atacanteBase + ataque.atacanteCombo;
+            let pd = 0;
+            if (ataque.objetivo.tipo === 'lider') pd = poderCarta(estadoPartida.rival.liderId);
+            else pd = poderCarta(estadoPartida.rival.batalla[ataque.objetivo.index]?.id);
+            atacante.ataquesRestantes = Math.max(0, (atacante.ataquesRestantes ?? 1) - 1);
+            atacante.rested = atacante.ataquesRestantes <= 0;
             const ganaAtacante = pa >= pd;
-            if (ganaAtacante) {
+            if (ataque.objetivo.tipo === 'lider') {
+                if (ganaAtacante) {
+                    const dano = danoDeCarta(atacante.id);
+                    for (let i = 0; i < dano; i++) if (estadoPartida.rival.vida.length) estadoPartida.rival.vida.pop();
+                    estadoPartida.log = `El ataque impacta al lider rival: pierde ${dano} vida${dano > 1 ? 's' : ''}.`;
+                } else {
+                    estadoPartida.log = 'El lider rival resiste el ataque.';
+                }
+            } else if (ganaAtacante) {
+                const defensor = estadoPartida.rival.batalla[ataque.objetivo.index];
                 estadoPartida.rival.descarte.push(defensor.id);
-                estadoPartida.rival.batalla.splice(index, 1);
+                estadoPartida.rival.batalla.splice(ataque.objetivo.index, 1);
+                estadoPartida.log = 'Tu carta gana el combate y destruye a la defensora.';
             } else {
-                estadoPartida.jugador.descarte.push(atacante.id);
-                estadoPartida.jugador.batalla.splice(estadoPartida.atacanteSeleccionado, 1);
+                estadoPartida.log = 'La carta rival gana el combate. Tu atacante queda en descanso.';
             }
+            estadoPartida.jugador.combo.forEach(c => estadoPartida.jugador.descarte.push(c.id || c));
+            estadoPartida.jugador.combo = [];
             mostrarChoque(pa, pd, ganaAtacante ? 'Atacante' : 'Defensor', ganaAtacante);
-            estadoPartida.log = ganaAtacante ? 'Tu unidad gana el combate.' : 'La unidad rival gana el combate.';
             estadoPartida.atacanteSeleccionado = null;
+            estadoPartida.ataqueActual = null;
+            estadoPartida.faseIndex = 2;
             renderizarPartida();
         }
 
@@ -1359,12 +1507,60 @@
             setTimeout(() => overlay.classList.add('hidden'), 1400);
         }
 
+        function intentarCombarDesdeMano(index) {
+            const id = estadoPartida.jugador.mano[index];
+            const carta = getCardById(id);
+            if (!carta || esLider(carta) || esToken(carta)) return;
+            const coste = costeCombo(carta);
+            estadoPartida.comboPendiente = { origen: 'mano', index, cardId: id };
+            if (coste > estadoPartida.jugador.manaActivo) return alert('No tienes maná suficiente para ese combo.');
+            if (coste > 0) abrirPagoMana({ tipo: 'combo', cardId: id, coste });
+            else resolverComboPendiente([]);
+        }
+
+        function intentarCombarDesdeCampo(index) {
+            const zona = estadoPartida.jugador.batalla[index];
+            if (!zona) return;
+            const carta = getCardById(zona.id);
+            const coste = costeCombo(carta);
+            estadoPartida.comboPendiente = { origen: 'campo', index, cardId: zona.id };
+            if (coste > estadoPartida.jugador.manaActivo) return alert('No tienes maná suficiente para ese combo.');
+            if (coste > 0) abrirPagoMana({ tipo: 'combo', cardId: zona.id, coste });
+            else resolverComboPendiente([]);
+        }
+
+        function resolverComboPendiente(manaIndexes) {
+            const pendiente = estadoPartida.comboPendiente;
+            if (!pendiente || !estadoPartida.ataqueActual) return;
+            manaIndexes.forEach(i => estadoPartida.jugador.mana[i].rested = true);
+            estadoPartida.jugador.manaActivo = estadoPartida.jugador.mana.filter(m => !m.rested).length;
+            let id = pendiente.cardId;
+            if (pendiente.origen === 'mano') estadoPartida.jugador.mano.splice(pendiente.index, 1);
+            if (pendiente.origen === 'campo') estadoPartida.jugador.batalla.splice(pendiente.index, 1);
+            const carta = getCardById(id);
+            estadoPartida.ataqueActual.atacanteCombo += poderCombo(carta);
+            estadoPartida.jugador.combo.push({ id, comboMode: true });
+            estadoPartida.comboPendiente = null;
+            estadoPartida.log = `${carta.nombre} suma +${poderCombo(carta)} de combo.`;
+            renderizarPartida();
+        }
+
         function despertarLider() {
             if (!estadoPartida) return;
             if (estadoPartida.jugador.vida.length > 4) return;
             estadoPartida.jugador.liderDespierto = true;
             estadoPartida.log = 'Tu lider despierta.';
             renderizarPartida();
+        }
+
+        function abrirDetalleJuego(id) {
+            const index = datosCartas.findIndex(c => getCardId(c) === id);
+            if (index < 0) return;
+            detalleSoloInfo = true;
+            cartaDetalleMazo = datosCartas[index];
+            detalleMazoEvo = false;
+            pintarDetalleMazo();
+            document.getElementById('deck-card-modal').classList.add('open');
         }
 
         function volverAlMenuDesdePartida() { estadoPartida = null; ocultarPantallasPrincipales(); document.getElementById('main-menu').classList.remove('hidden'); }
@@ -1382,12 +1578,20 @@
             if (!carta) return `<div class="game-card-mini back">?</div>`;
             const index = datosCartas.findIndex(c => getCardId(c) === obj.id);
             const draggable = opts.handIndex !== undefined ? `draggable="true" ondragstart="arrastrarCartaMano(event, ${opts.handIndex})"` : '';
-            const click = opts.onClick || `abrirDetalleMazo(${index})`;
+            const fieldDrag = opts.battleIndex !== undefined ? `draggable="true" ondragstart="arrastrarCartaCampo(event, ${opts.battleIndex})"` : '';
+            const click = opts.noInfo ? '' : (opts.onClick || `abrirDetalleJuego('${obj.id}')`);
+            const dbl = opts.noInfo ? '' : (opts.onDoubleClick ? `ondblclick="${opts.onDoubleClick}"` : `ondblclick="abrirDetalleJuego('${obj.id}')"`);
             const style = opts.fanStyle || '';
-            return `<div class="game-card-mini ${extra}" ${draggable} style="${style}" onclick="${click}">
-                <span class="card-cost-badge">${Number(carta.costeTotal || 0)}</span>${costeDots(carta)}
+            const lider = esLider(carta);
+            const comboMode = obj.comboMode || opts.comboMode;
+            const costText = comboMode ? costeCombo(carta) : Number(carta.costeTotal || 0);
+            const powerText = comboMode ? `+${poderCombo(carta)}` : (carta.poder || '');
+            const costHtml = lider || opts.plain ? '' : `<span class="card-cost-badge">${costText}</span>`;
+            const dotHtml = lider || comboMode || opts.plain ? '' : costeDots(carta);
+            return `<div class="game-card-mini ${extra} ${comboMode ? 'combo-card' : ''} ${opts.plain ? 'plain-card' : ''}" ${draggable} ${fieldDrag} style="${style}" onclick="${click}" ${dbl}>
+                ${costHtml}${dotHtml}
                 <img src="${carta.img || ''}" alt="${escapeHtml(carta.nombre)}">
-                <span class="card-power-badge">${carta.poder || ''}</span>
+                ${powerText ? `<span class="card-power-badge">${powerText}</span>` : ''}
             </div>`;
         }
 
@@ -1404,7 +1608,8 @@
             document.getElementById('turn-indicator').innerText = `Turno ${estadoPartida.turno}`;
             document.getElementById('mana-indicator').innerText = `${j.manaActivo}/${j.mana.length}`;
             document.getElementById('life-indicator').innerText = `Vidas ${j.vida.length}`;
-            document.getElementById('deck-indicator').innerText = `Mazo ${j.mazo.length}`;
+            const deckIndicator = document.getElementById('deck-indicator');
+            if (deckIndicator) deckIndicator.innerText = `Mazo ${j.mazo.length}`;
             document.getElementById('table-message').innerText = estadoPartida.log || '';
             document.getElementById('player-life-count').innerText = j.vida.length;
             document.getElementById('op-life-count').innerText = r.vida.length;
@@ -1416,17 +1621,17 @@
             document.getElementById('op-energy-total').innerText = r.mana.length;
             const lider = getCardById(j.liderId), rivalLider = getCardById(r.liderId);
             const liderImg = j.liderDespierto && lider?.imgEvo ? lider.imgEvo : lider?.img;
-            renderZona('player-leader-zone', `<div style="position:relative">${miniCarta(j.liderId, '', { onClick: `abrirDetalleMazo(${datosCartas.findIndex(c => getCardId(c) === j.liderId)})` })}${j.vida.length <= 4 && !j.liderDespierto ? '<button class="awaken-btn" onclick="despertarLider()">Despertar</button>' : ''}</div>`);
+            renderZona('player-leader-zone', `<div style="position:relative">${miniCarta(j.liderZona || { id: j.liderId }, j.liderZona?.rested ? 'rested' : '', { onClick: 'seleccionarLiderAtacante()' })}${j.vida.length <= 4 && !j.liderDespierto ? '<button class="awaken-btn" onclick="despertarLider()">Despertar</button>' : ''}</div>`);
             renderZona('op-leader-zone', miniCarta(r.liderId, estadoPartida.atacanteSeleccionado !== null ? 'attackable' : '', { onClick: 'atacarLiderRival()' }));
-            renderZona('player-battle-zone', j.batalla.map((c, i) => miniCarta(c, c.rested ? 'rested' : '', { onClick: `seleccionarAtacante(${i})` })).join(''));
+            renderZona('player-battle-zone', j.batalla.map((c, i) => miniCarta(c, c.rested ? 'rested' : '', { onClick: `seleccionarAtacante(${i})`, battleIndex: i })).join(''));
             renderZona('op-battle-zone', r.batalla.map((c, i) => miniCarta(c, `${c.rested ? 'rested ' : ''}${estadoPartida.atacanteSeleccionado !== null && c.rested ? 'attackable' : ''}`, { onClick: `atacarUnidadRival(${i})` })).join(''));
-            renderZona('player-combo-zone', j.combo.map(miniCarta).join(''));
-            renderZona('op-combo-zone', r.combo.map(miniCarta).join(''));
+            renderZona('player-combo-zone', j.combo.map(c => miniCarta(c, 'combo-card', { comboMode: true })).join(''));
+            renderZona('op-combo-zone', r.combo.map(c => miniCarta(c, 'combo-card', { comboMode: true })).join(''));
             renderZona('player-field-zone', j.campo.map(c => miniCarta(c.id || c)).join(''));
             renderZona('player-deck-zone', pilaDorso(j.mazo.length));
             renderZona('op-deck-zone', pilaDorso(r.mazo.length));
-            renderZona('player-drop-zone', j.descarte.length ? miniCarta(j.descarte[j.descarte.length - 1]) : '');
-            renderZona('op-drop-zone', r.descarte.length ? miniCarta(r.descarte[r.descarte.length - 1]) : '');
+            renderZona('player-drop-zone', `${j.descarte.length ? miniCarta(j.descarte[j.descarte.length - 1], 'plain-card', { plain: true, noInfo: true }) : ''}<button class="drop-open-btn" onclick="abrirDescarte('jugador')">⌄</button>`);
+            renderZona('op-drop-zone', `${r.descarte.length ? miniCarta(r.descarte[r.descarte.length - 1], 'plain-card', { plain: true, noInfo: true }) : ''}<button class="drop-open-btn" onclick="abrirDescarte('rival')">⌄</button>`);
             const totalHand = j.mano.length;
             renderZona('player-hand-zone', j.mano.map((id, index) => {
                 const rot = (index - (totalHand - 1) / 2) * 4;
@@ -1527,3 +1732,11 @@
     </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
