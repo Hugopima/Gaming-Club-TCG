@@ -446,8 +446,26 @@
             clip-path: polygon(12% 0, 100% 0, 88% 100%, 0 100%); box-shadow: 0 0 28px rgba(40,225,255,0.6);
         }
         .energy-hud em { font-style: normal; font-size: 24px; margin-left: 6px; }
-        .enemy-energy { top: 62px; right: 210px; }
-        .player-energy { left: 90px; bottom: 50px; }
+        .energy-hud-wrap { position: absolute; z-index: 13; display: flex; align-items: center; gap: 8px; }
+        .enemy-energy-wrap { top: 62px; right: 168px; }
+        .player-energy-wrap { left: 90px; bottom: 50px; }
+        .enemy-energy { position: static; }
+        .player-energy { position: static; }
+        .mana-view-btn {
+            pointer-events: auto; width: 34px; height: 34px; border-radius: 50%; border: 2px solid rgba(255,240,124,0.85);
+            background: rgba(6,21,29,0.92); color: #fff07c; font-weight: 900; font-size: 16px; cursor: pointer;
+            box-shadow: 0 0 14px rgba(255,240,124,0.35); line-height: 1; padding: 0;
+        }
+        .mana-view-btn:hover { background: rgba(20,80,110,0.95); transform: scale(1.08); }
+        .hand-count-pill {
+            display: inline-flex; align-items: center; justify-content: center; min-width: 34px; height: 28px;
+            margin-left: 10px; padding: 0 10px; border-radius: 999px; border: 2px solid rgba(255,240,124,0.7);
+            background: rgba(0,0,0,0.55); color: #fff07c; font-size: 16px; font-weight: 900;
+            box-shadow: 0 0 12px rgba(255,240,124,0.25);
+        }
+        .op-field-lane { position: absolute; left: 18px; top: 12px; width: 92px; height: 128px; z-index: 4; display: flex; align-items: center; justify-content: center; }
+        .mana-view-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px,1fr)); gap: 14px; margin-top: 18px; }
+        .activar-btn { margin-top: 8px; }
         .life-hud {
             position: absolute; z-index: 14; width: 142px; height: 142px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-direction: column;
             color: white; background: radial-gradient(circle at 42% 36%, #fff5c5 0, #ff7c39 32%, #ed3f23 55%, #8d130a 100%);
@@ -853,12 +871,18 @@
 
             <section class="hud hud-top">
                 <div class="phase-chip" id="phase-chip">Carga</div>
-                <div class="hud-text" id="op-hud-text">Rival</div>
+                <div class="hud-text" id="op-hud-text">Rival <span class="hand-count-pill" id="op-hand-count" title="Cartas en mano del rival">0</span></div>
                 <button class="next-phase-tab" onclick="pasarFase()">Siguiente</button>
             </section>
 
-            <section class="energy-hud enemy-energy"><span id="op-energy-active">0</span><b>/</b><span id="op-energy-total">0</span><em>MANÁ</em></section>
-            <section class="energy-hud player-energy" ondragover="permitirDrop(event)" ondrop="soltarEnMana(event)"><em>MANÁ</em><span id="player-energy-active">0</span><b>/</b><span id="player-energy-total">0</span></section>
+            <div class="energy-hud-wrap enemy-energy-wrap">
+                <section class="energy-hud enemy-energy"><span id="op-energy-active">0</span><b>/</b><span id="op-energy-total">0</span><em>MANÁ</em></section>
+                <button class="mana-view-btn" title="Ver maná rival" onclick="abrirMana('rival')">⌄</button>
+            </div>
+            <div class="energy-hud-wrap player-energy-wrap">
+                <section class="energy-hud player-energy" ondragover="permitirDrop(event)" ondrop="soltarEnMana(event)"><em>MANÁ</em><span id="player-energy-active">0</span><b>/</b><span id="player-energy-total">0</span></section>
+                <button class="mana-view-btn" title="Ver tu maná" onclick="abrirMana('jugador')">⌄</button>
+            </div>
             <section class="life-hud enemy-life"><span id="op-life-count">8</span><em>VIDAS</em></section>
             <section class="life-hud player-life"><span id="player-life-count">8</span><em>VIDAS</em></section>
 
@@ -868,7 +892,7 @@
             <section class="drop-stack player-drop-stack"><div id="player-drop-zone"></div><span>DESCARTE</span></section>
 
             <section class="playmat-zone op-combo-zone"><div class="mat-label">COMBO AREA</div><div class="mat-cards" id="op-combo-zone"></div></section>
-            <section class="playmat-zone op-battle-zone"><div class="mat-label">BATTLE AREA</div><div class="leader-lane" id="op-leader-zone"></div><div class="mat-cards" id="op-battle-zone"></div></section>
+            <section class="playmat-zone op-battle-zone"><div class="mat-label">BATTLE AREA</div><div class="leader-lane" id="op-leader-zone"></div><div class="field-lane op-field-lane" id="op-field-zone"></div><div class="mat-cards" id="op-battle-zone"></div></section>
             <section class="playmat-zone player-battle-zone" ondragover="permitirDrop(event)" ondrop="soltarEnBatalla(event)"><div class="mat-label">BATTLE AREA</div><div class="leader-lane" id="player-leader-zone"></div><div class="field-lane" id="player-field-zone"></div><div class="mat-cards" id="player-battle-zone"></div></section>
             <section class="playmat-zone player-combo-zone" ondragover="permitirDrop(event)" ondrop="soltarEnCombo(event)"><div class="mat-label">COMBO AREA</div><div class="mat-cards" id="player-combo-zone"></div></section>
 
@@ -909,6 +933,14 @@
         <div id="intro-rival-leader" class="intro-leader-card rival"></div>
     </div>
 
+    <div id="selector-modal" class="game-modal hidden">
+        <div class="game-modal-panel">
+            <button class="close-btn" onclick="cerrarSelector()">×</button>
+            <h2 id="selector-title">Elegir</h2>
+            <div id="selector-options" class="mana-pay-options"></div>
+        </div>
+    </div>
+
     <div id="game-end-overlay" class="hidden">
         <div id="game-end-panel" class="game-end-panel">
             <div class="game-end-glow"></div>
@@ -919,6 +951,1909 @@
         </div>
     </div>
 
+    <script>
+/**
+ * Motor de efectos — Gaming Club TCG
+ * Expone window.MotorEfectos e integra con globals de index.html
+ */
+(function () {
+  'use strict';
+
+  const ctx = {};
+  let _habilidadesUsadas = {};
+  let _finTurnoCallbacks = [];
+  let _counterPlayPendiente = null;
+
+  function g(name) { return typeof window[name] !== 'undefined' ? window[name] : undefined; }
+
+  function zonaJugador(quien) {
+    return estadoPartida?.[quien === 'rival' ? 'rival' : 'jugador'];
+  }
+
+  function rivalDe(quien) {
+    return quien === 'rival' ? 'jugador' : 'rival';
+  }
+
+  function log(msg) {
+    if (estadoPartida) estadoPartida.log = msg;
+  }
+
+  function marcarHabilidadUsada(key) {
+    _habilidadesUsadas[key] = true;
+  }
+
+  function habilidadUsada(key) {
+    return !!_habilidadesUsadas[key];
+  }
+
+  function claveTurno(quien, suffix) {
+    return `${quien}_${estadoPartida?.turno || 0}_${suffix}`;
+  }
+
+  function crearUnidadCampo(id, opts) {
+    opts = opts || {};
+    const ataques = typeof ataquesPorTurno === 'function' ? ataquesPorTurno(id) : 1;
+    return {
+      id,
+      rested: !!opts.rested,
+      ataquesRestantes: opts.ataquesRestantes ?? ataques,
+      buffs: Object.assign({ poder: 0, combo: 0, batalla: 0 }, opts.buffs || {}),
+      flags: Object.assign({}, opts.flags || {}),
+      silenciado: opts.silenciado || 0,
+      copiaDe: opts.copiaDe || null,
+      noAtacar: !!opts.noAtacar,
+      noCombo: !!opts.noCombo,
+      debajo: opts.debajo || [],
+      inmunidadHabilidades: !!opts.inmunidadHabilidades,
+      noDestruible: !!opts.noDestruible,
+      noDerrotable: !!opts.noDerrotable
+    };
+  }
+
+  function barajar(jugador) {
+    const z = zonaJugador(jugador);
+    if (!z?.mazo) return;
+    for (let i = z.mazo.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [z.mazo[i], z.mazo[j]] = [z.mazo[j], z.mazo[i]];
+    }
+  }
+
+  function robar(jugador, n) {
+    const z = zonaJugador(jugador);
+    n = n || 1;
+    const robadas = [];
+    for (let i = 0; i < n; i++) {
+      const c = z?.mazo?.pop();
+      if (!c) break;
+      z.mano.push(c);
+      robadas.push(c);
+      if (typeof animarRobo === 'function') animarRobo();
+    }
+    return robadas;
+  }
+
+  function tirarDado() {
+    return Math.floor(Math.random() * 20) + 1;
+  }
+
+  function quitarVida(jugador, critico) {
+    const z = zonaJugador(jugador);
+    if (!z?.vida?.length) return null;
+    const carta = z.vida.pop();
+    if (critico) z.descarte.push(carta);
+    else z.mano.push(carta);
+    if (typeof verificarFinPartida === 'function') verificarFinPartida();
+    return carta;
+  }
+
+  function infligirDanoLider(quienRecibe, cantidad, atacanteId, opts) {
+    opts = opts || {};
+    const critico = opts.critico || tieneCritico(atacanteId);
+    for (let i = 0; i < (cantidad || 1); i++) quitarVida(quienRecibe, critico);
+    log(`${getCardById(atacanteId)?.nombre || 'Atacante'} inflige ${cantidad || 1} de daño al líder ${quienRecibe === 'jugador' ? 'propio' : 'rival'}.`);
+  }
+
+  function enderezarMana(jugador, color, max) {
+    const z = zonaJugador(jugador);
+    let n = 0;
+    z.mana.forEach(m => {
+      if (max != null && n >= max) return;
+      if (color && colorNormalizadoCarta(getCardById(m.id)) !== color) return;
+      if (m.rested) { m.rested = false; n++; }
+    });
+    z.manaActivo = z.mana.filter(m => !m.rested).length;
+    return n;
+  }
+
+  function descansarMana(jugador, color, max) {
+    const z = zonaJugador(jugador);
+    let n = 0;
+    z.mana.forEach(m => {
+      if (max != null && n >= max) return;
+      if (color && colorNormalizadoCarta(getCardById(m.id)) !== color) return;
+      if (!m.rested) { m.rested = true; n++; }
+    });
+    z.manaActivo = z.mana.filter(m => !m.rested).length;
+    return n;
+  }
+
+  function invocarToken(jugador, tokenId, activo) {
+    const z = zonaJugador(jugador);
+    z.batalla.push(crearUnidadCampo(tokenId, { rested: !activo }));
+    log(`Se invoca la ficha ${getCardById(tokenId)?.nombre || tokenId}.`);
+  }
+
+  function buscarEnMazo(jugador, filtro) {
+    const z = zonaJugador(jugador);
+    const idx = z.mazo.findIndex(id => filtro(getCardById(id), id));
+    if (idx < 0) return null;
+    return z.mazo.splice(idx, 1)[0];
+  }
+
+  function mirarTop(jugador, n) {
+    const z = zonaJugador(jugador);
+    return (z.mazo || []).slice(-n).reverse();
+  }
+
+  function destruirUnidad(jugador, index) {
+    const z = zonaJugador(jugador);
+    const u = z.batalla[index];
+    if (!u) return null;
+    if (u.noDestruible || u.inmunidadHabilidades) return null;
+    const [rem] = z.batalla.splice(index, 1);
+    z.descarte.push(rem.id);
+    return rem;
+  }
+
+  function devolverAMano(jugador, index) {
+    const z = zonaJugador(jugador);
+    const u = z.batalla[index];
+    if (!u) return null;
+    const [rem] = z.batalla.splice(index, 1);
+    z.mano.push(rem.id);
+    return rem;
+  }
+
+  function descartarCartaMano(jugador, index) {
+    const z = zonaJugador(jugador);
+    const [id] = z.mano.splice(index, 1);
+    if (id) z.descarte.push(id);
+    return id;
+  }
+
+  function descartarAleatorio(jugador) {
+    const z = zonaJugador(jugador);
+    if (!z.mano.length) return null;
+    const i = Math.floor(Math.random() * z.mano.length);
+    return descartarCartaMano(jugador, i);
+  }
+
+  function silenciarUnidad(jugador, index, turnos) {
+    const u = zonaJugador(jugador).batalla[index];
+    if (u) u.silenciado = Math.max(u.silenciado || 0, turnos || 1);
+  }
+
+  function cartaEnZona(id, zona) {
+    return getCardById(zona?.copiaDe || id);
+  }
+
+  function estaSilenciada(zona) {
+    return (zona?.silenciado || 0) > 0;
+  }
+
+  function poderBase(id, zona, c) {
+    c = c || ctx;
+    const carta = cartaEnZona(id, zona);
+    if (!carta) return 0;
+    let p = Number(carta.poder || carta.poderEvo || 0);
+    if (zona?.copiaDe) {
+      const orig = getCardById(zona.copiaDe);
+      if (orig) p = Number(orig.poder || 0);
+    }
+    return p;
+  }
+
+  function modBuff(zona, campo) {
+    if (!zona?.buffs) return 0;
+    return (zona.buffs[campo] || 0);
+  }
+
+  function poderEnBatalla(id, zona, c) {
+    let p = poderBase(id, zona, c) + modBuff(zona, 'poder') + modBuff(zona, 'batalla');
+    if (c?.batallaMods?.[id]) p += c.batallaMods[id];
+    if (c?.batallaMods?.[`idx_${c.defensorIndex}`] && c.defensorId === id) p += c.batallaMods[`idx_${c.defensorIndex}`];
+    return p;
+  }
+
+  function tieneCritico(id) {
+    const c = getCardById(id);
+    return tieneTag(c, 'critico') || !!ctx.liderCritico;
+  }
+
+  function tieneVenganza(zona) {
+    if (estaSilenciada(zona)) return false;
+    const c = cartaEnZona(zona?.id, zona);
+    return tieneTag(c, 'venganza');
+  }
+
+  function tieneBloqueador(zona) {
+    if (estaSilenciada(zona)) return false;
+    const c = cartaEnZona(zona?.id, zona);
+    return tieneTag(c, 'bloqueador');
+  }
+
+  function danoAtacante(id, c) {
+    c = c || ctx;
+    const carta = getCardById(id);
+    const zona = c.atacanteZona;
+    if (zona?.flags?.tripleGolpe || tieneTag(carta, 'triple golpe')) return 3;
+    if (zona?.flags?.dobleGolpe || tieneTag(carta, 'doble golpe')) return 2;
+    if (c.liderDobleGolpe) return 2;
+    return 1;
+  }
+
+  function costeEfectivo(carta, jugador, handIndex) {
+    if (!carta) return 0;
+    let coste = Number(carta.costeTotal || 0);
+    const id = getCardId(carta);
+    const reg = REGISTRO_EFECTOS[id];
+    if (reg?.modificarCoste) coste = reg.modificarCoste(carta, jugador, handIndex, coste);
+    if (ctx.costeReducido?.[id] != null) coste = Math.min(coste, ctx.costeReducido[id]);
+    return Math.max(0, coste);
+  }
+
+  function campoActivo(quien) {
+    const z = zonaJugador(quien);
+    return z.campo?.[0] || null;
+  }
+
+  function liderCarta(quien) {
+    const z = zonaJugador(quien);
+    const base = getCardById(z.liderId);
+    if (z.liderDespierto && base) {
+      return Object.assign({}, base, {
+        nombre: base.nombreEvo || base.nombre,
+        poder: base.poderEvo || base.poder,
+        esEvo: true,
+        habilidades: base.habilidadesEvo || base.habilidades
+      });
+    }
+    return base;
+  }
+
+  function liderNombre(quien) {
+    return liderCarta(quien)?.nombre || '';
+  }
+
+  function colorLider(quien) {
+    return colorNormalizadoCarta(liderCarta(quien));
+  }
+
+  function contarTipoEnJuego(tipo, filtroExtra) {
+    let n = 0;
+    ['jugador', 'rival'].forEach(q => {
+      zonaJugador(q).batalla.forEach(u => {
+        const c = getCardById(u.id);
+        if (String(c?.tipo || '').toLowerCase().includes(String(tipo).toLowerCase())) {
+          if (!filtroExtra || filtroExtra(c, u, q)) n++;
+        }
+      });
+    });
+    return n;
+  }
+
+  function contarAnimatronicos() {
+    return contarTipoEnJuego('animatr');
+  }
+
+  function contarOrigenEnDescarte(jugador, origen) {
+    return zonaJugador(jugador).descarte.filter(id => {
+      const c = getCardById(id);
+      return String(c?.origen || '').toLowerCase().includes(String(origen).toLowerCase());
+    }).length;
+  }
+
+  function unidadesEnCampo(quien, filtro) {
+    return zonaJugador(quien).batalla
+      .map((u, i) => ({ u, i }))
+      .filter(x => !filtro || filtro(x.u, x.i, getCardById(x.u.id)));
+  }
+
+  function opcionesUnidades(quien, filtro, prefijo) {
+    return unidadesEnCampo(quien, filtro).map(({ u, i }) => ({
+      label: `${prefijo || ''}${getCardById(u.id)?.nombre || u.id}`,
+      value: i
+    }));
+  }
+
+  function elegirConModal(titulo, opciones) {
+    return new Promise(resolve => {
+      const modal = document.getElementById('selector-modal');
+      if (modal && opciones?.length) {
+        const body = modal.querySelector('.selector-body') || modal.querySelector('#selector-body') || modal.querySelector('#selector-options');
+        const titleEl = modal.querySelector('.selector-title') || modal.querySelector('#selector-title');
+        if (titleEl) titleEl.textContent = titulo;
+        if (body) {
+          body.innerHTML = opciones.map((o, i) =>
+            `<button type="button" class="plate-btn selector-opt" data-i="${i}">${o.label || o}</button>`
+          ).join('');
+          body.querySelectorAll('.selector-opt').forEach(btn => {
+            btn.onclick = () => {
+              modal.classList.add('hidden');
+              const idx = Number(btn.dataset.i);
+              resolve(opciones[idx]?.value !== undefined ? opciones[idx].value : opciones[idx]);
+            };
+          });
+        }
+        modal.classList.remove('hidden');
+        return;
+      }
+      const labels = (opciones || []).map(o => o.label || o);
+      const sel = prompt(`${titulo}\n${labels.map((l, i) => `${i + 1}. ${l}`).join('\n')}`);
+      const n = Number(sel);
+      if (Number.isFinite(n) && n >= 1 && n <= opciones.length) {
+        const o = opciones[n - 1];
+        resolve(o.value !== undefined ? o.value : o);
+      } else resolve(null);
+    });
+  }
+
+  async function elegirDescarteObligatorio(jugador, titulo) {
+    const z = zonaJugador(jugador);
+    if (!z.mano.length) return null;
+    const opts = z.mano.map((id, i) => ({ label: getCardById(id)?.nombre || id, value: i }));
+    const idx = await elegirConModal(titulo || 'Elige una carta para descartar', opts);
+    if (idx == null) return descartarAleatorio(jugador);
+    return descartarCartaMano(jugador, idx);
+  }
+
+  async function ambosDescartan(titulo) {
+    await elegirDescarteObligatorio('jugador', titulo);
+    await elegirDescarteObligatorio('rival', titulo);
+  }
+
+  function addBuff(zona, campo, val) {
+    if (!zona.buffs) zona.buffs = { poder: 0, combo: 0, batalla: 0 };
+    zona.buffs[campo] = (zona.buffs[campo] || 0) + val;
+  }
+
+  function addFlag(zona, flag, val) {
+    if (!zona.flags) zona.flags = {};
+    zona.flags[flag] = val !== undefined ? val : true;
+  }
+
+  function esDesafio(carta) {
+    return tieneTag(carta, 'desafio') || tieneTag(carta, 'desafío');
+  }
+
+  function activarDesafioIniciador(quien) {
+    const l = liderNombre(quien);
+    if (!l.toLowerCase().includes('iniciador')) return;
+    ctx.desafioJugado = quien;
+  }
+
+  function robarAtaqueLider(quien) {
+    robar(quien, 1);
+    log(`${liderCarta(quien)?.nombre} roba 1 carta al atacar.`);
+  }
+
+  function efectoCampoPermanente(quien, c) {
+    let bonus = 0;
+    const campo = campoActivo(quien);
+    if (!campo) return bonus;
+    const id = campo.id;
+    if (id === 'energia') bonus += 5000;
+    return bonus;
+  }
+
+  function modificarPoderBatalla(id, zona, c) {
+    let mod = 0;
+    c = c || ctx;
+    if (id === 'lucas' || zona?.id === 'lucas') {
+      mod += contarTipoEnJuego('animal') * 5000;
+    }
+    if (id === 'peppa' && c.atacanteId === id) {
+      mod += (zonaJugador(c.atacanteQuien).combo?.length || 0) * 2500;
+    }
+    const campoQ = c.atacanteQuien || 'jugador';
+    if (campoActivo(campoQ)?.id === 'energia') mod += 5000;
+    if (c.atacanteId === id && ctx.bonusSinBloqueador) mod += ctx.bonusSinBloqueador;
+    if (c.atacanteId === id && ctx.bonusVsBloqueador) mod += ctx.bonusVsBloqueador;
+    if (c.atacanteId === id && ctx.phantomBonus) mod += ctx.phantomBonus;
+    if (c.defensorId === id && ctx.debuffDefensor) mod += ctx.debuffDefensor;
+    if (ctx.batallaMods?.['def_' + c.objetivo?.index] && c.objetivo?.tipo === 'unidad') {
+      mod += ctx.batallaMods['def_' + c.objetivo.index];
+    }
+    if (ctx.batallaMods?.[id]) mod += ctx.batallaMods[id];
+    return mod;
+  }
+
+  Object.assign(ctx, {
+    zonaJugador, rivalDe, log, robar, barajar, tirarDado, crearUnidadCampo,
+    enderezarMana, descansarMana, invocarToken, buscarEnMazo, mirarTop,
+    destruirUnidad, devolverAMano, descartarCartaMano, descartarAleatorio,
+    elegirConModal, elegirDescarteObligatorio, ambosDescartan, silenciarUnidad,
+    infligirDanoLider, quitarVida, addBuff, addFlag, unidadesEnCampo,
+    opcionesUnidades, liderCarta, liderNombre, colorLider, contarAnimatronicos,
+    contarOrigenEnDescarte, esDesafio, activarDesafioIniciador, marcarHabilidadUsada,
+    habilidadUsada, claveTurno, campoActivo, contarTipoEnJuego
+  });
+
+  const REGISTRO_EFECTOS = {};
+
+  function registrar(id, efectos) {
+    REGISTRO_EFECTOS[id] = Object.assign(REGISTRO_EFECTOS[id] || {}, efectos);
+  }
+
+  const R = registrar;
+
+  // —— LÍDERES ——
+  R('red_lider_01', {
+    async alAtacarLider(quien) {
+      robar(quien, 1);
+      const top = mirarTop(quien, 1)[0];
+      if (!top) return;
+      const c = getCardById(top);
+      if (String(c?.tipo || '').toLowerCase().includes('animatr')) {
+        const ok = await elegirConModal('¿Revelar Animatrónico y añadir a mano descartando otra?', [
+          { label: 'Sí', value: true }, { label: 'No', value: false }
+        ]);
+        if (ok) {
+          await elegirDescarteObligatorio(quien, 'Descarta otra carta');
+          zonaJugador(quien).mazo.pop();
+          zonaJugador(quien).mano.push(top);
+          log('Animatrónico superior añadido a la mano.');
+        }
+      }
+    },
+    activablesLider(quien) {
+      if (!liderCarta(quien).esEvo) return [];
+      if (habilidadUsada(claveTurno(quien, 'rl1_act'))) return [];
+      return [{ key: 'mira3', label: 'Mira 3 — jugar Animatrónico ≤3' }];
+    },
+    async ejecutarActivar(key, quien) {
+      if (key !== 'mira3') return;
+      const tops = mirarTop(quien, 3);
+      const anim = tops.map((id, i) => ({ id, i, c: getCardById(id) }))
+        .filter(x => String(x.c?.tipo || '').toLowerCase().includes('animatr') && Number(x.c?.costeTotal || 99) <= 3);
+      if (anim.length) {
+        const pick = await elegirConModal('Elige Animatrónico para jugar gratis', anim.map(x => ({ label: x.c.nombre, value: x.id })));
+        if (pick) {
+          const z = zonaJugador(quien);
+          const mi = z.mazo.lastIndexOf(pick);
+          if (mi >= 0) z.mazo.splice(mi, 1);
+          z.batalla.push(crearUnidadCampo(pick, { rested: false }));
+          tops.filter(id => id !== pick).forEach(id => { z.mazo.unshift(id); const ix = z.mazo.lastIndexOf(id); if (ix >= 0) z.mazo.splice(ix, 1); });
+          log('Animatrónico jugado gratis desde el top.');
+        }
+      }
+      marcarHabilidadUsada(claveTurno(quien, 'rl1_act'));
+    }
+  });
+
+  R('red_lider_02', {
+    alAtacarLider(quien) { robar(quien, 1); },
+    activablesLider(quien) {
+      if (liderCarta(quien).esEvo) return [];
+      if (habilidadUsada(claveTurno(quien, 'rl2_act'))) return [];
+      if (zonaJugador(quien).mano.length < 5) return [];
+      return [{ key: 'buffRoja', label: '+5000 a unidad roja' }];
+    },
+    async ejecutarActivar(key, quien) {
+      if (key !== 'buffRoja') return;
+      const opts = opcionesUnidades(quien, (u, i, c) => colorNormalizadoCarta(c) === 'rojo');
+      const idx = await elegirConModal('Elige unidad roja', opts);
+      if (idx != null) addBuff(zonaJugador(quien).batalla[idx], 'poder', 5000);
+      marcarHabilidadUsada(claveTurno(quien, 'rl2_act'));
+    },
+    alCounterEnemigo(quien) { /* Capitalismo evo — handled in pagarImpuestoCounter */ }
+  });
+
+  R('blue_lider_01', {
+    async alAtacarLider(quien) {
+      if (liderCarta(quien).esEvo) robar(quien, 1);
+      if (campoActivo(quien)?.id !== 'anillo') await ambosDescartan('INFINITYCRAFT: descarta 1 carta');
+    },
+    puedeAtacarObjetivo(atacanteId, objetivo, quien) {
+      if (objetivo?.tipo === 'unidad') return false;
+      return true;
+    }
+  });
+
+  R('blue_lider_02', {
+    alAtacarLider(quien) { robar(quien, 1); },
+    activablesLider(quien) {
+      if (habilidadUsada(claveTurno(quien, 'bl2_act'))) return [];
+      return [{ key: 'descRoba', label: 'Descarta 1: roba 1 y +5000 líder' }];
+    },
+    async ejecutarActivar(key, quien) {
+      if (key !== 'descRoba') return;
+      await elegirDescarteObligatorio(quien);
+      robar(quien, 1);
+      addBuff(zonaJugador(quien).liderZona, 'poder', 5000);
+      marcarHabilidadUsada(claveTurno(quien, 'bl2_act'));
+    },
+    activablesLiderEvo(quien) {
+      if (!liderCarta(quien).esEvo || habilidadUsada(claveTurno(quien, 'bl2_evo'))) return [];
+      return [{ key: 'recycle', label: 'Recupera carta Grupo/Minecraft del descarte' }];
+    },
+    alJugarRivalGratis(rival) {
+      if (!liderCarta('jugador').esEvo) return;
+      if (habilidadUsada(claveTurno('rival', 'bl2_tax'))) return;
+      elegirDescarteObligatorio(rival, 'Hugopima evo: descarta 1');
+      marcarHabilidadUsada(claveTurno('rival', 'bl2_tax'));
+    }
+  });
+
+  R('green_lider_01', {
+    alAtacarLider(quien) { robar(quien, 1); },
+    activablesLider(quien) {
+      if (liderCarta(quien).esEvo || habilidadUsada(claveTurno(quien, 'gl1_act'))) return [];
+      return [{ key: 'manaDesc', label: 'Descarta 1: maná del descarte/mano' }];
+    },
+    async ejecutarActivar(key, quien) {
+      if (key !== 'manaDesc') return;
+      await elegirDescarteObligatorio(quien);
+      const z = zonaJugador(quien);
+      const opts = z.descarte.map((id, i) => ({ label: getCardById(id)?.nombre, value: { src: 'desc', i } }))
+        .concat(z.mano.map((id, i) => ({ label: getCardById(id)?.nombre + ' (mano)', value: { src: 'mano', i } })));
+      const pick = await elegirConModal('Elige carta para maná', opts);
+      if (pick?.src === 'desc') { const [id] = z.descarte.splice(pick.i, 1); z.mana.push({ id, rested: true }); }
+      else if (pick?.src === 'mano') { const [id] = z.mano.splice(pick.i, 1); z.mana.push({ id, rested: true }); }
+      z.manaActivo = z.mana.filter(m => !m.rested).length;
+      marcarHabilidadUsada(claveTurno(quien, 'gl1_act'));
+    }
+  });
+
+  R('green_lider_02', {
+    alAtacarLider(quien) { robar(quien, 1); },
+    activablesLider(quien) {
+      if (liderCarta(quien).esEvo || habilidadUsada(claveTurno(quien, 'gl2_act'))) return [];
+      const riv = unidadesEnCampo(rivalDe(quien), u => u.rested);
+      if (!riv.length) return [];
+      return [{ key: 'buffVerde', label: '+5000 unidad verde' }];
+    },
+    async ejecutarActivar(key, quien) {
+      const opts = opcionesUnidades(quien, (u, i, c) => colorNormalizadoCarta(c) === 'verde');
+      const idx = await elegirConModal('Unidad verde +5000', opts);
+      if (idx != null) addBuff(zonaJugador(quien).batalla[idx], 'poder', 5000);
+      marcarHabilidadUsada(claveTurno(quien, 'gl2_act'));
+    },
+    alGanarCombateVerde(c) {
+      if (!liderCarta(c.atacanteQuien).esEvo) return;
+      if (habilidadUsada(claveTurno(c.atacanteQuien, 'gl2_dmg'))) return;
+      const cAt = getCardById(c.atacanteId);
+      if (colorNormalizadoCarta(cAt) !== 'verde') return;
+      infligirDanoLider(rivalDe(c.atacanteQuien), 1, c.atacanteId);
+      marcarHabilidadUsada(claveTurno(c.atacanteQuien, 'gl2_dmg'));
+    }
+  });
+
+  R('black_lider_01', {
+    alAtacarLider(quien) {
+      robar(quien, 1);
+      if (ctx.desafioJugado === quien) {
+        const opts = opcionesUnidades(quien).concat([{ label: 'Tu Líder', value: 'lider' }]);
+        elegirConModal('Iniciador: +5000 a unidad o líder', opts).then(v => {
+          if (v === 'lider') addBuff(zonaJugador(quien).liderZona, 'poder', 5000);
+          else if (v != null) addBuff(zonaJugador(quien).batalla[v], 'poder', 5000);
+        });
+      }
+    },
+    activablesLider(quien) {
+      if (!liderCarta(quien).esEvo || habilidadUsada(claveTurno(quien, 'bl1_bat'))) return [];
+      return [{ key: 'desafioBat', label: 'Descarta Desafío: -10000 rival' }];
+    },
+    async ejecutarActivar(key, quien) {
+      const z = zonaJugador(quien);
+      const des = z.mano.map((id, i) => ({ id, i, c: getCardById(id) })).filter(x => esDesafio(x.c));
+      if (!des.length) return;
+      const pick = await elegirConModal('Descarta carta Desafío', des.map(x => ({ label: x.c.nombre, value: x.i })));
+      if (pick == null) return;
+      descartarCartaMano(quien, pick);
+      ctx.liderCritico = true;
+      addBuff(z.liderZona, 'poder', 5000);
+      const rivIdx = await elegirConModal('-10000 a unidad rival', opcionesUnidades(rivalDe(quien)));
+      if (rivIdx != null) ctx.batallaMods[rivalDe(quien) + '_' + rivIdx] = -10000;
+      marcarHabilidadUsada(claveTurno(quien, 'bl1_bat'));
+    }
+  });
+
+  R('black_lider_02', {
+    alAtacarLider(quien) { robar(quien, 1); },
+    async alAtacarLiderEvo(quien) {
+      await elegirDescarteObligatorio(rivalDe(quien), 'SOMETHING: descarta o rinde unidad');
+    },
+    alSerAtacadaOMORI(quien) {
+      if (habilidadUsada(claveTurno(quien, 'bl2_top'))) return;
+      const top = mirarTop(quien, 1)[0];
+      if (!top) return;
+      elegirConModal('Mari: ¿dejar top o mandarlo al descarte?', [
+        { label: 'Dejar', value: false }, { label: 'Descartar top', value: true }
+      ]).then(ok => {
+        if (ok) { zonaJugador(quien).descarte.push(zonaJugador(quien).mazo.pop()); log('Top mandado al descarte.'); }
+        marcarHabilidadUsada(claveTurno(quien, 'bl2_top'));
+      });
+    }
+  });
+
+  // —— UNIDADES AZULES ——
+  R('alberto', {
+    alJugar(quien) { enderezarMana(quien, null, 1); log('Alberto endereza 1 maná.'); }
+  });
+
+  R('anillo', {
+    alJugar(quien) { zonaJugador(quien).campo = [{ id: 'anillo', rested: false }]; log('Anillo de cobre en campo.'); }
+  });
+
+  R('agus', {
+    alJugar(quien) {
+      const id = buscarEnMazo(quien, c => String(c?.origen || '').toLowerCase().includes('animal') || String(c?.personaje || '').toLowerCase() === 'lucas');
+      if (id) { zonaJugador(quien).mano.push(id); log('Agustín busca Animal/Lucas.'); }
+    }
+  });
+
+  R('jorlol207', {
+    async alJugar(quien) {
+      const ok = await elegirConModal('¿Descartar 1 para buscar Anillo de Cobre?', [{ label: 'Sí', value: true }, { label: 'No', value: false }]);
+      if (ok) {
+        await elegirDescarteObligatorio(quien);
+        const anillo = buscarEnMazo(quien, (c, id) => id === 'anillo');
+        if (anillo) zonaJugador(quien).mano.push(anillo);
+      }
+      barajar(quien);
+    }
+  });
+
+  R('hugopima', {
+    alJugar(quien) {
+      const z = zonaJugador(quien);
+      const tops = z.mazo.splice(-7, 7);
+      const grupo = tops.filter(id => String(getCardById(id)?.origen || '').toLowerCase().includes('grupo'));
+      if (grupo.length) z.mano.push(grupo[0]);
+      z.mazo = tops.filter(id => id !== grupo[0]).concat(z.mazo);
+      barajar(quien);
+      log('Hugopima mira 7 y toma Grupo.');
+    }
+  });
+
+  R('alejandro', {
+    modificarCoste(carta, jugador) {
+      if (contarOrigenEnDescarte(jugador, 'grupo') >= 2) return Math.max(0, Number(carta.costeTotal) - 2);
+      return Number(carta.costeTotal);
+    }
+  });
+
+  R('andrea', {
+    alJugar(quien) { invocarToken(quien, 'tokend', true); },
+    modificarPoder(id, zona, c, p) {
+      if (id === 'andrea' || id === 'tokend') {
+        if (zonaJugador(c.quien || 'jugador').mano.length <= 4) return p;
+      }
+      return p;
+    },
+    danoExtra(id) {
+      if (zonaJugador('jugador').mano.length <= 4 && (id === 'andrea' || id === 'tokend')) return 2;
+      return null;
+    }
+  });
+
+  R('sergio', {
+    async alJugar(quien) {
+      const opts = opcionesUnidades(rivalDe(quien));
+      if (!opts.length) return;
+      const idx = await elegirConModal('Devuelve unidad rival a mano', opts);
+      if (idx != null) devolverAMano(rivalDe(quien), idx);
+    }
+  });
+
+  R('victor-hugo', {
+    modificarCoste(carta, jugador, handIndex) {
+      const z = zonaJugador(jugador);
+      const otras = z.mano.filter((_, i) => i !== handIndex).length;
+      if (otras <= 3) return 6;
+      return Number(carta.costeTotal);
+    },
+    alGanarCombate(c) {
+      infligirDanoLider(rivalDe(c.atacanteQuien), danoAtacante(c.atacanteId, c), c.atacanteId);
+    }
+  });
+
+  R('lucas', {
+    modificarPoder(id, zona, c, p) { return p + contarTipoEnJuego('animal') * 5000; }
+  });
+
+  R('carlospro', {});
+
+  R('momolac', {
+    async alPerderCombate(c) {
+      if (!String(liderNombre(c.atacanteQuien)).toUpperCase().includes('INFINITYCRAFT')) return;
+      const ok = await elegirConModal('Momolac: ¿descartar 1 para rejugar Momolac?', [{ label: 'Sí', value: true }, { label: 'No', value: false }]);
+      if (ok) {
+        await elegirDescarteObligatorio(c.atacanteQuien);
+        zonaJugador(c.atacanteQuien).batalla.push(crearUnidadCampo('momolac', { rested: false }));
+      }
+    }
+  });
+
+  R('fideos', {
+    alCombo(quien, cardId, comboCtx) {
+      if (colorLider(quien) === 'azul' && zonaJugador(quien).vida.length <= 4) {
+        robar(quien, 1);
+        if (comboCtx) comboCtx.bonusCombo = (comboCtx.bonusCombo || 0) + 10000;
+        log('Fideos Malvados: +10000 combo y robo.');
+      }
+    }
+  });
+
+  R('lumi', {
+    alCounterAtaque(quien) { enderezarMana(quien, 'azul', 1); }
+  });
+
+  R('cristian', {
+    alAtacar(quien) { descansarMana(rivalDe(quien), null, 0); cristianRest(quien); },
+    alSerAtacada(c) { cristianRest(c.atacanteQuien === 'jugador' ? 'rival' : 'jugador'); }
+  });
+  function cristianRest(quienAtacante) {
+    const riv = rivalDe(quienAtacante);
+    const act = unidadesEnCampo(riv, u => !u.rested);
+    if (act.length) { act[0].u.rested = true; log('Cristian obliga a descansar una unidad rival activa.'); }
+  }
+
+  R('angel', {
+    async alAtacar(quien, ref, zona) {
+      const ok = await elegirConModal('¿Tomar 1 vida? +10000 y Doble Golpe', [{ label: 'Sí', value: true }, { label: 'No', value: false }]);
+      if (ok && zonaJugador(quien).vida.length) {
+        zonaJugador(quien).mano.push(zonaJugador(quien).vida.pop());
+        addBuff(zona, 'poder', 10000);
+        addFlag(zona, 'dobleGolpe', true);
+      }
+    }
+  });
+
+  R('hog', {
+    alJugar(quien) {
+      if (zonaJugador(quien).mana.length >= 4) enderezarMana(quien, 'azul', 2);
+    }
+  });
+
+  R('nyx', {
+    async alJugar(quien) {
+      if (colorLider(quien) !== 'azul') return;
+      await ambosDescartan('Nyx');
+      robar(quien, 1);
+    }
+  });
+
+  R('vagabundo', {
+    noDestruible: true,
+    async alSerAtacada(c, zona) {
+      if (c.pa > poderEnBatalla(zona.id, zona, c)) {
+        const ok = await elegirConModal('¿Devolver Vagabundo a mano?', [{ label: 'Sí', value: true }, { label: 'No', value: false }]);
+        if (ok) { devolverAMano(c.atacanteQuien === 'jugador' ? 'rival' : 'jugador', c.objetivo.index); c.cancelarCombate = true; }
+      }
+    }
+  });
+
+  R('correas', {
+    alDeclararAtaque(quien, ref, obj) {
+      if (!estadoPartida?.bloqueadorUsado) ctx.bonusSinBloqueador = 5000;
+      return obj;
+    }
+  });
+
+  R('impostor', {
+    async alJugar(quien) {
+      if (colorLider(quien) !== 'azul') return;
+      const opts = opcionesUnidades(rivalDe(quien));
+      if (!opts.length) return;
+      const idx = await elegirConModal('Copia unidad rival', opts);
+      if (idx != null) {
+        const orig = zonaJugador(rivalDe(quien)).batalla[idx];
+        const u = zonaJugador(quien).batalla[zonaJugador(quien).batalla.length - 1];
+        u.copiaDe = orig.id;
+        log('Impostor copia poder y habilidades.');
+      }
+    }
+  });
+
+  R('grito', {
+    async alAtacar(quien, ref, zona) {
+      const ok = await elegirConModal('¿Tomar 1 vida? +10000 este turno', [{ label: 'Sí', value: true }, { label: 'No', value: false }]);
+      if (ok && zonaJugador(quien).vida.length) {
+        zonaJugador(quien).mano.push(zonaJugador(quien).vida.pop());
+        addBuff(zona, 'poder', 10000);
+      }
+    }
+  });
+
+  R('brawlera', {
+    alJugar(quien) {
+      const id = buscarEnMazo(quien, c => String(c?.origen || '').toLowerCase().includes('grupo') && Number(c?.costeTotal || 99) <= 2);
+      if (id) { zonaJugador(quien).batalla.push(crearUnidadCampo(id, { rested: true })); barajar(quien); }
+    }
+  });
+
+  R('echen', {
+    activablesMano(quien) {
+      return [{ key: 'echen', label: 'Echar unidades mutuamente' }];
+    },
+    async ejecutarActivar(key, quien) {
+      const prop = unidadesEnCampo(quien);
+      const riv = unidadesEnCampo(rivalDe(quien));
+      if (prop.length) {
+        const i = await elegirConModal('Destruye tu unidad', opcionesUnidades(quien));
+        if (i != null) destruirUnidad(quien, i);
+      }
+      if (riv.length) {
+        const i = await elegirConModal('Rival destruye unidad', opcionesUnidades(rivalDe(quien)));
+        if (i != null) destruirUnidad(rivalDe(quien), i);
+      } else if (!prop.length) {
+        const top = zonaJugador(rivalDe(quien)).mazo.pop();
+        if (top) zonaJugador(rivalDe(quien)).descarte.push(top);
+      }
+    }
+  });
+
+  R('fnaf', {
+    activablesMano(quien) {
+      if (estadoPartida?.faseIndex !== 2 && estadoPartida?.faseIndex !== 3) return [];
+      return [{ key: 'fnaf', label: 'FNAMP: +5000 y endereza maná azul' }];
+    },
+    async ejecutarActivar(key, quien) {
+      const opts = [{ label: 'Tu Líder', value: 'lider' }].concat(opcionesUnidades(quien));
+      const v = await elegirConModal('+5000 combate', opts);
+      if (v === 'lider') addBuff(zonaJugador(quien).liderZona, 'poder', 5000);
+      else if (v != null) addBuff(zonaJugador(quien).batalla[v], 'poder', 5000);
+      enderezarMana(quien, 'azul', 1);
+    }
+  });
+
+  // —— ROJAS / FNAF ——
+  R('freddy', {
+    alJugar(quien) {
+      const z = zonaJugador(quien);
+      const tops = z.mazo.splice(-7, 7);
+      const anim = tops.find(id => String(getCardById(id)?.tipo || '').toLowerCase().includes('animatr'));
+      if (anim) z.mano.push(anim);
+      z.mazo = tops.filter(id => id !== anim).concat(z.mazo);
+      barajar(quien);
+    }
+  });
+
+  R('bonnie', {
+    modificarCoste(carta, jugador) {
+      const turno = estadoPartida?.turno || 1;
+      if (turno <= 2) return Number(carta.costeTotal);
+      if (contarTipoEnJuego('animatr') === 0) return 0;
+      return Number(carta.costeTotal);
+    }
+  });
+
+  R('chica', {
+    alJugar(quien) {
+      const pizza = buscarEnMazo(quien, (c, id) => id === 'pizza' || String(c?.nombre || '').toLowerCase().includes('pizza'));
+      if (pizza) { zonaJugador(quien).mano.push(pizza); barajar(quien); }
+    }
+  });
+
+  R('foxy', { alJugar(quien) { descartarAleatorio(rivalDe(quien)); } });
+
+  R('springtrap', {
+    alJugar(quien) {
+      const riv = rivalDe(quien);
+      for (let i = zonaJugador(riv).batalla.length - 1; i >= 0; i--) {
+        const c = getCardById(zonaJugador(riv).batalla[i].id);
+        if (Number(c?.poder || 0) <= 15000) destruirUnidad(riv, i);
+      }
+      log('Springtrap destruye unidades ≤15000.');
+    }
+  });
+
+  R('clyde', {
+    alDeclararAtaque(quien, ref, obj) {
+      ctx.todosBloqueadores = true;
+      return obj;
+    },
+    modificarCosteEvo() { return 5; }
+  });
+
+  R('purple', {
+    puedeJugar() { return contarAnimatronicos() >= 3; },
+    async alJugar(quien) {
+      const v = await elegirConModal('Purple Guy', [
+        { label: 'Destruir carta rival', value: 'mesa' },
+        { label: 'Eliminar 1 vida rival', value: 'vida' }
+      ]);
+      if (v === 'vida') quitarVida(rivalDe(quien), false);
+      else {
+        const o = opcionesUnidades(rivalDe(quien));
+        if (o.length) {
+          const idx = await elegirConModal('Destruye unidad rival', o);
+          if (idx != null) destruirUnidad(rivalDe(quien), idx);
+        }
+      }
+      for (let qi = 0; qi < 2; qi++) {
+        const q = qi === 0 ? 'jugador' : 'rival';
+        for (let i = zonaJugador(q).batalla.length - 1; i >= 0; i--) {
+          const u = zonaJugador(q).batalla[i];
+          if (String(getCardById(u.id)?.tipo || '').toLowerCase().includes('animatr')) {
+            zonaJugador(q).batalla.splice(i, 1);
+            zonaJugador(quien).mazo.push(u.id);
+          }
+        }
+      }
+      barajar(quien);
+    }
+  });
+
+  R('phone', {
+    activables(quien, u) {
+      return [{ key: 'phoneCombo', label: 'Al combinar: elimina Bloqueador ≤3 rival' }];
+    },
+    async alComboPhone(quien) {
+      const opts = unidadesEnCampo(rivalDe(quien), (u, i, c) => tieneBloqueador(u) && Number(c?.costeTotal || 99) <= 3)
+        .map(({ u, i }) => ({ label: getCardById(u.id)?.nombre, value: i }));
+      if (!opts.length) return;
+      const idx = await elegirConModal('Phone Guy: elimina Bloqueador', opts);
+      if (idx != null) destruirUnidad(rivalDe(quien), idx);
+    }
+  });
+
+  R('vecino', { alJugar(quien) { robar(quien, 1); } });
+
+  R('pizza', {
+    activablesMano(quien) {
+      return [{ key: 'pizza', label: '+5000 y endereza 2 maná' }];
+    },
+    async ejecutarActivar(key, quien) {
+      const opts = [{ label: 'Líder', value: 'lider' }].concat(opcionesUnidades(quien));
+      const v = await elegirConModal('Pizza slice: elige carta +5000', opts);
+      if (v === 'lider') addBuff(zonaJugador(quien).liderZona, 'poder', 5000);
+      else if (v != null) addBuff(zonaJugador(quien).batalla[v], 'poder', 5000);
+      enderezarMana(quien, null, 2);
+    }
+  });
+
+  R('golden', {
+    alCombo(quien, cardId, comboCtx) {
+      if (colorLider(quien) === 'rojo' && zonaJugador(quien).vida.length <= 4) {
+        robar(quien, 1);
+        if (comboCtx) comboCtx.bonusCombo = (comboCtx.bonusCombo || 0) + 10000;
+      }
+    }
+  });
+
+  R('shadow', { alCounterAtaque(quien) { enderezarMana(quien, 'rojo', 1); } });
+
+  R('balloon', {
+    async alJugar(quien) {
+      const opts = opcionesUnidades(rivalDe(quien), (u, i, c) => Number(c?.costeTotal || 99) <= 3);
+      const idx = await elegirConModal('Balloon Boy: silencia unidad ≤3', opts);
+      if (idx != null) { silenciarUnidad(rivalDe(quien), idx, 2); zonaJugador(rivalDe(quien)).batalla[idx].noCombo = true; }
+    }
+  });
+
+  R('jeffrey', {
+    async alJugar(quien) {
+      const riv = rivalDe(quien);
+      const opts = zonaJugador(riv).mano.map((id, i) => ({ id, i, c: getCardById(id) }))
+        .filter(x => claseNormalizada(x.c) === 'unidad' && Number(x.c?.costeTotal || 99) <= 2)
+        .map(x => ({ label: x.c.nombre, value: x.i }));
+      if (opts.length) {
+        const idx = await elegirConModal('Rival descarta unidad ≤2 de mano', opts);
+        if (idx != null) descartarCartaMano(riv, idx);
+      }
+    }
+  });
+
+  R('Rdiddy', {
+    alUsarBloqueador(quien) {
+      const riv = rivalDe(quien);
+      if (zonaJugador(riv).combo.length) {
+        const c = zonaJugador(riv).combo.pop();
+        zonaJugador(riv).descarte.push(c.id || c);
+        log('P. Diddy mueve combo rival al descarte.');
+      }
+    }
+  });
+
+  R('kirk', { puedeSerAtacadoActivo: true });
+
+  R('musk', {
+    activables(quien, u) {
+      if (habilidadUsada(claveTurno(quien, 'musk'))) return [];
+      return [{ key: 'musk', label: 'Paga 1 azul: roba 2, descarta 1' }];
+    },
+    async ejecutarActivar(key, quien) {
+      descansarMana(quien, 'azul', 1);
+      robar(quien, 2);
+      await elegirDescarteObligatorio(quien);
+      marcarHabilidadUsada(claveTurno(quien, 'musk'));
+    }
+  });
+
+  R('hasnain', {
+    async alJugar(quien) {
+      const tops = mirarTop(quien, 3);
+      if (!tops.length) return;
+      const pick = await elegirConModal('Hasnain: elige 1 de top 3', tops.map(id => ({ label: getCardById(id)?.nombre, value: id })));
+      if (pick) {
+        const z = zonaJugador(quien);
+        z.mazo = z.mazo.filter(id => id !== pick);
+        z.mano.push(pick);
+        barajar(quien);
+      }
+    }
+  });
+
+  R('coolboy', {
+    puedeSerObjetivo(atacanteId) {
+      const c = getCardById(atacanteId);
+      return Number(c?.poder || 0) < 20000;
+    }
+  });
+
+  R('muzammill', {
+    async alJugar(quien) {
+      if (colorLider(quien) !== 'azul') return;
+      const opts = opcionesUnidades(rivalDe(quien), (u, i, c) => Number(c?.costeTotal || 99) <= 2).slice(0, 2);
+      for (const o of opts) {
+        const idx = await elegirConModal('Devuelve unidad ≤2', [o, { label: 'Parar', value: -1 }]);
+        if (idx >= 0) devolverAMano(rivalDe(quien), idx);
+        else break;
+      }
+    }
+  });
+
+  R('random', {
+    async alJugar(quien) {
+      const d1 = tirarDado(), d2 = tirarDado();
+      log(`Dados: jugador ${d1}, rival ${d2}`);
+      const perdedor = d1 === d2 ? null : (d1 < d2 ? quien : rivalDe(quien));
+      if (perdedor) {
+        const idx = await elegirConModal('Destruye una de tus unidades', opcionesUnidades(perdedor));
+        if (idx != null) destruirUnidad(perdedor, idx);
+      }
+    }
+  });
+
+  R('biggy', {
+    alPerderCombate(c) { robar(c.atacanteQuien, 1); }
+  });
+
+  R('twit', {
+    activablesMano(quien) {
+      return [{ key: 'twit', label: 'Silencia unidad rival' }];
+    },
+    async ejecutarActivar(key, quien) {
+      const idx = await elegirConModal('Cancelado en Twitter', opcionesUnidades(rivalDe(quien)));
+      if (idx != null) silenciarUnidad(rivalDe(quien), idx, 2);
+    }
+  });
+
+  R('paloma', { inmunidadHabilidades: true });
+
+  R('juegos', {
+    alCounterPlay(quien, cartaRival) {
+      if (claseNormalizada(cartaRival) === 'unidad' && Number(cartaRival.costeTotal || 99) <= 4) {
+        log('Juegos Indios niega la invocación.');
+        return true;
+      }
+      return false;
+    }
+  });
+
+  // —— VERDES / MINECRAFT ——
+  R('todo', {
+    activablesMano(quien) {
+      return [{ key: 'todo', label: 'Dado 20: +15000' }];
+    },
+    async ejecutarActivar(key, quien) {
+      const d = tirarDado();
+      log(`Todo al verde: ${d}`);
+      if (d === 20) {
+        const v = await elegirConModal('+15000 a', [{ label: 'Líder', value: 'lider' }].concat(opcionesUnidades(quien)));
+        if (v === 'lider') addBuff(zonaJugador(quien).liderZona, 'poder', 15000);
+        else if (v != null) addBuff(zonaJugador(quien).batalla[v], 'poder', 15000);
+      }
+    }
+  });
+
+  R('ruleta', {
+    activablesMano(quien) {
+      return [{ key: 'ruleta', label: 'Dado 10-19: +5000' }];
+    },
+    async ejecutarActivar(key, quien) {
+      const d = tirarDado();
+      if (d >= 10 && d <= 19) {
+        const v = await elegirConModal('+5000 a', [{ label: 'Líder', value: 'lider' }].concat(opcionesUnidades(quien)));
+        if (v === 'lider') addBuff(zonaJugador(quien).liderZona, 'poder', 5000);
+        else if (v != null) addBuff(zonaJugador(quien).batalla[v], 'poder', 5000);
+      }
+    }
+  });
+
+  R('cazon', {
+    alGanarCombate(c) {
+      const top = zonaJugador(rivalDe(c.atacanteQuien)).mazo.pop();
+      if (top) zonaJugador(rivalDe(c.atacanteQuien)).descarte.push(top);
+    }
+  });
+
+  R('juan', {
+    async alJugar(quien) {
+      if (zonaJugador(quien).mana.length >= 6) {
+        const opts = opcionesUnidades(rivalDe(quien));
+        if (opts.length) {
+          const idx = await elegirConModal('Juan destruye unidad rival', opts);
+          if (idx != null) destruirUnidad(rivalDe(quien), idx);
+        }
+      }
+    }
+  });
+
+  R('dymytry', {
+    activables(quien, u) {
+      return [{ key: 'absJuan', label: 'Absorción: Juan → busca Dymytry ≤5' }];
+    },
+    async ejecutarActivar(key, quien, extra) {
+      const z = zonaJugador(quien);
+      const juanIdx = z.mano.findIndex(id => String(getCardById(id)?.personaje || '').toLowerCase() === 'juan' || id === 'juan' || id === 'juan2');
+      if (juanIdx < 0) return;
+      const [juan] = z.mano.splice(juanIdx, 1);
+      const u = z.batalla[extra?.index];
+      if (u) u.debajo.push(juan);
+      const dym = buscarEnMazo(quien, (c, id) => id === 'dymytry' && Number(c?.costeTotal || 99) <= 5);
+      if (dym) z.mano.push(dym);
+    }
+  });
+
+  R('juan2', {
+    activables(quien, u) {
+      return [{ key: 'absCazon', label: 'Absorción: Cazón → busca Patroclo' }];
+    },
+    async ejecutarActivar(key, quien, extra) {
+      const z = zonaJugador(quien);
+      const ci = z.mano.findIndex(id => id === 'cazon');
+      if (ci < 0) return;
+      const [cazon] = z.mano.splice(ci, 1);
+      const u = z.batalla[extra?.index];
+      if (u) u.debajo.push(cazon);
+      const pat = buscarEnMazo(quien, (c, id) => id === 'patroclo');
+      if (pat) z.mano.push(pat);
+    },
+    async alJugarAbsorcion(quien) {
+      robar(quien, 1);
+      const opts = opcionesUnidades(rivalDe(quien));
+      if (opts.length) {
+        const idx = await elegirConModal('Destruye unidad rival', opts);
+        if (idx != null) destruirUnidad(rivalDe(quien), idx);
+      }
+    }
+  });
+
+  R('patroclo', {
+    alJugar(quien) {
+      if (String(liderCarta(quien)?.origen || '').toLowerCase().includes('minecraft') || liderNombre(quien).toLowerCase().includes('minecraft')) {
+        patrocloDescarteMano(rivalDe(quien));
+      }
+    }
+  });
+  async function patrocloDescarteMano(riv) {
+    while (zonaJugador(riv).mano.length > 3) {
+      await elegirDescarteObligatorio(riv, 'Patroclo: descarta hasta 3 en mano');
+    }
+  }
+
+  R('energia', {
+    alJugar(quien) { zonaJugador(quien).campo = [{ id: 'energia', rested: false }]; }
+  });
+
+  R('messi', {
+    alJugar(quien) {
+      const z = zonaJugador(quien);
+      const tops = z.mazo.splice(-7, 7);
+      const mc = tops.find(id => String(getCardById(id)?.origen || '').toLowerCase().includes('minecraft'));
+      if (mc) z.mano.push(mc);
+      z.mazo = tops.filter(id => id !== mc).concat(z.mazo);
+      barajar(quien);
+    }
+  });
+
+  R('podrido', {
+    alPerderCombateDefensa(c) {
+      invocarToken(c.atacanteQuien === 'jugador' ? 'rival' : 'jugador', 'tokenz', true);
+      barajar(c.atacanteQuien === 'jugador' ? 'rival' : 'jugador');
+    }
+  });
+
+  R('juanfalso', {
+    alCombo(quien, cardId, comboCtx) {
+      if (colorLider(quien) === 'verde' && zonaJugador(quien).vida.length <= 4) {
+        robar(quien, 1);
+        if (comboCtx) comboCtx.bonusCombo = (comboCtx.bonusCombo || 0) + 10000;
+      }
+    }
+  });
+
+  R('creeper', { alCounterAtaque(quien) { enderezarMana(quien, 'verde', 1); } });
+
+  R('sniffer', {
+    async alJugar(quien) {
+      const tops = mirarTop(quien, 3);
+      const pick = await elegirConModal('Sniffer: elige 1 de top 3', tops.map(id => ({ label: getCardById(id)?.nombre, value: id })).concat([{ label: 'Ninguna', value: null }]));
+      if (pick) {
+        const z = zonaJugador(quien);
+        z.mazo = z.mazo.filter(id => id !== pick);
+        z.mano.push(pick);
+        tops.filter(id => id !== pick).forEach(id => z.mazo.unshift(id));
+      }
+    }
+  });
+
+  R('aceituna', {
+    alJugar(quien) {
+      const tieneLucas = unidadesEnCampo(quien, (u, i, c) => String(c?.personaje || '').toLowerCase() === 'lucas').length > 0;
+      if (tieneLucas || colorLider(quien) === 'verde') enderezarMana(quien, null, 2);
+    }
+  });
+
+  R('uwu', {
+    alPerderCombate(c) {
+      const riv = rivalDe(c.atacanteQuien);
+      for (let i = zonaJugador(riv).batalla.length - 1; i >= 0; i--) {
+        const cc = getCardById(zonaJugador(riv).batalla[i].id);
+        if (Number(cc?.costeTotal || 99) <= 2) destruirUnidad(riv, i);
+      }
+    }
+  });
+
+  R('bonesy', {
+    alAtacar(quien, ref, zona, objetivo) {
+      if (ctx.objetivo?.tipo === 'lider') {
+        elegirConModal('Bonesy: rival elige', [
+          { label: 'Descartar top mazo', value: 'mazo' },
+          { label: 'Descansar 1 maná activo', value: 'mana' }
+        ]).then(v => {
+          const riv = rivalDe(quien);
+          if (v === 'mazo') { const t = zonaJugador(riv).mazo.pop(); if (t) zonaJugador(riv).descarte.push(t); }
+          else descansarMana(riv, null, 1);
+        });
+      }
+    }
+  });
+
+  R('hogrider', {
+    alDeclararAtaque(quien, ref, obj) {
+      if (obj?.tipo === 'unidad') ctx.debuffDefensor = -10000;
+      return obj;
+    }
+  });
+
+  R('phantom', {
+    alAtacar(quien) {
+      const riv = rivalDe(quien);
+      if (!unidadesEnCampo(riv, u => u.rested).length) ctx.phantomBonus = 10000;
+    }
+  });
+
+  R('aquaman', {
+    alDeclararAtaque(quien, ref, obj) {
+      if (obj?.tipo === 'lider') {
+        const desc = unidadesEnCampo(rivalDe(quien), u => u.rested).length;
+        if (desc >= 2) ctx.noCounter = true;
+      }
+      return obj;
+    }
+  });
+
+  R('peppa', {});
+
+  R('joe', {
+    alFinTurno(quien) {
+      zonaJugador(quien).batalla.forEach(u => {
+        if (u.id === 'joe' && u.flags?.enfurecido) { u.flags.enfurecido = false; u.flags.dobleGolpe = false; u.buffs.poder = 0; }
+      });
+    }
+  });
+
+  R('araña', {
+    async alJugar(quien) {
+      const idx = await elegirConModal('Araña Madre: bloquea unidad rival', opcionesUnidades(rivalDe(quien)));
+      if (idx != null) { zonaJugador(rivalDe(quien)).batalla[idx].noAtacar = true; zonaJugador(rivalDe(quien)).batalla[idx].noCombo = true; }
+    }
+  });
+
+  R('calaveras', {
+    async alSerAtacada(c, zona) {
+      const riv = c.atacanteQuien;
+      const ok = await elegirDescarteObligatorio(rivalDe(riv), 'Calaveras: descarta o niega ataque');
+      if (!ok) return null;
+    }
+  });
+
+  R('leo', {
+    noDerrotable: true,
+    activables(quien, u) {
+      return [{ key: 'leoSave', label: 'Evita derrota destruyendo Leopima' }];
+    },
+    async ejecutarActivar(key, quien, extra) {
+      if (zonaJugador(quien).vida.length <= 1) {
+        destruirUnidad(quien, extra?.index);
+        log('Leopima te mantiene a 1 vida.');
+      }
+    }
+  });
+
+  R('ilegal', {
+    activablesMano(quien) {
+      return [{ key: 'ilegal', label: 'Triple Golpe a unidad (muere al fin turno)' }];
+    },
+    async ejecutarActivar(key, quien) {
+      const idx = await elegirConModal('Items ilegales', opcionesUnidades(quien));
+      if (idx != null) {
+        const u = zonaJugador(quien).batalla[idx];
+        addFlag(u, 'tripleGolpe', true);
+        u.flags.destruirFinTurno = true;
+      }
+    }
+  });
+
+  // —— NEGRAS / MEMES / OMORI ——
+  R('rostros', {
+    alJugar(quien) {
+      const zR = zonaJugador(rivalDe(quien));
+      const tops = zR.mazo.splice(-3, 3);
+      if (tops.length) {
+        elegirConModal('Manda 1 top rival al fondo', tops.map(id => ({ label: getCardById(id)?.nombre, value: id })).concat([{ label: 'Ninguna', value: null }])).then(pick => {
+          if (pick) { tops.splice(tops.indexOf(pick), 1); zR.mazo.unshift(pick); }
+          zR.mazo = tops.concat(zR.mazo);
+        });
+      }
+      robar(quien, 1);
+      activarDesafioIniciador(quien);
+    }
+  });
+
+  R('layton', {
+    alCounterAtaque(quien) { enderezarMana(quien, 'negro', 1); },
+    alJugar(quien) { activarDesafioIniciador(quien); }
+  });
+
+  R('desafio', {
+    alJugar(quien) {
+      activarDesafioIniciador(quien);
+      if (colorLider(quien) === 'negro') {
+        const id = buscarEnMazo(quien, c => String(c?.origen || '').toLowerCase().includes('minecraft'));
+        if (id) {
+          const c = getCardById(id);
+          if (Number(c?.costeTotal) === 1) {
+            zonaJugador(quien).batalla.push(crearUnidadCampo(id, { rested: true }));
+          } else zonaJugador(quien).mano.push(id);
+          barajar(quien);
+        }
+      }
+    }
+  });
+
+  R('quiz', {
+    alJugar(quien) {
+      activarDesafioIniciador(quien);
+      ctx.liderDobleGolpe = true;
+      robar(quien, 1);
+    }
+  });
+
+  R('curriculum', {
+    activablesMano(quien) {
+      return [{ key: 'curriculum', label: 'Carta de mano → maná' }];
+    },
+    async ejecutarActivar(key, quien) {
+      const idx = await elegirConModal('Elige carta para maná', zonaJugador(quien).mano.map((id, i) => ({ label: getCardById(id)?.nombre, value: i })));
+      if (idx != null) {
+        const [id] = zonaJugador(quien).mano.splice(idx, 1);
+        zonaJugador(quien).mana.push({ id, rested: true });
+        zonaJugador(quien).manaActivo = zonaJugador(quien).mana.filter(m => !m.rested).length;
+      }
+    }
+  });
+
+  R('tung', {
+    alCombo(quien, cardId, comboCtx) {
+      if (comboCtx?.atacanteZona) addFlag(comboCtx.atacanteZona, 'dobleGolpe', true);
+      if (comboCtx?.infligeDano) enderezarMana(quien, null, 1);
+    }
+  });
+
+  R('skibidi', {
+    alJugar(quien) {
+      unidadesEnCampo(rivalDe(quien), (u, i, c) => !String(c?.origen || '').toLowerCase().includes('meme')).forEach(({ u }) => {
+        addBuff(u, 'poder', -5000);
+        u.flags.skibidiDebuff = true;
+      });
+    }
+  });
+
+  R('trabajo', {
+    alJugar(quien) {
+      const cur = buscarEnMazo(quien, (c, id) => id === 'curriculum');
+      if (cur) zonaJugador(quien).mano.push(cur);
+    }
+  });
+
+  R('nexus', {
+    async alDeclararAtaque(quien, ref, obj) {
+      const opts = opcionesUnidades(rivalDe(quien), (u, i, c) => Number(c?.costeTotal || 99) <= 3);
+      if (opts.length) {
+        const idx = await elegirConModal('Nexus: bloquea unidad ≤3', opts.concat([{ label: 'Ninguna', value: -1 }]));
+        if (idx >= 0) {
+          zonaJugador(rivalDe(quien)).batalla[idx].noAtacar = true;
+          zonaJugador(rivalDe(quien)).batalla[idx].noCombo = true;
+        }
+      }
+      return obj;
+    }
+  });
+
+  R('gato', {
+    async alJugar(quien) {
+      const ok = await elegirConModal('¿Tomar 1 vida? Doble Golpe', [{ label: 'Sí', value: true }, { label: 'No', value: false }]);
+      if (ok && zonaJugador(quien).vida.length) {
+        zonaJugador(quien).mano.push(zonaJugador(quien).vida.pop());
+        const u = zonaJugador(quien).batalla[zonaJugador(quien).batalla.length - 1];
+        addFlag(u, 'dobleGolpe', true);
+      }
+    }
+  });
+
+  R('club', {
+    alJugar(quien) {
+      const z = zonaJugador(quien);
+      const idx = z.batalla.findIndex(u => u.id === 'club');
+      if (idx >= 0) { z.batalla.splice(idx, 1); z.descarte.push('club'); robar(quien, 1); }
+    }
+  });
+
+  R('donpollo', {
+    alJugar(quien) { invocarToken(quien, 'tokenp', true); invocarToken(quien, 'tokenp', true); }
+  });
+
+  R('portal', {
+    async alJugar(quien) {
+      robar(quien, 1);
+      const opts = zonaJugador(quien).mano.map((id, i) => ({ id, i, c: getCardById(id) }))
+        .filter(x => String(x.c?.origen || '').toLowerCase().includes('minecraft') && Number(x.c?.costeTotal || 99) <= 2)
+        .map(x => ({ label: x.c.nombre, value: x.i }));
+      if (opts.length) {
+        const idx = await elegirConModal('Juega Minecraft ≤2 gratis', opts.concat([{ label: 'No', value: -1 }]));
+        if (idx >= 0) {
+          const [id] = zonaJugador(quien).mano.splice(idx, 1);
+          zonaJugador(quien).batalla.push(crearUnidadCampo(id, { rested: true }));
+        }
+      }
+    }
+  });
+
+  R('omori', {});
+  R('kel', { puedeAtacarActivas: true });
+  R('aubrey', { alDestruida(quien) { descartarAleatorio(rivalDe(quien)); } });
+
+  R('hero', {
+    async alAtacar(quien) {
+      const opts = opcionesUnidades(quien, (u, i, c) => {
+        const n = String(c?.nombre || '').toLowerCase();
+        return n !== 'hero' && !n.includes("omori's gang") && u.rested;
+      });
+      const idx = await elegirConModal('Hero endereza aliado', opts.concat([{ label: 'Cancelar', value: -1 }]));
+      if (idx >= 0) zonaJugador(quien).batalla[idx].rested = false;
+    }
+  });
+
+  R('basil', {
+    alCombo(quien, cardId, comboCtx) {
+      if (colorLider(quien) === 'negro' && zonaJugador(quien).vida.length <= 4) {
+        robar(quien, 1);
+        if (comboCtx) comboCtx.bonusCombo = (comboCtx.bonusCombo || 0) + 10000;
+      }
+    }
+  });
+
+  R('release', {
+    alJugar(quien) {
+      zonaJugador(quien).campo = [{ id: 'release', rested: false }];
+      log('RELEASE ENERGY en campo.');
+    },
+    activablesCampo(quien) {
+      return [{ key: 'releaseGang', label: 'Sacrifica Omori party → jugar Gang gratis' }];
+    }
+  });
+
+  R('gang', {
+    puedeAtacarActivas: true,
+    alAtacarPost(quien, zona) {
+      if (!habilidadUsada(claveTurno(quien, 'gang_re'))) {
+        zona.rested = false;
+        marcarHabilidadUsada(claveTurno(quien, 'gang_re'));
+      }
+    }
+  });
+
+  R('mewo', { alJugar(quien) { robar(quien, 1); } });
+
+  R('pluto', {
+    alDeclararAtaque(quien, ref, obj) {
+      if (estadoPartida?.bloqueadorUsado) ctx.bonusVsBloqueador = 10000;
+      return obj;
+    }
+  });
+
+  R('sweetheart', {
+    async alJugar(quien) {
+      const v = await elegirConModal('Sweetheart: rival descarta o destruye ≤4', [
+        { label: 'Descartar carta', value: 'desc' },
+        { label: 'Destruir unidad ≤4', value: 'kill' }
+      ]);
+      const riv = rivalDe(quien);
+      if (v === 'desc') descartarAleatorio(riv);
+      else {
+        const idx = await elegirConModal('Unidad ≤4', opcionesUnidades(riv, (u, i, c) => Number(c?.costeTotal || 99) <= 4));
+        if (idx != null) destruirUnidad(riv, idx);
+      }
+    }
+  });
+
+  R('capitan', {
+    activables(quien, u) {
+      if (colorLider(quien) !== 'negro') return [];
+      return [{ key: 'capitan', label: 'Descarta Extra: Doble Golpe + descansa rival ≤3' }];
+    },
+    async ejecutarActivar(key, quien, extra) {
+      const extras = zonaJugador(quien).mano.map((id, i) => ({ id, i, c: getCardById(id) }))
+        .filter(x => claseNormalizada(x.c) === 'extra');
+      if (!extras.length) return;
+      const pick = await elegirConModal('Descarta Extra', extras.map(x => ({ label: x.c.nombre, value: x.i })));
+      if (pick != null) {
+        descartarCartaMano(quien, pick);
+        addFlag(zonaJugador(quien).batalla[extra.index], 'dobleGolpe', true);
+        const ridx = await elegirConModal('Descansa rival ≤3', opcionesUnidades(rivalDe(quien), (u, i, c) => Number(c?.costeTotal || 99) <= 3));
+        if (ridx != null) zonaJugador(rivalDe(quien)).batalla[ridx].rested = true;
+      }
+    }
+  });
+
+  R('sprout', {
+    alDestruida(quien) {
+      robar(quien, 1);
+      if (liderNombre(quien).toLowerCase().includes('mari') && zonaJugador(quien).descarte.length) {
+        const id = zonaJugador(quien).descarte.pop();
+        zonaJugador(quien).mazo.unshift(id);
+      }
+      barajar(quien);
+    }
+  });
+
+  // —— FICHAS ——
+  R('tokenz', {});
+  R('tokend', {});
+  R('tokenp', {});
+
+  // Hook global Joe enfurecido
+  function onMinecraftDerrotada(quien, unidadId) {
+    unidadesEnCampo(quien, u => u.id === 'joe').forEach(({ u }) => {
+      addBuff(u, 'poder', 5000);
+      addFlag(u, 'dobleGolpe', true);
+      u.flags.enfurecido = true;
+      log('Joe se enfurece.');
+    });
+  }
+
+  function init() {
+    _habilidadesUsadas = {};
+    _finTurnoCallbacks = [];
+    ctx.liderCritico = false;
+    ctx.liderDobleGolpe = false;
+    ctx.batallaMods = {};
+    ctx.costeReducido = {};
+    ctx.campoBonus = 0;
+  }
+
+  function transformarLider(quien) {
+    const z = zonaJugador(quien);
+    if (z.liderDespierto) return false;
+    if ((z.vida?.length || 0) > 4) return false;
+    robar(quien, 2);
+    z.liderDespierto = true;
+    log(`${liderCarta(quien)?.nombre} se transforma (≤4 vidas). Robas 2 cartas.`);
+    if (typeof renderizarPartida === 'function') renderizarPartida();
+    return true;
+  }
+
+  function puedeJugar(carta, jugador) {
+    const id = getCardId(carta);
+    const reg = REGISTRO_EFECTOS[id];
+    if (reg?.puedeJugar && reg.puedeJugar(carta, jugador) === false) return false;
+    if (id === 'purple' && contarAnimatronicos() < 3) return false;
+    if (id === 'bonnie') {
+      const turno = estadoPartida?.turno || 1;
+      if (turno > 2 && contarTipoEnJuego('animatr') === 0) return true;
+    }
+    return true;
+  }
+
+  function puedeAtacarObjetivo(atacanteId, objetivo, quien) {
+    const lider = liderCarta(quien);
+    const liderId = zonaJugador(quien).liderId;
+    if (atacanteId === liderId || atacanteId === getCardId(lider)) {
+      const lid = liderCarta(quien);
+      if (String(lid?.personaje || lid?.nombre || '').toUpperCase().includes('INFINITYCRAFT')) {
+        if (objetivo?.tipo === 'unidad') return false;
+      }
+    }
+    const atkC = getCardById(atacanteId);
+    if (tieneTag(atkC, 'permanente') && String(atkC?.nombre || '').toLowerCase() === 'kel') {
+      return true;
+    }
+    if (atacanteId === 'kel' || atacanteId === 'gang') return true;
+    if (objetivo?.tipo === 'unidad') {
+      const def = zonaJugador(rivalDe(quien)).batalla[objetivo.index];
+      if (def && !def.rested) {
+        const defC = getCardById(def.id);
+        if (def.id === 'kirk') return true;
+        if (atacanteId !== 'kel' && atacanteId !== 'gang') return false;
+      }
+    }
+    const reg = REGISTRO_EFECTOS[atacanteId];
+    if (reg?.puedeAtacarObjetivo) return reg.puedeAtacarObjetivo(atacanteId, objetivo, quien);
+    return true;
+  }
+
+  function dispatch(id, hook, args) {
+    const reg = REGISTRO_EFECTOS[id];
+    if (reg?.[hook]) return reg[hook].apply(null, args);
+    return undefined;
+  }
+
+  function alJugar(quien, cardId, zonaRef) {
+    transformarLider(quien);
+    transformarLider(rivalDe(quien));
+    dispatch(cardId, 'alJugar', [quien, cardId, zonaRef]);
+    if (typeof renderizarPartida === 'function') renderizarPartida();
+  }
+
+  function alInicioPrincipal(quien) {
+    Object.keys(REGISTRO_EFECTOS).forEach(id => dispatch(id, 'alInicioPrincipal', [quien]));
+    const lider = liderCarta(quien);
+    if (quien === 'jugador' && lider?.esEvo && String(lider.nombre).toLowerCase().includes('infectada')) {
+      const riv = unidadesEnCampo(rivalDe(quien), u => !u.rested);
+      if (riv.length) {
+        riv[0].u.rested = true;
+        riv[0].u.flags = riv[0].u.flags || {};
+        riv[0].u.flags.enderezarCoste = 1;
+        log('Toñi infectada descansa una unidad rival activa.');
+      }
+    }
+  }
+
+  function alAtacar(quien, atacanteRef) {
+    const z = zonaJugador(quien);
+    let atacanteId, atacanteZona;
+    if (atacanteRef?.tipo === 'lider') {
+      atacanteId = z.liderId;
+      atacanteZona = z.liderZona;
+      robarAtaqueLider(quien);
+      dispatch(z.liderId, 'alAtacarLider', [quien, atacanteZona]);
+    } else {
+      atacanteZona = z.batalla[atacanteRef?.index];
+      atacanteId = atacanteZona?.id;
+      dispatch(atacanteId, 'alAtacar', [quien, atacanteRef, atacanteZona]);
+    }
+    ctx.atacanteQuien = quien;
+    ctx.atacanteId = atacanteId;
+    ctx.atacanteZona = atacanteZona;
+  }
+
+  function alDeclararAtaque(atacanteQuien, atacanteRef, objetivo) {
+    ctx.sinBloqueadorUsado = !estadoPartida?.bloqueadorUsado;
+    const z = zonaJugador(atacanteQuien);
+    let atacanteId = atacanteRef?.tipo === 'lider' ? z.liderId : z.batalla[atacanteRef?.index]?.id;
+    const mod = dispatch(atacanteId, 'alDeclararAtaque', [atacanteQuien, atacanteRef, objetivo]);
+    if (mod === null) return null;
+    return mod !== undefined ? mod : objetivo;
+  }
+
+  function alResolverCombate(c) {
+    ctx.batallaMods = ctx.batallaMods || {};
+    Object.assign(ctx, c);
+    if (c.objetivo?.tipo === 'unidad') {
+      const defQuien = rivalDe(c.atacanteQuien);
+      const defZona = zonaJugador(defQuien).batalla[c.objetivo.index];
+      if (defZona?.noDerrotable || REGISTRO_EFECTOS[defZona?.id]?.noDerrotable) {
+        c.ganaAtacante = false;
+        c.leoInmortal = true;
+      }
+      dispatch(defZona?.id, 'alSerAtacada', [c, defZona]);
+      if (c.cancelarCombate) return c;
+    }
+    dispatch(c.atacanteId, 'alResolverCombate', [c]);
+    if (!c.ganaAtacante && c.atacanteZona && tieneVenganza(c.atacanteZona)) {
+      c.venganzaPendiente = 'atacante';
+    }
+    if (c.ganaAtacante && c.objetivo?.tipo === 'unidad') {
+      const defZona = zonaJugador(rivalDe(c.atacanteQuien)).batalla[c.objetivo.index];
+      if (defZona && tieneVenganza(defZona)) c.venganzaPendiente = 'defensor';
+      dispatch(c.atacanteId, 'alGanarCombate', [c]);
+      const defId = zonaJugador(rivalDe(c.atacanteQuien)).batalla[c.objetivo.index]?.id;
+      const top = zonaJugador(rivalDe(c.atacanteQuien)).mazo.pop();
+      if (defId === 'cazon' && top) zonaJugador(rivalDe(c.atacanteQuien)).descarte.push(top);
+      if (String(getCardById(defId)?.origen || '').toLowerCase().includes('minecraft')) {
+        onMinecraftDerrotada(c.atacanteQuien, defId);
+      }
+      if (liderCarta(c.atacanteQuien).esEvo && String(liderNombre(c.atacanteQuien)).toLowerCase().includes('pirómano')) {
+        const cAt = getCardById(c.atacanteId);
+        if (colorNormalizadoCarta(cAt) === 'verde' && !habilidadUsada(claveTurno(c.atacanteQuien, 'gl2_dmg'))) {
+          infligirDanoLider(rivalDe(c.atacanteQuien), 1, c.atacanteId);
+          marcarHabilidadUsada(claveTurno(c.atacanteQuien, 'gl2_dmg'));
+        }
+      }
+    }
+    if (!c.ganaAtacante && c.atacanteZona) {
+      dispatch(c.atacanteId, 'alPerderCombate', [c]);
+      if (c.objetivo?.tipo === 'unidad' && !c.ganaAtacante) {
+        dispatch(c.atacanteId, 'alPerderCombateDefensa', [c]);
+      }
+    }
+    if (c.venganzaPendiente) {
+      if (c.venganzaPendiente === 'atacante' && c.objetivo?.tipo === 'unidad') {
+        destruirUnidad(rivalDe(c.atacanteQuien), c.objetivo.index);
+        c.destruccionVenganza = true;
+        log('Venganza destruye a la unidad ganadora.');
+      } else if (c.venganzaPendiente === 'defensor') {
+        const atkRef = c.atacanteRef;
+        if (atkRef?.tipo === 'unidad') destruirUnidad(c.atacanteQuien, atkRef.index);
+        else if (atkRef?.tipo === 'lider') { /* líder no se destruye */ }
+        c.destruccionVenganza = true;
+        log('Venganza destruye a la unidad ganadora.');
+      }
+    }
+    dispatch(c.atacanteId, 'alAtacarPost', [c.atacanteQuien, c.atacanteZona]);
+    return c;
+  }
+
+  function alCombo(quien, cardId, comboCtx) {
+    dispatch(cardId, 'alCombo', [quien, cardId, comboCtx]);
+  }
+
+  function alFinTurno(quien) {
+    _finTurnoCallbacks.forEach(fn => { try { fn(quien); } catch (e) { console.error(e); } });
+    _finTurnoCallbacks = [];
+    zonaJugador(quien).batalla.forEach(u => {
+      if (u.silenciado > 0) u.silenciado--;
+      if (u.flags?.destruirFinTurno) {
+        const idx = zonaJugador(quien).batalla.indexOf(u);
+        if (idx >= 0) destruirUnidad(quien, idx);
+      }
+    });
+    ctx.liderCritico = false;
+    ctx.liderDobleGolpe = false;
+    ctx.batallaMods = {};
+    dispatch('*', 'alFinTurno', [quien]);
+    Object.keys(REGISTRO_EFECTOS).forEach(id => dispatch(id, 'alFinTurno', [quien]));
+  }
+
+  function poderCarta(id, zona, c) {
+    c = c || ctx;
+    let p = poderEnBatalla(id, zona, c);
+    p += modificarPoderBatalla(id, zona, c);
+    p += efectoCampoPermanente(c.quien || 'jugador', c);
+    const reg = REGISTRO_EFECTOS[id];
+    if (reg?.modificarPoder) p = reg.modificarPoder(id, zona, c, p);
+    return p;
+  }
+
+  function danoDeCarta(id, c) {
+    return danoAtacante(id, c);
+  }
+
+  function obtenerActivables(quien) {
+    const list = [];
+    const z = zonaJugador(quien);
+    const fase = fasesPartida?.[estadoPartida?.faseIndex];
+    z.batalla.forEach((u, i) => {
+      const reg = REGISTRO_EFECTOS[u.id];
+      if (reg?.activables) {
+        reg.activables(quien, u, i).forEach(a => list.push(Object.assign({ quien, cardId: u.id, index: i }, a)));
+      }
+    });
+    z.mano.forEach((id, hi) => {
+      const reg = REGISTRO_EFECTOS[id];
+      if (reg?.activablesMano) {
+        reg.activablesMano(quien, id, hi).forEach(a => list.push(Object.assign({ quien, cardId: id, handIndex: hi }, a)));
+      }
+    });
+    if (fase === 'Principal' || fase === 'Combate') {
+      const lid = liderCarta(quien);
+      const regL = REGISTRO_EFECTOS[z.liderId];
+      if (regL?.activablesLider) {
+        regL.activablesLider(quien).forEach(a => list.push(Object.assign({ quien, cardId: z.liderId, esLider: true }, a)));
+      }
+    }
+    return list;
+  }
+
+  async function ejecutarActivar(cardId, habKey, quien, extra) {
+    const reg = REGISTRO_EFECTOS[cardId];
+    if (reg?.ejecutarActivar) {
+      await reg.ejecutarActivar(habKey, quien, extra);
+      if (typeof renderizarPartida === 'function') renderizarPartida();
+    }
+  }
+
+  async function intentarBloqueador(defensorQuien, ataqueCtx) {
+    const riv = unidadesEnCampo(defensorQuien, u => tieneBloqueador(u) && !u.rested);
+    if (!riv.length) return ataqueCtx.objetivo;
+    const opts = opcionesUnidades(defensorQuien, u => tieneBloqueador(u) && !u.rested, 'Bloquear con ');
+    const idx = await elegirConModal('¿Usar Bloqueador?', opts.concat([{ label: 'No bloquear', value: -1 }]));
+    if (idx == null || idx < 0) return ataqueCtx.objetivo;
+    const u = zonaJugador(defensorQuien).batalla[idx];
+    u.rested = true;
+    estadoPartida.bloqueadorUsado = true;
+    dispatch(u.id, 'alUsarBloqueador', [defensorQuien, u, ataqueCtx]);
+    log(`${getCardById(u.id)?.nombre} bloquea el ataque.`);
+    return { tipo: 'unidad', index: idx, bloqueador: true };
+  }
+
+  async function intentarCounterAtaque(quien, ataqueCtx) {
+    const z = zonaJugador(quien);
+    const counters = z.mano.filter(id => tieneTag(getCardById(id), 'counter ataque'));
+    if (!counters.length) return false;
+    if (ataqueCtx.noCounter) return false;
+    const opts = counters.map(id => ({ label: getCardById(id)?.nombre, value: id }));
+    const pick = await elegirConModal('¿Usar Counter Ataque?', opts.concat([{ label: 'No', value: null }]));
+    if (!pick) return false;
+    const hi = z.mano.indexOf(pick);
+    if (hi < 0) return false;
+    if (!await pagarImpuestoCounter(quien, pick)) return false;
+    descartarCartaMano(quien, hi);
+    dispatch(pick, 'alCounterAtaque', [quien, ataqueCtx]);
+    log(`${getCardById(pick)?.nombre} niega el ataque.`);
+    return true;
+  }
+
+  async function pagarImpuestoCounter(quien, counterId) {
+    const riv = rivalDe(quien);
+    if (unidadesEnCampo(riv, u => getCardById(u.id)?.id === 'kirk').length) {
+      const pago = await elegirConModal('Charlie Kirk: paga 1 maná extra o el Counter se niega', [
+        { label: 'Pagar 1 maná', value: true }, { label: 'Negar Counter', value: false }
+      ]);
+      if (!pago) return false;
+      descansarMana(quien, null, 1);
+    }
+    if (String(liderNombre(riv)).toLowerCase().includes('capitalismo')) {
+      const top = zonaJugador(quien).mazo.pop();
+      if (top) {
+        zonaJugador(quien).descarte.push(top);
+        log('Impuesto Capitalismo: descartas la carta superior de tu mazo.');
+      } else return false;
+    }
+    return true;
+  }
+
+  window.MotorEfectos = {
+    init, alJugar, alInicioPrincipal, alAtacar, alDeclararAtaque, alResolverCombate,
+    alCombo, alFinTurno, poderCarta, danoDeCarta, costeEfectivo, puedeJugar,
+    puedeAtacarObjetivo, transformarLider, obtenerActivables, ejecutarActivar,
+    intentarBloqueador, intentarCounterAtaque, modificarPoderBatalla, campoActivo,
+    efectoCampoPermanente, REGISTRO_EFECTOS,
+    zonaJugador, rivalDe, robar, barajar, log, tirarDado, registrar,
+    crearUnidadCampo, infligirDanoLider, elegirConModal, enderezarMana, invocarToken
+  };
+
+  window.MotorEfectos._ctx = ctx;
+  window.MotorEfectos._registrar = registrar;
+})();
+    </script>
     <script>
         let datosCartas = [];
         let indexActual = null;
@@ -1239,12 +3174,19 @@
             const acciones = detalleSoloInfo ? '' : (lider
                 ? `<button class="plate-btn btn-nav" onclick="seleccionarLider('${id}'); cerrarDetalleMazo();">Elegir lider</button>`
                 : `<button class="plate-btn btn-nav" onclick="anadirCarta('${id}'); pintarDetalleMazo();">Añadir (${copiasEnMazo(id)}/4)</button><button class="plate-btn btn-nav" onclick="quitarCartaPorId('${id}'); pintarDetalleMazo();">Quitar</button>`);
+            let activarBtns = '';
+            if (detalleSoloInfo && estadoPartida && window.MotorEfectos) {
+                activarBtns = MotorEfectos.obtenerActivables('jugador')
+                    .filter(a => a.cardId === id)
+                    .map(a => `<button class="plate-btn btn-nav activar-btn" onclick="ejecutarHabilidadActivable('${a.cardId}','${a.key}')">${escapeHtml(a.label || a.key)}</button>`)
+                    .join('');
+            }
 
             document.getElementById('deck-modal-body').innerHTML = `
                 <div>
                     <div class="deck-modal-img"><img src="${img || ''}" alt="${escapeHtml(nombre)}"></div>
                     <div class="deck-modal-actions">
-                        ${acciones}
+                        ${acciones}${activarBtns}
                         ${(c.imgEvo || c.nombreEvo) ? `<button class="plate-btn btn-nav" onclick="detalleMazoEvo = !detalleMazoEvo; pintarDetalleMazo();">Dar la vuelta</button>` : ''}
                     </div>
                 </div>
@@ -1388,6 +3330,7 @@
                     if (!estadoPartida) return;
                     estadoPartida.introActiva = false;
                     estadoPartida.log = 'Mano inicial robada. Arrastra cartas al area de batalla o a ENERGY.';
+                    if (window.MotorEfectos) MotorEfectos.init();
                     mostrarFase('Carga');
                     renderizarPartida();
                 });
@@ -1529,6 +3472,7 @@
             estadoPartida.faseIndex += 1;
             const fase = fasesPartida[estadoPartida.faseIndex];
             estadoPartida.log = `Fase de ${fase}.`;
+            if (fase === 'Principal' && window.MotorEfectos) MotorEfectos.alInicioPrincipal('jugador');
             mostrarFase(fase);
             renderizarPartida();
         }
@@ -1547,6 +3491,7 @@
             estadoPartida.jugador.manaUsadoEsteTurno = false;
             robarDe(estadoPartida.jugador);
             estadoPartida.jugador.roboDeTurnoHecho = true;
+            if (window.MotorEfectos) MotorEfectos.alFinTurno('jugador');
             estadoPartida.log = 'Nuevo turno: enderezas tus cartas y robas automaticamente 1 carta.';
             mostrarFase('Carga');
             renderizarPartida();
@@ -1635,7 +3580,8 @@
             return (carta?.habilidades || []).some(h => String(h.tag || '').toLowerCase().includes(needle));
         }
 
-        function danoDeCarta(id) {
+        function danoDeCarta(id, ctx) {
+            if (window.MotorEfectos) return MotorEfectos.danoDeCarta(id, ctx || {});
             const carta = getCardById(id);
             if (tieneTag(carta, 'triple golpe')) return 3;
             if (tieneTag(carta, 'doble golpe')) return 2;
@@ -1648,7 +3594,8 @@
             const id = estadoPartida.jugador.mano[index];
             const carta = getCardById(id);
             if (!carta || esLider(carta) || esToken(carta)) return;
-            const coste = Number(carta.costeTotal || 0);
+            if (window.MotorEfectos && !MotorEfectos.puedeJugar(carta, estadoPartida.jugador)) return alert('No cumples las condiciones para jugar esta carta.');
+            const coste = window.MotorEfectos ? MotorEfectos.costeEfectivo(carta, estadoPartida.jugador, index) : Number(carta.costeTotal || 0);
             if (coste > estadoPartida.jugador.manaActivo) return alert('No tienes maná activo suficiente.');
             if (coste <= 0) return resolverJugarCarta(index, []);
             abrirPagoMana({ tipo: 'jugar', handIndex: index, cardId: id, coste });
@@ -1707,16 +3654,26 @@
             estadoPartida.jugador.manaActivo = estadoPartida.jugador.mana.filter(m => !m.rested).length;
             const [jugada] = estadoPartida.jugador.mano.splice(index, 1);
             const carta = getCardById(jugada);
+            let zonaRef = null;
             if (claseNormalizada(carta) === 'extra') {
                 const esCampo = (carta.habilidades || []).some(h => String(h.tag || '').toLowerCase().includes('campo')) || String(carta.tipo || '').toLowerCase().includes('campo');
-                if (esCampo) estadoPartida.jugador.campo = [{ id: jugada, rested: false }];
-                else estadoPartida.jugador.descarte.push(jugada);
-                estadoPartida.log = esCampo ? `${carta.nombre} queda como carta de campo.` : `${carta.nombre} se usa y va al descarte.`;
+                if (esCampo) {
+                    estadoPartida.jugador.campo = [{ id: jugada, rested: false }];
+                    estadoPartida.log = `${carta.nombre} queda como carta de campo.`;
+                } else {
+                    estadoPartida.jugador.descarte.push(jugada);
+                    estadoPartida.log = `${carta.nombre} se usa y va al descarte.`;
+                }
             } else {
-                estadoPartida.jugador.batalla.push({ id: jugada, rested: false, ataquesRestantes: ataquesPorTurno(jugada) });
+                const unidad = window.MotorEfectos
+                    ? MotorEfectos.crearUnidadCampo(jugada, { rested: false })
+                    : { id: jugada, rested: false, ataquesRestantes: ataquesPorTurno(jugada) };
+                estadoPartida.jugador.batalla.push(unidad);
+                zonaRef = unidad;
                 estadoPartida.log = `Juegas ${carta.nombre} en el area de batalla.`;
             }
-            renderizarPartida();
+            if (window.MotorEfectos) MotorEfectos.alJugar('jugador', jugada, zonaRef);
+            else renderizarPartida();
         }
 
         function ataquesPorTurno(id) {
@@ -1748,13 +3705,24 @@
 
         function iniciarAtaque(objetivo) {
             if (!estadoPartida.atacanteSeleccionado) return;
-            const atacante = obtenerAtacanteActual();
+            let atacante = obtenerAtacanteActual();
             if (!atacante) return;
+            if (window.MotorEfectos) {
+                const obj = MotorEfectos.alDeclararAtaque('jugador', estadoPartida.atacanteSeleccionado, objetivo);
+                if (obj === null) { renderizarPartida(); return; }
+                objetivo = obj;
+                MotorEfectos.alAtacar('jugador', estadoPartida.atacanteSeleccionado);
+                atacante = obtenerAtacanteActual();
+            }
+            const combateCtx = { quien: 'jugador', atacanteRef: estadoPartida.atacanteSeleccionado, atacanteZona: atacante };
+            const poderBase = window.MotorEfectos
+                ? MotorEfectos.poderCarta(atacante.id, atacante, combateCtx)
+                : poderCarta(atacante.id);
             estadoPartida.ataqueActual = {
                 atacanteRef: estadoPartida.atacanteSeleccionado,
                 objetivo,
                 atacanteId: atacante.id,
-                atacanteBase: poderCarta(atacante.id),
+                atacanteBase: poderBase,
                 atacanteCombo: 0
             };
             estadoPartida.faseIndex = 3;
@@ -1765,13 +3733,23 @@
 
         function atacarLiderRival() {
             if (!estadoPartida.atacanteSeleccionado) return abrirDetalleJuego(estadoPartida.rival.liderId);
+            if (window.MotorEfectos && !MotorEfectos.puedeAtacarObjetivo(obtenerAtacanteActual()?.id, { tipo: 'lider' }, 'jugador')) {
+                return alert('Tu atacante no puede golpear al lider rival.');
+            }
             iniciarAtaque({ tipo: 'lider' });
         }
 
         function atacarUnidadRival(index) {
             if (!estadoPartida.atacanteSeleccionado) return abrirDetalleJuego(estadoPartida.rival.batalla[index]?.id);
             const defensor = estadoPartida.rival.batalla[index];
-            if (!defensor || !defensor.rested) return alert('Solo puedes atacar unidades rivales giradas.');
+            if (!defensor) return;
+            if (window.MotorEfectos && !MotorEfectos.puedeAtacarObjetivo(obtenerAtacanteActual()?.id, { tipo: 'unidad', index }, 'jugador')) {
+                return alert('No puedes atacar esa unidad.');
+            }
+            if (!defensor.rested) {
+                const puedeActivo = window.MotorEfectos && MotorEfectos.puedeAtacarObjetivo(obtenerAtacanteActual()?.id, { tipo: 'unidad', index }, 'jugador');
+                if (!puedeActivo) return alert('Solo puedes atacar unidades rivales giradas (salvo excepciones).');
+            }
             iniciarAtaque({ tipo: 'unidad', index });
         }
 
@@ -1787,32 +3765,67 @@
             if (!ataque) return;
             const atacante = obtenerAtacanteActual();
             if (!atacante) return;
-            const pa = ataque.atacanteBase + ataque.atacanteCombo;
-            let pd = 0;
-            if (ataque.objetivo.tipo === 'lider') pd = poderCarta(estadoPartida.rival.liderId);
-            else pd = poderCarta(estadoPartida.rival.batalla[ataque.objetivo.index]?.id);
+
+            const combateCtx = {
+                atacanteQuien: 'jugador',
+                quien: 'jugador',
+                atacanteRef: ataque.atacanteRef,
+                atacanteId: atacante.id,
+                atacanteZona: atacante,
+                objetivo: ataque.objetivo,
+                atacanteBase: ataque.atacanteBase,
+                atacanteCombo: ataque.atacanteCombo
+            };
+            combateCtx.pa = poderCarta(atacante.id, atacante, combateCtx) + ataque.atacanteCombo;
+            if (ataque.objetivo.tipo === 'lider') {
+                const rivalLider = estadoPartida.rival.liderZona || { id: estadoPartida.rival.liderId };
+                combateCtx.pd = poderCarta(estadoPartida.rival.liderId, rivalLider, { quien: 'rival' });
+            } else {
+                const defensor = estadoPartida.rival.batalla[ataque.objetivo.index];
+                combateCtx.pd = poderCarta(defensor?.id, defensor, { quien: 'rival', defensorZona: defensor });
+            }
+            combateCtx.ganaAtacante = combateCtx.pa >= combateCtx.pd;
+
+            const resultado = window.MotorEfectos ? MotorEfectos.alResolverCombate(combateCtx) : combateCtx;
+            if (resultado.cancelarCombate) {
+                estadoPartida.jugador.combo.forEach(c => estadoPartida.jugador.descarte.push(c.id || c));
+                estadoPartida.jugador.combo = [];
+                estadoPartida.atacanteSeleccionado = null;
+                estadoPartida.ataqueActual = null;
+                estadoPartida.faseIndex = 2;
+                renderizarPartida();
+                return;
+            }
+
             atacante.ataquesRestantes = Math.max(0, (atacante.ataquesRestantes ?? 1) - 1);
             atacante.rested = atacante.ataquesRestantes <= 0;
-            const ganaAtacante = pa >= pd;
-            if (ataque.objetivo.tipo === 'lider') {
-                if (ganaAtacante) {
-                    const dano = danoDeCarta(atacante.id);
-                    for (let i = 0; i < dano; i++) if (estadoPartida.rival.vida.length) estadoPartida.rival.vida.pop();
-                    estadoPartida.log = `El ataque impacta al lider rival: pierde ${dano} vida${dano > 1 ? 's' : ''}.`;
-                } else {
+
+            if (resultado.objetivo.tipo === 'lider') {
+                if (resultado.ganaAtacante) {
+                    const dano = danoDeCarta(atacante.id, resultado);
+                    if (window.MotorEfectos) MotorEfectos.infligirDanoLider('rival', dano, atacante.id);
+                    else {
+                        for (let i = 0; i < dano; i++) if (estadoPartida.rival.vida.length) estadoPartida.rival.vida.pop();
+                        estadoPartida.log = `El ataque impacta al lider rival: pierde ${dano} vida${dano > 1 ? 's' : ''}.`;
+                    }
+                } else if (!resultado.leoInmortal) {
                     estadoPartida.log = 'El lider rival resiste el ataque.';
                 }
-            } else if (ganaAtacante) {
-                const defensor = estadoPartida.rival.batalla[ataque.objetivo.index];
-                estadoPartida.rival.descarte.push(defensor.id);
-                estadoPartida.rival.batalla.splice(ataque.objetivo.index, 1);
-                estadoPartida.log = 'Tu carta gana el combate y destruye a la defensora.';
-            } else {
+            } else if (resultado.ganaAtacante && !resultado.leoInmortal && !resultado.destruccionVenganza) {
+                const idx = resultado.objetivo.index;
+                const defensor = estadoPartida.rival.batalla[idx];
+                if (defensor) {
+                    estadoPartida.rival.descarte.push(defensor.id);
+                    estadoPartida.rival.batalla.splice(idx, 1);
+                    estadoPartida.log = 'Tu carta gana el combate y destruye a la defensora.';
+                }
+            } else if (!resultado.ganaAtacante && !resultado.leoInmortal) {
                 estadoPartida.log = 'La carta rival gana el combate. Tu atacante queda en descanso.';
             }
+
             estadoPartida.jugador.combo.forEach(c => estadoPartida.jugador.descarte.push(c.id || c));
             estadoPartida.jugador.combo = [];
-            mostrarChoque(pa, pd, ganaAtacante ? 'Atacante' : 'Defensor', ganaAtacante);
+            mostrarChoque(resultado.pa, resultado.pd, resultado.ganaAtacante ? 'Atacante' : 'Defensor', resultado.ganaAtacante);
             estadoPartida.atacanteSeleccionado = null;
             estadoPartida.ataqueActual = null;
             estadoPartida.faseIndex = 2;
@@ -1820,7 +3833,10 @@
             verificarFinPartida();
         }
 
-        function poderCarta(id) { return Number(getCardById(id)?.poder || getCardById(id)?.poderEvo || 0); }
+        function poderCarta(id, zona, ctx) {
+            if (window.MotorEfectos) return MotorEfectos.poderCarta(id, zona, ctx || {});
+            return Number(getCardById(id)?.poder || getCardById(id)?.poderEvo || 0);
+        }
 
         function mostrarChoque(playerPower, rivalPower, ganador, ganaJugador) {
             const overlay = document.getElementById('clash-overlay');
@@ -1867,15 +3883,50 @@
             estadoPartida.jugador.combo.push({ id, comboMode: true });
             estadoPartida.comboPendiente = null;
             estadoPartida.log = `${carta.nombre} suma +${poderCombo(carta)} de combo.`;
+            if (window.MotorEfectos) MotorEfectos.alCombo('jugador', id, { ataque: estadoPartida.ataqueActual });
             renderizarPartida();
         }
 
         function despertarLider() {
             if (!estadoPartida) return;
             if (estadoPartida.jugador.vida.length > 4) return;
-            estadoPartida.jugador.liderDespierto = true;
-            estadoPartida.log = 'Tu lider despierta.';
+            if (window.MotorEfectos) MotorEfectos.transformarLider('jugador');
+            else {
+                estadoPartida.jugador.liderDespierto = true;
+                estadoPartida.log = 'Tu lider despierta.';
+            }
             renderizarPartida();
+        }
+
+        function abrirMana(quien) {
+            if (!estadoPartida) return;
+            const lista = quien === 'rival' ? estadoPartida.rival.mana : estadoPartida.jugador.mana;
+            detalleSoloInfo = true;
+            document.getElementById('deck-card-modal').classList.add('open');
+            document.getElementById('deck-modal-body').innerHTML = `
+                <div style="grid-column: span 2;">
+                    <div class="panel-header">Maná ${quien === 'rival' ? 'rival' : 'propio'} (${lista.length})</div>
+                    <div class="mana-view-grid">${lista.map((m, i) => {
+                        const estado = m.rested ? ' (descanso)' : ' (activo)';
+                        return `<div title="${estado}">${miniCarta(m.id, m.rested ? 'rested' : '', { onClick: `abrirDetalleJuego('${m.id}')` })}</div>`;
+                    }).join('') || '<p>Sin cartas de maná</p>'}</div>
+                </div>`;
+        }
+
+        function cerrarSelector() {
+            document.getElementById('selector-modal')?.classList.add('hidden');
+            if (estadoPartida?.selectorPendiente?.resolve) {
+                estadoPartida.selectorPendiente.resolve(null);
+                estadoPartida.selectorPendiente = null;
+            }
+        }
+
+        function elegirOpcionSelector(value) {
+            document.getElementById('selector-modal')?.classList.add('hidden');
+            if (estadoPartida?.selectorPendiente?.resolve) {
+                estadoPartida.selectorPendiente.resolve(value);
+                estadoPartida.selectorPendiente = null;
+            }
         }
 
         function abrirDetalleJuego(id) {
@@ -1888,6 +3939,13 @@
             document.getElementById('deck-card-modal').classList.add('open');
         }
 
+        async function ejecutarHabilidadActivable(cardId, habKey) {
+            if (!window.MotorEfectos || !estadoPartida) return;
+            await MotorEfectos.ejecutarActivar(cardId, habKey, 'jugador');
+            pintarDetalleMazo();
+            renderizarPartida();
+        }
+
         function volverAlMenuDesdePartida() {
             document.getElementById('game-end-overlay')?.classList.add('hidden');
             document.getElementById('leader-intro-overlay')?.classList.add('hidden');
@@ -1897,10 +3955,11 @@
         }
 
         function costeDots(carta) {
-            const total = Number(carta.costeTotal || 0);
+            const colorDots = Number(carta.costeColor || 0);
+            if (colorDots <= 0) return '';
             const color = String(carta.color || '').toLowerCase();
             const clase = color.includes('rojo') ? 'dot-rojo' : color.includes('azul') ? 'dot-azul' : color.includes('verde') ? 'dot-verde' : 'dot-negro';
-            return `<span class="mana-dots">${Array.from({ length: Math.min(total, 6) }, () => `<i class="mana-dot ${clase}"></i>`).join('')}</span>`;
+            return `<span class="mana-dots">${Array.from({ length: Math.min(colorDots, 6) }, () => `<i class="mana-dot ${clase}"></i>`).join('')}</span>`;
         }
 
         function miniCarta(idOrObj, extra = '', opts = {}) {
@@ -1950,6 +4009,8 @@
             document.getElementById('player-energy-total').innerText = j.mana.length;
             document.getElementById('op-energy-active').innerText = r.manaActivo || 0;
             document.getElementById('op-energy-total').innerText = r.mana.length;
+            const opHand = document.getElementById('op-hand-count');
+            if (opHand) opHand.innerText = r.mano.length;
             const lider = getCardById(j.liderId), rivalLider = getCardById(r.liderId);
             const liderImg = j.liderDespierto && lider?.imgEvo ? lider.imgEvo : lider?.img;
             const ocultarLideres = estadoPartida.introActiva;
@@ -1960,6 +4021,7 @@
             renderZona('player-combo-zone', j.combo.map(c => miniCarta(c, 'combo-card', { comboMode: true })).join(''));
             renderZona('op-combo-zone', r.combo.map(c => miniCarta(c, 'combo-card', { comboMode: true })).join(''));
             renderZona('player-field-zone', j.campo.map(c => miniCarta(c.id || c)).join(''));
+            renderZona('op-field-zone', r.campo.map(c => miniCarta(c.id || c)).join(''));
             renderZona('player-deck-zone', pilaDorso(j.mazo.length));
             renderZona('op-deck-zone', pilaDorso(r.mazo.length));
             renderZona('player-drop-zone', `${j.descarte.length ? miniCarta(j.descarte[j.descarte.length - 1], 'plain-card', { plain: true, noInfo: true }) : ''}<button class="drop-open-btn" onclick="abrirDescarte('jugador')">⌄</button>`);
