@@ -426,7 +426,7 @@
         }
         .hud-text { flex: 1; text-align: center; font-size: 28px; font-weight: 800; text-shadow: 0 3px 6px #000; }
         .next-phase-tab {
-            pointer-events: auto; width: 104px; height: 180px; margin-right: 0; border: 0; color: white; font-size: 28px; font-weight: 900;
+            pointer-events: auto; width: 96px; height: 150px; margin-right: 0; border: 2px solid rgba(220,250,255,0.95); color: white; font-size: 25px; font-weight: 900;
             writing-mode: vertical-rl; background: linear-gradient(180deg, rgba(230,255,255,0.95), rgba(14,99,152,0.9));
             box-shadow: 0 0 24px rgba(102,226,255,0.65); cursor: pointer; text-shadow: 0 2px 4px #06354d;
         }
@@ -519,7 +519,7 @@
         .awaken-btn { position: absolute; left: -12px; right: -12px; bottom: -38px; z-index: 10; border: 1px solid #fff07c; border-radius: 999px; background: rgba(255,80,24,.92); color: white; font-weight: 900; padding: 6px 8px; cursor: pointer; box-shadow: 0 0 16px rgba(255,80,24,.7); }
 
         /* --- AJUSTES MOTOR V4 --- */
-        .next-phase-tab { right: 0; position: absolute; top: 66px; height: 150px; border-radius: 12px 0 0 12px; }
+        .next-phase-tab { right: 18px; position: absolute; top: 82px; border-radius: 14px; overflow: hidden; }
         .op-drop-stack { left: 278px; top: 126px; }
         .op-deck-stack { left: 278px; top: 266px; }
         .drop-stack .game-card-mini .card-cost-badge, .drop-stack .game-card-mini .card-power-badge, .drop-stack .game-card-mini .mana-dots { display: none; }
@@ -731,7 +731,7 @@
         let detalleSoloInfo = false;
         let mazoAsignadoId = localStorage.getItem('gc_tcg_mazo_asignado') || null;
         let estadoPartida = null;
-        const fasesPartida = ['Carga', 'Principal', 'Combate', 'Combo'];
+        const fasesPartida = ['Carga', 'Principal', 'Combate'];
 
         async function cargarBaseDeDatos() {
             if (datosCartas.length > 0) return;
@@ -1202,7 +1202,12 @@
         function pasarFase() {
             if (!estadoPartida) return;
             if (estadoPartida.faseIndex === 3) return terminarAtaque();
-            if (estadoPartida.faseIndex < fasesPartida.length - 1) estadoPartida.faseIndex += 1;
+            if (estadoPartida.faseIndex >= fasesPartida.length - 1) {
+                estadoPartida.log = 'Ya estas en la ultima fase. Usa Fin turno cuando acabes.';
+                renderizarPartida();
+                return;
+            }
+            estadoPartida.faseIndex += 1;
             const fase = fasesPartida[estadoPartida.faseIndex];
             estadoPartida.log = `Fase de ${fase}.`;
             mostrarFase(fase);
@@ -1603,7 +1608,7 @@
 
         function renderizarPartida() {
             if (!estadoPartida) return;
-            const j = estadoPartida.jugador, r = estadoPartida.rival, fase = fasesPartida[estadoPartida.faseIndex];
+            const j = estadoPartida.jugador, r = estadoPartida.rival, fase = estadoPartida.faseIndex === 3 ? 'Combo' : fasesPartida[estadoPartida.faseIndex];
             document.getElementById('phase-chip').innerText = fase;
             document.getElementById('turn-indicator').innerText = `Turno ${estadoPartida.turno}`;
             document.getElementById('mana-indicator').innerText = `${j.manaActivo}/${j.mana.length}`;
