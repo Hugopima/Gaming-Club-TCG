@@ -519,6 +519,40 @@
         .game-modal, .clash-overlay { position: fixed; inset: 0; z-index: 2000; background: rgba(0,0,0,.72); display: flex; align-items: center; justify-content: center; }
         .game-modal.hidden, .clash-overlay.hidden { display: none; }
         .game-modal-panel { position: relative; width: min(760px, 92vw); max-height: 86vh; overflow: auto; border: 2px solid #63eaff; border-radius: 12px; background: rgba(5,18,24,.96); box-shadow: 0 0 50px rgba(52,218,255,.35); padding: 28px; text-align: center; }
+        .selector-panel { width: min(1100px, 95vw); max-height: 88vh; }
+        .selector-options { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 18px; margin: 22px 0; justify-items: center; }
+        .selector-opt-card { background: transparent; border: none; cursor: pointer; padding: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; transition: transform .15s ease; }
+        .selector-opt-card:hover { transform: translateY(-6px) scale(1.05); }
+        .selector-opt-card .sel-card-img { width: 130px; height: 184px; border-radius: 10px; border: 3px solid rgba(255,255,255,.85); overflow: hidden; box-shadow: 0 8px 18px rgba(0,0,0,.55); background: #050505; }
+        .selector-opt-card .sel-card-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .selector-opt-card.selected .sel-card-img { border-color: #fff07c; box-shadow: 0 0 22px rgba(255,240,124,.6); }
+        .selector-opt-card .sel-card-label { color: #fff07c; font-size: 13px; font-weight: 800; text-align: center; max-width: 140px; line-height: 1.2; text-shadow: 0 2px 4px #000; }
+        .selector-footer { margin-top: 14px; }
+        .selector-leader-card { background: linear-gradient(145deg, #d4af37, #8a6d3b); border: 3px solid #ffd700; padding: 8px; }
+        .selector-leader-card .sel-card-label { color: #fff; }
+
+        /* --- Animación de dado D20 --- */
+        .dado-overlay { position: fixed; inset: 0; z-index: 3500; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px; background: rgba(0,0,0,.78); pointer-events: none; }
+        .dado-d20 { width: 140px; height: 140px; border-radius: 22px; background: linear-gradient(145deg, #fff, #ffd700 70%, #b8860b); display: flex; align-items: center; justify-content: center; font-size: 86px; box-shadow: 0 0 60px rgba(255,215,0,.7), inset 0 0 30px rgba(255,255,255,.4); animation: dadoSpin .9s cubic-bezier(.4,1.6,.5,1) both; }
+        .dado-num { font-size: 56px; font-weight: 900; color: #fff07c; text-shadow: 0 0 18px #fff, 0 4px 12px #000; animation: dadoPop .4s ease .8s both; }
+        @keyframes dadoSpin { 0%{transform:rotate(0) scale(.3);opacity:0} 30%{opacity:1} 60%{transform:rotate(540deg) scale(1.05)} 100%{transform:rotate(720deg) scale(1)} }
+        @keyframes dadoPop { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
+
+        /* --- Indicador de pérdida de vida --- */
+        .life-loss-float { position: fixed; z-index: 3200; font-size: 64px; font-weight: 900; color: #ff4d4d; text-shadow: 0 0 22px #ff0000, 0 4px 12px #000; pointer-events: none; animation: lifeLossFloat 1.4s ease-out forwards; }
+        @keyframes lifeLossFloat { 0%{transform:translateY(0) scale(.4);opacity:0} 20%{transform:translateY(-10px) scale(1.2);opacity:1} 100%{transform:translateY(-140px) scale(1);opacity:0} }
+
+        /* --- Botón activable sobre carta --- */
+        .activable-btn-overlay { position: absolute; left: 50%; bottom: -36px; transform: translateX(-50%); z-index: 12; white-space: nowrap; border: 2px solid #fff07c; border-radius: 999px; background: rgba(255,80,24,.94); color: white; font-weight: 900; padding: 5px 10px; font-size: 11px; cursor: pointer; box-shadow: 0 0 14px rgba(255,80,24,.7); text-shadow: 0 1px 2px #000; max-width: 130px; overflow: hidden; text-overflow: ellipsis; }
+        .activable-btn-overlay:hover { background: rgba(255,140,40,1); transform: translateX(-50%) scale(1.06); }
+        .activable-wrap { position: relative; }
+
+        /* --- Drag-over highlight --- */
+        .game-card-mini.drop-target { outline: 3px solid #5ee7ff; box-shadow: 0 0 22px rgba(94,231,255,.85); }
+        .game-card-mini.drag-eligible { outline: 2px dashed rgba(255,240,124,.7); }
+
+        /* --- Contador de mazo restante (HUD) --- */
+        .deck-count-pill { position: absolute; bottom: -22px; right: -8px; background: rgba(0,0,0,.9); color: #fff07c; border: 2px solid #ffd700; border-radius: 999px; padding: 2px 8px; font-size: 14px; font-weight: 900; }
         .game-modal-panel h2 { color: #fff07c; margin-top: 0; text-transform: uppercase; }
         .mana-pay-options { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin: 20px 0; }
         .mana-option { border: 2px solid rgba(255,255,255,.35); border-radius: 8px; padding: 6px; background: rgba(255,255,255,.05); cursor: pointer; }
@@ -934,10 +968,12 @@
     </div>
 
     <div id="selector-modal" class="game-modal hidden">
-        <div class="game-modal-panel">
-            <button class="close-btn" onclick="cerrarSelector()">×</button>
+        <div class="game-modal-panel selector-panel">
             <h2 id="selector-title">Elegir</h2>
-            <div id="selector-options" class="mana-pay-options"></div>
+            <div id="selector-options" class="selector-options"></div>
+            <div class="selector-footer">
+                <button class="plate-btn btn-nav" onclick="cerrarSelector()">Cancelar</button>
+            </div>
         </div>
     </div>
 
@@ -1030,6 +1066,10 @@
       robadas.push(c);
       if (typeof animarRobo === 'function') animarRobo();
     }
+    // Actualizar Dekus de Andrea dinámicamente al cambiar la mano
+    if (typeof andrea_actualizarDekus === 'function') {
+      try { andrea_actualizarDekus(jugador); } catch (e) {}
+    }
     return robadas;
   }
 
@@ -1043,6 +1083,8 @@
     const carta = z.vida.pop();
     if (critico) z.descarte.push(carta);
     else z.mano.push(carta);
+    // Mostrar indicador visual de pérdida de vida (-1)
+    if (typeof mostrarPerdidaVida === 'function') mostrarPerdidaVida(jugador, 1);
     if (typeof verificarFinPartida === 'function') verificarFinPartida();
     return carta;
   }
@@ -1050,8 +1092,11 @@
   function infligirDanoLider(quienRecibe, cantidad, atacanteId, opts) {
     opts = opts || {};
     const critico = opts.critico || tieneCritico(atacanteId);
-    for (let i = 0; i < (cantidad || 1); i++) quitarVida(quienRecibe, critico);
-    log(`${getCardById(atacanteId)?.nombre || 'Atacante'} inflige ${cantidad || 1} de daño al líder ${quienRecibe === 'jugador' ? 'propio' : 'rival'}.`);
+    const dano = cantidad || 1;
+    for (let i = 0; i < dano; i++) quitarVida(quienRecibe, critico);
+    // Mostrar indicador con la cantidad total (ej: -2 si pierde 2 vidas)
+    if (typeof mostrarPerdidaVida === 'function') mostrarPerdidaVida(quienRecibe, dano);
+    log(`${getCardById(atacanteId)?.nombre || 'Atacante'} inflige ${dano} de daño al líder ${quienRecibe === 'jugador' ? 'propio' : 'rival'}.`);
   }
 
   function enderezarMana(jugador, color, max) {
@@ -1121,6 +1166,10 @@
     const z = zonaJugador(jugador);
     const [id] = z.mano.splice(index, 1);
     if (id) z.descarte.push(id);
+    // Actualizar Dekus de Andrea dinámicamente
+    if (typeof andrea_actualizarDekus === 'function') {
+      try { andrea_actualizarDekus(jugador); } catch (e) {}
+    }
     return id;
   }
 
@@ -1152,6 +1201,14 @@
     if (zona?.copiaDe) {
       const orig = getCardById(zona.copiaDe);
       if (orig) p = Number(orig.poder || 0);
+    }
+    // Si es un líder evolucionado (despierto), usar poderEvo
+    if (estadoPartida) {
+      const esLiderJugador = estadoPartida.jugador?.liderId === id && estadoPartida.jugador?.liderDespierto;
+      const esLiderRival = estadoPartida.rival?.liderId === id && estadoPartida.rival?.liderDespierto;
+      if ((esLiderJugador || esLiderRival) && carta.poderEvo) {
+        p = Number(carta.poderEvo);
+      }
     }
     return p;
   }
@@ -1265,27 +1322,45 @@
   function opcionesUnidades(quien, filtro, prefijo) {
     return unidadesEnCampo(quien, filtro).map(({ u, i }) => ({
       label: `${prefijo || ''}${getCardById(u.id)?.nombre || u.id}`,
-      value: i
+      value: i,
+      cardId: u.id
     }));
   }
 
+  let _selectorResolverActual = null;
   function elegirConModal(titulo, opciones) {
     return new Promise(resolve => {
       const modal = document.getElementById('selector-modal');
       if (modal && opciones?.length) {
-        const body = modal.querySelector('.selector-body') || modal.querySelector('#selector-body') || modal.querySelector('#selector-options');
-        const titleEl = modal.querySelector('.selector-title') || modal.querySelector('#selector-title');
+        const body = modal.querySelector('#selector-options');
+        const titleEl = modal.querySelector('#selector-title');
         if (titleEl) titleEl.textContent = titulo;
+        // Guardar resolver para que cerrarSelector pueda cancelar
+        _selectorResolverActual = resolve;
         if (body) {
           body.innerHTML = opciones.map((o, i) => {
             const cardId = o.cardId || o.id;
             const cardData = cardId && typeof getCardById === 'function' ? getCardById(cardId) : null;
-            const imgHtml = cardData?.img ? `<img src="${cardData.img}" style="width:56px;height:80px;object-fit:cover;border-radius:4px;display:block;margin:0 auto 4px;">` : '';
-            return `<button type="button" class="plate-btn selector-opt" data-i="${i}" style="display:inline-flex;flex-direction:column;align-items:center;padding:6px 10px;min-width:80px;">${imgHtml}<span>${o.label || o}</span></button>`;
+            const isLeader = cardData && claseNormalizada && claseNormalizada(cardData) === 'lider';
+            const imgSrc = cardData?.img || '';
+            const labelText = o.label && typeof o.label === 'string' ? o.label : (cardData?.nombre || '');
+            if (imgSrc) {
+              const leaderCls = isLeader ? ' selector-leader-card' : '';
+              return `<button type="button" class="selector-opt-card${leaderCls}" data-i="${i}">
+                <div class="sel-card-img"><img src="${imgSrc}" alt="${escapeHtml ? escapeHtml(labelText) : labelText}"></div>
+                <div class="sel-card-label">${escapeHtml ? escapeHtml(labelText) : labelText}</div>
+              </button>`;
+            }
+            // Sin imagen: botón de texto
+            return `<button type="button" class="selector-opt-card" data-i="${i}">
+              <div class="sel-card-img" style="display:flex;align-items:center;justify-content:center;font-size:36px;color:#fff07c;">?</div>
+              <div class="sel-card-label">${escapeHtml ? escapeHtml(labelText) : labelText}</div>
+            </button>`;
           }).join('');
-          body.querySelectorAll('.selector-opt').forEach(btn => {
+          body.querySelectorAll('.selector-opt-card').forEach(btn => {
             btn.onclick = () => {
               modal.classList.add('hidden');
+              _selectorResolverActual = null;
               const idx = Number(btn.dataset.i);
               resolve(opciones[idx]?.value !== undefined ? opciones[idx].value : opciones[idx]);
             };
@@ -1307,9 +1382,10 @@
   async function elegirDescarteObligatorio(jugador, titulo) {
     const z = zonaJugador(jugador);
     if (!z.mano.length) return null;
-    const opts = z.mano.map((id, i) => ({ label: getCardById(id)?.nombre || id, value: i }));
-    const idx = await elegirConModal(titulo || 'Elige una carta para descartar', opts);
-    if (idx == null) return descartarAleatorio(jugador);
+    const opts = z.mano.map((id, i) => ({ label: getCardById(id)?.nombre || id, value: i, cardId: id }));
+    let idx = await elegirConModal(titulo || 'Elige una carta para descartar (obligatorio)', opts);
+    // No se puede cancelar: si el usuario cierra, se elige aleatoria
+    if (idx == null) idx = Math.floor(Math.random() * z.mano.length);
     return descartarCartaMano(jugador, idx);
   }
 
@@ -1344,12 +1420,10 @@
   }
 
   function efectoCampoPermanente(quien, c) {
-    let bonus = 0;
-    const campo = campoActivo(quien);
-    if (!campo) return bonus;
-    const id = campo.id;
-    if (id === 'energia') bonus += 10000; // Energía de Patroclo: +10000 a todas las cartas incluido líder
-    return bonus;
+    // Energía de Patroclo NO buffa al líder, solo unidades (+5000)
+    // Esta función se llama también para el líder; por eso devolvemos 0 aquí.
+    // El bonus a unidades se aplica en modificarPoderBatalla.
+    return 0;
   }
 
   function modificarPoderBatalla(id, zona, c) {
@@ -1361,8 +1435,17 @@
     if (id === 'peppa' && c.atacanteId === id) {
       mod += (zonaJugador(c.atacanteQuien).combo?.length || 0) * 2500;
     }
-    const campoQ = c.atacanteQuien || 'jugador';
-    if (campoActivo(campoQ)?.id === 'energia') mod += 5000;
+    // Energía de Patroclo: +5000 solo a unidades (no al líder)
+    // Determinar si la carta siendo calculada es un líder
+    const esLiderCalc = zona?.id && estadoPartida && (
+      zona.id === estadoPartida.jugador.liderId || zona.id === estadoPartida.rival.liderId
+    ) && !zona?.copiaDe && (zona === estadoPartida.jugador.liderZona || zona === estadoPartida.rival.liderZona);
+    if (!esLiderCalc) {
+      const campoQ = c.atacanteQuien || c.quien || 'jugador';
+      // Campo propio del jugador siendo calculado
+      const quienCalc = c.quien || c.atacanteQuien || 'jugador';
+      if (campoActivo(quienCalc)?.id === 'energia') mod += 5000;
+    }
     if (c.atacanteId === id && ctx.bonusSinBloqueador) mod += ctx.bonusSinBloqueador;
     if (c.atacanteId === id && ctx.bonusVsBloqueador) mod += ctx.bonusVsBloqueador;
     if (c.atacanteId === id && ctx.phantomBonus) mod += ctx.phantomBonus;
@@ -1457,7 +1540,7 @@
 
   R('blue_lider_01', {
     async alAtacarLider(quien) {
-      if (liderCarta(quien).esEvo) robar(quien, 1);
+      // INFINITYCRAFT NO roba al atacar (su habilidad es: ambos descartan 1)
       if (campoActivo(quien)?.id !== 'anillo') await ambosDescartan('INFINITYCRAFT: descarta 1 carta');
     },
     puedeAtacarObjetivo(atacanteId, objetivo, quien) {
@@ -1494,20 +1577,24 @@
   R('green_lider_01', {
     alAtacarLider(quien) { robar(quien, 1); },
     activablesLider(quien) {
+      // Toñi la panadera: "Activar: Principal" - solo en fase principal
+      if (estadoPartida?.faseIndex !== 1) return [];
       if (liderCarta(quien).esEvo || habilidadUsada(claveTurno(quien, 'gl1_act'))) return [];
-      return [{ key: 'manaDesc', label: 'Descarta 1: maná del descarte/mano' }];
+      return [{ key: 'manaDesc', label: 'Activar Principal: descarta 1 → maná' }];
     },
     async ejecutarActivar(key, quien) {
       if (key !== 'manaDesc') return;
-      await elegirDescarteObligatorio(quien);
+      await elegirDescarteObligatorio(quien, 'Toñi: descarta 1 carta');
       const z = zonaJugador(quien);
-      const opts = z.descarte.map((id, i) => ({ label: getCardById(id)?.nombre, value: { src: 'desc', i } }))
-        .concat(z.mano.map((id, i) => ({ label: getCardById(id)?.nombre + ' (mano)', value: { src: 'mano', i } })));
-      const pick = await elegirConModal('Elige carta para maná', opts);
+      const opts = z.descarte.map((id, i) => ({ label: getCardById(id)?.nombre || id, value: { src: 'desc', i }, cardId: id }))
+        .concat(z.mano.map((id, i) => ({ label: (getCardById(id)?.nombre || id) + ' (mano)', value: { src: 'mano', i }, cardId: id })));
+      const pick = await elegirConModal('Toñi: elige carta para maná (del descarte o de tu mano)', opts);
       if (pick?.src === 'desc') { const [id] = z.descarte.splice(pick.i, 1); z.mana.push({ id, rested: true }); }
       else if (pick?.src === 'mano') { const [id] = z.mano.splice(pick.i, 1); z.mana.push({ id, rested: true }); }
       z.manaActivo = z.mana.filter(m => !m.rested).length;
       marcarHabilidadUsada(claveTurno(quien, 'gl1_act'));
+      log('Toñi la panadera: carta añadida como maná en modo descanso.');
+      if (typeof renderizarPartida === 'function') renderizarPartida();
     }
   });
 
@@ -1539,7 +1626,7 @@
     alAtacarLider(quien) {
       robar(quien, 1);
       if (ctx.desafioJugado === quien) {
-        const opts = opcionesUnidades(quien).concat([{ label: 'Tu Líder', value: 'lider' }]);
+        const opts = opcionesUnidades(quien).concat([{ label: 'Tu Líder', value: 'lider', cardId: zonaJugador(quien).liderId }]);
         elegirConModal('Iniciador: +5000 a unidad o líder', opts).then(v => {
           if (v === 'lider') addBuff(zonaJugador(quien).liderZona, 'poder', 5000);
           else if (v != null) addBuff(zonaJugador(quien).batalla[v], 'poder', 5000);
@@ -1585,7 +1672,23 @@
 
   // —— UNIDADES AZULES ——
   R('alberto', {
-    alJugar(quien) { enderezarMana(quien, null, 1); log('Alberto endereza 1 maná.'); }
+    async alJugar(quien) {
+      const z = zonaJugador(quien);
+      // Mostrar manás descansados para que el jugador elija cuál enderezar
+      const descansados = z.mana.map((m, i) => ({ m, i })).filter(x => x.m.rested);
+      if (!descansados.length) { log('Alberto: no tienes manás en descanso para enderezar.'); return; }
+      const opts = descansados.map(x => ({
+        label: getCardById(x.m.id)?.nombre || 'Maná',
+        value: x.i,
+        cardId: x.m.id
+      }));
+      const idx = await elegirConModal('Megalberto Mewing: elige qué maná enderezar', opts);
+      if (idx != null) {
+        z.mana[idx].rested = false;
+        z.manaActivo = z.mana.filter(m => !m.rested).length;
+        log('Alberto endereza 1 maná elegido.');
+      }
+    }
   });
 
   R('anillo', {
@@ -1669,7 +1772,11 @@
       if (typeof renderizarPartida === 'function') renderizarPartida();
     },
     alInicioPrincipal(quien) { andrea_actualizarDekus(quien); },
-    alFinTurno(quien) { andrea_actualizarDekus(quien); }
+    alFinTurno(quien) { andrea_actualizarDekus(quien); },
+    // Actualizar también tras combos y ataques
+    alCombo(quien) { andrea_actualizarDekus(quien); },
+    alAtacar(quien) { andrea_actualizarDekus(quien); },
+    alResolverCombate(c) { andrea_actualizarDekus(c.atacanteQuien); }
   });
   function andrea_actualizarDekus(quien) {
     const z = zonaJugador(quien);
@@ -1680,7 +1787,16 @@
         else { if (u.flags) u.flags.dobleGolpe = false; }
       }
     });
+    // También la propia Andrea obtiene doble golpe si mano ≤4
+    z.batalla.forEach(u => {
+      if (u.id === 'andrea') {
+        if (tienePocos) { addFlag(u, 'dobleGolpe', true); }
+        else { if (u.flags) u.flags.dobleGolpe = false; }
+      }
+    });
   }
+  // Hook global: tras cualquier robo o descarte, actualizar Dekus
+  // (lo llamamos desde robar/descartarCartaMano internamente ya que están dentro del IIFE)
 
   R('sergio', {
     async alJugar(quien) {
@@ -1730,6 +1846,10 @@
     alCombo(quien, cardId, comboCtx) {
       if (colorLider(quien) === 'azul' && zonaJugador(quien).vida.length <= 4) {
         robar(quien, 1);
+        // Aplicar el bonus al ataque actual directamente
+        if (estadoPartida?.ataqueActual) {
+          estadoPartida.ataqueActual.atacanteCombo = (estadoPartida.ataqueActual.atacanteCombo || 0) + 10000;
+        }
         if (comboCtx) comboCtx.bonusCombo = (comboCtx.bonusCombo || 0) + 10000;
         log('Fideos Malvados: +10000 combo y robo.');
       }
@@ -1752,11 +1872,16 @@
 
   R('angel', {
     async alAtacar(quien, ref, zona) {
-      const ok = await elegirConModal('¿Tomar 1 vida? +10000 y Doble Golpe', [{ label: 'Sí', value: true }, { label: 'No', value: false }]);
+      // Habilidad USABLE UNA SOLA VEZ por partida
+      if (habilidadUsada('angel_global')) return;
+      const ok = await elegirConModal('¿Tomar 1 vida? +10000 y Doble Golpe (una sola vez por partida)', [{ label: 'Sí', value: true, cardId: 'angel' }, { label: 'No', value: false, cardId: 'angel' }]);
       if (ok && zonaJugador(quien).vida.length) {
         zonaJugador(quien).mano.push(zonaJugador(quien).vida.pop());
         addBuff(zona, 'poder', 10000);
         addFlag(zona, 'dobleGolpe', true);
+        marcarHabilidadUsada('angel_global');
+        log('Angel toma 1 vida y gana +10000 y Doble Golpe (ya no se puede usar más).');
+        if (typeof renderizarPartida === 'function') renderizarPartida();
       }
     }
   });
@@ -1822,15 +1947,29 @@
   });
 
   R('brawlera', {
-    alJugar(quien) {
-      const id = buscarEnMazo(quien, c => String(c?.origen || '').toLowerCase().includes('grupo') && Number(c?.costeTotal || 99) <= 2);
-      if (id) {
-        zonaJugador(quien).batalla.push(crearUnidadCampo(id, { rested: true }));
-        barajar(quien);
-        log('Andrea la Brawlera invoca ' + (getCardById(id)?.nombre || id) + ' al campo (descansada).');
-        if (typeof renderizarPartida === 'function') renderizarPartida();
-      } else {
+    async alJugar(quien) {
+      const z = zonaJugador(quien);
+      // Buscar todas las cartas Grupo con coste ≤2 en el mazo
+      const candidatos = z.mazo.filter(id => {
+        const c = getCardById(id);
+        return c && String(c?.origen || '').toLowerCase().includes('grupo') && Number(c?.costeTotal || 99) <= 2;
+      });
+      if (!candidatos.length) {
         log('Andrea la Brawlera: no hay cartas de Origen Grupo con coste ≤2 en el mazo.');
+        return;
+      }
+      // Eliminar duplicados manteniendo orden
+      const vistos = new Set();
+      const uniq = candidatos.filter(id => { if (vistos.has(id)) return false; vistos.add(id); return true; });
+      const opts = uniq.map(id => ({ label: getCardById(id)?.nombre || id, value: id, cardId: id }));
+      const pick = await elegirConModal('Andrea la Brawlera: elige una carta de Origen Grupo con coste ≤2 del mazo', opts);
+      if (pick) {
+        const idx = z.mazo.lastIndexOf(pick);
+        if (idx >= 0) z.mazo.splice(idx, 1);
+        z.batalla.push(crearUnidadCampo(pick, { rested: true }));
+        barajar(quien);
+        log('Andrea la Brawlera invoca ' + (getCardById(pick)?.nombre || pick) + ' al campo (descansada).');
+        if (typeof renderizarPartida === 'function') renderizarPartida();
       }
     }
   });
@@ -1859,7 +1998,7 @@
 
   R('fnaf', {
     async alJugar(quien) {
-      const opts = [{ label: 'Tu Líder', value: 'lider' }].concat(
+      const opts = [{ label: 'Tu Líder', value: 'lider', cardId: zonaJugador(quien).liderId }].concat(
         opcionesUnidades(quien).map(o => ({ ...o, cardId: zonaJugador(quien).batalla[o.value]?.id }))
       );
       const v = await elegirConModal('Five Nights at Patatas María: elige una carta para +5000', opts);
@@ -1986,7 +2125,7 @@
 
   R('pizza', {
     async alJugar(quien) {
-      const opts = [{ label: 'Tu Líder', value: 'lider' }].concat(
+      const opts = [{ label: 'Tu Líder', value: 'lider', cardId: zonaJugador(quien).liderId }].concat(
         opcionesUnidades(quien).map(o => ({ ...o, cardId: zonaJugador(quien).batalla[o.value]?.id }))
       );
       const v = await elegirConModal('Pizza Slice: elige una carta para dar +5000', opts);
@@ -2002,7 +2141,11 @@
     alCombo(quien, cardId, comboCtx) {
       if (colorLider(quien) === 'rojo' && zonaJugador(quien).vida.length <= 4) {
         robar(quien, 1);
+        if (estadoPartida?.ataqueActual) {
+          estadoPartida.ataqueActual.atacanteCombo = (estadoPartida.ataqueActual.atacanteCombo || 0) + 10000;
+        }
         if (comboCtx) comboCtx.bonusCombo = (comboCtx.bonusCombo || 0) + 10000;
+        log('Golden: +10000 combo y robo.');
       }
     }
   });
@@ -2022,11 +2165,12 @@
       const riv = rivalDe(quien);
       const opts = zonaJugador(riv).mano.map((id, i) => ({ id, i, c: getCardById(id) }))
         .filter(x => claseNormalizada(x.c) === 'unidad' && Number(x.c?.costeTotal || 99) <= 2)
-        .map(x => ({ label: x.c.nombre, value: x.i }));
+        .map(x => ({ label: x.c.nombre, value: x.i, cardId: x.id }));
       if (opts.length) {
-        const idx = await elegirConModal('Rival descarta unidad ≤2 de mano', opts);
+        const idx = await elegirConModal('Jeffrey Epstein: el rival debe descartar una unidad de coste ≤2', opts);
         if (idx != null) descartarCartaMano(riv, idx);
       }
+      if (typeof renderizarPartida === 'function') renderizarPartida();
     }
   });
 
@@ -2165,10 +2309,13 @@
     R('todo', {
     async alJugar(quien) {
       const d = tirarDado();
-      if (typeof mostrarDado === 'function') mostrarDado(d);
+      // Mostrar animación de dado SIEMPRE
+      try { mostrarDadoAnimado(d); } catch (e) { if (typeof mostrarDado === 'function') mostrarDado(d); }
       log(`Todo al Verde: sacas un ${d} con el dado de 20.`);
+      // Esperar a que termine la animación del dado antes de preguntar
+      await new Promise(r => setTimeout(r, 1300));
       if (d === 20) {
-        const opts = [{ label: 'Tu Líder', value: 'lider' }].concat(
+        const opts = [{ label: 'Tu Líder', value: 'lider', cardId: zonaJugador(quien).liderId }].concat(
           opcionesUnidades(quien).map(o => ({ ...o, cardId: zonaJugador(quien).batalla[o.value]?.id }))
         );
         const v = await elegirConModal('¡Crítico! Todo al Verde: elige carta para +15000', opts);
@@ -2182,10 +2329,13 @@
   R('ruleta', {
     async alJugar(quien) {
       const d = tirarDado();
-      mostrarDado && mostrarDado(d);
+      // Mostrar animación de dado SIEMPRE
+      try { mostrarDadoAnimado(d); } catch (e) { if (typeof mostrarDado === 'function') mostrarDado(d); }
       log(`Ruleta: sacas un ${d} con el dado de 20.`);
+      // Esperar a que termine la animación del dado antes de preguntar
+      await new Promise(r => setTimeout(r, 1300));
       if (d >= 10 && d <= 19) {
-        const opts = [{ label: 'Tu Líder', value: 'lider' }].concat(
+        const opts = [{ label: 'Tu Líder', value: 'lider', cardId: zonaJugador(quien).liderId }].concat(
           opcionesUnidades(quien).map(o => ({ ...o, cardId: zonaJugador(quien).batalla[o.value]?.id }))
         );
         const v = await elegirConModal(`Ruleta (${d}): elige carta para +5000`, opts);
@@ -2216,31 +2366,58 @@
   });
 
   R('dymytry', {
-    activables(quien, u) {
-      // Puede absorber Juan desde la mano (requisito previo para activar su habilidad de campo)
-      const z = zonaJugador(quien);
-      const tieneJuan = z.mano.some(id => id === 'juan' || id === 'juan2');
-      const tieneJuanDebajo = u?.debajo?.length > 0;
-      const list = [];
-      if (tieneJuan && !tieneJuanDebajo) list.push({ key: 'absJuan', label: 'Absorber Juan de la mano (colocarlo debajo)' });
-      if (tieneJuanDebajo) list.push({ key: 'dymPrincipal', label: 'Activar Principal: busca Dymytry ≤5 en mazo' });
-      return list;
-    },
-    async ejecutarActivar(key, quien, extra) {
-      const z = zonaJugador(quien);
-      const u = z.batalla[extra?.index];
-      if (key === 'absJuan') {
-        const juanIdx = z.mano.findIndex(id => id === 'juan' || id === 'juan2');
-        if (juanIdx < 0) { log('No tienes a Juan en la mano.'); return; }
-        const [juan] = z.mano.splice(juanIdx, 1);
-        if (u) { if (!u.debajo) u.debajo = []; u.debajo.push(juan); }
-        log('DYMYTRY absorbe a Juan. Ahora puedes activar su habilidad principal.');
-      } else if (key === 'dymPrincipal') {
-        const dym = buscarEnMazo(quien, (c, id) => id === 'dymytry' && Number(c?.costeTotal || 99) <= 5);
-        if (dym) { z.mano.push(dym); log('DYMYTRY busca a Patroclo en el mazo y lo añade a tu mano.'); }
-        else log('No hay Dymytry ≤5 en el mazo.');
+    // DYMYTRY: arrastrar Juan desde la mano debajo de esta carta
+    async absorberDrag(quien, cartaArrastradaId, targetZona) {
+      if (cartaArrastradaId !== 'juan' && cartaArrastradaId !== 'juan2') return false;
+      // Solo permitir si no tiene ya un Juan debajo
+      if (targetZona?.debajo?.length > 0) {
+        log('DYMYTRY ya tiene una carta absorbida debajo.');
+        return true;
       }
+      const ok = await elegirConModal('¿Quieres que DYMYTRY absorba a Juan?', [
+        { label: 'Sí', value: true, cardId: 'dymytry' },
+        { label: 'No', value: false, cardId: 'dymytry' }
+      ]);
+      if (!ok) return true;
+      // Quitar Juan de la mano y colocarlo debajo
+      const z = zonaJugador(quien);
+      const juanIdx = z.mano.findIndex(id => id === cartaArrastradaId);
+      if (juanIdx < 0) return true;
+      const [juan] = z.mano.splice(juanIdx, 1);
+      if (targetZona) {
+        if (!targetZona.debajo) targetZona.debajo = [];
+        targetZona.debajo.push(juan);
+      }
+      log('DYMYTRY absorbe a Juan.');
+      // Elegir un Dymytry con coste ≤5 del mazo y colocarlo encima (como evolución)
+      const candidatos = z.mazo.filter(id => id === 'dymytry' && Number(getCardById(id)?.costeTotal || 99) <= 5);
+      if (candidatos.length) {
+        const vistos = new Set();
+        const uniq = candidatos.filter(id => { if (vistos.has(id)) return false; vistos.add(id); return true; });
+        const opts = uniq.map(id => ({ label: getCardById(id)?.nombre || id, value: id, cardId: id }));
+        const pick = await elegirConModal('DYMYTRY: elige un "Dymytry" con coste ≤5 de tu mazo para colocarlo encima (evolución)', opts);
+        if (pick) {
+          const idxMazo = z.mazo.lastIndexOf(pick);
+          if (idxMazo >= 0) z.mazo.splice(idxMazo, 1);
+          // Colocar encima como evolución: sustituir la carta de DYMYTRY en batalla
+          const idxBat = z.batalla.indexOf(targetZona);
+          if (idxBat >= 0) {
+            // Conservar Juan debajo
+            const debajoOld = targetZona.debajo || [];
+            z.batalla[idxBat] = MotorEfectos.crearUnidadCampo ? MotorEfectos.crearUnidadCampo(pick, { rested: false }) : { id: pick, rested: false, ataquesRestantes: 1, buffs: { poder: 0, combo: 0, batalla: 0 }, flags: {} };
+            z.batalla[idxBat].debajo = debajoOld;
+            z.batalla[idxBat].evolucionadaDe = 'dymytry';
+            log('DYMYTRY evoluciona colocando un Dymytry ≤5 encima (gratis).');
+            // Dispatch alJugar del nuevo Dymytry
+            dispatch(pick, 'alJugar', [quien, pick, z.batalla[idxBat]]);
+          }
+        }
+      } else {
+        log('DYMYTRY: no hay Dymytry con coste ≤5 en el mazo.');
+      }
+      barajar(quien);
       if (typeof renderizarPartida === 'function') renderizarPartida();
+      return true;
     }
   });
 
@@ -2256,26 +2433,42 @@
         });
       }
     },
-    activables(quien, u) {
+    // Juan2: arrastrar Cazón desde la mano debajo
+    async absorberDrag(quien, cartaArrastradaId, targetZona) {
+      if (cartaArrastradaId !== 'cazon') return false;
+      const ok = await elegirConModal('¿Quieres que DYMYTRY absorba a Cazón?', [
+        { label: 'Sí', value: true, cardId: 'juan2' },
+        { label: 'No', value: false, cardId: 'juan2' }
+      ]);
+      if (!ok) return true;
       const z = zonaJugador(quien);
-      const tieneCazon = z.mano.some(id => id === 'cazon');
-      const list = [];
-      if (tieneCazon) list.push({ key: 'absCazon', label: 'Absorber Cazón → buscar Patroclo' });
-      return list;
-    },
-    async ejecutarActivar(key, quien, extra) {
-      const z = zonaJugador(quien);
-      if (key === 'absCazon') {
-        const ci = z.mano.findIndex(id => id === 'cazon');
-        if (ci < 0) { log('No tienes a Cazón en la mano.'); return; }
-        const [cazon] = z.mano.splice(ci, 1);
-        const u = z.batalla[extra?.index];
-        if (u) { if (!u.debajo) u.debajo = []; u.debajo.push(cazon); }
-        const pat = buscarEnMazo(quien, (c, id) => id === 'patroclo');
-        if (pat) { z.mano.push(pat); log('Juan (DYMYTRY) busca a Patroclo y lo añade a tu mano.'); }
-        else log('No hay Patroclo en el mazo.');
-        if (typeof renderizarPartida === 'function') renderizarPartida();
+      const ci = z.mano.findIndex(id => id === 'cazon');
+      if (ci < 0) return true;
+      const [cazon] = z.mano.splice(ci, 1);
+      if (targetZona) {
+        if (!targetZona.debajo) targetZona.debajo = [];
+        targetZona.debajo.push(cazon);
       }
+      log('Juan (DYMYTRY) absorbe a Cazón.');
+      // Elegir un Patroclo del mazo y añadirlo a la mano (el jugador elige cuál)
+      const candidatos = z.mazo.filter(id => id === 'patroclo');
+      if (candidatos.length) {
+        const vistos = new Set();
+        const uniq = candidatos.filter(id => { if (vistos.has(id)) return false; vistos.add(id); return true; });
+        const opts = uniq.map(id => ({ label: getCardById(id)?.nombre || id, value: id, cardId: id }));
+        const pick = await elegirConModal('Juan (DYMYTRY): elige un "Patroclo" de tu mazo para añadirlo a tu mano', opts);
+        if (pick) {
+          const idxMazo = z.mazo.lastIndexOf(pick);
+          if (idxMazo >= 0) z.mazo.splice(idxMazo, 1);
+          z.mano.push(pick);
+          log('Juan (DYMYTRY) añade a Patroclo a tu mano.');
+        }
+      } else {
+        log('No hay Patroclo en el mazo.');
+      }
+      barajar(quien);
+      if (typeof renderizarPartida === 'function') renderizarPartida();
+      return true;
     }
   });
 
@@ -2333,7 +2526,11 @@
     alCombo(quien, cardId, comboCtx) {
       if (colorLider(quien) === 'verde' && zonaJugador(quien).vida.length <= 4) {
         robar(quien, 1);
+        if (estadoPartida?.ataqueActual) {
+          estadoPartida.ataqueActual.atacanteCombo = (estadoPartida.ataqueActual.atacanteCombo || 0) + 10000;
+        }
         if (comboCtx) comboCtx.bonusCombo = (comboCtx.bonusCombo || 0) + 10000;
+        log('Juan Falso: +10000 combo y robo.');
       }
     }
   });
@@ -2343,12 +2540,14 @@
   R('sniffer', {
     async alJugar(quien) {
       const tops = mirarTop(quien, 3);
-      const pick = await elegirConModal('Sniffer: elige 1 de top 3', tops.map(id => ({ label: getCardById(id)?.nombre, value: id })).concat([{ label: 'Ninguna', value: null }]));
+      const pick = await elegirConModal('Sniffer: elige 1 de top 3', tops.map(id => ({ label: getCardById(id)?.nombre, value: id, cardId: id })).concat([{ label: 'Ninguna', value: null }]));
       if (pick) {
         const z = zonaJugador(quien);
         z.mazo = z.mazo.filter(id => id !== pick);
         z.mano.push(pick);
         tops.filter(id => id !== pick).forEach(id => z.mazo.unshift(id));
+        log('Sniffer añade ' + (getCardById(pick)?.nombre || pick) + ' a tu mano.');
+        if (typeof renderizarPartida === 'function') renderizarPartida();
       }
     }
   });
@@ -2393,9 +2592,17 @@
   });
 
   R('phantom', {
-    alAtacar(quien) {
+    alAtacar(quien, ref, zona) {
       const riv = rivalDe(quien);
-      if (!unidadesEnCampo(riv, u => u.rested).length) ctx.phantomBonus = 10000;
+      if (!unidadesEnCampo(riv, u => u.rested).length) {
+        ctx.phantomBonus = 10000;
+        // Aplicar buff directo a la carta para que el indicador visual se actualice
+        if (zona) {
+          addBuff(zona, 'poder', 10000);
+          log('Mega Phantom gana +10000 (el rival no tiene unidades en descanso).');
+          if (typeof renderizarPartida === 'function') renderizarPartida();
+        }
+      }
     }
   });
 
@@ -2511,14 +2718,31 @@
 
   R('curriculum', {
     activablesMano(quien) {
-      return [{ key: 'curriculum', label: 'Carta de mano → maná' }];
+      // Curriculum se puede usar desde la mano en fase principal
+      if (estadoPartida?.faseIndex !== 1) return [];
+      if (habilidadUsada(claveTurno(quien, 'curr_act'))) return [];
+      return [{ key: 'curriculum', label: 'Activar: carta de mano → maná' }];
     },
-    async ejecutarActivar(key, quien) {
-      const idx = await elegirConModal('Elige carta para maná', zonaJugador(quien).mano.map((id, i) => ({ label: getCardById(id)?.nombre, value: i })));
+    async ejecutarActivar(key, quien, extra) {
+      const z = zonaJugador(quien);
+      const idx = await elegirConModal('Currículum: elige carta de tu mano para añadir como maná', z.mano.map((id, i) => ({ label: getCardById(id)?.nombre || id, value: i, cardId: id })));
       if (idx != null) {
-        const [id] = zonaJugador(quien).mano.splice(idx, 1);
-        zonaJugador(quien).mana.push({ id, rested: true });
-        zonaJugador(quien).manaActivo = zonaJugador(quien).mana.filter(m => !m.rested).length;
+        const [id] = z.mano.splice(idx, 1);
+        z.mana.push({ id, rested: true });
+        z.manaActivo = z.mana.filter(m => !m.rested).length;
+        // Curriculum se descarta al usarse (es Extra)
+        if (extra?.handIndex != null && z.mano[extra.handIndex] !== 'curriculum') {
+          // Si curriculum ya no está en mano, buscarlo en descarte
+        }
+        // Asegurar que curriculum se descarta
+        const currInHand = z.mano.indexOf('curriculum');
+        if (currInHand >= 0) {
+          z.mano.splice(currInHand, 1);
+          z.descarte.push('curriculum');
+        }
+        marcarHabilidadUsada(claveTurno(quien, 'curr_act'));
+        log('Currículum: carta añadida como maná en modo descanso. Currículum se descarta.');
+        if (typeof renderizarPartida === 'function') renderizarPartida();
       }
     }
   });
@@ -2580,7 +2804,11 @@
     async ejecutarActivar(key, quien, extra) {
       if (key !== 'club_roba') return;
       const z = zonaJugador(quien);
-      const idx = z.batalla.findIndex((u, i) => i === extra?.index);
+      // Buscar la propia carta de Club en el campo (por id, no por índice)
+      let idx = extra?.index != null ? extra.index : -1;
+      if (idx < 0 || z.batalla[idx]?.id !== 'club') {
+        idx = z.batalla.findIndex(u => u.id === 'club');
+      }
       if (idx >= 0) {
         z.batalla.splice(idx, 1);
         z.descarte.push('club');
@@ -2616,11 +2844,53 @@
     }
   });
 
-  R('omori', {});
-  R('kel', { puedeAtacarActivas: true });
-  R('aubrey', { alDestruida(quien) { descartarAleatorio(rivalDe(quien)); } });
+  // Función auxiliar: verificar si RELEASE ENERGY está en campo y manejar prompt
+  async function verificarReleaseAbsorber(quien, cardId, handIndex) {
+    if (!estadoPartida) return 'jugar';
+    const z = zonaJugador(quien);
+    const campo = z.campo?.[0];
+    if (!campo || campo.id !== 'release') return 'jugar';
+    // Verificar que la carta es Omori/Kel/Aubrey/Hero
+    if (!['omori', 'kel', 'aubrey', 'hero'].includes(cardId)) return 'jugar';
+    // Verificar que no haya ya una del mismo tipo debajo
+    const debajo = campo.debajo || [];
+    if (debajo.includes(cardId)) {
+      // Ya hay una del mismo tipo, no se puede poner debajo
+      return 'jugar';
+    }
+    // Preguntar: colocar debajo o jugar como unidad
+    const opts = [
+      { label: 'Colocar debajo de RELEASE ENERGY', value: 'absorber', cardId: 'release' },
+      { label: 'Jugar como unidad', value: 'jugar', cardId: cardId }
+    ];
+    const v = await elegirConModal('RELEASE ENERGY: ¿colocar esta carta debajo o jugarla como unidad?', opts);
+    if (v === 'absorber') {
+      // Sacar de la mano y colocar debajo
+      const idx = z.mano.lastIndexOf(cardId);
+      if (idx >= 0) z.mano.splice(idx, 1);
+      if (!campo.debajo) campo.debajo = [];
+      campo.debajo.push(cardId);
+      log(`${getCardById(cardId)?.nombre} se coloca debajo de RELEASE ENERGY.`);
+      if (typeof renderizarPartida === 'function') renderizarPartida();
+      return 'absorbida';
+    }
+    return 'jugar';
+  }
+
+  R('omori', {
+    async alJugarPrevio(quien, id, zonaRef, handIndex) { return await verificarReleaseAbsorber(quien, id, handIndex); }
+  });
+  R('kel', {
+    puedeAtacarActivas: true,
+    async alJugarPrevio(quien, id, zonaRef, handIndex) { return await verificarReleaseAbsorber(quien, id, handIndex); }
+  });
+  R('aubrey', {
+    alDestruida(quien) { descartarAleatorio(rivalDe(quien)); },
+    async alJugarPrevio(quien, id, zonaRef, handIndex) { return await verificarReleaseAbsorber(quien, id, handIndex); }
+  });
 
   R('hero', {
+    async alJugarPrevio(quien, id, zonaRef, handIndex) { return await verificarReleaseAbsorber(quien, id, handIndex); },
     async alAtacar(quien) {
       const opts = opcionesUnidades(quien, (u, i, c) => {
         const n = String(c?.nombre || '').toLowerCase();
@@ -2641,7 +2911,11 @@
     alCombo(quien, cardId, comboCtx) {
       if (colorLider(quien) === 'negro' && zonaJugador(quien).vida.length <= 4) {
         robar(quien, 1);
+        if (estadoPartida?.ataqueActual) {
+          estadoPartida.ataqueActual.atacanteCombo = (estadoPartida.ataqueActual.atacanteCombo || 0) + 10000;
+        }
         if (comboCtx) comboCtx.bonusCombo = (comboCtx.bonusCombo || 0) + 10000;
+        log('Basil: +10000 combo y robo.');
       }
     }
   });
@@ -2750,7 +3024,12 @@
       const pick = await elegirConModal('Capitán Spaceboy: descarta una carta Extra', extras.map(x => ({ label: x.c.nombre, value: x.i, cardId: x.id })));
       if (pick != null) {
         descartarCartaMano(quien, pick);
-        const u = z.batalla[extra?.index];
+        // Buscar Capitán por id (no por índice que puede ser inválido)
+        let idx = extra?.index != null ? extra.index : -1;
+        if (idx < 0 || z.batalla[idx]?.id !== 'capitan') {
+          idx = z.batalla.findIndex(u => u.id === 'capitan');
+        }
+        const u = idx >= 0 ? z.batalla[idx] : null;
         if (u) { addFlag(u, 'dobleGolpe', true); log('Capitán Spaceboy gana Doble Golpe.'); }
         const riv = rivalDe(quien);
         const rivalOpts = opcionesUnidades(riv, (ru, i, c) => Number(c?.costeTotal || 99) <= 3)
@@ -2793,11 +3072,26 @@
   function init() {
     _habilidadesUsadas = {};
     _finTurnoCallbacks = [];
+    _counterPlayPendiente = null;
+    // Resetear completamente ctx para evitar state leak entre partidas
+    Object.keys(ctx).forEach(k => { delete ctx[k]; });
     ctx.liderCritico = false;
     ctx.liderDobleGolpe = false;
     ctx.batallaMods = {};
     ctx.costeReducido = {};
     ctx.campoBonus = 0;
+    ctx.bonusSinBloqueador = 0;
+    ctx.bonusVsBloqueador = 0;
+    ctx.phantomBonus = 0;
+    ctx.debuffDefensor = 0;
+    ctx.desafioJugado = null;
+    ctx.noCounter = false;
+    ctx.todosBloqueadores = false;
+    ctx.atacanteQuien = null;
+    ctx.atacanteId = null;
+    ctx.atacanteZona = null;
+    ctx.objetivo = null;
+    ctx.batallaMods = {};
   }
 
   function transformarLider(quien) {
@@ -2989,6 +3283,19 @@
     ctx.liderCritico = false;
     ctx.liderDobleGolpe = false;
     ctx.batallaMods = {};
+    // Reset de bonuses temporales de ataque (evita state leak entre turnos)
+    ctx.bonusSinBloqueador = 0;
+    ctx.bonusVsBloqueador = 0;
+    ctx.phantomBonus = 0;
+    ctx.debuffDefensor = 0;
+    ctx.noCounter = false;
+    ctx.todosBloqueadores = false;
+    ctx.atacanteQuien = null;
+    ctx.atacanteId = null;
+    ctx.atacanteZona = null;
+    ctx.objetivo = null;
+    // Reset bloqueador por turno
+    if (estadoPartida) estadoPartida.bloqueadorUsado = false;
     dispatch('*', 'alFinTurno', [quien]);
     Object.keys(REGISTRO_EFECTOS).forEach(id => dispatch(id, 'alFinTurno', [quien]));
   }
@@ -3060,8 +3367,8 @@
     const counters = z.mano.filter(id => tieneTag(getCardById(id), 'counter ataque'));
     if (!counters.length) return false;
     if (ataqueCtx.noCounter) return false;
-    const opts = counters.map(id => ({ label: getCardById(id)?.nombre, value: id }));
-    const pick = await elegirConModal('¿Usar Counter Ataque?', opts.concat([{ label: 'No', value: null }]));
+    const opts = counters.map(id => ({ label: getCardById(id)?.nombre, value: id, cardId: id }));
+    const pick = await elegirConModal('¿Usar Counter Ataque? Elige una carta para negar el ataque', opts.concat([{ label: 'No', value: null }]));
     if (!pick) return false;
     const hi = z.mano.indexOf(pick);
     if (hi < 0) return false;
@@ -3094,6 +3401,20 @@
     return true;
   }
 
+  // Función para manejar drag-drop sobre una carta de batalla (absorción DYMYTRY/Juan2)
+  async function intentarAbsorberDrag(quien, handIndex, targetIndex) {
+    const z = zonaJugador(quien);
+    const cartaArrastradaId = z.mano[handIndex];
+    const targetZona = z.batalla[targetIndex];
+    if (!cartaArrastradaId || !targetZona) return false;
+    const reg = REGISTRO_EFECTOS[targetZona.id];
+    if (reg?.absorberDrag) {
+      const manejado = await reg.absorberDrag(quien, cartaArrastradaId, targetZona);
+      return manejado;
+    }
+    return false;
+  }
+
   window.MotorEfectos = {
     init, alJugar, alInicioPrincipal, alAtacar, alDeclararAtaque, alResolverCombate,
     alCombo, alFinTurno, poderCarta, danoDeCarta, costeEfectivo, puedeJugar,
@@ -3101,7 +3422,8 @@
     intentarBloqueador, intentarCounterAtaque, modificarPoderBatalla, campoActivo,
     efectoCampoPermanente, REGISTRO_EFECTOS,
     zonaJugador, rivalDe, robar, barajar, log, tirarDado, registrar,
-    crearUnidadCampo, infligirDanoLider, elegirConModal, enderezarMana, invocarToken
+    crearUnidadCampo, infligirDanoLider, elegirConModal, enderezarMana, invocarToken,
+    intentarAbsorberDrag
   };
 
   window.MotorEfectos._ctx = ctx;
@@ -3432,15 +3754,28 @@
             if (detalleSoloInfo && estadoPartida && window.MotorEfectos) {
                 activarBtns = MotorEfectos.obtenerActivables('jugador')
                     .filter(a => a.cardId === id)
-                    .map(a => `<button class="plate-btn btn-nav activar-btn" onclick="ejecutarHabilidadActivable('${a.cardId}','${a.key}')">${escapeHtml(a.label || a.key)}</button>`)
+                    .map(a => {
+                        const extraArg = a.index != null ? `,'${a.index}'` : (a.handIndex != null ? `,'${a.handIndex}'` : (a.esLider ? ",'lider'" : ''));
+                        return `<button class="plate-btn btn-nav activar-btn" onclick="ejecutarHabilidadActivable('${a.cardId}','${a.key}'${extraArg})">${escapeHtml(a.label || a.key)}</button>`;
+                    })
                     .join('');
+            }
+            // Botón especial para Momolac desde el descarte
+            let momolacBtn = '';
+            if (detalleSoloInfo && id === 'momolac' && estadoPartida?.jugador?.descarte?.includes('momolac')) {
+                momolacBtn = `<button class="plate-btn" onclick="momolacDesdeDescarte('jugador')">🎭 Revivir Momolac (descarta 1)</button>`;
+            }
+            // Botón especial para verificar evolución de líderes
+            let evoBtn = '';
+            if (detalleSoloInfo && lider && estadoPartida && (c.imgEvo || c.nombreEvo) && estadoPartida.jugador?.liderId === id && !estadoPartida.jugador?.liderDespierto) {
+                evoBtn = `<button class="plate-btn" onclick="despertarLider()">Despertar líder (≤4 vidas)</button>`;
             }
 
             document.getElementById('deck-modal-body').innerHTML = `
                 <div>
                     <div class="deck-modal-img"><img src="${img || ''}" alt="${escapeHtml(nombre)}"></div>
                     <div class="deck-modal-actions">
-                        ${acciones}${activarBtns}
+                        ${acciones}${activarBtns}${momolacBtn}${evoBtn}
                         ${(c.imgEvo || c.nombreEvo) ? `<button class="plate-btn btn-nav" onclick="detalleMazoEvo = !detalleMazoEvo; pintarDetalleMazo();">Dar la vuelta</button>` : ''}
                     </div>
                 </div>
@@ -3768,6 +4103,34 @@
             setTimeout(() => ov.remove(), 1200);
         }
 
+        // Versión mejorada con animación completa (espere a que termine)
+        function mostrarDadoAnimado(resultado) {
+            return new Promise(resolve => {
+                const ov = document.createElement('div');
+                ov.className = 'dado-overlay';
+                ov.innerHTML = `<div class="dado-d20">🎲</div><div class="dado-num">${resultado}</div>`;
+                document.body.appendChild(ov);
+                setTimeout(() => { ov.remove(); resolve(); }, 1300);
+            });
+        }
+
+        // Indicador de pérdida de vida (animación flotante -1, -2, etc.)
+        function mostrarPerdidaVida(quien, cantidad) {
+            if (!cantidad || cantidad <= 0) return;
+            const lifeEl = quien === 'jugador'
+                ? document.querySelector('.player-life')
+                : document.querySelector('.enemy-life');
+            if (!lifeEl) return;
+            const rect = lifeEl.getBoundingClientRect();
+            const float = document.createElement('div');
+            float.className = 'life-loss-float';
+            float.textContent = `-${cantidad}`;
+            float.style.left = (rect.left + rect.width / 2 - 30) + 'px';
+            float.style.top = (rect.top + rect.height / 2 - 30) + 'px';
+            document.body.appendChild(float);
+            setTimeout(() => float.remove(), 1500);
+        }
+
         function animarRobo() {
             const deck = document.querySelector('.player-deck-stack');
             if (!deck) return;
@@ -3786,6 +4149,20 @@
         function arrastrarCartaCampo(event, index) { event.dataTransfer.setData('battle-index', String(index)); }
         function soltarEnMana(event) { event.preventDefault(); const index = Number(event.dataTransfer.getData('hand-index')); if (!Number.isNaN(index)) ponerManaDesdeMano(index); }
         function soltarEnBatalla(event) { event.preventDefault(); const index = Number(event.dataTransfer.getData('hand-index')); if (!Number.isNaN(index)) intentarJugarDesdeMano(index); }
+        // Drag-drop sobre una carta de batalla específica (absorción DYMYTRY/Juan2)
+        async function soltarEnCartaCampo(event, targetIndex) {
+            event.preventDefault();
+            event.stopPropagation();
+            const handIndex = Number(event.dataTransfer.getData('hand-index'));
+            if (Number.isNaN(handIndex)) return;
+            if (!window.MotorEfectos) return;
+            const manejado = await MotorEfectos.intentarAbsorberDrag('jugador', handIndex, targetIndex);
+            if (!manejado) {
+                // Si no fue manejado por absorción, intentar jugar normalmente
+                intentarJugarDesdeMano(handIndex);
+            }
+        }
+        function permitirDropCarta(event) { event.preventDefault(); event.stopPropagation(); }
         function soltarEnCombo(event) {
             event.preventDefault();
             if (!estadoPartida || estadoPartida.faseIndex !== 3 || !estadoPartida.ataqueActual) return;
@@ -3869,6 +4246,10 @@
             const id = estadoPartida.jugador.mano[index];
             const carta = getCardById(id);
             if (!carta || esLider(carta) || esToken(carta)) return;
+            // Counter Ataque y Counter Play NO se pueden jugar normalmente; solo en respuesta del rival
+            if (tieneTag(carta, 'counter ataque') || tieneTag(carta, 'counter play')) {
+                return alert('Las cartas de Counter solo se pueden usar en respuesta a un ataque o carta del rival.');
+            }
             // Comprobar evolución especial
             const evo = costoEvolucion(carta, estadoPartida.jugador);
             if (evo) {
@@ -3942,11 +4323,21 @@
                 </div>`;
         }
 
-        function resolverJugarCarta(index, manaIndexes) {
+        async function resolverJugarCarta(index, manaIndexes) {
             manaIndexes.forEach(i => estadoPartida.jugador.mana[i].rested = true);
             estadoPartida.jugador.manaActivo = estadoPartida.jugador.mana.filter(m => !m.rested).length;
-            const [jugada] = estadoPartida.jugador.mano.splice(index, 1);
+            const jugada = estadoPartida.jugador.mano[index];
             const carta = getCardById(jugada);
+            // Verificar alJugarPrevio (para Omori/Kel/Aubrey/Hero con RELEASE ENERGY)
+            if (window.MotorEfectos && MotorEfectos.REGISTRO_EFECTOS[jugada]?.alJugarPrevio) {
+                const decision = await MotorEfectos.REGISTRO_EFECTOS[jugada].alJugarPrevio('jugador', jugada, null, index);
+                if (decision === 'absorbida') {
+                    // La carta fue absorbida por RELEASE ENERGY, no se juega como unidad
+                    renderizarPartida();
+                    return;
+                }
+            }
+            estadoPartida.jugador.mano.splice(index, 1);
             let zonaRef = null;
             if (claseNormalizada(carta) === 'extra') {
                 const esCampo = (carta.habilidades || []).some(h => String(h.tag || '').toLowerCase().includes('campo')) || String(carta.tipo || '').toLowerCase().includes('campo');
@@ -4185,9 +4576,13 @@
         function intentarCombarDesdeCampo(index) {
             const zona = estadoPartida.jugador.batalla[index];
             if (!zona) return;
-            // No se puede combear la propia unidad atacante
+            // No se puede combear la propia unidad atacante (comparar por id, no por índice)
             const atk = estadoPartida.atacanteSeleccionado;
-            if (atk && atk.tipo === 'unidad' && atk.index === index) return alert('No puedes combear con la propia unidad atacante.');
+            const atkId = atk?.tipo === 'unidad' ? estadoPartida.jugador.batalla[atk.index]?.id : null;
+            const ataqueId = estadoPartida.ataqueActual?.atacanteId;
+            if ((atk && atk.tipo === 'unidad' && atkId === zona.id) || ataqueId === zona.id) {
+                return alert('No puedes combear con la propia unidad atacante.');
+            }
             const carta = getCardById(zona.id);
             const coste = costeCombo(carta);
             estadoPartida.comboPendiente = { origen: 'campo', index, cardId: zona.id };
@@ -4241,6 +4636,12 @@
 
         function cerrarSelector() {
             document.getElementById('selector-modal')?.classList.add('hidden');
+            // Resolver el selector actual (si lo hay) con null = cancelar
+            if (typeof _selectorResolverActual === 'function') {
+                const r = _selectorResolverActual;
+                _selectorResolverActual = null;
+                r(null);
+            }
             if (estadoPartida?.selectorPendiente?.resolve) {
                 estadoPartida.selectorPendiente.resolve(null);
                 estadoPartida.selectorPendiente = null;
@@ -4256,13 +4657,19 @@
         }
 
         function momolacDesdeDescarte(quien) {
-            if (!estadoPartida || estadoPartida.faseIndex === 3) return alert('No puedes hacer esto ahora.');
+            if (!estadoPartida) return;
+            if (estadoPartida.faseIndex === 3) return alert('No puedes hacer esto ahora.');
+            if (estadoPartida.faseIndex === 0) return alert('Avanza a fase principal para usar esta habilidad.');
             const z = quien === 'rival' ? estadoPartida.rival : estadoPartida.jugador;
             const momIdx = z.descarte.lastIndexOf('momolac');
             if (momIdx < 0) return alert('Momolac no está en el descarte.');
             if (!z.mano.length) return alert('No tienes cartas en la mano.');
+            // Verificar que el líder sea INFINITYCRAFT
+            const lid = getCardById(z.liderId);
+            const esInfinity = String(lid?.nombre || '').toUpperCase().includes('INFINITYCRAFT');
+            if (!esInfinity) return alert('Solo puedes usar esta habilidad si tu Líder es INFINITYCRAFT.');
             // Elegir carta a descartar
-            const opts = z.mano.map((cid, i) => ({ label: getCardById(cid)?.nombre || cid, value: i }));
+            const opts = z.mano.map((cid, i) => ({ label: getCardById(cid)?.nombre || cid, value: i, cardId: cid }));
             elegirConModal('Momolac: descarta 1 carta de tu mano para revivirlo', opts).then(async idx => {
                 if (idx == null) return;
                 z.mano.splice(idx, 1);
@@ -4272,6 +4679,7 @@
                     : { id: 'momolac', rested: false, ataquesRestantes: 1, buffs: { poder: 0, combo: 0, batalla: 0 }, flags: {} };
                 z.batalla.push(u);
                 estadoPartida.log = 'Momolac revienta del descarte de vuelta al campo.';
+                document.getElementById('deck-card-modal').classList.remove('open');
                 renderizarPartida();
             });
         }
@@ -4286,9 +4694,21 @@
             document.getElementById('deck-card-modal').classList.add('open');
         }
 
-        async function ejecutarHabilidadActivable(cardId, habKey) {
+        async function ejecutarHabilidadActivable(cardId, habKey, extraIdx) {
             if (!window.MotorEfectos || !estadoPartida) return;
-            await MotorEfectos.ejecutarActivar(cardId, habKey, 'jugador');
+            let extra = {};
+            if (extraIdx === 'lider') extra.esLider = true;
+            else if (extraIdx != null && extraIdx !== '') {
+                const n = Number(extraIdx);
+                if (!Number.isNaN(n)) {
+                    // Buscar si es index de batalla o mano
+                    const z = estadoPartida.jugador;
+                    if (z.batalla[n] && z.batalla[n].id === cardId) extra.index = n;
+                    else if (z.mano[n] === cardId) extra.handIndex = n;
+                    else extra.index = n;
+                }
+            }
+            await MotorEfectos.ejecutarActivar(cardId, habKey, 'jugador', extra);
             pintarDetalleMazo();
             renderizarPartida();
         }
@@ -4316,17 +4736,42 @@
             const index = datosCartas.findIndex(c => getCardId(c) === obj.id);
             const draggable = opts.handIndex !== undefined ? `draggable="true" ondragstart="arrastrarCartaMano(event, ${opts.handIndex})"` : '';
             const fieldDrag = opts.battleIndex !== undefined ? `draggable="true" ondragstart="arrastrarCartaCampo(event, ${opts.battleIndex})"` : '';
+            // Aceptar drops sobre esta carta (para absorción)
+            const dropTarget = opts.dropIndex !== undefined ? `ondragover="permitirDropCarta(event)" ondrop="soltarEnCartaCampo(event, ${opts.dropIndex})"` : '';
             const click = opts.noInfo ? '' : (opts.onClick || `abrirDetalleJuego('${obj.id}')`);
             const dbl = opts.noInfo ? '' : (opts.onDoubleClick ? `ondblclick="${opts.onDoubleClick}"` : `ondblclick="abrirDetalleJuego('${obj.id}')"`);
             const style = opts.fanStyle || '';
             const lider = esLider(carta);
             const comboMode = obj.comboMode || opts.comboMode;
             const costText = comboMode ? costeCombo(carta) : Number(carta.costeTotal || 0);
-            const powerText = comboMode ? `+${poderCombo(carta)}` : (carta.poder || '');
+            // Calcular poder efectivo con buffs (para reflejar visualmente +5000 etc.)
+            let basePoder = Number(carta.poder || 0);
+            // Si es líder y está despierto, usar poderEvo
+            if (lider && estadoPartida) {
+                if (estadoPartida.jugador?.liderId === obj.id && estadoPartida.jugador?.liderDespierto && carta.poderEvo) {
+                    basePoder = Number(carta.poderEvo);
+                } else if (estadoPartida.rival?.liderId === obj.id && estadoPartida.rival?.liderDespierto && carta.poderEvo) {
+                    basePoder = Number(carta.poderEvo);
+                }
+            }
+            // Sumar buffs visibles (poder + batalla)
+            const buffs = obj.buffs || {};
+            const buffTotal = (buffs.poder || 0) + (buffs.batalla || 0);
+            const powerText = comboMode ? `+${poderCombo(carta)}` : (basePoder ? String(basePoder + buffTotal) : (buffTotal ? String(buffTotal) : ''));
             const costHtml = lider || opts.plain ? '' : `<span class="card-cost-badge">${costText}</span>`;
             const dotHtml = lider || comboMode || opts.plain ? '' : costeDots(carta);
-            return `<div class="game-card-mini ${extra} ${comboMode ? 'combo-card' : ''} ${opts.plain ? 'plain-card' : ''}" ${draggable} ${fieldDrag} style="${style}" onclick="${click}" ${dbl}>
-                ${costHtml}${dotHtml}
+            // Indicador visual de doble/triple golpe
+            let flagBadges = '';
+            if (obj.flags?.dobleGolpe || obj.flags?.tripleGolpe) {
+                flagBadges = `<span style="position:absolute;top:-9px;right:-9px;z-index:5;background:#a93226;color:white;border-radius:999px;padding:2px 6px;font-size:10px;font-weight:900;border:1px solid white;">${obj.flags.tripleGolpe ? 'x3' : 'x2'}</span>`;
+            }
+            // Indicador de cartas debajo (absorción)
+            let debajoBadge = '';
+            if (obj.debajo && obj.debajo.length > 0) {
+                debajoBadge = `<span style="position:absolute;bottom:-9px;left:-9px;z-index:5;background:#8e44ad;color:white;border-radius:999px;padding:2px 6px;font-size:10px;font-weight:900;border:1px solid white;" title="${obj.debajo.length} carta(s) debajo">↓${obj.debajo.length}</span>`;
+            }
+            return `<div class="game-card-mini ${extra} ${comboMode ? 'combo-card' : ''} ${opts.plain ? 'plain-card' : ''}" ${draggable} ${fieldDrag} ${dropTarget} style="${style}" onclick="${click}" ${dbl}>
+                ${costHtml}${dotHtml}${flagBadges}${debajoBadge}
                 <img src="${carta.img || ''}" alt="${escapeHtml(carta.nombre)}">
                 ${powerText ? `<span class="card-power-badge">${powerText}</span>` : ''}
             </div>`;
@@ -4362,25 +4807,58 @@
             const liderImg = j.liderDespierto && lider?.imgEvo ? lider.imgEvo : lider?.img;
             const ocultarLideres = estadoPartida.introActiva;
             const liderObj = j.liderZona || { id: j.liderId, rested: false, ataquesRestantes: 1 };
+            // Asegurar que liderZona tenga buffs
+            if (!liderObj.buffs) liderObj.buffs = { poder: 0, combo: 0, batalla: 0 };
             const liderCartaData = getCardById(j.liderId);
             const liderImgActual = j.liderDespierto && liderCartaData?.imgEvo ? liderCartaData.imgEvo : liderCartaData?.img;
-            const liderHtml = `<div class="game-card-mini ${liderObj.rested ? 'rested' : ''}" onclick="seleccionarLiderAtacante()" style="cursor:pointer">
+            const liderPoderBase = j.liderDespierto && liderCartaData?.poderEvo ? Number(liderCartaData.poderEvo) : Number(liderCartaData?.poder || 0);
+            const liderPoderActual = liderPoderBase + (liderObj.buffs.poder || 0) + (liderObj.buffs.batalla || 0);
+            // Botones activables del líder
+            let liderActivables = '';
+            if (window.MotorEfectos && estadoPartida.faseIndex >= 1) {
+                const lidActivables = MotorEfectos.obtenerActivables('jugador').filter(a => a.esLider && a.cardId === j.liderId);
+                lidActivables.forEach(a => {
+                    liderActivables += `<button class="activable-btn-overlay" onclick="event.stopPropagation(); ejecutarHabilidadActivable('${a.cardId}','${a.key}','lider')">${escapeHtml(a.label || a.key)}</button>`;
+                });
+            }
+            const liderHtml = `<div class="game-card-mini ${liderObj.rested ? 'rested' : ''}" onclick="seleccionarLiderAtacante()" ondblclick="abrirDetalleJuego('${j.liderId}')" style="cursor:pointer" title="Doble click para ver info">
                 <img src="${liderImgActual || ''}" alt="${escapeHtml(liderCartaData?.nombre || '')}">
-                <span class="card-power-badge">${j.liderDespierto && liderCartaData?.poderEvo ? liderCartaData.poderEvo : (liderCartaData?.poder || 0)}</span>
-            </div>`;
+                <span class="card-power-badge">${liderPoderActual}</span>
+            </div>${liderActivables}`;
             renderZona('player-leader-zone', ocultarLideres ? '' : `<div style="position:relative">${liderHtml}${j.vida.length <= 4 && !j.liderDespierto ? '<button class="awaken-btn" onclick="despertarLider()">Despertar</button>' : ''}</div>`);
-            renderZona('op-leader-zone', ocultarLideres ? '' : miniCarta(r.liderId, estadoPartida.atacanteSeleccionado !== null ? 'attackable' : '', { onClick: 'atacarLiderRival()' }));
+            // Líder rival: si está evolucionado, mostrar su imagen evo. Click = atacar, dblclick = ver info
+            const rivalLiderData = getCardById(r.liderId);
+            const rivalLiderImg = r.liderDespierto && rivalLiderData?.imgEvo ? rivalLiderData.imgEvo : rivalLiderData?.img;
+            const rivalLiderBase = r.liderDespierto && rivalLiderData?.poderEvo ? Number(rivalLiderData.poderEvo) : Number(rivalLiderData?.poder || 0);
+            const rivalLiderObj = r.liderZona || { id: r.liderId, rested: false };
+            if (!rivalLiderObj.buffs) rivalLiderObj.buffs = { poder: 0, combo: 0, batalla: 0 };
+            const rivalLiderPoder = rivalLiderBase + (rivalLiderObj.buffs.poder || 0) + (rivalLiderObj.buffs.batalla || 0);
+            const rivalLiderHtml = `<div class="game-card-mini ${estadoPartida.atacanteSeleccionado !== null ? 'attackable' : ''}" onclick="atacarLiderRival()" ondblclick="abrirDetalleJuego('${r.liderId}')" style="cursor:pointer" title="Doble click para ver info">
+                <img src="${rivalLiderImg || ''}" alt="${escapeHtml(rivalLiderData?.nombre || '')}">
+                <span class="card-power-badge">${rivalLiderPoder}</span>
+            </div>`;
+            renderZona('op-leader-zone', ocultarLideres ? '' : rivalLiderHtml);
             const esFaseCombo = estadoPartida.faseIndex === 3;
             const atacanteIdx = estadoPartida.atacanteSeleccionado?.tipo === 'unidad' ? estadoPartida.atacanteSeleccionado.index : -1;
             renderZona('player-battle-zone', j.batalla.map((c, i) => {
                 const esAtacante = i === atacanteIdx;
                 const cartaDatos = getCardById(c.id);
                 const esExtraCard = cartaDatos && String(cartaDatos.clase || cartaDatos.tipo || '').toLowerCase().includes('extra');
-                const clickFn = esFaseCombo && !esAtacante && !esExtraCard
-                    ? `intentarCombarDesdeCampo(${i})`
+                // Combo solo por arrastre (drag-drop), NO por click
+                const clickFn = esFaseCombo
+                    ? `abrirDetalleJuego('${c.id}')`
                     : `seleccionarAtacante(${i})`;
-                const extraClass = esFaseCombo && !esAtacante && !esExtraCard ? ' combo-candidate' : '';
-                return miniCarta(c, (c.rested ? 'rested' : '') + extraClass, { onClick: clickFn, battleIndex: esFaseCombo ? undefined : i });
+                const extraClass = esFaseCombo && !esAtacante && !esExtraCard ? ' combo-candidate drag-eligible' : '';
+                const cardHtml = miniCarta(c, (c.rested ? 'rested' : '') + extraClass, { onClick: clickFn, battleIndex: esFaseCombo && !esAtacante && !esExtraCard ? i : undefined, dropIndex: i });
+                // Añadir botones activables encima de la carta
+                let activarHtml = '';
+                if (window.MotorEfectos && estadoPartida.faseIndex >= 1) {
+                    const activables = MotorEfectos.obtenerActivables('jugador').filter(a => a.cardId === c.id && a.index === i);
+                    activables.forEach(a => {
+                        activarHtml += `<button class="activable-btn-overlay" onclick="event.stopPropagation(); ejecutarHabilidadActivable('${a.cardId}','${a.key}','${i}')">${escapeHtml(a.label || a.key)}</button>`;
+                    });
+                }
+                return activarHtml ? `<div class="activable-wrap">${cardHtml}${activarHtml}</div>` : cardHtml;
             }).join(''));
             renderZona('op-battle-zone', r.batalla.map((c, i) => miniCarta(c, `${c.rested ? 'rested ' : ''}${estadoPartida.atacanteSeleccionado !== null && c.rested ? 'attackable' : ''}`, { onClick: `atacarUnidadRival(${i})` })).join(''));
             renderZona('player-combo-zone', j.combo.map(c => miniCarta(c, 'combo-card', { comboMode: true })).join(''));
@@ -4465,16 +4943,18 @@
                 });
             }
             document.getElementById('flip-btn').style.display = (c.imgEvo || c.nombreEvo) ? "inline-block" : "none";
-            // Momolac - mostrar botón revivir si está en el descarte del jugador
+            // Momolac - mostrar botón revivir si está en el descarte del jugador (panel de colección)
             const momolacBtn = document.getElementById('momolac-revive-btn');
             if (momolacBtn) momolacBtn.remove();
-            if (id === 'momolac' && estadoPartida?.jugador?.descarte?.includes('momolac')) {
+            if (c.id === 'momolac' && estadoPartida?.jugador?.descarte?.includes('momolac')) {
                 const btn = document.createElement('button');
                 btn.id = 'momolac-revive-btn';
                 btn.className = 'plate-btn';
                 btn.textContent = '🎭 Revivir Momolac (descarta 1)';
-                btn.onclick = () => { momolacDesdeDescarte('jugador'); document.getElementById('card-detail-modal').classList.add('hidden'); };
-                document.getElementById('card-detail-modal').querySelector('.modal-footer, .modal-body, .plate-btn')?.parentNode?.appendChild(btn);
+                btn.style.marginTop = '14px';
+                btn.onclick = () => { momolacDesdeDescarte('jugador'); };
+                const container = document.querySelector('#info-panel .panel-content') || document.querySelector('#info-panel');
+                if (container) container.appendChild(btn);
             }
         }
 
