@@ -495,7 +495,7 @@
         .op-drop-stack { left: 340px; top: 130px; transform: rotate(8deg); }
         .player-drop-stack { right: 254px; bottom: 110px; }
         .drop-stack span { position: absolute; bottom: -28px; color: white; font-size: 22px; }
-        .stack-zone > span { position: absolute; right: -10px; bottom: -4px; background: #050505; border: 2px solid #ffd700; border-radius: 999px; padding: 3px 8px; font-size: 20px; }
+        .stack-zone > span { position: absolute; right: -16px; top: -10px; background: #050505; border: 2px solid #ffd700; border-radius: 999px; padding: 3px 10px; font-size: 18px; font-weight: 900; color: #fff07c; z-index: 10; box-shadow: 0 2px 6px rgba(0,0,0,.7); }
         .card-pile { position: relative; width: 82px; height: 116px; }
         .card-pile::before, .card-pile::after { content: ''; position: absolute; inset: 0; border-radius: 8px; background: #f8f8f8; transform: translate(8px,-8px); opacity: .72; box-shadow: 0 8px 16px rgba(0,0,0,.4); }
         .card-pile::after { transform: translate(4px,-4px); opacity: .88; }
@@ -545,6 +545,8 @@
         /* --- Botón activable sobre carta --- */
         .activable-btn-overlay { position: absolute; left: 50%; bottom: -36px; transform: translateX(-50%); z-index: 12; white-space: nowrap; border: 2px solid #fff07c; border-radius: 999px; background: rgba(255,80,24,.94); color: white; font-weight: 900; padding: 5px 10px; font-size: 11px; cursor: pointer; box-shadow: 0 0 14px rgba(255,80,24,.7); text-shadow: 0 1px 2px #000; max-width: 130px; overflow: hidden; text-overflow: ellipsis; }
         .activable-btn-overlay:hover { background: rgba(255,140,40,1); transform: translateX(-50%) scale(1.06); }
+        .combar-btn-overlay { position: absolute; left: 50%; top: -28px; transform: translateX(-50%); z-index: 12; white-space: nowrap; border: 2px solid #5ee7ff; border-radius: 999px; background: rgba(10,90,125,.94); color: white; font-weight: 900; padding: 5px 12px; font-size: 12px; cursor: pointer; box-shadow: 0 0 14px rgba(94,231,255,.7); text-shadow: 0 1px 2px #000; }
+        .combar-btn-overlay:hover { background: rgba(20,140,180,1); transform: translateX(-50%) scale(1.08); }
         .activable-wrap { position: relative; }
 
         /* --- Drag-over highlight --- */
@@ -553,6 +555,16 @@
 
         /* --- Contador de mazo restante (HUD) --- */
         .deck-count-pill { position: absolute; bottom: -22px; right: -8px; background: rgba(0,0,0,.9); color: #fff07c; border: 2px solid #ffd700; border-radius: 999px; padding: 2px 8px; font-size: 14px; font-weight: 900; }
+
+        /* --- Badges de habilidades (no solapados) --- */
+        .ability-badge { position: absolute; z-index: 6; background: #a93226; color: white; border-radius: 999px; padding: 2px 6px; font-size: 10px; font-weight: 900; border: 1px solid white; box-shadow: 0 2px 4px rgba(0,0,0,.5); display: flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; line-height: 1; }
+        /* Posiciones a lo largo del borde superior (de derecha a izquierda) */
+        .badge-x2 { top: -9px; right: -6px; }
+        .badge-x3 { top: -9px; right: -6px; background: #6c2880; }
+        .badge-skull { top: -9px; right: 20px; background: #2c2c2c; }
+        .badge-shield { top: -9px; right: 46px; background: #1c5d99; }
+        .badge-knife { top: -9px; right: 72px; background: #b8860b; }
+        .badge-debajo { bottom: -9px; left: -6px; background: #8e44ad; }
         .game-modal-panel h2 { color: #fff07c; margin-top: 0; text-transform: uppercase; }
         .mana-pay-options { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin: 20px 0; }
         .mana-option { border: 2px solid rgba(255,255,255,.35); border-radius: 8px; padding: 6px; background: rgba(255,255,255,.05); cursor: pointer; }
@@ -927,7 +939,7 @@
 
             <section class="playmat-zone op-combo-zone"><div class="mat-label">COMBO AREA</div><div class="mat-cards" id="op-combo-zone"></div></section>
             <section class="playmat-zone op-battle-zone"><div class="mat-label">BATTLE AREA</div><div class="leader-lane" id="op-leader-zone"></div><div class="field-lane op-field-lane" id="op-field-zone"></div><div class="mat-cards" id="op-battle-zone"></div></section>
-            <section class="playmat-zone player-battle-zone" ondragover="permitirDrop(event)" ondrop="soltarEnBatalla(event)"><div class="mat-label">BATTLE AREA</div><div class="leader-lane" id="player-leader-zone"></div><div class="field-lane" id="player-field-zone"></div><div class="mat-cards" id="player-battle-zone"></div></section>
+            <section class="playmat-zone player-battle-zone" ondragover="permitirDrop(event)" ondrop="soltarEnBatalla(event)"><div class="mat-label">BATTLE AREA</div><div class="leader-lane" id="player-leader-zone"></div><div class="field-lane" id="player-field-zone" ondragover="permitirDrop(event)" ondrop="soltarEnCampo(event)" title="Arrastra aquí Omori/Kel/Aubrey/Hero si tienes RELEASE ENERGY en juego"></div><div class="mat-cards" id="player-battle-zone"></div></section>
             <section class="playmat-zone player-combo-zone" ondragover="permitirDrop(event)" ondrop="soltarEnCombo(event)"><div class="mat-label">COMBO AREA</div><div class="mat-cards" id="player-combo-zone"></div></section>
 
             <section class="hand-fan" id="player-hand-zone"></section>
@@ -1526,14 +1538,18 @@
       if (liderCarta(quien).esEvo) return [];
       if (habilidadUsada(claveTurno(quien, 'rl2_act'))) return [];
       if (zonaJugador(quien).mano.length < 5) return [];
-      return [{ key: 'buffRoja', label: '+5000 a unidad roja' }];
+      return [{ key: 'buffRoja', label: '+5000 a unidad roja (este turno)' }];
     },
     async ejecutarActivar(key, quien) {
       if (key !== 'buffRoja') return;
       const opts = opcionesUnidades(quien, (u, i, c) => colorNormalizadoCarta(c) === 'rojo');
-      const idx = await elegirConModal('Elige unidad roja', opts);
-      if (idx != null) addBuff(zonaJugador(quien).batalla[idx], 'poder', 5000);
+      const idx = await elegirConModal('Mr Greedy & Trump: elige unidad roja para +5000', opts);
+      if (idx != null) {
+        addBuff(zonaJugador(quien).batalla[idx], 'batalla', 5000);
+        log('Mr Greedy & Trump da +5000 a unidad roja este turno.');
+      }
       marcarHabilidadUsada(claveTurno(quien, 'rl2_act'));
+      if (typeof renderizarPartida === 'function') renderizarPartida();
     },
     alCounterEnemigo(quien) { /* Capitalismo evo — handled in pagarImpuestoCounter */ }
   });
@@ -1559,7 +1575,7 @@
       if (key !== 'descRoba') return;
       await elegirDescarteObligatorio(quien);
       robar(quien, 1);
-      addBuff(zonaJugador(quien).liderZona, 'poder', 5000);
+      addBuff(zonaJugador(quien).liderZona, 'batalla', 5000);
       marcarHabilidadUsada(claveTurno(quien, 'bl2_act'));
     },
     activablesLiderEvo(quien) {
@@ -1604,13 +1620,17 @@
       if (liderCarta(quien).esEvo || habilidadUsada(claveTurno(quien, 'gl2_act'))) return [];
       const riv = unidadesEnCampo(rivalDe(quien), u => u.rested);
       if (!riv.length) return [];
-      return [{ key: 'buffVerde', label: '+5000 unidad verde' }];
+      return [{ key: 'buffVerde', label: '+5000 unidad verde (este turno)' }];
     },
     async ejecutarActivar(key, quien) {
       const opts = opcionesUnidades(quien, (u, i, c) => colorNormalizadoCarta(c) === 'verde');
-      const idx = await elegirConModal('Unidad verde +5000', opts);
-      if (idx != null) addBuff(zonaJugador(quien).batalla[idx], 'poder', 5000);
+      const idx = await elegirConModal('Xiao: elige unidad verde para +5000', opts);
+      if (idx != null) {
+        addBuff(zonaJugador(quien).batalla[idx], 'batalla', 5000);
+        log('Xiao da +5000 a unidad verde este turno.');
+      }
       marcarHabilidadUsada(claveTurno(quien, 'gl2_act'));
+      if (typeof renderizarPartida === 'function') renderizarPartida();
     },
     alGanarCombateVerde(c) {
       if (!liderCarta(c.atacanteQuien).esEvo) return;
@@ -1628,8 +1648,8 @@
       if (ctx.desafioJugado === quien) {
         const opts = opcionesUnidades(quien).concat([{ label: 'Tu Líder', value: 'lider', cardId: zonaJugador(quien).liderId }]);
         elegirConModal('Iniciador: +5000 a unidad o líder', opts).then(v => {
-          if (v === 'lider') addBuff(zonaJugador(quien).liderZona, 'poder', 5000);
-          else if (v != null) addBuff(zonaJugador(quien).batalla[v], 'poder', 5000);
+          if (v === 'lider') addBuff(zonaJugador(quien).liderZona, 'batalla', 5000);
+          else if (v != null) addBuff(zonaJugador(quien).batalla[v], 'batalla', 5000);
         });
       }
     },
@@ -1645,7 +1665,7 @@
       if (pick == null) return;
       descartarCartaMano(quien, pick);
       ctx.liderCritico = true;
-      addBuff(z.liderZona, 'poder', 5000);
+      addBuff(z.liderZona, 'batalla', 5000);
       const rivIdx = await elegirConModal('-10000 a unidad rival', opcionesUnidades(rivalDe(quien)));
       if (rivIdx != null) ctx.batallaMods[rivalDe(quien) + '_' + rivIdx] = -10000;
       marcarHabilidadUsada(claveTurno(quien, 'bl1_bat'));
@@ -1685,8 +1705,10 @@
       const idx = await elegirConModal('Megalberto Mewing: elige qué maná enderezar', opts);
       if (idx != null) {
         z.mana[idx].rested = false;
+        // Recalcular manaActivo
         z.manaActivo = z.mana.filter(m => !m.rested).length;
         log('Alberto endereza 1 maná elegido.');
+        if (typeof renderizarPartida === 'function') renderizarPartida();
       }
     }
   });
@@ -1781,15 +1803,9 @@
   function andrea_actualizarDekus(quien) {
     const z = zonaJugador(quien);
     const tienePocos = z.mano.length <= 4;
+    // Solo las fichas Deku obtienen doble golpe, NO la propia Andrea
     z.batalla.forEach(u => {
       if (u.id === 'tokend') {
-        if (tienePocos) { addFlag(u, 'dobleGolpe', true); }
-        else { if (u.flags) u.flags.dobleGolpe = false; }
-      }
-    });
-    // También la propia Andrea obtiene doble golpe si mano ≤4
-    z.batalla.forEach(u => {
-      if (u.id === 'andrea') {
         if (tienePocos) { addFlag(u, 'dobleGolpe', true); }
         else { if (u.flags) u.flags.dobleGolpe = false; }
       }
@@ -1872,15 +1888,19 @@
 
   R('angel', {
     async alAtacar(quien, ref, zona) {
-      // Habilidad USABLE UNA SOLA VEZ por partida
-      if (habilidadUsada('angel_global')) return;
-      const ok = await elegirConModal('¿Tomar 1 vida? +10000 y Doble Golpe (una sola vez por partida)', [{ label: 'Sí', value: true, cardId: 'angel' }, { label: 'No', value: false, cardId: 'angel' }]);
+      // Habilidad USABLE UNA SOLA VEZ por partida POR CARTA
+      // Usamos el id único de la zona (timestamp + id) para diferenciar instancias
+      if (!zona) return;
+      if (!zona._uid) zona._uid = `${zona.id || 'angel'}_${Date.now()}_${Math.random()}`;
+      const cartaUid = zona._uid;
+      if (habilidadUsada(`angel_${cartaUid}`)) return;
+      const ok = await elegirConModal('¿Tomar 1 vida? +10000 y Doble Golpe (una sola vez por carta)', [{ label: 'Sí', value: true, cardId: 'angel' }, { label: 'No', value: false, cardId: 'angel' }]);
       if (ok && zonaJugador(quien).vida.length) {
         zonaJugador(quien).mano.push(zonaJugador(quien).vida.pop());
         addBuff(zona, 'poder', 10000);
         addFlag(zona, 'dobleGolpe', true);
-        marcarHabilidadUsada('angel_global');
-        log('Angel toma 1 vida y gana +10000 y Doble Golpe (ya no se puede usar más).');
+        marcarHabilidadUsada(`angel_${cartaUid}`);
+        log('Angel toma 1 vida y gana +10000 y Doble Golpe (esta carta ya no puede usarlo más).');
         if (typeof renderizarPartida === 'function') renderizarPartida();
       }
     }
@@ -1938,10 +1958,13 @@
 
   R('grito', {
     async alAtacar(quien, ref, zona) {
-      const ok = await elegirConModal('¿Tomar 1 vida? +10000 este turno', [{ label: 'Sí', value: true }, { label: 'No', value: false }]);
+      const ok = await elegirConModal('¿Tomar 1 vida? +10000 este turno', [{ label: 'Sí', value: true, cardId: 'grito' }, { label: 'No', value: false, cardId: 'grito' }]);
       if (ok && zonaJugador(quien).vida.length) {
         zonaJugador(quien).mano.push(zonaJugador(quien).vida.pop());
-        addBuff(zona, 'poder', 10000);
+        // Usar 'batalla' para que se resetee al final del turno
+        addBuff(zona, 'batalla', 10000);
+        log('Carlospro gritando gana +10000 este turno.');
+        if (typeof renderizarPartida === 'function') renderizarPartida();
       }
     }
   });
@@ -2002,8 +2025,8 @@
         opcionesUnidades(quien).map(o => ({ ...o, cardId: zonaJugador(quien).batalla[o.value]?.id }))
       );
       const v = await elegirConModal('Five Nights at Patatas María: elige una carta para +5000', opts);
-      if (v === 'lider') { addBuff(zonaJugador(quien).liderZona, 'poder', 5000); log('FNAMP da +5000 al Líder.'); }
-      else if (v != null) { addBuff(zonaJugador(quien).batalla[v], 'poder', 5000); log('FNAMP da +5000 a una unidad.'); }
+      if (v === 'lider') { addBuff(zonaJugador(quien).liderZona, 'batalla', 5000); log('FNAMP da +5000 al Líder este turno.'); }
+      else if (v != null) { addBuff(zonaJugador(quien).batalla[v], 'batalla', 5000); log('FNAMP da +5000 a una unidad este turno.'); }
       enderezarMana(quien, 'azul', 1);
       log('FNAMP endereza 1 maná azul.');
       if (typeof renderizarPartida === 'function') renderizarPartida();
@@ -2129,8 +2152,8 @@
         opcionesUnidades(quien).map(o => ({ ...o, cardId: zonaJugador(quien).batalla[o.value]?.id }))
       );
       const v = await elegirConModal('Pizza Slice: elige una carta para dar +5000', opts);
-      if (v === 'lider') { addBuff(zonaJugador(quien).liderZona, 'poder', 5000); log('Pizza Slice da +5000 al Líder.'); }
-      else if (v != null) { addBuff(zonaJugador(quien).batalla[v], 'poder', 5000); log('Pizza Slice da +5000 a una unidad.'); }
+      if (v === 'lider') { addBuff(zonaJugador(quien).liderZona, 'batalla', 5000); log('Pizza Slice da +5000 al Líder este turno.'); }
+      else if (v != null) { addBuff(zonaJugador(quien).batalla[v], 'batalla', 5000); log('Pizza Slice da +5000 a una unidad este turno.'); }
       enderezarMana(quien, null, 2);
       log('Pizza Slice endereza hasta 2 manás.');
       if (typeof renderizarPartida === 'function') renderizarPartida();
@@ -2189,19 +2212,30 @@
 
   R('musk', {
     activables(quien, u) {
-      if (habilidadUsada(claveTurno(quien, 'musk'))) return [];
+      // Musk solo puede activar en fase Principal
+      if (estadoPartida?.faseIndex !== 1) return [];
+      // Tracking por carta individual (una vez por turno por copia)
+      if (!u) return [];
+      if (!u._uid) u._uid = `musk_${Date.now()}_${Math.random()}`;
+      if (habilidadUsada(claveTurno(quien, 'musk_' + u._uid))) return [];
       const z = zonaJugador(quien);
       const tieneAzul = z.mana.some(m => !m.rested && colorNormalizadoCarta(getCardById(m.id)) === 'azul');
       if (!tieneAzul) return [];
-      return [{ key: 'musk', label: 'Activar: paga 1 azul → roba 2, descarta 1' }];
+      return [{ key: 'musk', label: 'Activar: Principal - paga 1 azul → roba 2, descarta 1' }];
     },
-    async ejecutarActivar(key, quien) {
+    async ejecutarActivar(key, quien, extra) {
+      const z = zonaJugador(quien);
+      const u = extra?.index != null ? z.batalla[extra.index] : z.batalla.find(x => x.id === 'musk');
       const pagado = descansarMana(quien, 'azul', 1);
       if (!pagado) { log('Elon Musk: no tienes maná azul activo.'); return; }
       zonaJugador(quien).manaActivo = zonaJugador(quien).mana.filter(m => !m.rested).length;
       robar(quien, 2);
       await elegirDescarteObligatorio(quien, 'Elon Musk: descarta 1 carta');
-      marcarHabilidadUsada(claveTurno(quien, 'musk'));
+      if (u) {
+        if (!u._uid) u._uid = `musk_${Date.now()}_${Math.random()}`;
+        marcarHabilidadUsada(claveTurno(quien, 'musk_' + u._uid));
+      }
+      log('Elon Musk paga 1 maná azul, roba 2 y descarta 1.');
       if (typeof renderizarPartida === 'function') renderizarPartida();
     }
   });
@@ -2309,18 +2343,23 @@
     R('todo', {
     async alJugar(quien) {
       const d = tirarDado();
-      // Mostrar animación de dado SIEMPRE
-      try { mostrarDadoAnimado(d); } catch (e) { if (typeof mostrarDado === 'function') mostrarDado(d); }
+      // Mostrar animación de dado SIEMPRE (usar window. para acceso desde IIFE)
+      try {
+        if (typeof window.mostrarDadoAnimado === 'function') {
+          await window.mostrarDadoAnimado(d);
+        } else if (typeof window.mostrarDado === 'function') {
+          window.mostrarDado(d);
+          await new Promise(r => setTimeout(r, 1200));
+        }
+      } catch (e) { console.error('Error mostrando dado:', e); }
       log(`Todo al Verde: sacas un ${d} con el dado de 20.`);
-      // Esperar a que termine la animación del dado antes de preguntar
-      await new Promise(r => setTimeout(r, 1300));
       if (d === 20) {
         const opts = [{ label: 'Tu Líder', value: 'lider', cardId: zonaJugador(quien).liderId }].concat(
           opcionesUnidades(quien).map(o => ({ ...o, cardId: zonaJugador(quien).batalla[o.value]?.id }))
         );
         const v = await elegirConModal('¡Crítico! Todo al Verde: elige carta para +15000', opts);
-        if (v === 'lider') { addBuff(zonaJugador(quien).liderZona, 'poder', 15000); log('+15000 al Líder.'); }
-        else if (v != null) { addBuff(zonaJugador(quien).batalla[v], 'poder', 15000); log('+15000 a la unidad.'); }
+        if (v === 'lider') { addBuff(zonaJugador(quien).liderZona, 'batalla', 15000); log('+15000 al Líder este turno.'); }
+        else if (v != null) { addBuff(zonaJugador(quien).batalla[v], 'batalla', 15000); log('+15000 a la unidad este turno.'); }
       } else { log(`Todo al Verde: no sacaste 20 (sacaste ${d}), sin efecto.`); }
       if (typeof renderizarPartida === 'function') renderizarPartida();
     }
@@ -2330,17 +2369,22 @@
     async alJugar(quien) {
       const d = tirarDado();
       // Mostrar animación de dado SIEMPRE
-      try { mostrarDadoAnimado(d); } catch (e) { if (typeof mostrarDado === 'function') mostrarDado(d); }
+      try {
+        if (typeof window.mostrarDadoAnimado === 'function') {
+          await window.mostrarDadoAnimado(d);
+        } else if (typeof window.mostrarDado === 'function') {
+          window.mostrarDado(d);
+          await new Promise(r => setTimeout(r, 1200));
+        }
+      } catch (e) { console.error('Error mostrando dado:', e); }
       log(`Ruleta: sacas un ${d} con el dado de 20.`);
-      // Esperar a que termine la animación del dado antes de preguntar
-      await new Promise(r => setTimeout(r, 1300));
       if (d >= 10 && d <= 19) {
         const opts = [{ label: 'Tu Líder', value: 'lider', cardId: zonaJugador(quien).liderId }].concat(
           opcionesUnidades(quien).map(o => ({ ...o, cardId: zonaJugador(quien).batalla[o.value]?.id }))
         );
         const v = await elegirConModal(`Ruleta (${d}): elige carta para +5000`, opts);
-        if (v === 'lider') { addBuff(zonaJugador(quien).liderZona, 'poder', 5000); log('+5000 al Líder.'); }
-        else if (v != null) { addBuff(zonaJugador(quien).batalla[v], 'poder', 5000); log('+5000 a la unidad.'); }
+        if (v === 'lider') { addBuff(zonaJugador(quien).liderZona, 'batalla', 5000); log('+5000 al Líder este turno.'); }
+        else if (v != null) { addBuff(zonaJugador(quien).batalla[v], 'batalla', 5000); log('+5000 a la unidad este turno.'); }
       } else { log(`Ruleta: sacaste ${d}, sin efecto (necesitas 10-19).`); }
       if (typeof renderizarPartida === 'function') renderizarPartida();
     }
@@ -2404,9 +2448,11 @@
           if (idxBat >= 0) {
             // Conservar Juan debajo
             const debajoOld = targetZona.debajo || [];
-            z.batalla[idxBat] = MotorEfectos.crearUnidadCampo ? MotorEfectos.crearUnidadCampo(pick, { rested: false }) : { id: pick, rested: false, ataquesRestantes: 1, buffs: { poder: 0, combo: 0, batalla: 0 }, flags: {} };
-            z.batalla[idxBat].debajo = debajoOld;
-            z.batalla[idxBat].evolucionadaDe = 'dymytry';
+            // Usar la función local crearUnidadCampo (no MotorEfectos.crearUnidadCampo que aún no existe dentro del IIFE)
+            const nuevaZona = crearUnidadCampo(pick, { rested: false });
+            nuevaZona.debajo = debajoOld;
+            nuevaZona.evolucionadaDe = 'dymytry';
+            z.batalla[idxBat] = nuevaZona;
             log('DYMYTRY evoluciona colocando un Dymytry ≤5 encima (gratis).');
             // Dispatch alJugar del nuevo Dymytry
             dispatch(pick, 'alJugar', [quien, pick, z.batalla[idxBat]]);
@@ -2495,14 +2541,43 @@
       const tops = z.mazo.splice(-7, 7).reverse(); // top 7, en orden visible
       const mcIds = tops.filter(id => String(getCardById(id)?.origen || '').toLowerCase().includes('minecraft'));
       if (mcIds.length) {
-        const opts = mcIds.map(id => ({ label: getCardById(id)?.nombre || id, value: id, cardId: id }))
-          .concat([{ label: 'No coger ninguna', value: null }]);
+        // Eliminar duplicados manteniendo orden
+        const vistos = new Set();
+        const uniq = mcIds.filter(id => { if (vistos.has(id)) return false; vistos.add(id); return true; });
+        const opts = uniq.map(id => ({ label: getCardById(id)?.nombre || id, value: id, cardId: id }));
         const pick = await elegirConModal('Libro del Crafteo: ves 7 cartas — elige una de Origen Minecraft', opts);
         if (pick) {
-          z.mano.push(pick);
+          // Si la carta tiene coste 1, dar opción de jugarla gratis o quedártela en mano
+          const cartaElegida = getCardById(pick);
+          if (Number(cartaElegida?.costeTotal || 99) === 1) {
+            const decision = await elegirConModal('Libro del Crafteo: la carta elegida tiene coste 1. ¿Qué quieres hacer?', [
+              { label: 'Jugarla gratis en el campo', value: 'jugar', cardId: pick },
+              { label: 'Quedártela en la mano', value: 'mano', cardId: pick }
+            ]);
+            if (decision === 'jugar') {
+              // Jugarla gratis
+              if (claseNormalizada(cartaElegida) === 'unidad') {
+                // Usar la función local crearUnidadCampo (no MotorEfectos.crearUnidadCampo)
+                const u = crearUnidadCampo(pick, { rested: false });
+                z.batalla.push(u);
+                dispatch(pick, 'alJugar', [quien, pick, u]);
+                log('Libro del Crafteo juega gratis a ' + (cartaElegida?.nombre || pick) + '.');
+              } else {
+                // Extra: aplicar efecto
+                z.descarte.push(pick);
+                if (window.MotorEfectos) dispatch(pick, 'alJugar', [quien, pick, null]);
+                log('Libro del Crafteo usa gratis a ' + (cartaElegida?.nombre || pick) + '.');
+              }
+            } else {
+              z.mano.push(pick);
+              log('Libro del Crafteo añade ' + (cartaElegida?.nombre || pick) + ' a tu mano.');
+            }
+          } else {
+            z.mano.push(pick);
+            log('Libro del Crafteo añade ' + (cartaElegida?.nombre || pick) + ' a tu mano.');
+          }
           const rest = tops.filter(id => id !== pick).reverse();
           rest.forEach(id => z.mazo.push(id));
-          log('Libro del Crafteo añade ' + (getCardById(pick)?.nombre || pick) + ' a tu mano.');
         } else {
           tops.reverse().forEach(id => z.mazo.push(id));
         }
@@ -2596,9 +2671,13 @@
       const riv = rivalDe(quien);
       if (!unidadesEnCampo(riv, u => u.rested).length) {
         ctx.phantomBonus = 10000;
-        // Aplicar buff directo a la carta para que el indicador visual se actualice
-        if (zona) {
-          addBuff(zona, 'poder', 10000);
+        // Aplicar buff directo a la carta SOLO si no se ha aplicado ya este ataque
+        // Usamos un flag temporal _phantomBuffed para evitar acumulación
+        if (zona && !zona.flags?._phantomBuffed) {
+          addBuff(zona, 'batalla', 10000);
+          if (!zona.flags) zona.flags = {};
+          zona.flags._phantomBuffed = true;
+          // Resetear el flag al final del turno (lo maneja alFinTurno ya que 'batalla' se resetea)
           log('Mega Phantom gana +10000 (el rival no tiene unidades en descanso).');
           if (typeof renderizarPartida === 'function') renderizarPartida();
         }
@@ -2798,7 +2877,10 @@
   R('club', {
     // Club de la Comedia: Activar:Principal - usa botón desde panel info, NO al jugar
     activables(quien, u) {
-      if (habilidadUsada(claveTurno(quien, 'club_act'))) return [];
+      // Tracking por carta individual (aunque Club se descarta al usar, por seguridad)
+      if (!u) return [];
+      if (!u._uid) u._uid = `club_${Date.now()}_${Math.random()}`;
+      if (habilidadUsada(claveTurno(quien, 'club_act_' + u._uid))) return [];
       return [{ key: 'club_roba', label: 'Activar Principal: descártate y roba 1' }];
     },
     async ejecutarActivar(key, quien, extra) {
@@ -2809,12 +2891,16 @@
       if (idx < 0 || z.batalla[idx]?.id !== 'club') {
         idx = z.batalla.findIndex(u => u.id === 'club');
       }
+      const u = idx >= 0 ? z.batalla[idx] : null;
       if (idx >= 0) {
         z.batalla.splice(idx, 1);
         z.descarte.push('club');
       }
       robar(quien, 1);
-      marcarHabilidadUsada(claveTurno(quien, 'club_act'));
+      if (u) {
+        if (!u._uid) u._uid = `club_${Date.now()}_${Math.random()}`;
+        marcarHabilidadUsada(claveTurno(quien, 'club_act_' + u._uid));
+      }
       log('Club de la Comedia: se descarta y robas 1 carta.');
       if (typeof renderizarPartida === 'function') renderizarPartida();
     }
@@ -2923,58 +3009,75 @@
   R('release', {
     alJugar(quien) {
       zonaJugador(quien).campo = [{ id: 'release', rested: false, debajo: [] }];
-      log('RELEASE ENERGY en campo. Coloca cartas Omori Party debajo para activarla.');
+      log('RELEASE ENERGY en campo. Arrastra a Omori, Kel, Aubrey o Hero desde tu mano debajo de esta carta.');
     },
     activables(quien, u) {
-      // Release Energy está en campo, no en batalla - sus activables se manejan via activablesCampo
       return [];
     },
-    activablesCampo(quien) {
-      const campo = zonaJugador(quien).campo?.[0];
-      const debajo = campo?.debajo || [];
-      // Puede absorber cartas del campo con origen Omori
-      const omoriEnCampo = zonaJugador(quien).batalla.filter(u => {
-        const c = getCardById(u.id);
-        return String(c?.origen || '').toLowerCase().includes('omori') && u.id !== 'gang';
-      });
-      const list = [];
-      if (omoriEnCampo.length > 0) list.push({ key: 'releaseAbsorb', label: `Colocar carta Omori Party debajo (${debajo.length} colocadas)` });
-      if (debajo.length >= 2) list.push({ key: 'releaseGang', label: 'Activar: sacrifica party → jugar Gang gratis' });
-      return list;
-    },
-    async ejecutarActivarCampo(key, quien) {
-      const campo = zonaJugador(quien).campo?.[0];
-      if (!campo) return;
+    // Método de arrastre similar a DYMYTRY
+    async absorberDrag(quien, cartaArrastradaId, targetZona) {
+      // targetZona aquí es el campo, no la batalla - lo manejamos con el campo
+      const cartasValidas = ['omori', 'kel', 'aubrey', 'hero'];
+      if (!cartasValidas.includes(cartaArrastradaId)) return false;
+      const z = zonaJugador(quien);
+      const campo = z.campo?.[0];
+      if (!campo || campo.id !== 'release') return false;
       if (!campo.debajo) campo.debajo = [];
-      if (key === 'releaseAbsorb') {
-        const omoriOpts = zonaJugador(quien).batalla
-          .map((u, i) => ({ u, i, c: getCardById(u.id) }))
-          .filter(x => String(x.c?.origen || '').toLowerCase().includes('omori') && x.u.id !== 'gang')
-          .map(x => ({ label: x.c.nombre, value: x.i, cardId: x.u.id }));
-        const idx = await elegirConModal('RELEASE ENERGY: coloca una carta Omori Party debajo', omoriOpts);
-        if (idx != null) {
-          const [removed] = zonaJugador(quien).batalla.splice(idx, 1);
-          campo.debajo.push(removed.id);
-          log('RELEASE ENERGY absorbe a ' + (getCardById(removed.id)?.nombre || removed.id) + '.');
+      // Solo se puede poner una de cada
+      if (campo.debajo.includes(cartaArrastradaId)) {
+        log('RELEASE ENERGY ya tiene una carta de ese tipo debajo.');
+        return true;
+      }
+      const ok = await elegirConModal('¿Quieres colocar esta carta debajo de RELEASE ENERGY?', [
+        { label: 'Sí', value: true, cardId: 'release' },
+        { label: 'No', value: false, cardId: 'release' }
+      ]);
+      if (!ok) return true;
+      // Quitar carta de la mano
+      const idx = z.mano.lastIndexOf(cartaArrastradaId);
+      if (idx < 0) return true;
+      z.mano.splice(idx, 1);
+      campo.debajo.push(cartaArrastradaId);
+      log(`${getCardById(cartaArrastradaId)?.nombre} se coloca debajo de RELEASE ENERGY (${campo.debajo.length}/4).`);
+      // Verificar si se han colocado las 4 cartas necesarias
+      const tieneTodas = ['omori', 'kel', 'aubrey', 'hero'].every(id => campo.debajo.includes(id));
+      if (tieneTodas) {
+        // Buscar Omori's gang en mano o baraja
+        const z2 = zonaJugador(quien);
+        let gangIdx = z2.mano.indexOf('gang');
+        let gangSrc = gangIdx >= 0 ? 'mano' : null;
+        if (!gangSrc) {
+          gangIdx = z2.mazo.indexOf('gang');
+          if (gangIdx >= 0) gangSrc = 'mazo';
         }
-      } else if (key === 'releaseGang') {
-        // Todas las cartas debajo van al descarte y se juega Gang gratis
-        campo.debajo.forEach(id => zonaJugador(quien).descarte.push(id));
-        campo.debajo = [];
-        zonaJugador(quien).batalla.push(crearUnidadCampo('gang', { rested: false }));
-        dispatch('gang', 'alJugar', [quien, 'gang', zonaJugador(quien).batalla[zonaJugador(quien).batalla.length - 1]]);
-        log("RELEASE ENERGY sacrifica la party de Omori. ¡Omori's Gang entra al campo!");
+        if (gangSrc) {
+          if (gangSrc === 'mano') z2.mano.splice(gangIdx, 1);
+          else z2.mazo.splice(gangIdx, 1);
+          // Jugar Omori's gang gratis
+          z2.batalla.push(crearUnidadCampo('gang', { rested: false }));
+          dispatch('gang', 'alJugar', [quien, 'gang', z2.batalla[z2.batalla.length - 1]]);
+          // Las cartas debajo van al descarte
+          campo.debajo.forEach(id => z2.descarte.push(id));
+          campo.debajo = [];
+          log("¡RELEASE ENERGY activada! Omori's Gang entra al campo gratis.");
+        } else {
+          log("RELEASE ENERGY: tienes las 4 cartas debajo, pero no se ha encontrado Omori's Gang en tu mano ni baraja.");
+        }
       }
       if (typeof renderizarPartida === 'function') renderizarPartida();
+      return true;
     }
   });
 
   R('gang', {
     puedeAtacarActivas: true,
     alAtacarPost(quien, zona) {
-      if (!habilidadUsada(claveTurno(quien, 'gang_re'))) {
+      // Tracking por carta individual
+      if (!zona) return;
+      if (!zona._uid) zona._uid = `gang_${Date.now()}_${Math.random()}`;
+      if (!habilidadUsada(claveTurno(quien, 'gang_re_' + zona._uid))) {
         zona.rested = false;
-        marcarHabilidadUsada(claveTurno(quien, 'gang_re'));
+        marcarHabilidadUsada(claveTurno(quien, 'gang_re_' + zona._uid));
       }
     }
   });
@@ -2984,7 +3087,7 @@
   R('pluto', {
     alResolverCombate(c) {
       if (c.bloqueadorUsado) {
-        addBuff(c.atacanteZona, 'poder', 10000);
+        addBuff(c.atacanteZona, 'batalla', 10000);
         c.pa = (c.pa || 0) + 10000;
         log('Pluto gana +10000 porque el rival usó Bloqueador.');
       }
@@ -3008,12 +3111,16 @@
 
   R('capitan', {
     activables(quien, u) {
+      // Tracking por carta individual (una vez por turno por copia)
+      if (!u) return [];
       const z = zonaJugador(quien);
       const tieneExtra = z.mano.some(id => {
         const c = getCardById(id);
         return c && (String(c.clase || '').toLowerCase().includes('extra') || String(c.tipo || '').toLowerCase().includes('extra'));
       });
       if (!tieneExtra) return [];
+      if (!u._uid) u._uid = `capitan_${Date.now()}_${Math.random()}`;
+      if (habilidadUsada(claveTurno(quien, 'capitan_' + u._uid))) return [];
       return [{ key: 'capitan', label: 'Descarta carta Extra: Doble Golpe + descansa unidad rival ≤3' }];
     },
     async ejecutarActivar(key, quien, extra) {
@@ -3030,7 +3137,12 @@
           idx = z.batalla.findIndex(u => u.id === 'capitan');
         }
         const u = idx >= 0 ? z.batalla[idx] : null;
-        if (u) { addFlag(u, 'dobleGolpe', true); log('Capitán Spaceboy gana Doble Golpe.'); }
+        if (u) {
+          addFlag(u, 'dobleGolpe', true);
+          if (!u._uid) u._uid = `capitan_${Date.now()}_${Math.random()}`;
+          marcarHabilidadUsada(claveTurno(quien, 'capitan_' + u._uid));
+          log('Capitán Spaceboy gana Doble Golpe.');
+        }
         const riv = rivalDe(quien);
         const rivalOpts = opcionesUnidades(riv, (ru, i, c) => Number(c?.costeTotal || 99) <= 3)
           .map(o => ({ ...o, cardId: zonaJugador(riv).batalla[o.value]?.id }));
@@ -3186,7 +3298,12 @@
     if (atacanteRef?.tipo === 'lider') {
       atacanteId = z.liderId;
       atacanteZona = z.liderZona;
-      robarAtaqueLider(quien);
+      // INFINITYCRAFT NO roba al atacar (su habilidad es distinta)
+      const lid = getCardById(z.liderId);
+      const esInfinity = String(lid?.nombre || '').toUpperCase().includes('INFINITYCRAFT');
+      if (!esInfinity) {
+        robarAtaqueLider(quien);
+      }
       dispatch(z.liderId, 'alAtacarLider', [quien, atacanteZona]);
     } else {
       atacanteZona = z.batalla[atacanteRef?.index];
@@ -3279,7 +3396,25 @@
         const idx = zonaJugador(quien).batalla.indexOf(u);
         if (idx >= 0) destruirUnidad(quien, idx);
       }
+      // Reset de buffs temporales de batalla (dura un turno) - 'batalla' y flags temporales
+      if (u.buffs) {
+        u.buffs.batalla = 0;
+      }
+      // Reset flags temporales de un turno (doble golpe temporal, crítico, etc.)
+      // Doble golpe por tag permanente se mantiene, pero flags aplicados por habilidades se quitan
+      if (u.flags) {
+        // No reseteamos flags.dobleGolpe/tripleGolpe que vienen de la carta base
+        // Solo reseteamos los aplicados temporalmente por habilidades (marcados con _temporal)
+        if (u.flags._dobleGolpeTemporal) { u.flags.dobleGolpe = false; u.flags._dobleGolpeTemporal = false; }
+        if (u.flags._tripleGolpeTemporal) { u.flags.tripleGolpe = false; u.flags._tripleGolpeTemporal = false; }
+        // Reset flag de Mega Phantom (permete re-aplicar el próximo turno)
+        if (u.flags._phantomBuffed) u.flags._phantomBuffed = false;
+      }
     });
+    // Reset buffs del líder también (durante este turno)
+    if (zonaJugador(quien).liderZona?.buffs) {
+      zonaJugador(quien).liderZona.buffs.batalla = 0;
+    }
     ctx.liderCritico = false;
     ctx.liderDobleGolpe = false;
     ctx.batallaMods = {};
@@ -3298,6 +3433,8 @@
     if (estadoPartida) estadoPartida.bloqueadorUsado = false;
     dispatch('*', 'alFinTurno', [quien]);
     Object.keys(REGISTRO_EFECTOS).forEach(id => dispatch(id, 'alFinTurno', [quien]));
+    // Re-renderizar para reflejar los cambios
+    if (typeof renderizarPartida === 'function') renderizarPartida();
   }
 
   function poderCarta(id, zona, c) {
@@ -3762,8 +3899,8 @@
             }
             // Botón especial para Momolac desde el descarte
             let momolacBtn = '';
-            if (detalleSoloInfo && id === 'momolac' && estadoPartida?.jugador?.descarte?.includes('momolac')) {
-                momolacBtn = `<button class="plate-btn" onclick="momolacDesdeDescarte('jugador')">🎭 Revivir Momolac (descarta 1)</button>`;
+            if (detalleSoloInfo && id === 'momolac' && estadoPartida) {
+                momolacBtn = `<button class="plate-btn" onclick="momolacDesdeDescarte('jugador')">🎭 Revivir Momolac desde descarte</button>`;
             }
             // Botón especial para verificar evolución de líderes
             let evoBtn = '';
@@ -4163,11 +4300,31 @@
             }
         }
         function permitirDropCarta(event) { event.preventDefault(); event.stopPropagation(); }
+        // Drag-drop sobre la zona de campo (para RELEASE ENERGY)
+        async function soltarEnCampo(event) {
+            event.preventDefault();
+            const handData = event.dataTransfer.getData('hand-index');
+            const handIndex = handData !== '' && handData != null ? Number(handData) : NaN;
+            if (Number.isNaN(handIndex)) return;
+            if (!window.MotorEfectos) return;
+            const cartaArrastradaId = estadoPartida.jugador.mano[handIndex];
+            const campo = estadoPartida.jugador.campo?.[0];
+            if (!campo) return;
+            const reg = MotorEfectos.REGISTRO_EFECTOS[campo.id];
+            if (reg?.absorberDrag) {
+                const manejado = await reg.absorberDrag('jugador', cartaArrastradaId, campo);
+                if (manejado) return;
+            }
+            // Si no fue manejado, no hacer nada (no se puede jugar sobre el campo)
+        }
         function soltarEnCombo(event) {
             event.preventDefault();
             if (!estadoPartida || estadoPartida.faseIndex !== 3 || !estadoPartida.ataqueActual) return;
-            const handIndex = Number(event.dataTransfer.getData('hand-index'));
-            const battleIndex = Number(event.dataTransfer.getData('battle-index'));
+            const handData = event.dataTransfer.getData('hand-index');
+            const battleData = event.dataTransfer.getData('battle-index');
+            // Importante: getData devuelve '' si no se estableció, y Number('') === 0 (NO NaN)
+            const handIndex = handData !== '' && handData != null ? Number(handData) : NaN;
+            const battleIndex = battleData !== '' && battleData != null ? Number(battleData) : NaN;
             if (!Number.isNaN(handIndex)) intentarCombarDesdeMano(handIndex);
             else if (!Number.isNaN(battleIndex)) intentarCombarDesdeCampo(battleIndex);
         }
@@ -4211,7 +4368,25 @@
         function poderCombo(carta) {
             const combo = String(carta?.combo || '0+0');
             const partes = combo.split('+');
-            return Number(partes[1] || 0);
+            let poder = Number(partes[1] || 0);
+            // Verificar si la carta tiene habilidad de combo condicional (+10000 si líder es de color X y vida ≤4)
+            // Cartas con esta habilidad: fideos (azul), golden (rojo), juanfalso (verde), basil (negro)
+            const id = carta?.id;
+            const cartasComboCond = ['fideos', 'golden', 'juanfalso', 'basil'];
+            if (id && cartasComboCond.includes(id) && estadoPartida) {
+                const habilidadDesc = (carta?.habilidades || []).map(h => String(h.desc || '').toLowerCase()).join(' ');
+                if (habilidadDesc.includes('combo') && habilidadDesc.includes('4 o menos')) {
+                    // Determinar color requerido por la carta
+                    const colorMap = { fideos: 'azul', golden: 'rojo', juanfalso: 'verde', basil: 'negro' };
+                    const colorReq = colorMap[id];
+                    const lid = getCardById(estadoPartida.jugador.liderId);
+                    const colorLider = colorNormalizadoCarta(lid);
+                    if (colorLider === colorReq && estadoPartida.jugador.vida.length <= 4) {
+                        poder += 10000;
+                    }
+                }
+            }
+            return poder;
         }
 
         function tieneTag(carta, texto) {
@@ -4657,21 +4832,44 @@
         }
 
         function momolacDesdeDescarte(quien) {
-            if (!estadoPartida) return;
-            if (estadoPartida.faseIndex === 3) return alert('No puedes hacer esto ahora.');
-            if (estadoPartida.faseIndex === 0) return alert('Avanza a fase principal para usar esta habilidad.');
+            if (!estadoPartida) {
+                alert('No estás en una partida.');
+                return;
+            }
+            // Verificar que Momolac esté en el descarte
             const z = quien === 'rival' ? estadoPartida.rival : estadoPartida.jugador;
             const momIdx = z.descarte.lastIndexOf('momolac');
-            if (momIdx < 0) return alert('Momolac no está en el descarte.');
-            if (!z.mano.length) return alert('No tienes cartas en la mano.');
+            if (momIdx < 0) {
+                alert('Momolac no está en la pila de descartes. Solo puedes usar esta habilidad desde ahí.');
+                return;
+            }
+            // Solo se puede usar en fase principal (1) o combate (2)
+            if (estadoPartida.faseIndex === 0) {
+                alert('Avanza a la fase principal para usar esta habilidad.');
+                return;
+            }
+            if (estadoPartida.faseIndex === 3) {
+                alert('No puedes usar esta habilidad durante la fase de combo.');
+                return;
+            }
+            if (!z.mano.length) {
+                alert('No tienes cartas en la mano para descartar.');
+                return;
+            }
             // Verificar que el líder sea INFINITYCRAFT
             const lid = getCardById(z.liderId);
             const esInfinity = String(lid?.nombre || '').toUpperCase().includes('INFINITYCRAFT');
-            if (!esInfinity) return alert('Solo puedes usar esta habilidad si tu Líder es INFINITYCRAFT.');
+            if (!esInfinity) {
+                alert('Solo puedes usar esta habilidad si tu Líder es INFINITYCRAFT.');
+                return;
+            }
             // Elegir carta a descartar
             const opts = z.mano.map((cid, i) => ({ label: getCardById(cid)?.nombre || cid, value: i, cardId: cid }));
-            elegirConModal('Momolac: descarta 1 carta de tu mano para revivirlo', opts).then(async idx => {
-                if (idx == null) return;
+            elegirConModal('Momolac: elige 1 carta de tu mano para descartar y revivir a Momolac', opts).then(async idx => {
+                if (idx == null) {
+                    log('Momolac: cancelado.');
+                    return;
+                }
                 z.mano.splice(idx, 1);
                 z.descarte.splice(momIdx, 1);
                 const u = window.MotorEfectos
@@ -4679,6 +4877,7 @@
                     : { id: 'momolac', rested: false, ataquesRestantes: 1, buffs: { poder: 0, combo: 0, batalla: 0 }, flags: {} };
                 z.batalla.push(u);
                 estadoPartida.log = 'Momolac revienta del descarte de vuelta al campo.';
+                // Cerrar el modal de detalle si está abierto
                 document.getElementById('deck-card-modal').classList.remove('open');
                 renderizarPartida();
             });
@@ -4757,21 +4956,42 @@
             // Sumar buffs visibles (poder + batalla)
             const buffs = obj.buffs || {};
             const buffTotal = (buffs.poder || 0) + (buffs.batalla || 0);
-            const powerText = comboMode ? `+${poderCombo(carta)}` : (basePoder ? String(basePoder + buffTotal) : (buffTotal ? String(buffTotal) : ''));
+            // Aplicar bonus de campo permanente (Energía de Patroclo: +5000 a unidades)
+            let campoBonus = 0;
+            if (!lider && !comboMode && !opts.plain && estadoPartida) {
+                // Determinar a qué jugador pertenece esta carta
+                let quienCalc = 'jugador';
+                const enJugador = estadoPartida.jugador?.batalla?.some(u => u === obj);
+                const enRival = estadoPartida.rival?.batalla?.some(u => u === obj);
+                if (enRival) quienCalc = 'rival';
+                const campo = estadoPartida[quienCalc]?.campo?.[0];
+                if (campo?.id === 'energia') campoBonus = 5000;
+            }
+            const totalPoder = basePoder + buffTotal + campoBonus;
+            const powerText = comboMode ? `+${poderCombo(carta)}` : (totalPoder ? String(totalPoder) : '');
             const costHtml = lider || opts.plain ? '' : `<span class="card-cost-badge">${costText}</span>`;
             const dotHtml = lider || comboMode || opts.plain ? '' : costeDots(carta);
-            // Indicador visual de doble/triple golpe
+            // Indicador visual de habilidades (badges no solapados)
+            // Si la carta tiene doble golpe pero NO triple golpe, mostrar x2. Si tiene triple, mostrar x3
             let flagBadges = '';
-            if (obj.flags?.dobleGolpe || obj.flags?.tripleGolpe) {
-                flagBadges = `<span style="position:absolute;top:-9px;right:-9px;z-index:5;background:#a93226;color:white;border-radius:999px;padding:2px 6px;font-size:10px;font-weight:900;border:1px solid white;">${obj.flags.tripleGolpe ? 'x3' : 'x2'}</span>`;
-            }
+            // Detectar triple golpe de tag de carta o de flag
+            const cartaDatos = carta;
+            const tieneTripleGolpe = obj.flags?.tripleGolpe || tieneTag(cartaDatos, 'triple golpe');
+            const tieneDobleGolpe = obj.flags?.dobleGolpe || tieneTag(cartaDatos, 'doble golpe');
+            const tieneVenganza = tieneTag(cartaDatos, 'venganza');
+            const tieneBloqueador = tieneTag(cartaDatos, 'bloqueador');
+            const tieneCritico = tieneTag(cartaDatos, 'critico');
+            if (tieneTripleGolpe) flagBadges += `<span class="ability-badge badge-x3" title="Triple golpe">x3</span>`;
+            else if (tieneDobleGolpe) flagBadges += `<span class="ability-badge badge-x2" title="Doble golpe">x2</span>`;
+            if (tieneVenganza) flagBadges += `<span class="ability-badge badge-skull" title="Venganza">💀</span>`;
+            if (tieneBloqueador) flagBadges += `<span class="ability-badge badge-shield" title="Bloqueador">🛡</span>`;
+            if (tieneCritico) flagBadges += `<span class="ability-badge badge-knife" title="Crítico">🔪</span>`;
             // Indicador de cartas debajo (absorción)
-            let debajoBadge = '';
             if (obj.debajo && obj.debajo.length > 0) {
-                debajoBadge = `<span style="position:absolute;bottom:-9px;left:-9px;z-index:5;background:#8e44ad;color:white;border-radius:999px;padding:2px 6px;font-size:10px;font-weight:900;border:1px solid white;" title="${obj.debajo.length} carta(s) debajo">↓${obj.debajo.length}</span>`;
+                flagBadges += `<span class="ability-badge badge-debajo" title="${obj.debajo.length} carta(s) debajo">↓${obj.debajo.length}</span>`;
             }
             return `<div class="game-card-mini ${extra} ${comboMode ? 'combo-card' : ''} ${opts.plain ? 'plain-card' : ''}" ${draggable} ${fieldDrag} ${dropTarget} style="${style}" onclick="${click}" ${dbl}>
-                ${costHtml}${dotHtml}${flagBadges}${debajoBadge}
+                ${costHtml}${dotHtml}${flagBadges}
                 <img src="${carta.img || ''}" alt="${escapeHtml(carta.nombre)}">
                 ${powerText ? `<span class="card-power-badge">${powerText}</span>` : ''}
             </div>`;
@@ -4844,12 +5064,10 @@
                 const esAtacante = i === atacanteIdx;
                 const cartaDatos = getCardById(c.id);
                 const esExtraCard = cartaDatos && String(cartaDatos.clase || cartaDatos.tipo || '').toLowerCase().includes('extra');
-                // Combo solo por arrastre (drag-drop), NO por click
                 const clickFn = esFaseCombo
                     ? `abrirDetalleJuego('${c.id}')`
                     : `seleccionarAtacante(${i})`;
-                const extraClass = esFaseCombo && !esAtacante && !esExtraCard ? ' combo-candidate drag-eligible' : '';
-                const cardHtml = miniCarta(c, (c.rested ? 'rested' : '') + extraClass, { onClick: clickFn, battleIndex: esFaseCombo && !esAtacante && !esExtraCard ? i : undefined, dropIndex: i });
+                const cardHtml = miniCarta(c, (c.rested ? 'rested' : ''), { onClick: clickFn, battleIndex: esFaseCombo && !esAtacante && !esExtraCard ? i : undefined, dropIndex: i });
                 // Añadir botones activables encima de la carta
                 let activarHtml = '';
                 if (window.MotorEfectos && estadoPartida.faseIndex >= 1) {
@@ -4858,7 +5076,13 @@
                         activarHtml += `<button class="activable-btn-overlay" onclick="event.stopPropagation(); ejecutarHabilidadActivable('${a.cardId}','${a.key}','${i}')">${escapeHtml(a.label || a.key)}</button>`;
                     });
                 }
-                return activarHtml ? `<div class="activable-wrap">${cardHtml}${activarHtml}</div>` : cardHtml;
+                // Botón de Combar (solo en fase combo, cartas que no sean atacante ni extra)
+                let combarHtml = '';
+                if (esFaseCombo && !esAtacante && !esExtraCard) {
+                    combarHtml = `<button class="combar-btn-overlay" onclick="event.stopPropagation(); intentarCombarDesdeCampo(${i})">Combar</button>`;
+                }
+                const overlays = activarHtml + combarHtml;
+                return overlays ? `<div class="activable-wrap">${cardHtml}${overlays}</div>` : cardHtml;
             }).join(''));
             renderZona('op-battle-zone', r.batalla.map((c, i) => miniCarta(c, `${c.rested ? 'rested ' : ''}${estadoPartida.atacanteSeleccionado !== null && c.rested ? 'attackable' : ''}`, { onClick: `atacarUnidadRival(${i})` })).join(''));
             renderZona('player-combo-zone', j.combo.map(c => miniCarta(c, 'combo-card', { comboMode: true })).join(''));
@@ -4943,14 +5167,14 @@
                 });
             }
             document.getElementById('flip-btn').style.display = (c.imgEvo || c.nombreEvo) ? "inline-block" : "none";
-            // Momolac - mostrar botón revivir si está en el descarte del jugador (panel de colección)
+            // Momolac - mostrar botón revivir siempre durante una partida (la función validará si está en descarte)
             const momolacBtn = document.getElementById('momolac-revive-btn');
             if (momolacBtn) momolacBtn.remove();
-            if (c.id === 'momolac' && estadoPartida?.jugador?.descarte?.includes('momolac')) {
+            if (c.id === 'momolac' && estadoPartida) {
                 const btn = document.createElement('button');
                 btn.id = 'momolac-revive-btn';
                 btn.className = 'plate-btn';
-                btn.textContent = '🎭 Revivir Momolac (descarta 1)';
+                btn.textContent = '🎭 Revivir Momolac desde descarte';
                 btn.style.marginTop = '14px';
                 btn.onclick = () => { momolacDesdeDescarte('jugador'); };
                 const container = document.querySelector('#info-panel .panel-content') || document.querySelector('#info-panel');
