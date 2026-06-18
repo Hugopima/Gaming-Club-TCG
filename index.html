@@ -556,15 +556,15 @@
         /* --- Contador de mazo restante (HUD) --- */
         .deck-count-pill { position: absolute; bottom: -22px; right: -8px; background: rgba(0,0,0,.9); color: #fff07c; border: 2px solid #ffd700; border-radius: 999px; padding: 2px 8px; font-size: 14px; font-weight: 900; }
 
-        /* --- Badges de habilidades (no solapados) --- */
-        .ability-badge { position: absolute; z-index: 6; background: #a93226; color: white; border-radius: 999px; padding: 2px 6px; font-size: 10px; font-weight: 900; border: 1px solid white; box-shadow: 0 2px 4px rgba(0,0,0,.5); display: flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; line-height: 1; }
-        /* Posiciones a lo largo del borde superior (de derecha a izquierda) */
-        .badge-x2 { top: -9px; right: -6px; }
-        .badge-x3 { top: -9px; right: -6px; background: #6c2880; }
-        .badge-skull { top: -9px; right: 20px; background: #2c2c2c; }
-        .badge-shield { top: -9px; right: 46px; background: #1c5d99; }
-        .badge-knife { top: -9px; right: 72px; background: #b8860b; }
-        .badge-debajo { bottom: -9px; left: -6px; background: #8e44ad; }
+        /* --- Badges de habilidades (en lado derecho, no arriba) --- */
+        .ability-badge { position: absolute; z-index: 6; background: #a93226; color: white; border-radius: 999px; padding: 2px 6px; font-size: 10px; font-weight: 900; border: 1px solid white; box-shadow: 0 2px 4px rgba(0,0,0,.5); display: flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; line-height: 1; right: -10px; }
+        /* Posiciones a lo largo del lado derecho (de arriba a abajo) */
+        .badge-x2 { top: 4px; }
+        .badge-x3 { top: 4px; background: #6c2880; }
+        .badge-skull { top: 26px; background: #2c2c2c; }
+        .badge-shield { top: 48px; background: #1c5d99; }
+        .badge-knife { top: 70px; background: #b8860b; }
+        .badge-debajo { bottom: 4px; right: -10px; background: #8e44ad; top: auto; }
         .game-modal-panel h2 { color: #fff07c; margin-top: 0; text-transform: uppercase; }
         .mana-pay-options { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin: 20px 0; }
         .mana-option { border: 2px solid rgba(255,255,255,.35); border-radius: 8px; padding: 6px; background: rgba(255,255,255,.05); cursor: pointer; }
@@ -584,7 +584,7 @@
 
         /* --- AJUSTES MOTOR V4 --- */
         .next-phase-tab { right: 18px; position: absolute; top: 82px; border-radius: 14px; overflow: hidden; }
-        .op-drop-stack { left: 278px; top: 126px; }
+        .op-drop-stack { left: 278px; top: 110px; }
         .op-deck-stack { left: 278px; top: 266px; }
         .drop-stack .game-card-mini .card-cost-badge, .drop-stack .game-card-mini .card-power-badge, .drop-stack .game-card-mini .mana-dots { display: none; }
         .plain-card .card-cost-badge, .plain-card .card-power-badge, .plain-card .mana-dots { display: none; }
@@ -1460,7 +1460,7 @@
     }
     if (c.atacanteId === id && ctx.bonusSinBloqueador) mod += ctx.bonusSinBloqueador;
     if (c.atacanteId === id && ctx.bonusVsBloqueador) mod += ctx.bonusVsBloqueador;
-    if (c.atacanteId === id && ctx.phantomBonus) mod += ctx.phantomBonus;
+    // ctx.phantomBonus eliminado: ahora Mega Phantom usa addBuff(zona, 'batalla', 10000) directamente
     if (c.defensorId === id && ctx.debuffDefensor) mod += ctx.debuffDefensor;
     if (ctx.batallaMods?.['def_' + c.objetivo?.index] && c.objetivo?.tipo === 'unidad') {
       mod += ctx.batallaMods['def_' + c.objetivo.index];
@@ -1862,11 +1862,7 @@
     alCombo(quien, cardId, comboCtx) {
       if (colorLider(quien) === 'azul' && zonaJugador(quien).vida.length <= 4) {
         robar(quien, 1);
-        // Aplicar el bonus al ataque actual directamente
-        if (estadoPartida?.ataqueActual) {
-          estadoPartida.ataqueActual.atacanteCombo = (estadoPartida.ataqueActual.atacanteCombo || 0) + 10000;
-        }
-        if (comboCtx) comboCtx.bonusCombo = (comboCtx.bonusCombo || 0) + 10000;
+        // El bonus de +10000 ya está incluido en poderCombo(), no añadirlo de nuevo aquí
         log('Fideos Malvados: +10000 combo y robo.');
       }
     }
@@ -2164,10 +2160,7 @@
     alCombo(quien, cardId, comboCtx) {
       if (colorLider(quien) === 'rojo' && zonaJugador(quien).vida.length <= 4) {
         robar(quien, 1);
-        if (estadoPartida?.ataqueActual) {
-          estadoPartida.ataqueActual.atacanteCombo = (estadoPartida.ataqueActual.atacanteCombo || 0) + 10000;
-        }
-        if (comboCtx) comboCtx.bonusCombo = (comboCtx.bonusCombo || 0) + 10000;
+        // El bonus de +10000 ya está incluido en poderCombo(), no añadirlo de nuevo aquí
         log('Golden: +10000 combo y robo.');
       }
     }
@@ -2219,15 +2212,17 @@
       if (!u._uid) u._uid = `musk_${Date.now()}_${Math.random()}`;
       if (habilidadUsada(claveTurno(quien, 'musk_' + u._uid))) return [];
       const z = zonaJugador(quien);
-      const tieneAzul = z.mana.some(m => !m.rested && colorNormalizadoCarta(getCardById(m.id)) === 'azul');
-      if (!tieneAzul) return [];
-      return [{ key: 'musk', label: 'Activar: Principal - paga 1 azul → roba 2, descarta 1' }];
+      // Musk usa manás ROJOS (no azules)
+      const tieneRojo = z.mana.some(m => !m.rested && colorNormalizadoCarta(getCardById(m.id)) === 'rojo');
+      if (!tieneRojo) return [];
+      return [{ key: 'musk', label: 'Activar: Principal - paga 1 rojo → roba 2, descarta 1' }];
     },
     async ejecutarActivar(key, quien, extra) {
       const z = zonaJugador(quien);
       const u = extra?.index != null ? z.batalla[extra.index] : z.batalla.find(x => x.id === 'musk');
-      const pagado = descansarMana(quien, 'azul', 1);
-      if (!pagado) { log('Elon Musk: no tienes maná azul activo.'); return; }
+      // Pagar 1 maná rojo
+      const pagado = descansarMana(quien, 'rojo', 1);
+      if (!pagado) { log('Elon Musk: no tienes maná rojo activo.'); return; }
       zonaJugador(quien).manaActivo = zonaJugador(quien).mana.filter(m => !m.rested).length;
       robar(quien, 2);
       await elegirDescarteObligatorio(quien, 'Elon Musk: descarta 1 carta');
@@ -2235,7 +2230,7 @@
         if (!u._uid) u._uid = `musk_${Date.now()}_${Math.random()}`;
         marcarHabilidadUsada(claveTurno(quien, 'musk_' + u._uid));
       }
-      log('Elon Musk paga 1 maná azul, roba 2 y descarta 1.');
+      log('Elon Musk paga 1 maná rojo, roba 2 y descarta 1.');
       if (typeof renderizarPartida === 'function') renderizarPartida();
     }
   });
@@ -2538,34 +2533,36 @@
   R('messi', {
     async alJugar(quien) {
       const z = zonaJugador(quien);
-      const tops = z.mazo.splice(-7, 7).reverse(); // top 7, en orden visible
-      const mcIds = tops.filter(id => String(getCardById(id)?.origen || '').toLowerCase().includes('minecraft'));
+      // Buscar TODAS las cartas de Origen Minecraft en la baraja
+      const mcIds = z.mazo.filter(id => String(getCardById(id)?.origen || '').toLowerCase().includes('minecraft'));
       if (mcIds.length) {
         // Eliminar duplicados manteniendo orden
         const vistos = new Set();
         const uniq = mcIds.filter(id => { if (vistos.has(id)) return false; vistos.add(id); return true; });
         const opts = uniq.map(id => ({ label: getCardById(id)?.nombre || id, value: id, cardId: id }));
-        const pick = await elegirConModal('Libro del Crafteo: ves 7 cartas — elige una de Origen Minecraft', opts);
+        const pick = await elegirConModal('Libro del Crafteo: elige una carta de Origen Minecraft de tu baraja', opts);
         if (pick) {
-          // Si la carta tiene coste 1, dar opción de jugarla gratis o quedártela en mano
+          // Sacar la carta elegida del mazo
+          const idxMazo = z.mazo.lastIndexOf(pick);
+          if (idxMazo >= 0) z.mazo.splice(idxMazo, 1);
           const cartaElegida = getCardById(pick);
+          // Si la carta tiene coste 1, dar opción de jugarla gratis en modo descanso o quedártela en mano
           if (Number(cartaElegida?.costeTotal || 99) === 1) {
             const decision = await elegirConModal('Libro del Crafteo: la carta elegida tiene coste 1. ¿Qué quieres hacer?', [
-              { label: 'Jugarla gratis en el campo', value: 'jugar', cardId: pick },
+              { label: 'Jugarla gratis en modo descanso', value: 'jugar', cardId: pick },
               { label: 'Quedártela en la mano', value: 'mano', cardId: pick }
             ]);
             if (decision === 'jugar') {
-              // Jugarla gratis
+              // Jugarla gratis en modo descanso
               if (claseNormalizada(cartaElegida) === 'unidad') {
-                // Usar la función local crearUnidadCampo (no MotorEfectos.crearUnidadCampo)
-                const u = crearUnidadCampo(pick, { rested: false });
+                const u = crearUnidadCampo(pick, { rested: true });
                 z.batalla.push(u);
                 dispatch(pick, 'alJugar', [quien, pick, u]);
-                log('Libro del Crafteo juega gratis a ' + (cartaElegida?.nombre || pick) + '.');
+                log('Libro del Crafteo juega gratis a ' + (cartaElegida?.nombre || pick) + ' en modo descanso.');
               } else {
                 // Extra: aplicar efecto
                 z.descarte.push(pick);
-                if (window.MotorEfectos) dispatch(pick, 'alJugar', [quien, pick, null]);
+                dispatch(pick, 'alJugar', [quien, pick, null]);
                 log('Libro del Crafteo usa gratis a ' + (cartaElegida?.nombre || pick) + '.');
               }
             } else {
@@ -2576,14 +2573,9 @@
             z.mano.push(pick);
             log('Libro del Crafteo añade ' + (cartaElegida?.nombre || pick) + ' a tu mano.');
           }
-          const rest = tops.filter(id => id !== pick).reverse();
-          rest.forEach(id => z.mazo.push(id));
-        } else {
-          tops.reverse().forEach(id => z.mazo.push(id));
         }
       } else {
-        log('Libro del Crafteo: no hay cartas de Origen Minecraft entre las 7 primeras.');
-        tops.reverse().forEach(id => z.mazo.push(id));
+        log('Libro del Crafteo: no hay cartas de Origen Minecraft en tu baraja.');
       }
       barajar(quien);
       if (typeof renderizarPartida === 'function') renderizarPartida();
@@ -2601,10 +2593,7 @@
     alCombo(quien, cardId, comboCtx) {
       if (colorLider(quien) === 'verde' && zonaJugador(quien).vida.length <= 4) {
         robar(quien, 1);
-        if (estadoPartida?.ataqueActual) {
-          estadoPartida.ataqueActual.atacanteCombo = (estadoPartida.ataqueActual.atacanteCombo || 0) + 10000;
-        }
-        if (comboCtx) comboCtx.bonusCombo = (comboCtx.bonusCombo || 0) + 10000;
+        // El bonus de +10000 ya está incluido en poderCombo(), no añadirlo de nuevo aquí
         log('Juan Falso: +10000 combo y robo.');
       }
     }
@@ -2667,23 +2656,42 @@
   });
 
   R('phantom', {
+    alJugar(quien, id, zona) {
+      // Verificar al entrar al campo
+      phantom_check(quien, zona);
+    },
+    alInicioPrincipal(quien) {
+      // Verificar al inicio de cada fase principal
+      zonaJugador(quien).batalla.forEach(u => {
+        if (u.id === 'phantom') phantom_check(quien, u);
+      });
+    },
     alAtacar(quien, ref, zona) {
-      const riv = rivalDe(quien);
-      if (!unidadesEnCampo(riv, u => u.rested).length) {
-        ctx.phantomBonus = 10000;
-        // Aplicar buff directo a la carta SOLO si no se ha aplicado ya este ataque
-        // Usamos un flag temporal _phantomBuffed para evitar acumulación
-        if (zona && !zona.flags?._phantomBuffed) {
-          addBuff(zona, 'batalla', 10000);
-          if (!zona.flags) zona.flags = {};
-          zona.flags._phantomBuffed = true;
-          // Resetear el flag al final del turno (lo maneja alFinTurno ya que 'batalla' se resetea)
-          log('Mega Phantom gana +10000 (el rival no tiene unidades en descanso).');
-          if (typeof renderizarPartida === 'function') renderizarPartida();
-        }
-      }
+      // Verificar también al atacar
+      phantom_check(quien, zona);
     }
   });
+  function phantom_check(quien, zona) {
+    if (!zona) return;
+    const riv = rivalDe(quien);
+    const sinDescansadas = !unidadesEnCampo(riv, u => u.rested).length;
+    if (!sinDescansadas) {
+      // Si el rival ahora tiene unidades descansadas, quitar el buff si lo tenía
+      if (zona.flags?._phantomBuffed) {
+        zona.flags._phantomBuffed = false;
+        if (zona.buffs) zona.buffs.batalla = Math.max(0, (zona.buffs.batalla || 0) - 10000);
+      }
+      return;
+    }
+    // Aplicar buff directo a la carta SOLO si no se ha aplicado ya
+    if (!zona.flags?._phantomBuffed) {
+      addBuff(zona, 'batalla', 10000);
+      if (!zona.flags) zona.flags = {};
+      zona.flags._phantomBuffed = true;
+      log('Mega Phantom gana +10000 (el rival no tiene unidades en descanso).');
+      if (typeof renderizarPartida === 'function') renderizarPartida();
+    }
+  }
 
   R('aquaman', {
     alDeclararAtaque(quien, ref, obj) {
@@ -2707,8 +2715,20 @@
 
   R('araña', {
     async alJugar(quien) {
-      const idx = await elegirConModal('Araña Madre: bloquea unidad rival', opcionesUnidades(rivalDe(quien)));
-      if (idx != null) { zonaJugador(rivalDe(quien)).batalla[idx].noAtacar = true; zonaJugador(rivalDe(quien)).batalla[idx].noCombo = true; }
+      const opts = opcionesUnidades(rivalDe(quien)).map(o => ({ ...o, cardId: zonaJugador(rivalDe(quien)).batalla[o.value]?.id }));
+      if (!opts.length) { log('Araña Madre: el rival no tiene unidades.'); return; }
+      const idx = await elegirConModal('Araña Madre: elige una unidad rival (no líder) para poner en modo descanso hasta el final del siguiente turno del rival', opts);
+      if (idx != null) {
+        const u = zonaJugador(rivalDe(quien)).batalla[idx];
+        u.rested = true;
+        u.noAtacar = true;
+        u.noCombo = true;
+        // Marcar para que se enderece al final del siguiente turno del rival
+        u.flags = u.flags || {};
+        u.flags.arañaBloqueada = true;
+        log('Araña Madre bloquea a ' + (getCardById(u.id)?.nombre || u.id) + ' hasta el final del siguiente turno del rival.');
+        if (typeof renderizarPartida === 'function') renderizarPartida();
+      }
     }
   });
 
@@ -2956,7 +2976,32 @@
       if (idx >= 0) z.mano.splice(idx, 1);
       if (!campo.debajo) campo.debajo = [];
       campo.debajo.push(cardId);
-      log(`${getCardById(cardId)?.nombre} se coloca debajo de RELEASE ENERGY.`);
+      log(`${getCardById(cardId)?.nombre} se coloca debajo de RELEASE ENERGY (${campo.debajo.length}/4).`);
+      // Verificar si se han colocado las 4 cartas necesarias
+      const tieneTodas = ['omori', 'kel', 'aubrey', 'hero'].every(id => campo.debajo.includes(id));
+      if (tieneTodas) {
+        // Buscar Omori's gang en mano o baraja
+        let gangIdx = z.mano.indexOf('gang');
+        let gangSrc = gangIdx >= 0 ? 'mano' : null;
+        if (!gangSrc) {
+          gangIdx = z.mazo.indexOf('gang');
+          if (gangIdx >= 0) gangSrc = 'mazo';
+        }
+        if (gangSrc) {
+          if (gangSrc === 'mano') z.mano.splice(gangIdx, 1);
+          else z.mazo.splice(gangIdx, 1);
+          // Jugar Omori's gang gratis
+          const gangZona = crearUnidadCampo('gang', { rested: false });
+          z.batalla.push(gangZona);
+          dispatch('gang', 'alJugar', [quien, 'gang', gangZona]);
+          // Las cartas debajo van al descarte
+          campo.debajo.forEach(id => z.descarte.push(id));
+          campo.debajo = [];
+          log("¡RELEASE ENERGY activada! Omori's Gang entra al campo gratis.");
+        } else {
+          log("RELEASE ENERGY: tienes las 4 cartas debajo, pero no se ha encontrado Omori's Gang en tu mano ni baraja.");
+        }
+      }
       if (typeof renderizarPartida === 'function') renderizarPartida();
       return 'absorbida';
     }
@@ -2997,10 +3042,7 @@
     alCombo(quien, cardId, comboCtx) {
       if (colorLider(quien) === 'negro' && zonaJugador(quien).vida.length <= 4) {
         robar(quien, 1);
-        if (estadoPartida?.ataqueActual) {
-          estadoPartida.ataqueActual.atacanteCombo = (estadoPartida.ataqueActual.atacanteCombo || 0) + 10000;
-        }
-        if (comboCtx) comboCtx.bonusCombo = (comboCtx.bonusCombo || 0) + 10000;
+        // El bonus de +10000 ya está incluido en poderCombo(), no añadirlo de nuevo aquí
         log('Basil: +10000 combo y robo.');
       }
     }
@@ -3308,7 +3350,8 @@
     } else {
       atacanteZona = z.batalla[atacanteRef?.index];
       atacanteId = atacanteZona?.id;
-      dispatch(atacanteId, 'alAtacar', [quien, atacanteRef, atacanteZona]);
+      // Pasar el objetivo actual (guardado en ctx.objetivo por alDeclararAtaque)
+      dispatch(atacanteId, 'alAtacar', [quien, atacanteRef, atacanteZona, ctx.objetivo]);
     }
     ctx.atacanteQuien = quien;
     ctx.atacanteId = atacanteId;
@@ -3317,6 +3360,7 @@
 
   function alDeclararAtaque(atacanteQuien, atacanteRef, objetivo) {
     ctx.sinBloqueadorUsado = !estadoPartida?.bloqueadorUsado;
+    ctx.objetivo = objetivo; // Guardar objetivo para que alAtacar pueda acceder
     const z = zonaJugador(atacanteQuien);
     let atacanteId = atacanteRef?.tipo === 'lider' ? z.liderId : z.batalla[atacanteRef?.index]?.id;
     const mod = dispatch(atacanteId, 'alDeclararAtaque', [atacanteQuien, atacanteRef, objetivo]);
@@ -3409,6 +3453,14 @@
         if (u.flags._tripleGolpeTemporal) { u.flags.tripleGolpe = false; u.flags._tripleGolpeTemporal = false; }
         // Reset flag de Mega Phantom (permete re-aplicar el próximo turno)
         if (u.flags._phantomBuffed) u.flags._phantomBuffed = false;
+        // Reset bloqueo de Araña Madre al final del turno del jugador que la jugó
+        // (la unidad rival se libera al final del turno del jugador que la bloqueó)
+        if (u.flags.arañaBloqueada) {
+          u.flags.arañaBloqueada = false;
+          u.noAtacar = false;
+          u.noCombo = false;
+          // No enderezamos aquí porque el rival enderezará al inicio de su turno
+        }
       }
     });
     // Reset buffs del líder también (durante este turno)
@@ -4285,7 +4337,20 @@
         function arrastrarCartaMano(event, index) { event.dataTransfer.setData('hand-index', String(index)); }
         function arrastrarCartaCampo(event, index) { event.dataTransfer.setData('battle-index', String(index)); }
         function soltarEnMana(event) { event.preventDefault(); const index = Number(event.dataTransfer.getData('hand-index')); if (!Number.isNaN(index)) ponerManaDesdeMano(index); }
-        function soltarEnBatalla(event) { event.preventDefault(); const index = Number(event.dataTransfer.getData('hand-index')); if (!Number.isNaN(index)) intentarJugarDesdeMano(index); }
+        function soltarEnBatalla(event) {
+            event.preventDefault();
+            const index = Number(event.dataTransfer.getData('hand-index'));
+            if (Number.isNaN(index)) return;
+            // Si hay RELEASE ENERGY en campo y la carta es Omori/Kel/Aubrey/Hero, redirigir a soltarEnCampo
+            if (estadoPartida?.jugador?.campo?.[0]?.id === 'release') {
+                const cartaId = estadoPartida.jugador.mano[index];
+                if (cartaId && ['omori', 'kel', 'aubrey', 'hero'].includes(cartaId)) {
+                    soltarEnCampo(event);
+                    return;
+                }
+            }
+            intentarJugarDesdeMano(index);
+        }
         // Drag-drop sobre una carta de batalla específica (absorción DYMYTRY/Juan2)
         async function soltarEnCartaCampo(event, targetIndex) {
             event.preventDefault();
@@ -4303,6 +4368,7 @@
         // Drag-drop sobre la zona de campo (para RELEASE ENERGY)
         async function soltarEnCampo(event) {
             event.preventDefault();
+            event.stopPropagation(); // Evitar que soltarEnBatalla también se ejecute
             const handData = event.dataTransfer.getData('hand-index');
             const handIndex = handData !== '' && handData != null ? Number(handData) : NaN;
             if (Number.isNaN(handIndex)) return;
@@ -4390,8 +4456,11 @@
         }
 
         function tieneTag(carta, texto) {
-            const needle = texto.toLowerCase();
-            return (carta?.habilidades || []).some(h => String(h.tag || '').toLowerCase().includes(needle));
+            const needle = String(texto).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            return (carta?.habilidades || []).some(h => {
+                const tag = String(h.tag || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                return tag.includes(needle);
+            });
         }
 
         function danoDeCarta(id, ctx) {
@@ -4587,6 +4656,7 @@
                 atacanteRef: estadoPartida.atacanteSeleccionado,
                 objetivo,
                 atacanteId: atacante.id,
+                atacanteZonaRef: atacante, // Referencia directa para evitar problemas con índices
                 atacanteBase: poderBase,
                 atacanteCombo: 0
             };
@@ -4641,6 +4711,14 @@
         }
 
         function obtenerAtacanteActual() {
+            // Priorizar la referencia directa guardada en ataqueActual (más robusta ante splice)
+            if (estadoPartida?.ataqueActual?.atacanteZonaRef) {
+                // Verificar que la referencia siga en el campo de batalla (si es unidad)
+                const ref = estadoPartida.ataqueActual.atacanteZonaRef;
+                if (estadoPartida.ataqueActual.atacanteRef?.tipo === 'lider') return ref;
+                // Si es unidad, verificar que siga en batalla
+                if (estadoPartida.jugador.batalla.includes(ref)) return ref;
+            }
             const ref = estadoPartida.atacanteSeleccionado || estadoPartida.ataqueActual?.atacanteRef;
             if (!ref) return null;
             if (ref.tipo === 'lider') return estadoPartida.jugador.liderZona || (estadoPartida.jugador.liderZona = { id: estadoPartida.jugador.liderId, rested: false, ataquesRestantes: 1 });
@@ -4661,15 +4739,17 @@
                 atacanteZona: atacante,
                 objetivo: ataque.objetivo,
                 atacanteBase: ataque.atacanteBase,
-                atacanteCombo: ataque.atacanteCombo
+                atacanteCombo: ataque.atacanteCombo,
+                defensorIndex: ataque.objetivo?.tipo === 'unidad' ? ataque.objetivo.index : undefined,
+                defensorId: ataque.objetivo?.tipo === 'unidad' ? estadoPartida.rival.batalla[ataque.objetivo.index]?.id : undefined
             };
             combateCtx.pa = poderCarta(atacante.id, atacante, combateCtx) + ataque.atacanteCombo;
             if (ataque.objetivo.tipo === 'lider') {
                 const rivalLider = estadoPartida.rival.liderZona || { id: estadoPartida.rival.liderId };
-                combateCtx.pd = poderCarta(estadoPartida.rival.liderId, rivalLider, { quien: 'rival' });
+                combateCtx.pd = poderCarta(estadoPartida.rival.liderId, rivalLider, { quien: 'rival', defensorId: estadoPartida.rival.liderId, objetivo: ataque.objetivo });
             } else {
                 const defensor = estadoPartida.rival.batalla[ataque.objetivo.index];
-                combateCtx.pd = poderCarta(defensor?.id, defensor, { quien: 'rival', defensorZona: defensor });
+                combateCtx.pd = poderCarta(defensor?.id, defensor, { quien: 'rival', defensorZona: defensor, defensorId: defensor?.id, objetivo: ataque.objetivo, defensorIndex: ataque.objetivo.index });
             }
             combateCtx.ganaAtacante = combateCtx.pa >= combateCtx.pd;
             combateCtx.bloqueadorUsado = estadoPartida.bloqueadorUsado || false;
@@ -4751,12 +4831,19 @@
         function intentarCombarDesdeCampo(index) {
             const zona = estadoPartida.jugador.batalla[index];
             if (!zona) return;
-            // No se puede combear la propia unidad atacante (comparar por id, no por índice)
+            // No se puede combear la propia unidad atacante (comparar por referencia del objeto, no por id)
+            // Así permitimos combear con copias distintas de la misma carta
             const atk = estadoPartida.atacanteSeleccionado;
-            const atkId = atk?.tipo === 'unidad' ? estadoPartida.jugador.batalla[atk.index]?.id : null;
-            const ataqueId = estadoPartida.ataqueActual?.atacanteId;
-            if ((atk && atk.tipo === 'unidad' && atkId === zona.id) || ataqueId === zona.id) {
+            const atkZona = atk?.tipo === 'unidad' ? estadoPartida.jugador.batalla[atk.index] : null;
+            const ataqueZona = estadoPartida.ataqueActual?.atacanteRef?.tipo === 'unidad'
+                ? estadoPartida.jugador.batalla[estadoPartida.ataqueActual.atacanteRef.index]
+                : null;
+            if ((atkZona && atkZona === zona) || (ataqueZona && ataqueZona === zona)) {
                 return alert('No puedes combear con la propia unidad atacante.');
+            }
+            // No se puede combear con unidades en modo descanso (giradas)
+            if (zona.rested) {
+                return alert('No puedes combear con una unidad en modo descanso.');
             }
             const carta = getCardById(zona.id);
             const coste = costeCombo(carta);
@@ -4773,7 +4860,11 @@
             estadoPartida.jugador.manaActivo = estadoPartida.jugador.mana.filter(m => !m.rested).length;
             let id = pendiente.cardId;
             if (pendiente.origen === 'mano') estadoPartida.jugador.mano.splice(pendiente.index, 1);
-            if (pendiente.origen === 'campo') estadoPartida.jugador.batalla.splice(pendiente.index, 1);
+            if (pendiente.origen === 'campo') {
+                // Buscar la carta por referencia para asegurarnos de eliminar la correcta
+                const idxToRemove = estadoPartida.jugador.batalla.findIndex((u, i) => i === pendiente.index);
+                if (idxToRemove >= 0) estadoPartida.jugador.batalla.splice(idxToRemove, 1);
+            }
             const carta = getCardById(id);
             estadoPartida.ataqueActual.atacanteCombo += poderCombo(carta);
             estadoPartida.jugador.combo.push({ id, comboMode: true });
@@ -4863,11 +4954,16 @@
                 alert('Solo puedes usar esta habilidad si tu Líder es INFINITYCRAFT.');
                 return;
             }
-            // Elegir carta a descartar
+            // Elegir carta a descartar (usar MotorEfectos.elegirConModal)
             const opts = z.mano.map((cid, i) => ({ label: getCardById(cid)?.nombre || cid, value: i, cardId: cid }));
-            elegirConModal('Momolac: elige 1 carta de tu mano para descartar y revivir a Momolac', opts).then(async idx => {
+            const elegirFn = window.MotorEfectos?.elegirConModal || window.elegirConModal;
+            if (!elegirFn) {
+                alert('Error: no se pudo abrir el selector.');
+                return;
+            }
+            elegirFn('Momolac: elige 1 carta de tu mano para descartar y revivir a Momolac', opts).then(async idx => {
                 if (idx == null) {
-                    log('Momolac: cancelado.');
+                    estadoPartida.log = 'Momolac: cancelado.';
                     return;
                 }
                 z.mano.splice(idx, 1);
