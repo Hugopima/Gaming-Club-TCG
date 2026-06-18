@@ -1,16 +1,11 @@
 /**
  * Servidor multijugador para Gaming Club TCG
- *
- * Este servidor:
+ * 
+ * Funciones:
  * 1. Sirve los archivos estáticos (juego.html, cartas.json, imagenes/)
- * 2. Gestiona partidas online con Socket.IO
- * 3. Empareja jugadores automáticamente
- *
- * USO:
- *   1. npm install        (instala dependencias, solo la primera vez)
- *   2. node server.js     (arranca el servidor)
- *   3. Abre http://localhost:3000 en tu navegador
- *   4. Para jugar con otra persona, dale tu IP: http://TU-IP:3000
+ * 2. Matchmaking automático (busca rival aleatorio)
+ * 3. Salas privadas con código (jugar con amigos)
+ * 4. Sincroniza acciones entre jugadores
  */
 
 const express = require('express');
@@ -30,41 +25,57 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'juego.html'));
 });
 
-// --- SISTEMA DE EMPAREJAMIENTO ---
-const colaEspera = []; // Jugadores esperando rival
-const partidasActivas = new Map(); // roomId -> { jugador1, jugador2, estado }
+// === SISTEMA DE MATCHMAKING Y SALAS ===
+
+const colaEspera = [];          // Jugadores buscando partida aleatoria
+const salasPrivadas = new Map(); // codigo -> { host, invitado, roomId }
+const partidasActivas = new Map(); // roomId -> { jugador1, jugador2 }
+
+// Generar código de 6 caracteres para sala privada
+function generarCodigoSala() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Sin caracteres ambiguos (I, O, 0, 1)
+    let codigo;
+    do {
+        codigo = '';
+        for (let i = 0; i < 6; i++) {
+            codigo += chars[Math.floor(Math.random() * chars.length)];
+        }
+    } while (salasPrivadas.has(codigo)); // Asegurar que no se repita
+    return codigo;
+}
 
 io.on('connection', (socket) => {
     console.log(`✅ Jugador conectado: ${socket.id}`);
 
-    // Jugador busca partida
+    // === BUSCAR PARTIDA ALEATORIA (matchmaking) ===
     socket.on('buscar-partida', () => {
         console.log(`🔍 ${socket.id} busca partida...`);
+        // Si ya está en una sala o cola, no hacer nada
+        if (socket.dataRoomId) return;
+        
+        // Quitar de cola si ya estaba
+        const idx = colaEspera.indexOf(socket);
+        if (idx >= 0) colaEspera.splice(idx, 1);
+
         if (colaEspera.length > 0) {
             // Hay alguien esperando, emparejar
             const rival = colaEspera.shift();
             const roomId = `partida_${Date.now()}`;
-            const partida = {
-                roomId,
+            
+            partidasActivas.set(roomId, {
                 jugador1: rival,
                 jugador2: socket,
-                estado: 'iniciando'
-            };
-            partidasActivas.set(roomId, partida);
+                tipo: 'aleatoria'
+            });
 
-            // Unir ambos sockets a la sala
             rival.join(roomId);
             socket.join(roomId);
-
-            // Guardar roomId en los sockets
             rival.dataRoomId = roomId;
             rival.dataPlayerNum = 1;
             socket.dataRoomId = roomId;
             socket.dataPlayerNum = 2;
 
-            console.log(`🎮 Partida creada: ${roomId} (${rival.id} vs ${socket.id})`);
-
-            // Notificar a ambos jugadores
+            console.log(`🎮 Partida aleatoria creada: ${roomId}`);
             io.to(rival.id).emit('partida-lista', { roomId, playerNum: 1 });
             io.to(socket.id).emit('partida-lista', { roomId, playerNum: 2 });
         } else {
@@ -75,33 +86,115 @@ io.on('connection', (socket) => {
         }
     });
 
-    // Recibir acción de juego y reenviar al rival
+    // === CANCELAR BÚSQUEDA ===
+    socket.on('cancelar-busqueda', () => {
+        const idx = colaEspera.indexOf(socket);
+        if (idx >= 0) colaEspera.splice(idx, 1);
+        // Si estaba en una sala privada como host, eliminarla
+        for (const [codigo, sala] of salasPrivadas.entries()) {
+            if (sala.host === socket) {
+                salasPrivadas.delete(codigo);
+                if (sala.invitado) {
+                    sala.invitado.emit('sala-cerrada');
+                }
+            }
+        }
+        console.log(`🚫 ${socket.id} canceló búsqueda`);
+    });
+
+    // === CREAR SALA PRIVADA ===
+    socket.on('crear-sala', () => {
+        // Si ya tiene una sala, no crear otra
+        for (const [codigo, sala] of salasPrivadas.entries()) {
+            if (sala.host === socket) {
+                socket.emit('sala-creada', { roomId: codigo });
+                return;
+            }
+        }
+        const codigo = generarCodigoSala();
+        salasPrivadas.set(codigo, {
+            host: socket,
+            invitado: null,
+            roomId: codigo
+        });
+        socket.dataRoomId = null; // Aún no hay partida
+        socket.dataSalaCodigo = codigo;
+        console.log(`🔑 Sala privada creada: ${codigo} por ${socket.id}`);
+        socket.emit('sala-creada', { roomId: codigo });
+    });
+
+    // === UNIRSE A SALA PRIVADA ===
+    socket.on('unirse-sala', (data) => {
+        const codigo = (data.codigo || '').toUpperCase();
+        const sala = salasPrivadas.get(codigo);
+        if (!sala) {
+            socket.emit('sala-no-encontrada');
+            return;
+        }
+        if (sala.invitado) {
+            socket.emit('sala-llena');
+            return;
+        }
+        if (sala.host === socket) {
+            socket.emit('sala-llena'); // No puedes unirte a tu propia sala
+            return;
+        }
+        
+        // Unir al invitado
+        sala.invitado = socket;
+        const roomId = `sala_${codigo}_${Date.now()}`;
+        
+        partidasActivas.set(roomId, {
+            jugador1: sala.host,
+            jugador2: socket,
+            tipo: 'privada',
+            codigo: codigo
+        });
+
+        sala.host.join(roomId);
+        socket.join(roomId);
+        sala.host.dataRoomId = roomId;
+        sala.host.dataPlayerNum = 1;
+        socket.dataRoomId = roomId;
+        socket.dataPlayerNum = 2;
+
+        console.log(`🎮 Partida privada creada: ${roomId} (sala ${codigo})`);
+        io.to(sala.host.id).emit('partida-lista', { roomId, playerNum: 1 });
+        io.to(socket.id).emit('partida-lista', { roomId, playerNum: 2 });
+        
+        // Eliminar la sala privada (ya es partida activa)
+        salasPrivadas.delete(codigo);
+    });
+
+    // === SINCRONIZACIÓN DE JUGADAS ===
     socket.on('accion-juego', (data) => {
         const roomId = socket.dataRoomId;
         if (!roomId) return;
-        // Reenviar a todos en la sala EXCEPTO el emisor
+        // Reenviar al rival (todos en la sala excepto el emisor)
         socket.to(roomId).emit('accion-rival', data);
     });
 
-    // Jugador se desconecta
+    // === DESCONECTAR ===
     socket.on('disconnect', () => {
         console.log(`❌ Jugador desconectado: ${socket.id}`);
-        // Quitar de la cola de espera
+        // Quitar de cola de espera
         const idx = colaEspera.indexOf(socket);
         if (idx >= 0) colaEspera.splice(idx, 1);
+        // Eliminar salas privadas donde era host
+        for (const [codigo, sala] of salasPrivadas.entries()) {
+            if (sala.host === socket) {
+                salasPrivadas.delete(codigo);
+                if (sala.invitado) {
+                    sala.invitado.emit('sala-cerrada');
+                }
+            }
+        }
         // Notificar al rival si estaba en partida
         const roomId = socket.dataRoomId;
         if (roomId) {
             socket.to(roomId).emit('rival-desconectado');
             partidasActivas.delete(roomId);
         }
-    });
-
-    // Cancelar búsqueda de partida
-    socket.on('cancelar-busqueda', () => {
-        const idx = colaEspera.indexOf(socket);
-        if (idx >= 0) colaEspera.splice(idx, 1);
-        console.log(`🚫 ${socket.id} canceló búsqueda`);
     });
 });
 
@@ -113,14 +206,7 @@ server.listen(PORT, () => {
     console.log('  🎮 Gaming Club TCG - Servidor Online');
     console.log('========================================');
     console.log('');
-    console.log(`✅ Servidor corriendo en: http://localhost:${PORT}`);
-    console.log('');
-    console.log('📋 Para jugar con otra persona en tu red local:');
-    console.log('   1. Abre una terminal y ejecuta: ipconfig (Windows) o ifconfig (Mac/Linux)');
-    console.log('   2. Busca tu IP local (ej: 192.168.1.100)');
-    console.log(`   3. Dile a la otra persona que abra: http://TU-IP:${PORT}`);
-    console.log('');
-    console.log('⏹️  Para parar el servidor: pulsa Ctrl+C');
+    console.log(`✅ Servidor corriendo en el puerto ${PORT}`);
     console.log('');
     console.log('Esperando jugadores...');
     console.log('');
