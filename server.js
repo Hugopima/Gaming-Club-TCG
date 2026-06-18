@@ -76,8 +76,16 @@ io.on('connection', (socket) => {
             socket.dataPlayerNum = 2;
 
             console.log(`🎮 Partida aleatoria creada: ${roomId}`);
+            // Lanzar moneda para decidir quién empieza
+            const empiezaJugador1 = Math.random() < 0.5;
             io.to(rival.id).emit('partida-lista', { roomId, playerNum: 1 });
             io.to(socket.id).emit('partida-lista', { roomId, playerNum: 2 });
+            // Enviar resultado de la moneda a ambos
+            setTimeout(() => {
+                io.to(rival.id).emit('moneda-resultado', { empiezaJugador1 });
+                io.to(socket.id).emit('moneda-resultado', { empiezaJugador1 });
+                console.log(`🪙 Moneda lanzada en ${roomId}: empieza jugador ${empiezaJugador1 ? 1 : 2}`);
+            }, 500);
         } else {
             // No hay rival, agregar a la cola
             colaEspera.push(socket);
@@ -159,19 +167,62 @@ io.on('connection', (socket) => {
         socket.dataPlayerNum = 2;
 
         console.log(`🎮 Partida privada creada: ${roomId} (sala ${codigo})`);
+        // Lanzar moneda para decidir quién empieza
+        const empiezaJugador1 = Math.random() < 0.5;
         io.to(sala.host.id).emit('partida-lista', { roomId, playerNum: 1 });
         io.to(socket.id).emit('partida-lista', { roomId, playerNum: 2 });
+        setTimeout(() => {
+            io.to(sala.host.id).emit('moneda-resultado', { empiezaJugador1 });
+            io.to(socket.id).emit('moneda-resultado', { empiezaJugador1 });
+            console.log(`🪙 Moneda lanzada en ${roomId}: empieza jugador ${empiezaJugador1 ? 1 : 2}`);
+        }, 500);
         
         // Eliminar la sala privada (ya es partida activa)
         salasPrivadas.delete(codigo);
     });
 
     // === SINCRONIZACIÓN DE JUGADAS ===
+    // Acción simple: el emisor hace algo y el rival solo lo ve
     socket.on('accion-juego', (data) => {
         const roomId = socket.dataRoomId;
         if (!roomId) return;
-        // Reenviar al rival (todos en la sala excepto el emisor)
         socket.to(roomId).emit('accion-rival', data);
+    });
+
+    // Petición al rival: el emisor necesita que el rival decida algo
+    // data = { tipo, titulo, opciones, requestToken }
+    socket.on('peticion-rival', (data) => {
+        const roomId = socket.dataRoomId;
+        if (!roomId) return;
+        socket.to(roomId).emit('peticion-rival-recibida', data);
+    });
+
+    // Respuesta del rival a una petición
+    // data = { requestToken, respuesta }
+    socket.on('respuesta-peticion', (data) => {
+        const roomId = socket.dataRoomId;
+        if (!roomId) return;
+        socket.to(roomId).emit('respuesta-peticion-recibida', data);
+    });
+
+    // === RENDICIÓN ===
+    socket.on('rendirse', () => {
+        const roomId = socket.dataRoomId;
+        if (!roomId) return;
+        // Notificar al rival que ganó
+        socket.to(roomId).emit('rival-rendido');
+        partidasActivas.delete(roomId);
+        console.log(`🏳️ ${socket.id} se rindió en ${roomId}`);
+    });
+
+    // === RECLAMAR VICTORIA POR DESCONEXIÓN ===
+    socket.on('reclamar-victoria-desconexion', () => {
+        const roomId = socket.dataRoomId;
+        if (!roomId) return;
+        // Notificar al rival (si sigue conectado) que perdió
+        socket.to(roomId).emit('victoria-desconexion');
+        partidasActivas.delete(roomId);
+        console.log(`⚡ ${socket.id} reclamó victoria por desconexión en ${roomId}`);
     });
 
     // === DESCONECTAR ===
@@ -192,9 +243,44 @@ io.on('connection', (socket) => {
         // Notificar al rival si estaba en partida
         const roomId = socket.dataRoomId;
         if (roomId) {
+            // No eliminar la partida inmediatamente: dar 60 segundos para reconectar
             socket.to(roomId).emit('rival-desconectado');
-            partidasActivas.delete(roomId);
+            console.log(`⏳ ${socket.id} se desconectó de ${roomId}, esperando reconexión...`);
+
+            // Guardar el timeout para poder cancelarlo si reconecta
+            const partida = partidasActivas.get(roomId);
+            if (partida) {
+                partida.timeoutDesconexion = setTimeout(() => {
+                    // Si después de 60s no reconectó, eliminar la partida
+                    if (partidasActivas.has(roomId)) {
+                        partidasActivas.delete(roomId);
+                        console.log(`⏰ Tiempo agotado en ${roomId}`);
+                    }
+                }, 60000);
+            }
         }
+    });
+
+    // === RECONEXIÓN ===
+    socket.on('reconectar', (data) => {
+        const roomId = data.roomId;
+        if (!roomId) return;
+        const partida = partidasActivas.get(roomId);
+        if (!partida) {
+            socket.emit('partida-no-existe');
+            return;
+        }
+        // Cancelar el timeout de desconexión
+        if (partida.timeoutDesconexion) {
+            clearTimeout(partida.timeoutDesconexion);
+            partida.timeoutDesconexion = null;
+        }
+        // Reconectar el socket a la sala
+        socket.join(roomId);
+        socket.dataRoomId = roomId;
+        // Notificar al rival que volvió
+        socket.to(roomId).emit('rival-reconectado');
+        console.log(`✅ ${socket.id} se reconectó a ${roomId}`);
     });
 });
 
