@@ -989,6 +989,60 @@
         </div>
     </div>
 
+    <div id="mulligan-overlay" class="hidden" style="position:fixed;inset:0;z-index:2800;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;padding:24px;">
+        <div style="width:min(1100px,95vw);max-height:90vh;overflow-y:auto;border:2px solid var(--gold);border-radius:18px;background:var(--dark-panel);box-shadow:0 0 50px rgba(255,215,0,.3);padding:28px;text-align:center;">
+            <h2 style="color:#fff07c;text-transform:uppercase;margin-top:0;">Mulligan</h2>
+            <p style="color:#ddd;margin-bottom:20px;">Selecciona las cartas que quieres cambiar. Se intercambiarán por otras aleatorias del mazo. Solo puedes hacer un mulligan.</p>
+            <div id="mulligan-cards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:18px;margin:22px 0;"></div>
+            <div style="display:flex;gap:14px;justify-content:center;margin-top:20px;">
+                <button class="plate-btn btn-nav" id="mulligan-skip-btn" onclick="confirmarMulligan(false)">Quedarme así</button>
+                <button class="plate-btn" id="mulligan-confirm-btn" onclick="confirmarMulligan(true)">Cambiar seleccionadas</button>
+            </div>
+            <p id="mulligan-count" style="color:#fff07c;font-weight:900;margin-top:12px;">0 cartas seleccionadas</p>
+        </div>
+    </div>
+
+    <div id="play-mode-overlay" class="hidden" style="position:fixed;inset:0;z-index:2800;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;padding:24px;">
+        <div style="width:min(600px,95vw);border:2px solid var(--gold);border-radius:18px;background:var(--dark-panel);box-shadow:0 0 50px rgba(255,215,0,.3);padding:40px;text-align:center;">
+            <h2 style="color:#fff07c;text-transform:uppercase;margin-top:0;margin-bottom:30px;font-size:36px;">¿Cómo quieres jugar?</h2>
+            <div style="display:flex;gap:20px;justify-content:center;flex-wrap:wrap;">
+                <button class="plate-btn" style="min-width:200px;padding:20px 30px;font-size:18px;" onclick="cerrarPlayMode(); iniciarPartida('solo')">
+                    🎮 JUGAR SOLO<br><small style="font-size:12px;font-weight:400;">Contra la IA</small>
+                </button>
+                <button class="plate-btn btn-blue" style="min-width:200px;padding:20px 30px;font-size:18px;" onclick="iniciarPartidaOnline()">
+                    🌐 JUGAR ONLINE<br><small style="font-size:12px;font-weight:400;">Contra otra persona</small>
+                </button>
+            </div>
+            <button class="plate-btn btn-nav" style="margin-top:24px;" onclick="cerrarPlayMode()">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="online-lobby-overlay" class="hidden" style="position:fixed;inset:0;z-index:2850;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;padding:24px;">
+        <div style="width:min(700px,95vw);border:2px solid var(--gold);border-radius:18px;background:var(--dark-panel);box-shadow:0 0 50px rgba(255,215,0,.3);padding:40px;text-align:center;">
+            <h2 style="color:#fff07c;text-transform:uppercase;margin-top:0;margin-bottom:20px;font-size:32px;">🌐 Multijugador Online</h2>
+            <div id="online-lobby-content" style="color:#ddd;margin-bottom:20px;">
+                <p style="margin-bottom:20px;">Para jugar online necesitas que el servidor esté corriendo.</p>
+                <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,215,0,.2);border-radius:12px;padding:20px;margin-bottom:20px;text-align:left;">
+                    <h3 style="color:#fff07c;margin-top:0;font-size:18px;">📋 Pasos para configurar el online:</h3>
+                    <ol style="color:#ddd;font-size:14px;line-height:1.8;padding-left:20px;">
+                        <li>Instala Node.js desde <strong>nodejs.org</strong> (versión LTS)</li>
+                        <li>En una terminal, ve a la carpeta del juego</li>
+                        <li>Ejecuta: <code style="background:#222;padding:2px 8px;border-radius:4px;color:#5ee7ff;">npm install</code></li>
+                        <li>Ejecuta: <code style="background:#222;padding:2px 8px;border-radius:4px;color:#5ee7ff;">node server.js</code></li>
+                        <li>Abre <code style="background:#222;padding:2px 8px;border-radius:4px;color:#5ee7ff;">http://localhost:3000</code> en tu navegador</li>
+                        <li>Para jugar con otra persona, dale tu IP: <code id="my-ip-display" style="background:#222;padding:2px 8px;border-radius:4px;color:#5ee7ff;">cargando...</code></li>
+                    </ol>
+                </div>
+                <p style="color:#aaa;font-size:13px;margin-bottom:20px;">Cuando el servidor esté corriendo, pulsa el botón de abajo para conectarte.</p>
+            </div>
+            <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
+                <button class="plate-btn btn-nav" onclick="cerrarLobbyOnline()">Volver</button>
+                <button class="plate-btn btn-blue" onclick="conectarOnline()">🔗 Conectar al servidor</button>
+            </div>
+            <div id="online-status" style="margin-top:16px;color:#aaa;font-size:13px;"></div>
+        </div>
+    </div>
+
     <div id="game-end-overlay" class="hidden">
         <div id="game-end-panel" class="game-end-panel">
             <div class="game-end-glow"></div>
@@ -2459,13 +2513,13 @@
         targetZona.debajo.push(juan);
       }
       log('DYMYTRY absorbe a Juan.');
-      // Elegir un Dymytry con coste ≤5 del mazo y colocarlo encima (como evolución)
-      const candidatos = z.mazo.filter(id => id === 'dymytry' && Number(getCardById(id)?.costeTotal || 99) <= 5);
+      // Elegir un "Juan, bajo control de DYMYTRY" (juan2) con coste ≤5 del mazo y colocarlo encima (como evolución)
+      const candidatos = z.mazo.filter(id => id === 'juan2' && Number(getCardById(id)?.costeTotal || 99) <= 5);
       if (candidatos.length) {
         const vistos = new Set();
         const uniq = candidatos.filter(id => { if (vistos.has(id)) return false; vistos.add(id); return true; });
         const opts = uniq.map(id => ({ label: getCardById(id)?.nombre || id, value: id, cardId: id }));
-        const pick = await elegirConModal('DYMYTRY: elige un "Dymytry" con coste ≤5 de tu mazo para colocarlo encima (evolución)', opts);
+        const pick = await elegirConModal('DYMYTRY: elige un "Juan, bajo control de DYMYTRY" con coste ≤5 de tu mazo para colocarlo encima (evolución)', opts);
         if (pick) {
           const idxMazo = z.mazo.lastIndexOf(pick);
           if (idxMazo >= 0) z.mazo.splice(idxMazo, 1);
@@ -2479,13 +2533,13 @@
             nuevaZona.debajo = debajoOld;
             nuevaZona.evolucionadaDe = 'dymytry';
             z.batalla[idxBat] = nuevaZona;
-            log('DYMYTRY evoluciona colocando un Dymytry ≤5 encima (gratis).');
-            // Dispatch alJugar del nuevo Dymytry
+            log('DYMYTRY evoluciona colocando un "Juan, bajo control de DYMYTRY" ≤5 encima (gratis).');
+            // Dispatch alJugar del nuevo Juan2
             dispatch(pick, 'alJugar', [quien, pick, z.batalla[idxBat]]);
           }
         }
       } else {
-        log('DYMYTRY: no hay Dymytry con coste ≤5 en el mazo.');
+        log('DYMYTRY: no hay "Juan, bajo control de DYMYTRY" con coste ≤5 en el mazo.');
       }
       barajar(quien);
       if (typeof renderizarPartida === 'function') renderizarPartida();
@@ -4074,11 +4128,84 @@
         }
 
         async function irAJugar() {
-            ocultarPantallasPrincipales();
-            document.getElementById('game-setup-screen').classList.remove('hidden');
             await cargarBaseDeDatos();
             const mazo = obtenerMazoAsignado();
-            renderizarPreparacionPartida(mazo);
+            if (!mazo) {
+                ocultarPantallasPrincipales();
+                document.getElementById('game-setup-screen').classList.remove('hidden');
+                renderizarPreparacionPartida(mazo);
+                return;
+            }
+            // Mostrar modal de selección de modo
+            document.getElementById('play-mode-overlay').classList.remove('hidden');
+        }
+
+        function cerrarPlayMode() {
+            document.getElementById('play-mode-overlay').classList.add('hidden');
+        }
+
+        function iniciarPartidaOnline() {
+            cerrarPlayMode();
+            document.getElementById('online-lobby-overlay').classList.remove('hidden');
+            // Intentar obtener la IP pública para mostrarla
+            fetch('https://api.ipify.org?format=json')
+                .then(r => r.json())
+                .then(data => {
+                    const el = document.getElementById('my-ip-display');
+                    if (el) el.textContent = data.ip + ':3000';
+                })
+                .catch(() => {
+                    const el = document.getElementById('my-ip-display');
+                    if (el) el.textContent = 'tu-ip-local:3000';
+                });
+        }
+
+        function cerrarLobbyOnline() {
+            document.getElementById('online-lobby-overlay').classList.add('hidden');
+        }
+
+        let _socketOnline = null;
+        let _onlineRoomId = null;
+
+        function conectarOnline() {
+            const statusEl = document.getElementById('online-status');
+            statusEl.innerHTML = '⏳ Conectando...';
+            // Cargar Socket.IO dinámicamente
+            if (typeof io === 'undefined') {
+                const script = document.createElement('script');
+                script.src = '/socket.io/socket.io.js';
+                script.onload = () => intentarConectarSocket(statusEl);
+                script.onerror = () => {
+                    statusEl.innerHTML = '❌ No se pudo cargar Socket.IO. ¿Está el servidor corriendo? Ejecuta <code>node server.js</code> en la carpeta del juego.';
+                };
+                document.body.appendChild(script);
+            } else {
+                intentarConectarSocket(statusEl);
+            }
+        }
+
+        function intentarConectarSocket(statusEl) {
+            try {
+                _socketOnline = io();
+                _socketOnline.on('connect', () => {
+                    statusEl.innerHTML = '✅ Conectado al servidor. Buscando rival...';
+                    _socketOnline.emit('buscar-partida');
+                });
+                _socketOnline.on('esperando-rival', () => {
+                    statusEl.innerHTML = '⏳ Esperando a que se conecte un rival...';
+                });
+                _socketOnline.on('partida-lista', (data) => {
+                    _onlineRoomId = data.roomId;
+                    statusEl.innerHTML = '✅ ¡Rival encontrado! Iniciando partida...';
+                    document.getElementById('online-lobby-overlay').classList.add('hidden');
+                    iniciarPartida('online');
+                });
+                _socketOnline.on('connect_error', () => {
+                    statusEl.innerHTML = '❌ No se pudo conectar al servidor. ¿Está <code>node server.js</code> corriendo?';
+                });
+            } catch (e) {
+                statusEl.innerHTML = '❌ Error: ' + e.message;
+            }
         }
 
         function renderizarPreparacionPartida(mazo) {
@@ -4126,7 +4253,74 @@
             };
         }
 
-        function iniciarPartida() {
+        // --- SISTEMA DE MULLIGAN ---
+        let _mulliganSeleccion = new Set();
+        let _mulliganCallback = null;
+
+        function mostrarMulligan(jugador, onComplete) {
+            _mulliganSeleccion = new Set();
+            _mulliganCallback = onComplete;
+            const cont = document.getElementById('mulligan-cards');
+            cont.innerHTML = jugador.mano.map((id, i) => {
+                const c = getCardById(id);
+                if (!c) return '';
+                return `<div class="selector-opt-card" data-i="${i}" style="cursor:pointer;">
+                    <div class="sel-card-img"><img src="${c.img || ''}" alt="${escapeHtml(c.nombre)}"></div>
+                    <div class="sel-card-label">${escapeHtml(c.nombre)}</div>
+                </div>`;
+            }).join('');
+            cont.querySelectorAll('.selector-opt-card').forEach(btn => {
+                btn.onclick = () => {
+                    const i = Number(btn.dataset.i);
+                    if (_mulliganSeleccion.has(i)) {
+                        _mulliganSeleccion.delete(i);
+                        btn.classList.remove('selected');
+                    } else {
+                        _mulliganSeleccion.add(i);
+                        btn.classList.add('selected');
+                    }
+                    document.getElementById('mulligan-count').innerText = `${_mulliganSeleccion.size} carta(s) seleccionada(s)`;
+                };
+            });
+            document.getElementById('mulligan-count').innerText = '0 cartas seleccionadas';
+            document.getElementById('mulligan-overlay').classList.remove('hidden');
+        }
+
+        function confirmarMulligan(cambiar) {
+            document.getElementById('mulligan-overlay').classList.add('hidden');
+            if (!_mulliganCallback) return;
+            const cb = _mulliganCallback;
+            _mulliganCallback = null;
+            if (cambiar && _mulliganSeleccion.size > 0 && estadoPartida) {
+                const j = estadoPartida.jugador;
+                // Cambiar las cartas seleccionadas por otras aleatorias del mazo
+                const indices = Array.from(_mulliganSeleccion).sort((a, b) => b - a); // de mayor a menor
+                indices.forEach(i => {
+                    const cartaVieja = j.mano[i];
+                    j.mano.splice(i, 1);
+                    j.mazo.push(cartaVieja); // devolver al mazo
+                    // Robar una nueva carta
+                    barajarListaLocal(j.mazo);
+                    const nueva = j.mazo.pop();
+                    j.mano.push(nueva);
+                });
+                // Barajar el mazo
+                barajarListaLocal(j.mazo);
+                estadoPartida.log = `Mulligan: cambiaste ${_mulliganSeleccion.size} carta(s).`;
+            }
+            _mulliganSeleccion = new Set();
+            cb();
+        }
+
+        function barajarListaLocal(lista) {
+            for (let i = lista.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [lista[i], lista[j]] = [lista[j], lista[i]];
+            }
+            return lista;
+        }
+
+        function iniciarPartida(modo) {
             const mazo = obtenerMazoAsignado();
             if (!mazo) return alert('Necesitas un mazo valido para empezar la partida.');
             const jugador = {
@@ -4138,27 +4332,33 @@
             const rival = crearRivalBasico();
             while (rival.mazo.length < 50) rival.mazo.push(...rival.mazo);
             rival.mazo = rival.mazo.slice(0, 50);
-            for (let i = 0; i < 8; i++) { jugador.vida.push(jugador.mazo.pop()); rival.vida.push(rival.mazo.pop()); }
+            // Robar mano inicial (6 cartas) ANTES de las vidas para poder hacer mulligan
             for (let i = 0; i < 6; i++) { jugador.mano.push(jugador.mazo.pop()); rival.mano.push(rival.mazo.pop()); }
-            prepararCampoRival(rival);
             estadoPartida = {
                 turno: 1, faseIndex: 0, jugadorActivo: 'jugador', jugador, rival,
                 log: 'Preparando duelo...', atacanteSeleccionado: null,
-                pagoPendiente: null, introActiva: true, finalizada: false
+                pagoPendiente: null, introActiva: true, finalizada: false,
+                modo: modo || 'solo' // 'solo' o 'online'
             };
             estadoPartida.jugador.liderZona = { id: estadoPartida.jugador.liderId, rested: false, ataquesRestantes: 0 };
             ocultarPantallasPrincipales();
             document.getElementById('game-screen').classList.remove('hidden');
             document.getElementById('game-end-overlay')?.classList.add('hidden');
             renderizarPartida();
-            requestAnimationFrame(() => {
-                reproducirIntroLideres(() => {
-                    if (!estadoPartida) return;
-                    estadoPartida.introActiva = false;
-                    estadoPartida.log = 'Mano inicial robada. Arrastra cartas al area de batalla o a ENERGY.';
-                    if (window.MotorEfectos) MotorEfectos.init();
-                    mostrarFase('Carga');
-                    renderizarPartida();
+            // Mostrar mulligan antes de continuar
+            mostrarMulligan(jugador, () => {
+                // Después del mulligan, poner las vidas
+                for (let i = 0; i < 8; i++) { jugador.vida.push(jugador.mazo.pop()); rival.vida.push(rival.mazo.pop()); }
+                prepararCampoRival(rival);
+                requestAnimationFrame(() => {
+                    reproducirIntroLideres(() => {
+                        if (!estadoPartida) return;
+                        estadoPartida.introActiva = false;
+                        estadoPartida.log = 'Mano inicial robada. Arrastra cartas al area de batalla o a ENERGY.';
+                        if (window.MotorEfectos) MotorEfectos.init();
+                        mostrarFase('Carga');
+                        renderizarPartida();
+                    });
                 });
             });
         }
