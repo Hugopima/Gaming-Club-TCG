@@ -775,6 +775,246 @@
             z-index: 1;
             min-width: 220px;
         }
+
+        /* ==================== RESPONSIVE MÓVIL Y TABLET ==================== */
+
+        /* ===== TABLET (769px - 1024px) ===== */
+        @media (max-width: 1024px) and (min-width: 769px) {
+            .logo-img { width: 260px; }
+            .main-title { font-size: 36px; }
+            .grid-cartas { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 18px; }
+            .card { height: 210px; }
+            #info-panel.open { width: 420px; }
+            .panel-content { padding: 20px 24px; min-width: 380px; }
+            .panel-img-slot { width: 300px; height: 420px; }
+
+            /* Tablero */
+            .db-board { width: calc(100vw - 24px); height: calc(100vh - 24px); }
+            .phase-chip { min-width: 160px; height: 44px; font-size: 20px; padding: 0 20px; }
+            .hud-text { font-size: 20px; }
+            .next-phase-tab { width: 70px; height: 110px; font-size: 18px; }
+            .energy-hud { width: 180px; height: 64px; font-size: 38px; }
+            .energy-hud em { font-size: 16px; }
+            .enemy-energy-wrap { top: 50px; right: 100px; }
+            .player-energy-wrap { left: 60px; bottom: 30px; }
+            .life-hud { width: 100px; height: 100px; }
+            .life-hud span { font-size: 52px; }
+            .life-hud em { font-size: 16px; }
+            .enemy-life { top: 110px; right: 80px; }
+            .player-life { left: 60px; bottom: 130px; }
+
+            /* Zonas de juego en tablet */
+            .op-combo-zone { left: 320px; top: 80px; width: 580px; height: 90px; }
+            .op-battle-zone { left: 380px; top: 190px; width: 580px; height: 120px; }
+            .player-battle-zone { left: 380px; top: 340px; width: 580px; height: 130px; }
+            .player-combo-zone { left: 320px; top: 490px; width: 580px; height: 100px; }
+            .op-deck-stack { left: 200px; top: 210px; }
+            .player-deck-stack { right: 180px; bottom: 200px; }
+            .op-drop-stack { left: 200px; top: 100px; }
+            .player-drop-stack { right: 180px; bottom: 90px; }
+            .leader-lane { left: -110px; top: 10px; width: 90px; height: 100px; }
+            .field-lane { right: 14px; top: 10px; width: 76px; height: 104px; }
+            .hand-fan { min-width: 500px; max-width: 620px; height: 140px; bottom: -16px; }
+            .game-card-mini { width: 76px; height: 108px; }
+            #player-hand-zone .game-card-mini { width: 66px; height: 94px; margin-right: -12px; }
+            #player-leader-zone .game-card-mini { width: 76px; height: 108px; }
+            .mana-zone .game-card-mini { width: 54px; height: 78px; }
+            .game-control-dock { right: 14px; bottom: 10px; padding: 8px 10px; }
+            .game-control-dock button { padding: 6px 8px; font-size: 12px; }
+        }
+
+        /* ===== MÓVIL (≤768px) ===== */
+        @media (max-width: 768px) {
+            /* Reset de bordes y márgenes */
+            body { border-width: 8px !important; font-size: 14px; }
+
+            /* Menú principal */
+            #main-menu { gap: 20px; padding: 20px 10px; }
+            .logo-img { width: 180px; }
+            .main-btns { flex-direction: column; gap: 12px; width: 100%; max-width: 280px; }
+            .sub-btns { flex-direction: column; gap: 10px; width: 100%; max-width: 280px; }
+            .plate-btn { width: 100%; min-width: unset; padding: 14px 20px; font-size: 16px; }
+
+            /* Colección */
+            #collection-screen { flex-direction: column; }
+            .grid-wrapper { padding: 12px 16px 80px; }
+            .main-title { font-size: 28px; margin: 10px 0 24px; }
+            .section-title { font-size: 18px; margin: 24px 0 16px; }
+            .grid-cartas { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; }
+            .card { height: 160px; }
+
+            /* Panel de detalle (en móvil sale como overlay completo) */
+            #info-panel { position: fixed; top: 0; right: 0; bottom: 0; left: 0; width: 100% !important; height: 100%; z-index: 500; }
+            #info-panel.open { width: 100% !important; }
+            .panel-content { padding: 16px; min-width: unset; overflow-y: auto; }
+            .panel-img-slot { width: 220px; height: 308px; margin: 0 auto 16px; }
+            .panel-header { font-size: 22px; }
+            .info-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+            .info-box { padding: 10px; }
+            .info-value { font-size: 14px; }
+
+            /* Deck builder */
+            .deck-top-zone { grid-template-columns: 1fr; gap: 16px; }
+            .leader-slot { min-height: 160px; padding: 10px; }
+            .deck-card-img { height: 160px; }
+            .deck-card { min-height: 180px; }
+            .deck-library-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; }
+            .deck-header { flex-direction: column; align-items: stretch; gap: 8px; }
+            #deck-name { min-width: unset; max-width: unset; width: 100%; }
+            .deck-header-right, .deck-header-left { justify-content: center; }
+
+            /* Game setup */
+            .assigned-deck-card { grid-template-columns: 80px 1fr; gap: 14px; padding: 16px; }
+            .assigned-leader-img { width: 80px; height: 112px; }
+            .assigned-deck-card h2 { font-size: 18px; }
+            .assigned-deck-card p { font-size: 13px; }
+
+            /* ===== TABLERO EN MÓVIL ===== */
+            .db-board {
+                width: 100vw;
+                height: 100vh;
+                margin: 0;
+                border: none;
+                box-shadow: none;
+                border-radius: 0;
+                overflow-y: auto;
+                position: relative;
+            }
+
+            /* HUD superior */
+            .hud-top { height: 50px; padding: 0 12px; }
+            .phase-chip { min-width: 100px; height: 36px; font-size: 14px; padding: 0 14px; }
+            .hud-text { font-size: 13px; }
+            .next-phase-tab { width: 50px; height: 80px; font-size: 12px; top: 60px; right: 8px; border-radius: 10px; }
+
+            /* HUD de maná */
+            .energy-hud { width: 120px; height: 44px; font-size: 26px; gap: 6px; }
+            .energy-hud em { font-size: 11px; }
+            .energy-hud b { font-size: 16px; }
+            .enemy-energy-wrap { top: 56px; right: 12px; }
+            .player-energy-wrap { left: 12px; bottom: 16px; }
+            .mana-view-btn { width: 26px; height: 26px; font-size: 12px; }
+
+            /* HUD de vidas */
+            .life-hud { width: 70px; height: 70px; }
+            .life-hud span { font-size: 36px; }
+            .life-hud em { font-size: 12px; }
+            .enemy-life { top: 100px; right: 14px; }
+            .player-life { left: 14px; bottom: 70px; }
+
+            /* Layout de tablero en móvil: layout vertical con secciones */
+            .db-board { display: flex; flex-direction: column; padding: 0; background: linear-gradient(135deg, #0a1525, #0d2235); }
+
+            /* Sección rival (arriba) */
+            .mobile-rival-section, .mobile-player-section {
+                position: relative; width: 100%; min-height: 200px; padding: 8px;
+                background: rgba(0,0,0,.3); border-bottom: 1px solid rgba(94,231,255,.2);
+            }
+            .mobile-player-section { border-bottom: none; border-top: 1px solid rgba(94,231,255,.2); }
+
+            /* Ocultar las zonas absolutas en móvil y usar layout flex */
+            .op-combo-zone, .op-battle-zone, .player-battle-zone, .player-combo-zone,
+            .op-deck-stack, .player-deck-stack, .op-drop-stack, .player-drop-stack,
+            .op-leader-zone, .player-leader-zone, .op-field-zone, .player-field-zone,
+            .energy-hud-wrap, .life-hud, .hud, .hand-fan, .game-control-dock {
+                position: relative !important;
+                top: auto !important; left: auto !important; right: auto !important; bottom: auto !important;
+                transform: none !important;
+                margin: 4px auto;
+            }
+
+            /* Reorganizar: rival arriba, jugador abajo */
+            .hud { order: 1; padding: 8px 12px; height: auto; background: rgba(0,0,0,.6); }
+            .enemy-energy-wrap { order: 2; }
+            .enemy-life { order: 3; }
+            .op-deck-stack { order: 4; }
+            .op-drop-stack { order: 5; }
+            .op-combo-zone { order: 6; width: 95% !important; height: 70px !important; }
+            .op-battle-zone { order: 7; width: 95% !important; height: 110px !important; }
+            .player-battle-zone { order: 8; width: 95% !important; height: 110px !important; }
+            .player-combo-zone { order: 9; width: 95% !important; height: 80px !important; }
+            .player-deck-stack { order: 10; }
+            .player-drop-stack { order: 11; }
+            .player-energy-wrap { order: 12; }
+            .player-life { order: 13; }
+            .hand-fan { order: 14; min-height: 130px; width: 100% !important; max-width: 100% !important; bottom: 0 !important; padding: 4px; justify-content: center; }
+            .game-control-dock { order: 15; position: relative !important; right: auto !important; bottom: auto !important; margin: 8px auto; padding: 6px 8px; flex-wrap: wrap; justify-content: center; }
+
+            /* Cartas más pequeñas en móvil */
+            .game-card-mini { width: 52px; height: 74px; }
+            #player-hand-zone .game-card-mini { width: 54px; height: 78px; margin-right: -8px; }
+            #player-leader-zone .game-card-mini { width: 58px; height: 84px; }
+            .mana-zone .game-card-mini { width: 42px; height: 60px; }
+            .stack-zone, .drop-stack { width: 60px; height: 84px; }
+            .card-pile { width: 56px; height: 80px; }
+            .life-orb { width: 48px; height: 48px; font-size: 22px; }
+
+            /* Labels de zonas */
+            .mat-label { font-size: 10px; }
+            .zone-title { font-size: 10px; padding: 4px 6px; }
+            .leader-lane { left: 0 !important; top: 0 !important; position: relative !important; width: 58px !important; height: 84px !important; margin: 4px; }
+            .field-lane { right: 0 !important; top: 0 !important; position: relative !important; width: 50px !important; height: 70px !important; margin: 4px; }
+
+            /* Modal selectors en móvil */
+            .selector-panel { width: 95vw !important; padding: 16px !important; }
+            .selector-options { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)) !important; gap: 10px !important; }
+            .selector-opt-card .sel-card-img { width: 90px !important; height: 126px !important; }
+            .selector-opt-card .sel-card-label { font-size: 11px !important; }
+
+            /* Modal de pago de maná */
+            .game-modal-panel { width: 95vw !important; padding: 16px !important; }
+            .mana-pay-options { gap: 6px; }
+            .mana-option { padding: 4px; }
+
+            /* Modales de mulligan, play-mode, etc. */
+            #mulligan-overlay > div, #play-mode-overlay > div, #online-lobby-overlay > div { padding: 20px !important; }
+            #online-main-screen { grid-template-columns: 1fr !important; }
+            #room-code-display div { font-size: 28px !important; letter-spacing: 4px !important; }
+
+            /* Botones más grandes para táctil */
+            .activable-btn-overlay, .combar-btn-overlay { font-size: 10px; padding: 4px 8px; }
+
+            /* Contador de mazo más pequeño */
+            .stack-zone > span { font-size: 13px; padding: 2px 6px; right: -10px; top: -8px; }
+
+            /* Badges de habilidades más pequeños */
+            .ability-badge { min-width: 14px; height: 14px; font-size: 8px; padding: 1px 4px; }
+            .badge-skull { top: 22px; }
+            .badge-shield { top: 40px; }
+            .badge-knife { top: 58px; }
+        }
+
+        /* ===== MÓVIL PEQUEÑO (≤480px) ===== */
+        @media (max-width: 480px) {
+            .logo-img { width: 140px; }
+            .main-title { font-size: 22px; }
+            .grid-cartas { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 8px; }
+            .card { height: 130px; }
+            .panel-img-slot { width: 160px; height: 224px; }
+            .info-grid { grid-template-columns: 1fr; }
+            .deck-library-grid { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); }
+            .game-card-mini { width: 44px; height: 62px; }
+            #player-hand-zone .game-card-mini { width: 48px; height: 68px; margin-right: -6px; }
+            #player-leader-zone .game-card-mini { width: 50px; height: 72px; }
+            .mana-zone .game-card-mini { width: 38px; height: 54px; }
+            .phase-chip { min-width: 80px; font-size: 12px; }
+            .energy-hud { width: 100px; height: 38px; font-size: 22px; }
+            .life-hud { width: 58px; height: 58px; }
+            .life-hud span { font-size: 28px; }
+        }
+
+        /* ===== ORIENTACIÓN PAISAJE EN MÓVIL ===== */
+        @media (max-width: 900px) and (orientation: landscape) and (max-height: 500px) {
+            .db-board { flex-direction: row; flex-wrap: wrap; }
+            .hud { width: 100%; order: 1; }
+            .op-combo-zone, .op-battle-zone { width: 48% !important; order: 2; }
+            .player-battle-zone, .player-combo-zone { width: 48% !important; order: 3; }
+            .hand-fan { width: 100% !important; order: 4; min-height: 100px; }
+            .game-control-dock { order: 5; }
+            .enemy-energy-wrap, .enemy-life, .op-deck-stack, .op-drop-stack { display: none !important; }
+            .player-energy-wrap, .player-life, .player-deck-stack, .player-drop-stack { position: absolute !important; }
+            .game-card-mini { width: 40px; height: 56px; }
+        }
     </style>
 </head>
 <body>
@@ -989,6 +1229,25 @@
         </div>
     </div>
 
+    <div id="coin-toss-overlay" class="hidden" style="position:fixed;inset:0;z-index:2900;background:radial-gradient(circle,rgba(0,0,0,.92),rgba(20,10,40,.95));display:flex;align-items:center;justify-content:center;padding:24px;">
+        <div style="text-align:center;">
+            <h2 style="color:#fff07c;font-size:32px;text-transform:uppercase;margin:0 0 30px;letter-spacing:3px;">🪙 Lanzando moneda...</h2>
+            <div id="coin-animation" style="width:120px;height:120px;margin:0 auto 30px;border-radius:50%;background:linear-gradient(145deg,#ffd700,#b8860b);display:flex;align-items:center;justify-content:center;font-size:60px;box-shadow:0 0 40px rgba(255,215,0,.6);animation:coinFlip 1.5s ease-in-out;">
+                🪙
+            </div>
+            <style>@keyframes coinFlip{0%{transform:rotateY(0) scale(1)}25%{transform:rotateY(360deg) scale(1.3)}50%{transform:rotateY(720deg) scale(1)}75%{transform:rotateY(1080deg) scale(1.3)}100%{transform:rotateY(1440deg) scale(1)}}</style>
+            <p id="coin-result" style="color:#5ee7ff;font-size:20px;font-weight:900;text-transform:uppercase;letter-spacing:2px;opacity:0;transition:opacity .5s;"></p>
+        </div>
+    </div>
+
+    <div id="waiting-turn-overlay" class="hidden" style="position:fixed;inset:0;z-index:2700;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;padding:24px;pointer-events:none;">
+        <div style="background:rgba(10,20,40,.95);border:2px solid #5ee7ff;border-radius:16px;padding:24px 40px;text-align:center;box-shadow:0 0 30px rgba(94,231,255,.4);">
+            <div style="font-size:40px;margin-bottom:12px;animation:spin 2s linear infinite;">⏳</div>
+            <h3 style="color:#fff07c;margin:0;font-size:20px;text-transform:uppercase;">Turno del rival</h3>
+            <p style="color:#aaa;font-size:13px;margin:8px 0 0;">Esperando a que juegue...</p>
+        </div>
+    </div>
+
     <div id="mulligan-overlay" class="hidden" style="position:fixed;inset:0;z-index:2800;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;padding:24px;">
         <div style="width:min(1100px,95vw);max-height:90vh;overflow-y:auto;border:2px solid var(--gold);border-radius:18px;background:var(--dark-panel);box-shadow:0 0 50px rgba(255,215,0,.3);padding:28px;text-align:center;">
             <h2 style="color:#fff07c;text-transform:uppercase;margin-top:0;">Mulligan</h2>
@@ -1090,6 +1349,36 @@
             <button class="plate-btn btn-nav" onclick="cerrarLobbyOnline()" style="margin-top:10px;">← Volver al menú</button>
 
             <div id="online-status" style="margin-top:20px;color:#aaa;font-size:12px;"></div>
+        </div>
+    </div>
+
+    <div id="waiting-rival-decision" class="hidden" style="position:fixed;inset:0;z-index:2880;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;padding:24px;pointer-events:none;">
+        <div style="background:rgba(10,20,40,.95);border:2px solid #fff07c;border-radius:16px;padding:30px 50px;text-align:center;box-shadow:0 0 30px rgba(255,240,124,.4);">
+            <div style="font-size:44px;margin-bottom:14px;animation:bounce 1s infinite;">⏳</div>
+            <h3 id="waiting-rival-text" style="color:#fff07c;margin:0;font-size:18px;text-transform:uppercase;">Esperando al rival...</h3>
+        </div>
+    </div>
+
+    <div id="surrender-dialog" class="hidden" style="position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;padding:24px;">
+        <div style="width:min(500px,95vw);border:2px solid #ff735e;border-radius:18px;background:linear-gradient(160deg,rgba(40,8,8,.98),rgba(20,5,5,.98));box-shadow:0 0 50px rgba(255,115,94,.3);padding:36px;text-align:center;">
+            <div style="font-size:60px;margin-bottom:16px;">🏳️</div>
+            <h2 style="color:#ff735e;margin:0 0 16px;font-size:26px;text-transform:uppercase;letter-spacing:2px;">¿Rendirse?</h2>
+            <p style="color:#ddd;margin:0 0 28px;font-size:15px;line-height:1.5;">Si sales de la partida, tu rival ganará automáticamente. ¿Estás seguro de que quieres rendirte?</p>
+            <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+                <button class="plate-btn btn-nav" onclick="cancelarRendicion()">Seguir jugando</button>
+                <button class="plate-btn" style="background:linear-gradient(145deg,#a93226,#6e1f17);" onclick="confirmarRendicion()">Sí, rendirme</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="reconnect-overlay" class="hidden" style="position:fixed;inset:0;z-index:2950;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;padding:24px;">
+        <div style="width:min(500px,95vw);border:2px solid #5ee7ff;border-radius:18px;background:linear-gradient(160deg,rgba(8,20,40,.98),rgba(5,10,20,.98));box-shadow:0 0 50px rgba(94,231,255,.3);padding:36px;text-align:center;">
+            <div style="font-size:50px;margin-bottom:16px;animation:bounce 1s infinite;">⚠️</div>
+            <h2 style="color:#ff735e;margin:0 0 12px;font-size:24px;text-transform:uppercase;">Tu rival se ha desconectado</h2>
+            <p style="color:#ddd;margin:0 0 20px;font-size:14px;">Esperando a que se reconecte...</p>
+            <div id="reconnect-timer" style="color:#fff07c;font-size:48px;font-weight:900;margin:0 0 20px;font-family:monospace;">1:00</div>
+            <p style="color:#aaa;font-size:12px;margin:0 0 24px;">Si no se reconecta en 1 minuto, ganarás automáticamente.</p>
+            <button class="plate-btn" style="background:linear-gradient(145deg,#a93226,#6e1f17);" onclick="reclamarVictoriaDesconexion()">Reclamar victoria</button>
         </div>
     </div>
 
@@ -1444,7 +1733,19 @@
   }
 
   let _selectorResolverActual = null;
+  // === SISTEMA DE DECISIONES ONLINE ===
+  // Cuando _decisionParaRival está activo, la próxima llamada a elegirConModal
+  // se envía al rival por socket en lugar de mostrarse localmente
+  let _decisionParaRival = false;
+  let _decisionTokensPendientes = new Map(); // token -> resolve function
+  let _decisionTokenCounter = 0;
+
   function elegirConModal(titulo, opciones, opcionesExtra) {
+    // Si estamos en modo online Y la decisión es para el rival, enviar por socket
+    if (_decisionParaRival && estadoPartida && estadoPartida.modo === 'online' && window._socketOnline) {
+      _decisionParaRival = false; // Resetear flag
+      return enviarDecisionAlRival(titulo, opciones, opcionesExtra);
+    }
     return new Promise(resolve => {
       const modal = document.getElementById('selector-modal');
       if (modal && opciones?.length) {
@@ -1499,11 +1800,151 @@
     });
   }
 
+  // Enviar una decisión al rival por socket y esperar su respuesta
+  function enviarDecisionAlRival(titulo, opciones, opcionesExtra) {
+    return new Promise(resolve => {
+      const token = `dec_${++_decisionTokenCounter}`;
+      _decisionTokensPendientes.set(token, resolve);
+      // Mostrar overlay de "esperando al rival"
+      mostrarEsperandoDecisionRival(titulo);
+      // Preparar opciones serializables (sin funciones, solo datos)
+      const opcionesSerializadas = opciones.map(o => ({
+        label: o.label || '',
+        value: o.value,
+        cardId: o.cardId || o.id
+      }));
+      // Enviar petición al rival
+      window._socketOnline.emit('peticion-rival', {
+        token,
+        titulo,
+        opciones: opcionesSerializadas,
+        noCancelable: opcionesExtra?.noCancelable || false
+      });
+    });
+  }
+
+  // Recibir una petición de decisión del rival (yo soy el rival en este caso)
+  function recibirPeticionRival(data) {
+    const { token, titulo, opciones, noCancelable, tipo } = data;
+
+    // Si es una petición de descarte obligatorio, el rival descarta en su pantalla
+    if (tipo === 'descarte-obligatorio') {
+      const z = zonaJugador('jugador'); // Para mí, yo soy el jugador
+      if (!z.mano.length) {
+        window._socketOnline.emit('respuesta-peticion', { token, respuesta: null });
+        return;
+      }
+      const opts = z.mano.map((id, i) => ({ label: getCardById(id)?.nombre || id, value: i, cardId: id }));
+      elegirConModal(titulo, opts, { noCancelable }).then(idx => {
+        if (idx == null || idx < 0) idx = Math.floor(Math.random() * z.mano.length);
+        const cartaDescartada = descartarCartaMano('jugador', idx);
+        window._socketOnline.emit('respuesta-peticion', { token, respuesta: { cartaDescartada } });
+        if (typeof renderizarPartida === 'function') renderizarPartida();
+      });
+      return;
+    }
+
+    // Si es una petición de bloqueador
+    if (tipo === 'bloqueador') {
+      const z = zonaJugador('jugador');
+      const riv = unidadesEnCampo('jugador', u => tieneBloqueador(u) && !u.rested);
+      if (!riv.length) {
+        window._socketOnline.emit('respuesta-peticion', { token, respuesta: { bloqueo: false } });
+        return;
+      }
+      const opts = opcionesUnidades('jugador', u => tieneBloqueador(u) && !u.rested, 'Bloquear con ');
+      elegirConModal(titulo, opts.concat([{ label: 'No bloquear', value: -1 }])).then(idx => {
+        if (idx == null || idx < 0) {
+          window._socketOnline.emit('respuesta-peticion', { token, respuesta: { bloqueo: false } });
+        } else {
+          const u = z.batalla[idx];
+          u.rested = true;
+          window._socketOnline.emit('respuesta-peticion', { token, respuesta: { bloqueo: true, index: idx } });
+          if (typeof renderizarPartida === 'function') renderizarPartida();
+        }
+      });
+      return;
+    }
+
+    // Si es una petición de counter-ataque
+    if (tipo === 'counter-ataque') {
+      const z = zonaJugador('jugador');
+      const counters = z.mano.filter(id => tieneTag(getCardById(id), 'counter ataque'));
+      if (!counters.length) {
+        window._socketOnline.emit('respuesta-peticion', { token, respuesta: { counter: false } });
+        return;
+      }
+      const opts = counters.map(id => ({ label: getCardById(id)?.nombre, value: id, cardId: id }));
+      elegirConModal(titulo, opts.concat([{ label: 'No', value: null }])).then(pick => {
+        if (!pick) {
+          window._socketOnline.emit('respuesta-peticion', { token, respuesta: { counter: false } });
+        } else {
+          const hi = z.mano.indexOf(pick);
+          if (hi >= 0) {
+            descartarCartaMano('jugador', hi);
+            window._socketOnline.emit('respuesta-peticion', { token, respuesta: { counter: true, cartaId: pick } });
+          } else {
+            window._socketOnline.emit('respuesta-peticion', { token, respuesta: { counter: false } });
+          }
+          if (typeof renderizarPartida === 'function') renderizarPartida();
+        }
+      });
+      return;
+    }
+
+    // Para otras peticiones, mostrar el modal normal
+    const opcionesRestauradas = opciones.map(o => ({
+      label: o.label,
+      value: o.value,
+      cardId: o.cardId
+    }));
+    elegirConModal(titulo, opcionesRestauradas, { noCancelable }).then(respuesta => {
+      window._socketOnline.emit('respuesta-peticion', { token, respuesta });
+    });
+  }
+
+  // Recibir la respuesta del rival a una petición que yo envié
+  function recibirRespuestaRival(data) {
+    const { token, respuesta } = data;
+    const resolve = _decisionTokensPendientes.get(token);
+    if (resolve) {
+      _decisionTokensPendientes.delete(token);
+      ocultarEsperandoDecisionRival();
+      resolve(respuesta);
+    }
+  }
+
+  function mostrarEsperandoDecisionRival(titulo) {
+    const overlay = document.getElementById('waiting-rival-decision');
+    const text = document.getElementById('waiting-rival-text');
+    if (text) text.innerText = titulo || 'Esperando al rival...';
+    if (overlay) overlay.classList.remove('hidden');
+  }
+
+  function ocultarEsperandoDecisionRival() {
+    document.getElementById('waiting-rival-decision')?.classList.add('hidden');
+  }
+
   async function elegirDescarteObligatorio(jugador, titulo) {
+    // En modo online, si la decisión es para el rival, enviarle la petición
+    if (jugador === 'rival' && estadoPartida && estadoPartida.modo === 'online' && window._socketOnline) {
+      // Enviar petición al rival para que descarte en su pantalla
+      const token = `desc_${++_decisionTokenCounter}`;
+      return new Promise(resolve => {
+        _decisionTokensPendientes.set(token, resolve);
+        mostrarEsperandoDecisionRival(titulo || 'El rival está descartando...');
+        window._socketOnline.emit('peticion-rival', {
+          token,
+          tipo: 'descarte-obligatorio',
+          titulo: titulo || 'Elige una carta para descartar (obligatorio)',
+          opciones: [],
+          noCancelable: true
+        });
+      });
+    }
     const z = zonaJugador(jugador);
     if (!z.mano.length) return null;
     const opts = z.mano.map((id, i) => ({ label: getCardById(id)?.nombre || id, value: i, cardId: id }));
-    // No se puede cancelar: si el usuario cierra de alguna forma, se elige aleatoria
     let idx = await elegirConModal(titulo || 'Elige una carta para descartar (obligatorio)', opts, { noCancelable: true });
     if (idx == null || idx < 0) idx = Math.floor(Math.random() * z.mano.length);
     return descartarCartaMano(jugador, idx);
@@ -3690,6 +4131,34 @@
   }
 
   async function intentarBloqueador(defensorQuien, ataqueCtx) {
+    // En modo online, si el defensor es el rival, enviarle la petición
+    if (defensorQuien === 'rival' && estadoPartida && estadoPartida.modo === 'online' && window._socketOnline) {
+      const token = `bloq_${++_decisionTokenCounter}`;
+      const respuesta = await new Promise(resolve => {
+        _decisionTokensPendientes.set(token, resolve);
+        mostrarEsperandoDecisionRival('El rival decide si bloquear...');
+        window._socketOnline.emit('peticion-rival', {
+          token,
+          tipo: 'bloqueador',
+          titulo: '¿Usar Bloqueador?',
+          opciones: [],
+          noCancelable: false
+        });
+      });
+      // Interpretar respuesta del rival
+      if (respuesta && respuesta.bloqueo) {
+        // El rival bloqueó con la unidad en el índice 'index'
+        const idx = respuesta.index;
+        const u = zonaJugador('rival').batalla[idx];
+        if (u) {
+          u.rested = true;
+          estadoPartida.bloqueadorUsado = true;
+          log(`${getCardById(u.id)?.nombre} bloquea el ataque.`);
+        }
+        return { tipo: 'unidad', index: idx, bloqueador: true };
+      }
+      return ataqueCtx.objetivo; // No bloqueó
+    }
     const riv = unidadesEnCampo(defensorQuien, u => tieneBloqueador(u) && !u.rested);
     if (!riv.length) return ataqueCtx.objetivo;
     const opts = opcionesUnidades(defensorQuien, u => tieneBloqueador(u) && !u.rested, 'Bloquear con ');
@@ -3704,6 +4173,29 @@
   }
 
   async function intentarCounterAtaque(quien, ataqueCtx) {
+    // En modo online, si el que contraataca es el rival, enviarle la petición
+    if (quien === 'rival' && estadoPartida && estadoPartida.modo === 'online' && window._socketOnline) {
+      const token = `count_${++_decisionTokenCounter}`;
+      const respuesta = await new Promise(resolve => {
+        _decisionTokensPendientes.set(token, resolve);
+        mostrarEsperandoDecisionRival('El rival decide si contraatacar...');
+        window._socketOnline.emit('peticion-rival', {
+          token,
+          tipo: 'counter-ataque',
+          titulo: '¿Usar Counter Ataque?',
+          opciones: [],
+          noCancelable: false
+        });
+      });
+      // Interpretar respuesta del rival
+      if (respuesta && respuesta.counter) {
+        // El rival contraatacó con la carta cartaId
+        // El rival ya descartó en su pantalla, solo registramos
+        log(`${getCardById(respuesta.cartaId)?.nombre} niega el ataque (Counter).`);
+        return true;
+      }
+      return false;
+    }
     const z = zonaJugador(quien);
     const counters = z.mano.filter(id => tieneTag(getCardById(id), 'counter ataque'));
     if (!counters.length) return false;
@@ -3716,7 +4208,6 @@
     if (!await pagarImpuestoCounter(quien, pick)) return false;
     descartarCartaMano(quien, hi);
     dispatch(pick, 'alCounterAtaque', [quien, ataqueCtx]);
-    // La carta counter queda rested al usarla
     const counterEnCampo = zonaJugador(quien).batalla.find(u => u.id === pick);
     if (counterEnCampo) { counterEnCampo.rested = true; counterEnCampo.ataquesRestantes = 0; }
     log(`${getCardById(pick)?.nombre} niega el ataque.`);
@@ -3764,7 +4255,8 @@
     efectoCampoPermanente, REGISTRO_EFECTOS,
     zonaJugador, rivalDe, robar, barajar, log, tirarDado, registrar,
     crearUnidadCampo, infligirDanoLider, elegirConModal, enderezarMana, invocarToken,
-    intentarAbsorberDrag
+    intentarAbsorberDrag,
+    recibirPeticionRival, recibirRespuestaRival, _decisionParaRival
   };
 
   window.MotorEfectos._ctx = ctx;
@@ -4273,6 +4765,20 @@
                 document.getElementById('online-lobby-overlay').classList.add('hidden');
                 iniciarPartida('online');
             });
+            // Resultado de la moneda (quién empieza)
+            _socketOnline.on('moneda-resultado', (data) => {
+                // data.empiezaJugador1 = true/false
+                // Si soy jugador 1 (playerNum 1), empiezo si data.empiezaJugador1 es true
+                const soyJugador1 = _socketOnline.dataPlayerNum === 1;
+                const empiezoYo = soyJugador1 ? data.empiezaJugador1 : !data.empiezaJugador1;
+                configurarPartidaOnline(empiezoYo);
+            });
+            // Recibir snapshot del rival
+            _socketOnline.on('accion-rival', (data) => {
+                if (data.tipo === 'snapshot') {
+                    aplicarSnapshotRival(data);
+                }
+            });
             _socketOnline.on('sala-creada', (data) => {
                 _onlineRoomId = data.roomId;
                 _onlineEstado = 'creando';
@@ -4286,10 +4792,35 @@
                 alert('La sala ya está llena.');
             });
             _socketOnline.on('rival-desconectado', () => {
-                alert('Tu rival se ha desconectado.');
+                // El rival se desconectó: mostrar timer de reconexión
+                if (estadoPartida && !estadoPartida.finalizada) {
+                    mostrarReconnectOverlay();
+                }
+            });
+            _socketOnline.on('rival-reconectado', () => {
+                // El rival volvió: ocultar timer
+                ocultarReconnectOverlay();
+            });
+            _socketOnline.on('rival-rendido', () => {
+                // El rival se rindió: gano yo
                 if (estadoPartida) {
+                    estadoPartida.finalizada = true;
                     mostrarFinPartida('victoria');
                 }
+            });
+            _socketOnline.on('victoria-desconexion', () => {
+                // El rival reclamó victoria por mi desconexión: pierdo yo
+                if (estadoPartida) {
+                    estadoPartida.finalizada = true;
+                    mostrarFinPartida('derrota');
+                }
+            });
+            // === SISTEMA DE DECISIONES ONLINE ===
+            _socketOnline.on('peticion-rival-recibida', (data) => {
+                if (window.MotorEfectos) MotorEfectos.recibirPeticionRival(data);
+            });
+            _socketOnline.on('respuesta-peticion-recibida', (data) => {
+                if (window.MotorEfectos) MotorEfectos.recibirRespuestaRival(data);
             });
         }
 
@@ -4495,16 +5026,27 @@
                 turno: 1, faseIndex: 0, jugadorActivo: 'jugador', jugador, rival,
                 log: 'Preparando duelo...', atacanteSeleccionado: null,
                 pagoPendiente: null, introActiva: true, finalizada: false,
-                modo: modo || 'solo' // 'solo' o 'online'
+                modo: modo || 'solo', // 'solo' o 'online'
+                soyHost: true, // En modo solo, siempre soy host. En online, lo decide la moneda
+                turnoDelJugadorLocal: true // Si es turno del jugador local
             };
             estadoPartida.jugador.liderZona = { id: estadoPartida.jugador.liderId, rested: false, ataquesRestantes: 0 };
             ocultarPantallasPrincipales();
             document.getElementById('game-screen').classList.remove('hidden');
             document.getElementById('game-end-overlay')?.classList.add('hidden');
             renderizarPartida();
-            // Mostrar mulligan antes de continuar
+
+            if ((modo || 'solo') === 'online') {
+                // En modo online: esperar a que el servidor diga quién empieza
+                iniciarPartidaOnlineFlow(jugador, rival);
+            } else {
+                // Modo solo: mostrar mulligan directamente
+                iniciarFlujoMulligan(jugador, rival);
+            }
+        }
+
+        function iniciarFlujoMulligan(jugador, rival) {
             mostrarMulligan(jugador, () => {
-                // Después del mulligan, poner las vidas
                 for (let i = 0; i < 8; i++) { jugador.vida.push(jugador.mazo.pop()); rival.vida.push(rival.mazo.pop()); }
                 prepararCampoRival(rival);
                 requestAnimationFrame(() => {
@@ -4520,8 +5062,134 @@
             });
         }
 
+        // === FLUJO DE PARTIDA ONLINE ===
+        function iniciarPartidaOnlineFlow(jugador, rival) {
+            // Mostrar pantalla de "esperando configuración"
+            estadoPartida.log = 'Esperando configuración de la partida online...';
+            renderizarPartida();
+
+            // El servidor decidirá quién empieza con la moneda
+            // Escuchar evento 'moneda-resultado' (definido en configurarEventosSocket)
+            // Cuando llegue, se llama a configurarPartidaOnline(resultado)
+        }
+
+        function configurarPartidaOnline(empiezaJugadorLocal) {
+            if (!estadoPartida) return;
+            estadoPartida.soyHost = empiezaJugadorLocal;
+            estadoPartida.turnoDelJugadorLocal = empiezaJugadorLocal;
+
+            // Mostrar animación de moneda
+            mostrarAnimacionMoneda(empiezaJugadorLocal, () => {
+                // Después de la animación, mostrar mulligan
+                iniciarFlujoMulligan(estadoPartida.jugador, estadoPartida.rival);
+            });
+        }
+
+        function mostrarAnimacionMoneda(empiezaJugadorLocal, onComplete) {
+            const overlay = document.getElementById('coin-toss-overlay');
+            const result = document.getElementById('coin-result');
+            overlay.classList.remove('hidden');
+            result.style.opacity = '0';
+
+            setTimeout(() => {
+                result.innerText = empiezaJugadorLocal ? '¡ EMPIEZAS TÚ !' : 'EMP IEZA EL RIVAL';
+                result.style.opacity = '1';
+            }, 1500);
+
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+                if (onComplete) onComplete();
+            }, 3500);
+        }
+
+        // === SINCRONIZACIÓN ONLINE ===
+        // Enviar el estado actual al rival (en modo online)
+        function sincronizarEstadoOnline(accionExtra) {
+            if (!estadoPartida || estadoPartida.modo !== 'online' || !_socketOnline) return;
+            // Crear un snapshot del estado (sin funciones, solo datos)
+            // IMPORTANTE: No enviamos la mano del rival ni su mazo para evitar trampas
+            const snapshot = {
+                turno: estadoPartida.turno,
+                faseIndex: estadoPartida.faseIndex,
+                log: estadoPartida.log,
+                finalizada: estadoPartida.finalizada,
+                // Nuestro estado como jugador local -> lo enviamos como "rival" para el otro
+                miEstado: {
+                    liderId: estadoPartida.jugador.liderId,
+                    vidaCount: estadoPartida.jugador.vida.length,
+                    manoCount: estadoPartida.jugador.mano.length,
+                    mana: estadoPartida.jugador.mana,
+                    batalla: estadoPartida.jugador.batalla,
+                    combo: estadoPartida.jugador.combo,
+                    descarte: estadoPartida.jugador.descarte,
+                    campo: estadoPartida.jugador.campo,
+                    manaActivo: estadoPartida.jugador.manaActivo,
+                    liderDespierto: estadoPartida.jugador.liderDespierto,
+                    liderZona: estadoPartida.jugador.liderZona
+                },
+                accionExtra: accionExtra || null
+            };
+            _socketOnline.emit('accion-juego', { tipo: 'snapshot', snapshot });
+        }
+
+        // Recibir snapshot del rival
+        function aplicarSnapshotRival(data) {
+            if (!estadoPartida || estadoPartida.modo !== 'online') return;
+            const snap = data.snapshot;
+            // El "miEstado" del rival es nuestro "rival"
+            estadoPartida.rival.liderId = snap.miEstado.liderId;
+            // No podemos saber qué cartas exactas tiene el rival en mano/mazo, solo el count
+            // Mantenemos las cartas que ya conocemos (descarte, batalla, etc.)
+            estadoPartida.rival.vida = estadoPartida.rival.vida.slice(0, snap.miEstado.vidaCount);
+            while (estadoPartida.rival.vida.length < snap.miEstado.vidaCount) estadoPartida.rival.vida.push('desconocida');
+            // Actualizar mano count (las cartas reales no las conocemos)
+            while (estadoPartida.rival.mano.length < snap.miEstado.manoCount) estadoPartida.rival.mano.push('desconocida');
+            while (estadoPartida.rival.mano.length > snap.miEstado.manoCount) estadoPartida.rival.mano.pop();
+            estadoPartida.rival.mana = snap.miEstado.mana;
+            estadoPartida.rival.batalla = snap.miEstado.batalla;
+            estadoPartida.rival.combo = snap.miEstado.combo;
+            estadoPartida.rival.descarte = snap.miEstado.descarte;
+            estadoPartida.rival.campo = snap.miEstado.campo;
+            estadoPartida.rival.manaActivo = snap.miEstado.manaActivo;
+            estadoPartida.rival.liderDespierto = snap.miEstado.liderDespierto;
+            estadoPartida.rival.liderZona = snap.miEstado.liderZona;
+            estadoPartida.turno = snap.turno;
+            estadoPartida.faseIndex = snap.faseIndex;
+            estadoPartida.log = snap.log;
+            // Si el rival terminó su turno, ahora nos toca a nosotros
+            if (snap.accionExtra === 'fin-turno') {
+                estadoPartida.turnoDelJugadorLocal = true;
+                estadoPartida.jugador.mana.forEach(m => m.rested = false);
+                estadoPartida.jugador.batalla.forEach(c => { c.rested = false; c.ataquesRestantes = ataquesPorTurno(c.id); });
+                estadoPartida.jugador.liderZona = { id: estadoPartida.jugador.liderId, rested: false, ataquesRestantes: 1 };
+                estadoPartida.jugador.manaActivo = estadoPartida.jugador.mana.length;
+                robarDe(estadoPartida.jugador);
+                if (window.MotorEfectos) MotorEfectos.alInicioPrincipal('jugador');
+                estadoPartida.log = 'Es tu turno.';
+                ocultarEsperandoRival();
+            } else {
+                estadoPartida.turnoDelJugadorLocal = false;
+                mostrarEsperandoRival();
+            }
+            if (snap.finalizada) {
+                mostrarFinPartida('derrota');
+            }
+            renderizarPartida();
+        }
+
+        function mostrarEsperandoRival() {
+            document.getElementById('waiting-turn-overlay')?.classList.remove('hidden');
+        }
+
+        function ocultarEsperandoRival() {
+            document.getElementById('waiting-turn-overlay')?.classList.add('hidden');
+        }
+
         function partidaInteractiva() {
-            return estadoPartida && !estadoPartida.finalizada && !estadoPartida.introActiva;
+            if (!estadoPartida || estadoPartida.finalizada || estadoPartida.introActiva) return false;
+            // En modo online, solo se puede interactuar si es tu turno
+            if (estadoPartida.modo === 'online' && !estadoPartida.turnoDelJugadorLocal) return false;
+            return true;
         }
 
         function reproducirIntroLideres(onComplete) {
@@ -4662,22 +5330,41 @@
 
         function finalizarTurno() {
             if (!partidaInteractiva()) return;
+            // En modo online, solo puedes terminar turno si es tu turno
+            if (estadoPartida.modo === 'online' && !estadoPartida.turnoDelJugadorLocal) {
+                return alert('No es tu turno.');
+            }
             if (estadoPartida.faseIndex < 2) return alert('Solo puedes terminar el turno desde la fase de combate.');
             if (estadoPartida.faseIndex === 3) return alert('Termina primero la fase de combo.');
-            estadoPartida.turno += 1;
-            estadoPartida.faseIndex = 0;
-            estadoPartida.atacanteSeleccionado = null;
-            estadoPartida.jugador.mana.forEach(m => m.rested = false);
-            estadoPartida.jugador.batalla.forEach(c => { c.rested = false; c.ataquesRestantes = ataquesPorTurno(c.id); });
-            estadoPartida.jugador.liderZona = { id: estadoPartida.jugador.liderId, rested: false, ataquesRestantes: 1 };
-            estadoPartida.jugador.manaActivo = estadoPartida.jugador.mana.length;
-            estadoPartida.jugador.manaUsadoEsteTurno = false;
-            robarDe(estadoPartida.jugador);
-            estadoPartida.jugador.roboDeTurnoHecho = true;
+
             if (window.MotorEfectos) MotorEfectos.alFinTurno('jugador');
-            estadoPartida.log = 'Nuevo turno: enderezas tus cartas y robas automaticamente 1 carta.';
-            mostrarFase('Carga');
-            renderizarPartida();
+
+            if (estadoPartida.modo === 'online') {
+                // En online: enviar snapshot con 'fin-turno' y esperar a que el rival termine su turno
+                estadoPartida.turno += 1;
+                estadoPartida.faseIndex = 0;
+                estadoPartida.atacanteSeleccionado = null;
+                estadoPartida.log = 'Esperando al rival...';
+                sincronizarEstadoOnline('fin-turno');
+                estadoPartida.turnoDelJugadorLocal = false;
+                mostrarEsperandoRival();
+                renderizarPartida();
+            } else {
+                // Modo solo: comportamiento normal
+                estadoPartida.turno += 1;
+                estadoPartida.faseIndex = 0;
+                estadoPartida.atacanteSeleccionado = null;
+                estadoPartida.jugador.mana.forEach(m => m.rested = false);
+                estadoPartida.jugador.batalla.forEach(c => { c.rested = false; c.ataquesRestantes = ataquesPorTurno(c.id); });
+                estadoPartida.jugador.liderZona = { id: estadoPartida.jugador.liderId, rested: false, ataquesRestantes: 1 };
+                estadoPartida.jugador.manaActivo = estadoPartida.jugador.mana.length;
+                estadoPartida.jugador.manaUsadoEsteTurno = false;
+                robarDe(estadoPartida.jugador);
+                estadoPartida.jugador.roboDeTurnoHecho = true;
+                estadoPartida.log = 'Nuevo turno: enderezas tus cartas y robas automaticamente 1 carta.';
+                mostrarFase('Carga');
+                renderizarPartida();
+            }
         }
 
         function mostrarFase(texto) {
@@ -5414,12 +6101,135 @@
         }
 
         function volverAlMenuDesdePartida() {
+            // Si estamos en partida online activa, preguntar si quiere rendirse
+            if (estadoPartida && estadoPartida.modo === 'online' && !estadoPartida.finalizada) {
+                mostrarDialogoRendicion();
+                return;
+            }
+            _volverAlMenuReal();
+        }
+
+        function _volverAlMenuReal() {
             document.getElementById('game-end-overlay')?.classList.add('hidden');
             document.getElementById('leader-intro-overlay')?.classList.add('hidden');
+            document.getElementById('surrender-dialog')?.classList.add('hidden');
+            // Limpiar estado persistido
+            try { localStorage.removeItem('gc_tcg_partida_online'); } catch (e) {}
+            // Desconectar socket si está conectado
+            if (_socketOnline && estadoPartida && estadoPartida.modo === 'online') {
+                _socketOnline.emit('rendirse');
+            }
             estadoPartida = null;
             ocultarPantallasPrincipales();
             document.getElementById('main-menu').classList.remove('hidden');
         }
+
+        function mostrarDialogoRendicion() {
+            document.getElementById('surrender-dialog')?.classList.remove('hidden');
+        }
+
+        function cancelarRendicion() {
+            document.getElementById('surrender-dialog')?.classList.add('hidden');
+        }
+
+        function confirmarRendicion() {
+            document.getElementById('surrender-dialog')?.classList.add('hidden');
+            // Notificar al rival que se rinde
+            if (_socketOnline) {
+                _socketOnline.emit('rendirse');
+            }
+            // Mostrar derrota
+            if (estadoPartida) {
+                estadoPartida.finalizada = true;
+                mostrarFinPartida('derrota');
+            }
+        }
+
+        // === TIMEOUT DE RECONEXIÓN ===
+        let _reconnectTimerInterval = null;
+        let _reconnectSecondsLeft = 60;
+
+        function mostrarReconnectOverlay() {
+            document.getElementById('reconnect-overlay')?.classList.remove('hidden');
+            _reconnectSecondsLeft = 60;
+            actualizarReconnectTimer();
+            _reconnectTimerInterval = setInterval(() => {
+                _reconnectSecondsLeft--;
+                actualizarReconnectTimer();
+                if (_reconnectSecondsLeft <= 0) {
+                    clearInterval(_reconnectTimerInterval);
+                    _reconnectTimerInterval = null;
+                    // Tiempo agotado: el rival pierde, yo gano
+                    if (estadoPartida) {
+                        estadoPartida.finalizada = true;
+                        mostrarFinPartida('victoria');
+                    }
+                    document.getElementById('reconnect-overlay')?.classList.add('hidden');
+                }
+            }, 1000);
+        }
+
+        function actualizarReconnectTimer() {
+            const min = Math.floor(_reconnectSecondsLeft / 60);
+            const sec = _reconnectSecondsLeft % 60;
+            const el = document.getElementById('reconnect-timer');
+            if (el) el.innerText = `${min}:${String(sec).padStart(2, '0')}`;
+        }
+
+        function ocultarReconnectOverlay() {
+            document.getElementById('reconnect-overlay')?.classList.add('hidden');
+            if (_reconnectTimerInterval) {
+                clearInterval(_reconnectTimerInterval);
+                _reconnectTimerInterval = null;
+            }
+        }
+
+        function reclamarVictoriaDesconexion() {
+            ocultarReconnectOverlay();
+            if (_socketOnline) _socketOnline.emit('reclamar-victoria-desconexion');
+            if (estadoPartida) {
+                estadoPartida.finalizada = true;
+                mostrarFinPartida('victoria');
+            }
+        }
+
+        // === PERSISTENCIA F5 ===
+        function guardarEstadoOnline() {
+            if (!estadoPartida || estadoPartida.modo !== 'online') return;
+            try {
+                const snapshot = {
+                    estadoPartida: estadoPartida,
+                    roomId: _onlineRoomId,
+                    timestamp: Date.now()
+                };
+                localStorage.setItem('gc_tcg_partida_online', JSON.stringify(snapshot));
+            } catch (e) { console.error('Error guardando estado:', e); }
+        }
+
+        function cargarEstadoOnline() {
+            try {
+                const data = localStorage.getItem('gc_tcg_partida_online');
+                if (!data) return null;
+                const snapshot = JSON.parse(data);
+                // Si han pasado más de 5 minutos, descartar
+                if (Date.now() - snapshot.timestamp > 5 * 60 * 1000) {
+                    localStorage.removeItem('gc_tcg_partida_online');
+                    return null;
+                }
+                return snapshot;
+            } catch (e) { return null; }
+        }
+
+        function limpiarEstadoOnline() {
+            try { localStorage.removeItem('gc_tcg_partida_online'); } catch (e) {}
+        }
+
+        // Guardar estado cada 3 segundos si estamos en online
+        setInterval(() => {
+            if (estadoPartida && estadoPartida.modo === 'online' && !estadoPartida.finalizada) {
+                guardarEstadoOnline();
+            }
+        }, 3000);
 
         function costeDots(carta) {
             const colorDots = Number(carta.costeColor || 0);
@@ -5610,6 +6420,26 @@
                 const y = Math.abs(index - (totalHand - 1) / 2) * 4;
                 return miniCarta(id, '', { handIndex: index, onClick: `abrirDetalleJuego('${id}')`, fanStyle: `--fan-rot:${rot}deg; --fan-y:${y}px;` });
             }).join(''));
+
+            // === SINCRONIZACIÓN ONLINE AUTOMÁTICA ===
+            // Después de renderizar, si estamos en modo online y es nuestro turno, sincronizar
+            if (estadoPartida.modo === 'online' && estadoPartida.turnoDelJugadorLocal && _socketOnline) {
+                // Usar requestAnimationFrame para no bloquear el render
+                // Y usar un debounce para no enviar demasiados snapshots
+                if (window._syncTimeout) clearTimeout(window._syncTimeout);
+                window._syncTimeout = setTimeout(() => {
+                    sincronizarEstadoOnline(null);
+                }, 200);
+            }
+
+            // Mostrar/ocultar overlay de esperando rival
+            if (estadoPartida.modo === 'online') {
+                if (estadoPartida.turnoDelJugadorLocal) {
+                    ocultarEsperandoRival();
+                } else {
+                    mostrarEsperandoRival();
+                }
+            }
         }
         function obtenerColorBorde(color) {
             if (!color) return 'rgba(255,255,255,0.8)';
@@ -5712,6 +6542,60 @@
                 const { clientX: x, clientY: y } = e;
                 const { innerWidth: w, innerHeight: h } = window;
                 zoomImg.style.transform = `scale(1.8) translate(${(x / w - 0.5) * -120}%, ${(y / h - 0.5) * -120}%)`;
+            }
+        });
+
+        // === PROTECCIÓN F5 Y RECONEXIÓN ===
+        // Al cargar la página, comprobar si hay una partida online guardada
+        window.addEventListener('load', async () => {
+            const partidaGuardada = cargarEstadoOnline();
+            if (partidaGuardada) {
+                // Hay una partida guardada: preguntar si quiere reconectar
+                const confirmar = confirm('Se detectó una partida online en curso. ¿Quieres reconectar?');
+                if (confirmar) {
+                    await cargarBaseDeDatos();
+                    estadoPartida = partidaGuardada.estadoPartida;
+                    _onlineRoomId = partidaGuardada.roomId;
+                    ocultarPantallasPrincipales();
+                    document.getElementById('game-screen').classList.remove('hidden');
+                    // Reconectar al servidor
+                    if (typeof io !== 'undefined') {
+                        _socketOnline = io();
+                        _socketOnline.on('connect', () => {
+                            _socketOnline.emit('reconectar', { roomId: _onlineRoomId });
+                        });
+                        // Reconfigurar eventos
+                        _socketOnline.on('rival-desconectado', () => {
+                            if (estadoPartida && !estadoPartida.finalizada) mostrarReconnectOverlay();
+                        });
+                        _socketOnline.on('rival-reconectado', () => ocultarReconnectOverlay());
+                        _socketOnline.on('rival-rendido', () => {
+                            if (estadoPartida) { estadoPartida.finalizada = true; mostrarFinPartida('victoria'); }
+                        });
+                        _socketOnline.on('victoria-desconexion', () => {
+                            if (estadoPartida) { estadoPartida.finalizada = true; mostrarFinPartida('derrota'); }
+                        });
+                        _socketOnline.on('accion-rival', (data) => {
+                            if (data.tipo === 'snapshot') aplicarSnapshotRival(data);
+                        });
+                    }
+                    if (window.MotorEfectos) MotorEfectos.init();
+                    renderizarPartida();
+                } else {
+                    limpiarEstadoOnline();
+                }
+            }
+        });
+
+        // Prevenir F5 durante partida online (con aviso)
+        window.addEventListener('beforeunload', (e) => {
+            if (estadoPartida && estadoPartida.modo === 'online' && !estadoPartida.finalizada) {
+                // Guardar estado antes de salir
+                guardarEstadoOnline();
+                // Mostrar aviso
+                e.preventDefault();
+                e.returnValue = 'Si recargas la página, se guardará tu partida para reconectar. ¿Estás seguro?';
+                return e.returnValue;
             }
         });
     </script>
