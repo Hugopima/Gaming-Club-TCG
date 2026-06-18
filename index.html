@@ -4777,6 +4777,12 @@
             _socketOnline.on('accion-rival', (data) => {
                 if (data.tipo === 'snapshot') {
                     aplicarSnapshotRival(data);
+                } else if (data.tipo === 'fin-turno') {
+                    recibirFinTurnoRival(data);
+                } else if (data.tipo === 'jugar-carta') {
+                    recibirJugarCartaRival(data);
+                } else if (data.tipo === 'atacar') {
+                    recibirAtaqueRival(data);
                 }
             });
             _socketOnline.on('sala-creada', (data) => {
@@ -5017,43 +5023,72 @@
                 vida: [], mano: [], mana: [], batalla: [], combo: [], descarte: [], campo: [], manaActivo: 0,
                 manaUsadoEsteTurno: false, roboDeTurnoHecho: false, liderDespierto: false
             };
-            const rival = crearRivalBasico();
-            while (rival.mazo.length < 50) rival.mazo.push(...rival.mazo);
-            rival.mazo = rival.mazo.slice(0, 50);
+            let rival;
+            if ((modo || 'solo') === 'online') {
+                // En modo online: rival vacío (sin IA, sin cartas iniciales en campo)
+                rival = {
+                    liderId: null, // Se actualizará con el snapshot del rival
+                    mazo: [], mano: [], mana: [], batalla: [], combo: [], descarte: [], campo: [], manaActivo: 0,
+                    liderDespierto: false, vida: []
+                };
+            } else {
+                rival = crearRivalBasico();
+                while (rival.mazo.length < 50) rival.mazo.push(...rival.mazo);
+                rival.mazo = rival.mazo.slice(0, 50);
+            }
             // Robar mano inicial (6 cartas) ANTES de las vidas para poder hacer mulligan
-            for (let i = 0; i < 6; i++) { jugador.mano.push(jugador.mazo.pop()); rival.mano.push(rival.mazo.pop()); }
+            for (let i = 0; i < 6; i++) { jugador.mano.push(jugador.mazo.pop()); }
+            if ((modo || 'solo') !== 'online') {
+                for (let i = 0; i < 6; i++) { rival.mano.push(rival.mazo.pop()); }
+            } else {
+                // En online, el rival tiene 6 cartas "desconocidas"
+                for (let i = 0; i < 6; i++) { rival.mano.push('desconocida'); }
+            }
             estadoPartida = {
                 turno: 1, faseIndex: 0, jugadorActivo: 'jugador', jugador, rival,
                 log: 'Preparando duelo...', atacanteSeleccionado: null,
                 pagoPendiente: null, introActiva: true, finalizada: false,
-                modo: modo || 'solo', // 'solo' o 'online'
-                soyHost: true, // En modo solo, siempre soy host. En online, lo decide la moneda
-                turnoDelJugadorLocal: true // Si es turno del jugador local
+                modo: modo || 'solo',
+                soyHost: true,
+                turnoDelJugadorLocal: true
             };
             estadoPartida.jugador.liderZona = { id: estadoPartida.jugador.liderId, rested: false, ataquesRestantes: 0 };
+            estadoPartida.rival.liderZona = { id: estadoPartida.rival.liderId, rested: false, ataquesRestantes: 0 };
             ocultarPantallasPrincipales();
             document.getElementById('game-screen').classList.remove('hidden');
             document.getElementById('game-end-overlay')?.classList.add('hidden');
             renderizarPartida();
 
             if ((modo || 'solo') === 'online') {
-                // En modo online: esperar a que el servidor diga quién empieza
                 iniciarPartidaOnlineFlow(jugador, rival);
             } else {
-                // Modo solo: mostrar mulligan directamente
                 iniciarFlujoMulligan(jugador, rival);
             }
         }
 
         function iniciarFlujoMulligan(jugador, rival) {
             mostrarMulligan(jugador, () => {
-                for (let i = 0; i < 8; i++) { jugador.vida.push(jugador.mazo.pop()); rival.vida.push(rival.mazo.pop()); }
-                prepararCampoRival(rival);
+                for (let i = 0; i < 8; i++) { jugador.vida.push(jugador.mazo.pop()); }
+                if (estadoPartida.modo !== 'online') {
+                    for (let i = 0; i < 8; i++) { rival.vida.push(rival.mazo.pop()); }
+                    prepararCampoRival(rival);
+                } else {
+                    // En online, el rival tiene 8 vidas "desconocidas"
+                    for (let i = 0; i < 8; i++) { rival.vida.push('desconocida'); }
+                }
                 requestAnimationFrame(() => {
                     reproducirIntroLideres(() => {
                         if (!estadoPartida) return;
                         estadoPartida.introActiva = false;
-                        estadoPartida.log = 'Mano inicial robada. Arrastra cartas al area de batalla o a ENERGY.';
+                        if (estadoPartida.modo === 'online') {
+                            if (estadoPartida.turnoDelJugadorLocal) {
+                                estadoPartida.log = '¡Tu turno! Arrastra cartas al área de batalla.';
+                            } else {
+                                estadoPartida.log = 'Esperando al rival...';
+                            }
+                        } else {
+                            estadoPartida.log = 'Mano inicial robada. Arrastra cartas al area de batalla o a ENERGY.';
+                        }
                         if (window.MotorEfectos) MotorEfectos.init();
                         mostrarFase('Carga');
                         renderizarPartida();
@@ -5104,20 +5139,18 @@
 
         // === SINCRONIZACIÓN ONLINE ===
         // Enviar el estado actual al rival (en modo online)
-        function sincronizarEstadoOnline(accionExtra) {
+        function sincronizarEstadoOnline(tipo) {
             if (!estadoPartida || estadoPartida.modo !== 'online' || !_socketOnline) return;
-            // Crear un snapshot del estado (sin funciones, solo datos)
-            // IMPORTANTE: No enviamos la mano del rival ni su mazo para evitar trampas
             const snapshot = {
                 turno: estadoPartida.turno,
                 faseIndex: estadoPartida.faseIndex,
                 log: estadoPartida.log,
                 finalizada: estadoPartida.finalizada,
-                // Nuestro estado como jugador local -> lo enviamos como "rival" para el otro
                 miEstado: {
                     liderId: estadoPartida.jugador.liderId,
                     vidaCount: estadoPartida.jugador.vida.length,
                     manoCount: estadoPartida.jugador.mano.length,
+                    mazoCount: estadoPartida.jugador.mazo.length,
                     mana: estadoPartida.jugador.mana,
                     batalla: estadoPartida.jugador.batalla,
                     combo: estadoPartida.jugador.combo,
@@ -5126,55 +5159,82 @@
                     manaActivo: estadoPartida.jugador.manaActivo,
                     liderDespierto: estadoPartida.jugador.liderDespierto,
                     liderZona: estadoPartida.jugador.liderZona
-                },
-                accionExtra: accionExtra || null
+                }
             };
-            _socketOnline.emit('accion-juego', { tipo: 'snapshot', snapshot });
+            _socketOnline.emit('accion-juego', { tipo: tipo || 'snapshot', snapshot });
         }
 
-        // Recibir snapshot del rival
+        // Recibir fin de turno del rival: ahora me toca a mí
+        function recibirFinTurnoRival(data) {
+            if (!estadoPartida || estadoPartida.modo !== 'online') return;
+            const snap = data.snapshot;
+            // Actualizar el estado del rival con el snapshot
+            if (snap.miEstado) {
+                estadoPartida.rival.liderId = snap.miEstado.liderId;
+                estadoPartida.rival.vida = estadoPartida.rival.vida.slice(0, snap.miEstado.vidaCount);
+                while (estadoPartida.rival.vida.length < snap.miEstado.vidaCount) estadoPartida.rival.vida.push('desconocida');
+                while (estadoPartida.rival.mano.length < snap.miEstado.manoCount) estadoPartida.rival.mano.push('desconocida');
+                while (estadoPartida.rival.mano.length > snap.miEstado.manoCount) estadoPartida.rival.mano.pop();
+                estadoPartida.rival.mana = snap.miEstado.mana || [];
+                estadoPartida.rival.batalla = snap.miEstado.batalla || [];
+                estadoPartida.rival.combo = snap.miEstado.combo || [];
+                estadoPartida.rival.descarte = snap.miEstado.descarte || [];
+                estadoPartida.rival.campo = snap.miEstado.campo || [];
+                estadoPartida.rival.manaActivo = snap.miEstado.manaActivo || 0;
+                estadoPartida.rival.liderDespierto = snap.miEstado.liderDespierto;
+                estadoPartida.rival.liderZona = snap.miEstado.liderZona;
+            }
+            estadoPartida.turno = snap.turno;
+            estadoPartida.faseIndex = 0;
+            // Ahora es mi turno
+            estadoPartida.turnoDelJugadorLocal = true;
+            // Enderezar mis cartas
+            estadoPartida.jugador.mana.forEach(m => m.rested = false);
+            estadoPartida.jugador.batalla.forEach(c => { c.rested = false; c.ataquesRestantes = ataquesPorTurno(c.id); });
+            estadoPartida.jugador.liderZona = { id: estadoPartida.jugador.liderId, rested: false, ataquesRestantes: 1 };
+            estadoPartida.jugador.manaActivo = estadoPartida.jugador.mana.length;
+            estadoPartida.jugador.manaUsadoEsteTurno = false;
+            robarDe(estadoPartida.jugador);
+            if (window.MotorEfectos) MotorEfectos.alInicioPrincipal('jugador');
+            estadoPartida.log = '¡Es tu turno!';
+            ocultarEsperandoRival();
+            mostrarFase('Carga');
+            renderizarPartida();
+        }
+
+        // Recibir snapshot del rival (actualización en medio de su turno)
         function aplicarSnapshotRival(data) {
             if (!estadoPartida || estadoPartida.modo !== 'online') return;
             const snap = data.snapshot;
-            // El "miEstado" del rival es nuestro "rival"
-            estadoPartida.rival.liderId = snap.miEstado.liderId;
-            // No podemos saber qué cartas exactas tiene el rival en mano/mazo, solo el count
-            // Mantenemos las cartas que ya conocemos (descarte, batalla, etc.)
-            estadoPartida.rival.vida = estadoPartida.rival.vida.slice(0, snap.miEstado.vidaCount);
-            while (estadoPartida.rival.vida.length < snap.miEstado.vidaCount) estadoPartida.rival.vida.push('desconocida');
-            // Actualizar mano count (las cartas reales no las conocemos)
-            while (estadoPartida.rival.mano.length < snap.miEstado.manoCount) estadoPartida.rival.mano.push('desconocida');
-            while (estadoPartida.rival.mano.length > snap.miEstado.manoCount) estadoPartida.rival.mano.pop();
-            estadoPartida.rival.mana = snap.miEstado.mana;
-            estadoPartida.rival.batalla = snap.miEstado.batalla;
-            estadoPartida.rival.combo = snap.miEstado.combo;
-            estadoPartida.rival.descarte = snap.miEstado.descarte;
-            estadoPartida.rival.campo = snap.miEstado.campo;
-            estadoPartida.rival.manaActivo = snap.miEstado.manaActivo;
-            estadoPartida.rival.liderDespierto = snap.miEstado.liderDespierto;
-            estadoPartida.rival.liderZona = snap.miEstado.liderZona;
+            if (snap.miEstado) {
+                estadoPartida.rival.liderId = snap.miEstado.liderId;
+                estadoPartida.rival.vida = estadoPartida.rival.vida.slice(0, snap.miEstado.vidaCount);
+                while (estadoPartida.rival.vida.length < snap.miEstado.vidaCount) estadoPartida.rival.vida.push('desconocida');
+                while (estadoPartida.rival.mano.length < snap.miEstado.manoCount) estadoPartida.rival.mano.push('desconocida');
+                while (estadoPartida.rival.mano.length > snap.miEstado.manoCount) estadoPartida.rival.mano.pop();
+                estadoPartida.rival.mana = snap.miEstado.mana || [];
+                estadoPartida.rival.batalla = snap.miEstado.batalla || [];
+                estadoPartida.rival.combo = snap.miEstado.combo || [];
+                estadoPartida.rival.descarte = snap.miEstado.descarte || [];
+                estadoPartida.rival.campo = snap.miEstado.campo || [];
+                estadoPartida.rival.manaActivo = snap.miEstado.manaActivo || 0;
+                estadoPartida.rival.liderDespierto = snap.miEstado.liderDespierto;
+                estadoPartida.rival.liderZona = snap.miEstado.liderZona;
+            }
             estadoPartida.turno = snap.turno;
             estadoPartida.faseIndex = snap.faseIndex;
             estadoPartida.log = snap.log;
-            // Si el rival terminó su turno, ahora nos toca a nosotros
-            if (snap.accionExtra === 'fin-turno') {
-                estadoPartida.turnoDelJugadorLocal = true;
-                estadoPartida.jugador.mana.forEach(m => m.rested = false);
-                estadoPartida.jugador.batalla.forEach(c => { c.rested = false; c.ataquesRestantes = ataquesPorTurno(c.id); });
-                estadoPartida.jugador.liderZona = { id: estadoPartida.jugador.liderId, rested: false, ataquesRestantes: 1 };
-                estadoPartida.jugador.manaActivo = estadoPartida.jugador.mana.length;
-                robarDe(estadoPartida.jugador);
-                if (window.MotorEfectos) MotorEfectos.alInicioPrincipal('jugador');
-                estadoPartida.log = 'Es tu turno.';
-                ocultarEsperandoRival();
-            } else {
-                estadoPartida.turnoDelJugadorLocal = false;
-                mostrarEsperandoRival();
-            }
-            if (snap.finalizada) {
-                mostrarFinPartida('derrota');
-            }
             renderizarPartida();
+        }
+
+        function recibirJugarCartaRival(data) {
+            // Por ahora solo actualizar con snapshot
+            aplicarSnapshotRival(data);
+        }
+
+        function recibirAtaqueRival(data) {
+            // Por ahora solo actualizar con snapshot
+            aplicarSnapshotRival(data);
         }
 
         function mostrarEsperandoRival() {
@@ -5340,7 +5400,7 @@
             if (window.MotorEfectos) MotorEfectos.alFinTurno('jugador');
 
             if (estadoPartida.modo === 'online') {
-                // En online: enviar snapshot con 'fin-turno' y esperar a que el rival termine su turno
+                // En online: enviar snapshot con 'fin-turno' al rival
                 estadoPartida.turno += 1;
                 estadoPartida.faseIndex = 0;
                 estadoPartida.atacanteSeleccionado = null;
@@ -5497,6 +5557,7 @@
             estadoPartida.jugador.manaUsadoEsteTurno = true;
             estadoPartida.log = `${getCardById(id)?.nombre || 'Una carta'} pasa a MANÁ.`;
             renderizarPartida();
+            if (estadoPartida.modo === 'online') sincronizarEstadoOnline('poner-mana');
         }
 
         function colorNormalizadoCarta(carta) {
@@ -5694,6 +5755,8 @@
             }
             if (window.MotorEfectos) MotorEfectos.alJugar('jugador', jugada, zonaRef);
             else renderizarPartida();
+            // En modo online, sincronizar después de jugar carta
+            if (estadoPartida.modo === 'online') sincronizarEstadoOnline('jugar-carta');
         }
 
         function ataquesPorTurno(id) {
@@ -6421,22 +6484,12 @@
                 return miniCarta(id, '', { handIndex: index, onClick: `abrirDetalleJuego('${id}')`, fanStyle: `--fan-rot:${rot}deg; --fan-y:${y}px;` });
             }).join(''));
 
-            // === SINCRONIZACIÓN ONLINE AUTOMÁTICA ===
-            // Después de renderizar, si estamos en modo online y es nuestro turno, sincronizar
-            if (estadoPartida.modo === 'online' && estadoPartida.turnoDelJugadorLocal && _socketOnline) {
-                // Usar requestAnimationFrame para no bloquear el render
-                // Y usar un debounce para no enviar demasiados snapshots
-                if (window._syncTimeout) clearTimeout(window._syncTimeout);
-                window._syncTimeout = setTimeout(() => {
-                    sincronizarEstadoOnline(null);
-                }, 200);
-            }
-
+            // === SINCRONIZACIÓN ONLINE ===
             // Mostrar/ocultar overlay de esperando rival
             if (estadoPartida.modo === 'online') {
                 if (estadoPartida.turnoDelJugadorLocal) {
                     ocultarEsperandoRival();
-                } else {
+                } else if (!estadoPartida.introActiva && !estadoPartida.finalizada) {
                     mostrarEsperandoRival();
                 }
             }
