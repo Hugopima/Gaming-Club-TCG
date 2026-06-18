@@ -1210,7 +1210,7 @@
     "combo": "0+5000",
     "lore": "DYMYTRY se enfrentó a Patroclo en las antiguas guerras de Patroclo… A día de hoy sigue dando guerra…",
     "habilidades": [
-      { "tag": "Activar", "css": "tag-active", "desc": "Absorción: Coloca 1 \"Juan\" de tu mano debajo de esta carta: Elige hasta 1 “Dymytry” con un coste de energía de 5 o menos de tu mazo y colócala encima de esta carta." }
+      { "tag": "Activar", "css": "tag-active", "desc": "Absorción: Coloca 1 \"Juan\" de tu mano debajo de esta carta: Elige hasta 1 “Juan” con un coste de energía de 5 o menos de tu mazo y colócala encima de esta carta." }
     ]
   },
   {
