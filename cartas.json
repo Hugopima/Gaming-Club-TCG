@@ -979,7 +979,7 @@
     "combo": "1+10000",
     "lore": "¡El poder de la tecnología! Si aprendes a pronunciar el nombre completo de su hijo te hago bizum.",
     "habilidades": [
-      { "tag": "Activar", "css": "tag-active", "desc": "Principal : Una vez por turno, puedes pagar 1 maná azul para robar 2 cartas y luego descartar 1."},
+      { "tag": "Activar", "css": "tag-active", "desc": "Principal : Una vez por turno, puedes pagar 1 maná rojo para robar 2 cartas y luego descartar 1."},
       { "tag": "Doble Golpe", "css": "tag-doble", "desc": "Si esta carta inflige daño, inflige 2 puntos de daño en lugar de 1." }
     ]
   },
