@@ -983,8 +983,8 @@
         <div class="game-modal-panel selector-panel">
             <h2 id="selector-title">Elegir</h2>
             <div id="selector-options" class="selector-options"></div>
-            <div class="selector-footer">
-                <button class="plate-btn btn-nav" onclick="cerrarSelector()">Cancelar</button>
+            <div class="selector-footer" id="selector-footer">
+                <button class="plate-btn btn-nav" id="selector-cancel-btn" onclick="cerrarSelector()">Cancelar</button>
             </div>
         </div>
     </div>
@@ -1340,13 +1340,17 @@
   }
 
   let _selectorResolverActual = null;
-  function elegirConModal(titulo, opciones) {
+  function elegirConModal(titulo, opciones, opcionesExtra) {
     return new Promise(resolve => {
       const modal = document.getElementById('selector-modal');
       if (modal && opciones?.length) {
         const body = modal.querySelector('#selector-options');
         const titleEl = modal.querySelector('#selector-title');
         if (titleEl) titleEl.textContent = titulo;
+        // Mostrar/ocultar botón Cancelar
+        const footer = modal.querySelector('#selector-footer');
+        const noCancelable = opcionesExtra?.noCancelable === true;
+        if (footer) footer.style.display = noCancelable ? 'none' : '';
         // Guardar resolver para que cerrarSelector pueda cancelar
         _selectorResolverActual = resolve;
         if (body) {
@@ -1395,9 +1399,9 @@
     const z = zonaJugador(jugador);
     if (!z.mano.length) return null;
     const opts = z.mano.map((id, i) => ({ label: getCardById(id)?.nombre || id, value: i, cardId: id }));
-    let idx = await elegirConModal(titulo || 'Elige una carta para descartar (obligatorio)', opts);
-    // No se puede cancelar: si el usuario cierra, se elige aleatoria
-    if (idx == null) idx = Math.floor(Math.random() * z.mano.length);
+    // No se puede cancelar: si el usuario cierra de alguna forma, se elige aleatoria
+    let idx = await elegirConModal(titulo || 'Elige una carta para descartar (obligatorio)', opts, { noCancelable: true });
+    if (idx == null || idx < 0) idx = Math.floor(Math.random() * z.mano.length);
     return descartarCartaMano(jugador, idx);
   }
 
@@ -2297,13 +2301,40 @@
 
   R('random', {
     async alJugar(quien) {
-      const d1 = tirarDado(), d2 = tirarDado();
-      log(`Dados: jugador ${d1}, rival ${d2}`);
+      const d1 = tirarDado();
+      // Mostrar animación del dado del jugador
+      try {
+        if (typeof window.mostrarDadoAnimado === 'function') {
+          await window.mostrarDadoAnimado(d1);
+        } else if (typeof window.mostrarDado === 'function') {
+          window.mostrarDado(d1);
+          await new Promise(r => setTimeout(r, 1200));
+        }
+      } catch (e) {}
+      const d2 = tirarDado();
+      // Mostrar animación del dado del rival
+      try {
+        if (typeof window.mostrarDadoAnimado === 'function') {
+          await window.mostrarDadoAnimado(d2);
+        } else if (typeof window.mostrarDado === 'function') {
+          window.mostrarDado(d2);
+          await new Promise(r => setTimeout(r, 1200));
+        }
+      } catch (e) {}
+      log(`Hasnan (Brawl Stars): jugador saca ${d1}, rival saca ${d2}.`);
       const perdedor = d1 === d2 ? null : (d1 < d2 ? quien : rivalDe(quien));
       if (perdedor) {
-        const idx = await elegirConModal('Destruye una de tus unidades', opcionesUnidades(perdedor));
-        if (idx != null) destruirUnidad(perdedor, idx);
+        const opts = opcionesUnidades(perdedor).map(o => ({ ...o, cardId: zonaJugador(perdedor).batalla[o.value]?.id }));
+        if (opts.length) {
+          const idx = await elegirConModal('Hasnan (Brawl Stars): el perdedor (' + (perdedor === 'jugador' ? 'tú' : 'rival') + ') destruye una de sus unidades', opts.concat([{ label: 'No destruir', value: -1 }]));
+          if (idx != null && idx >= 0) destruirUnidad(perdedor, idx);
+        } else {
+          log('El perdedor no tiene unidades para destruir.');
+        }
+      } else {
+        log('Empate en los dados. Nadie destruye unidades.');
       }
+      if (typeof renderizarPartida === 'function') renderizarPartida();
     }
   });
 
@@ -2533,49 +2564,27 @@
   R('messi', {
     async alJugar(quien) {
       const z = zonaJugador(quien);
-      // Buscar TODAS las cartas de Origen Minecraft en la baraja
-      const mcIds = z.mazo.filter(id => String(getCardById(id)?.origen || '').toLowerCase().includes('minecraft'));
+      // Messi: Mira las 7 primeras cartas de la baraja, coge una carta de Origen Minecraft y quédatela
+      const tops = z.mazo.splice(-7, 7).reverse(); // top 7, en orden visible
+      const mcIds = tops.filter(id => String(getCardById(id)?.origen || '').toLowerCase().includes('minecraft'));
       if (mcIds.length) {
         // Eliminar duplicados manteniendo orden
         const vistos = new Set();
         const uniq = mcIds.filter(id => { if (vistos.has(id)) return false; vistos.add(id); return true; });
-        const opts = uniq.map(id => ({ label: getCardById(id)?.nombre || id, value: id, cardId: id }));
-        const pick = await elegirConModal('Libro del Crafteo: elige una carta de Origen Minecraft de tu baraja', opts);
+        const opts = uniq.map(id => ({ label: getCardById(id)?.nombre || id, value: id, cardId: id }))
+          .concat([{ label: 'No coger ninguna', value: null }]);
+        const pick = await elegirConModal('Messi: ves las 7 primeras cartas — elige una de Origen Minecraft', opts);
         if (pick) {
-          // Sacar la carta elegida del mazo
-          const idxMazo = z.mazo.lastIndexOf(pick);
-          if (idxMazo >= 0) z.mazo.splice(idxMazo, 1);
-          const cartaElegida = getCardById(pick);
-          // Si la carta tiene coste 1, dar opción de jugarla gratis en modo descanso o quedártela en mano
-          if (Number(cartaElegida?.costeTotal || 99) === 1) {
-            const decision = await elegirConModal('Libro del Crafteo: la carta elegida tiene coste 1. ¿Qué quieres hacer?', [
-              { label: 'Jugarla gratis en modo descanso', value: 'jugar', cardId: pick },
-              { label: 'Quedártela en la mano', value: 'mano', cardId: pick }
-            ]);
-            if (decision === 'jugar') {
-              // Jugarla gratis en modo descanso
-              if (claseNormalizada(cartaElegida) === 'unidad') {
-                const u = crearUnidadCampo(pick, { rested: true });
-                z.batalla.push(u);
-                dispatch(pick, 'alJugar', [quien, pick, u]);
-                log('Libro del Crafteo juega gratis a ' + (cartaElegida?.nombre || pick) + ' en modo descanso.');
-              } else {
-                // Extra: aplicar efecto
-                z.descarte.push(pick);
-                dispatch(pick, 'alJugar', [quien, pick, null]);
-                log('Libro del Crafteo usa gratis a ' + (cartaElegida?.nombre || pick) + '.');
-              }
-            } else {
-              z.mano.push(pick);
-              log('Libro del Crafteo añade ' + (cartaElegida?.nombre || pick) + ' a tu mano.');
-            }
-          } else {
-            z.mano.push(pick);
-            log('Libro del Crafteo añade ' + (cartaElegida?.nombre || pick) + ' a tu mano.');
-          }
+          z.mano.push(pick);
+          const restantes = tops.filter(id => id !== pick).reverse();
+          restantes.forEach(id => z.mazo.push(id));
+          log('Messi añade ' + (getCardById(pick)?.nombre || pick) + ' a tu mano.');
+        } else {
+          tops.reverse().forEach(id => z.mazo.push(id));
         }
       } else {
-        log('Libro del Crafteo: no hay cartas de Origen Minecraft en tu baraja.');
+        log('Messi: no hay cartas de Origen Minecraft entre las 7 primeras.');
+        tops.reverse().forEach(id => z.mazo.push(id));
       }
       barajar(quien);
       if (typeof renderizarPartida === 'function') renderizarPartida();
@@ -2790,18 +2799,57 @@
   });
 
   R('desafio', {
-    alJugar(quien) {
+    async alJugar(quien) {
       activarDesafioIniciador(quien);
       if (colorLider(quien) === 'negro') {
-        const id = buscarEnMazo(quien, c => String(c?.origen || '').toLowerCase().includes('minecraft'));
-        if (id) {
-          const c = getCardById(id);
-          if (Number(c?.costeTotal) === 1) {
-            zonaJugador(quien).batalla.push(crearUnidadCampo(id, { rested: true }));
-          } else zonaJugador(quien).mano.push(id);
-          barajar(quien);
+        const z = zonaJugador(quien);
+        // Buscar TODAS las cartas de Origen Minecraft en la baraja
+        const mcIds = z.mazo.filter(id => String(getCardById(id)?.origen || '').toLowerCase().includes('minecraft'));
+        if (mcIds.length) {
+          // Eliminar duplicados manteniendo orden
+          const vistos = new Set();
+          const uniq = mcIds.filter(id => { if (vistos.has(id)) return false; vistos.add(id); return true; });
+          const opts = uniq.map(id => ({ label: getCardById(id)?.nombre || id, value: id, cardId: id }));
+          const pick = await elegirConModal('Desafío Libro del Crafteo: elige una carta de Origen Minecraft de tu baraja', opts);
+          if (pick) {
+            // Sacar la carta elegida del mazo
+            const idxMazo = z.mazo.lastIndexOf(pick);
+            if (idxMazo >= 0) z.mazo.splice(idxMazo, 1);
+            const cartaElegida = getCardById(pick);
+            // Si la carta tiene coste 1, dar opción de jugarla gratis en modo descanso o quedártela en mano
+            if (Number(cartaElegida?.costeTotal || 99) === 1) {
+              const decision = await elegirConModal('Desafío Libro del Crafteo: la carta elegida tiene coste 1. ¿Qué quieres hacer?', [
+                { label: 'Jugarla gratis en modo descanso', value: 'jugar', cardId: pick },
+                { label: 'Quedártela en la mano', value: 'mano', cardId: pick }
+              ]);
+              if (decision === 'jugar') {
+                // Jugarla gratis en modo descanso
+                if (claseNormalizada(cartaElegida) === 'unidad') {
+                  const u = crearUnidadCampo(pick, { rested: true });
+                  z.batalla.push(u);
+                  dispatch(pick, 'alJugar', [quien, pick, u]);
+                  log('Desafío Libro del Crafteo juega gratis a ' + (cartaElegida?.nombre || pick) + ' en modo descanso.');
+                } else {
+                  // Extra: aplicar efecto
+                  z.descarte.push(pick);
+                  dispatch(pick, 'alJugar', [quien, pick, null]);
+                  log('Desafío Libro del Crafteo usa gratis a ' + (cartaElegida?.nombre || pick) + '.');
+                }
+              } else {
+                z.mano.push(pick);
+                log('Desafío Libro del Crafteo añade ' + (cartaElegida?.nombre || pick) + ' a tu mano.');
+              }
+            } else {
+              z.mano.push(pick);
+              log('Desafío Libro del Crafteo añade ' + (cartaElegida?.nombre || pick) + ' a tu mano.');
+            }
+          }
+        } else {
+          log('Desafío Libro del Crafteo: no hay cartas de Origen Minecraft en tu baraja.');
         }
+        barajar(quien);
       }
+      if (typeof renderizarPartida === 'function') renderizarPartida();
     }
   });
 
@@ -5186,8 +5234,15 @@
             const comboBtn = document.getElementById('end-combo-btn');
             if (comboBtn) comboBtn.style.display = estadoPartida.faseIndex === 3 ? 'inline-block' : 'none';
             renderZona('op-combo-zone', r.combo.map(c => miniCarta(c, 'combo-card', { comboMode: true })).join(''));
-            renderZona('player-field-zone', j.campo.map(c => miniCarta(c.id || c)).join(''));
-            renderZona('op-field-zone', r.campo.map(c => miniCarta(c.id || c)).join(''));
+            renderZona('player-field-zone', j.campo.map(c => {
+                // Si el campo es RELEASE ENERGY, pasar el objeto completo para mostrar contador de cartas debajo
+                const campoObj = (typeof c === 'object') ? c : { id: c };
+                return miniCarta(campoObj);
+            }).join(''));
+            renderZona('op-field-zone', r.campo.map(c => {
+                const campoObj = (typeof c === 'object') ? c : { id: c };
+                return miniCarta(campoObj);
+            }).join(''));
             renderZona('player-deck-zone', pilaDorso(j.mazo.length));
             renderZona('op-deck-zone', pilaDorso(r.mazo.length));
             renderZona('player-drop-zone', `${j.descarte.length ? miniCarta(j.descarte[j.descarte.length - 1], 'plain-card', { plain: true, noInfo: true }) : ''}<button class="drop-open-btn" onclick="abrirDescarte('jugador')">⌄</button>`);
