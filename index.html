@@ -2180,8 +2180,13 @@
 
   R('blue_lider_01', {
     async alAtacarLider(quien) {
-      // INFINITYCRAFT NO roba al atacar (su habilidad es: ambos descartan 1)
-      if (campoActivo(quien)?.id !== 'anillo') await ambosDescartan('INFINITYCRAFT: descarta 1 carta');
+      // INFINITYCRAFT: ambos descartan 1. Si tiene Anillo de Cobre, solo el rival descarta.
+      if (campoActivo(quien)?.id === 'anillo') {
+        // Solo el rival descarta
+        await elegirDescarteObligatorio(rivalDe(quien), 'INFINITYCRAFT (con Anillo): el rival descarta 1 carta');
+      } else {
+        await ambosDescartan('INFINITYCRAFT: descarta 1 carta');
+      }
     },
     puedeAtacarObjetivo(atacanteId, objetivo, quien) {
       if (objetivo?.tipo === 'unidad') return false;
@@ -3217,8 +3222,15 @@
 
   R('podrido', {
     alPerderCombateDefensa(c) {
+      // Podrido como defensor pierde (atacante gana): invocar token
       invocarToken(c.atacanteQuien === 'jugador' ? 'rival' : 'jugador', 'tokenz', true);
       barajar(c.atacanteQuien === 'jugador' ? 'rival' : 'jugador');
+      log('Podrido invoca a Podrido Rabioso.');
+    },
+    alDestruida(quien) {
+      // Podrido destruida de cualquier forma: invocar token
+      invocarToken(quien, 'tokenz', true);
+      log('Podrido invoca a Podrido Rabioso.');
     }
   });
 
@@ -4353,7 +4365,8 @@
     crearUnidadCampo, infligirDanoLider, elegirConModal, enderezarMana, invocarToken,
     intentarAbsorberDrag,
     recibirPeticionRival, recibirRespuestaRival, _decisionParaRival,
-    elegirConModalRival: elegirConModalRival
+    elegirConModalRival: elegirConModalRival,
+    dispatch: dispatch
   };
 
   window.MotorEfectos._ctx = ctx;
@@ -4932,6 +4945,51 @@
                 } else if (data.tipo === 'combo-defensora-terminado') {
                     // El rival terminó su combo defensora, resolver combate
                     recibirComboDefensoraTerminado(data);
+                } else if (data.tipo === 'limpiar-combo-defensora') {
+                    // El combate terminó: limpiar combo del defensor y procesar resultado
+                    if (estadoPartida) {
+                        estadoPartida.jugador.combo.forEach(c => estadoPartida.jugador.descarte.push(c.id || c));
+                        estadoPartida.jugador.combo = [];
+                        estadoPartida.ataqueActual = null;
+                        estadoPartida.faseIndex = 2;
+                        estadoPartida.turnoDelJugadorLocal = false;
+                        estadoPartida.rivalComboActual = 0;
+                        estadoPartida.rivalAtacanteId = null;
+                        // Procesar resultado del combate desde la perspectiva del defensor
+                        if (data.resultado) {
+                            const r = data.resultado;
+                            // Si el defensor (yo) fue destruido
+                            if (r.defensorDestruido) {
+                                // Mi unidad defensora fue destruida por el atacante
+                                const idx = r.objetivo?.index;
+                                if (idx != null && estadoPartida.jugador.batalla[idx]) {
+                                    const def = estadoPartida.jugador.batalla[idx];
+                                    estadoPartida.jugador.descarte.push(def.id);
+                                    estadoPartida.jugador.batalla.splice(idx, 1);
+                                    // Llamar alDestruida
+                                    if (window.MotorEfectos) MotorEfectos.dispatch(def.id, 'alDestruida', ['jugador']);
+                                    estadoPartida.log = 'Tu unidad defensora ha sido destruida.';
+                                }
+                            }
+                            // Si el atacante rival fue destruido (yo gané la defensa)
+                            if (r.atacanteDestruido) {
+                                estadoPartida.log = '¡Tu defensa destruye al atacante rival!';
+                            }
+                            // Si me hicieron daño al líder
+                            if (r.danoLider > 0) {
+                                for (let i = 0; i < r.danoLider; i++) {
+                                    if (estadoPartida.jugador.vida.length) estadoPartida.jugador.vida.pop();
+                                }
+                                estadoPartida.log = `El ataque del rival te quita ${r.danoLider} vida${r.danoLider > 1 ? 's' : ''}.`;
+                                if (typeof verificarFinPartida === 'function') verificarFinPartida();
+                            }
+                            // Mostrar choque
+                            if (typeof mostrarChoque === 'function') {
+                                mostrarChoque(0, 0, r.ganaAtacante ? 'Atacante' : 'Defensor', !r.ganaAtacante, true);
+                            }
+                        }
+                        renderizarPartida();
+                    }
                 }
             });
             _socketOnline.on('sala-creada', (data) => {
@@ -5322,7 +5380,8 @@
                     liderDespierto: estadoPartida.jugador.liderDespierto,
                     liderZona: JSON.parse(JSON.stringify(estadoPartida.jugador.liderZona || {})),
                     ataqueComboActual: estadoPartida.ataqueActual?.atacanteCombo || 0,
-                    atacanteId: estadoPartida.ataqueActual?.atacanteId || null
+                    atacanteId: estadoPartida.ataqueActual?.atacanteId || null,
+                    defensorCombo: estadoPartida.ataqueActual?.defensorCombo || 0
                 }
             };
             _socketOnline.emit('accion-juego', { tipo: tipo || 'snapshot', snapshot });
@@ -5862,6 +5921,10 @@
             // Comprobar evolución especial
             const evo = costoEvolucion(carta, estadoPartida.jugador);
             if (evo) {
+                // Verificar que hay maná suficiente
+                if (evo.costeTotal > estadoPartida.jugador.manaActivo) {
+                    return alert(`No tienes maná suficiente para evolucionar. Necesitas ${evo.costeTotal} maná.`);
+                }
                 if (!confirm(`¿Evolucionar "${carta.nombre}" al coste reducido de ${evo.costeTotal} maná?`)) return;
                 if (evo.esBonnieEvo) {
                     const bi = estadoPartida.jugador.batalla.findIndex(u => u.id === 'bonnie');
@@ -6261,6 +6324,8 @@
                     estadoPartida.rival.descarte.push(defensor.id);
                     estadoPartida.rival.batalla.splice(idx, 1);
                     estadoPartida.log = 'Tu carta gana el combate y destruye a la defensora.';
+                    // Llamar alDestruida del defensor
+                    if (window.MotorEfectos) MotorEfectos.dispatch(defensor.id, 'alDestruida', ['rival']);
                 }
             } else if (!resultado.ganaAtacante && !resultado.leoInmortal) {
                 // El atacante pierde: destruirlo
@@ -6270,6 +6335,8 @@
                     if (atk) {
                         estadoPartida.jugador.descarte.push(atk.id);
                         estadoPartida.jugador.batalla.splice(atkIdx, 1);
+                        // Llamar alDestruida del atacante
+                        if (window.MotorEfectos) MotorEfectos.dispatch(atk.id, 'alDestruida', ['jugador']);
                     }
                 }
                 estadoPartida.log = 'La carta rival gana el combate. Tu atacante es destruido.';
@@ -6281,9 +6348,26 @@
             estadoPartida.atacanteSeleccionado = null;
             estadoPartida.ataqueActual = null;
             estadoPartida.faseIndex = 2;
+            // Limpiar combo defensora
+            estadoPartida.rivalComboActual = 0;
+            estadoPartida.rivalAtacanteId = null;
             renderizarPartida();
             // Sincronizar online después del ataque
             if (estadoPartida.modo === 'online') sincronizarEstadoOnline('atacar');
+            // Enviar orden al defensor de limpiar su combo y actualizar su campo
+            if (estadoPartida.modo === 'online' && _socketOnline) {
+                _socketOnline.emit('accion-juego', {
+                    tipo: 'limpiar-combo-defensora',
+                    resultado: {
+                        ganaAtacante: resultado.ganaAtacante,
+                        objetivo: resultado.objetivo,
+                        atacanteRef: ataque.atacanteRef,
+                        defensorDestruido: resultado.ganaAtacante && resultado.objetivo?.tipo === 'unidad',
+                        atacanteDestruido: !resultado.ganaAtacante && ataque.atacanteRef?.tipo === 'unidad',
+                        danoLider: resultado.ganaAtacante && resultado.objetivo?.tipo === 'lider' ? danoDeCarta(atacante.id, resultado) : 0
+                    }
+                });
+            }
             verificarFinPartida();
         }
 
@@ -6765,11 +6849,15 @@
             const liderCartaData = getCardById(j.liderId);
             const liderImgActual = j.liderDespierto && liderCartaData?.imgEvo ? liderCartaData.imgEvo : liderCartaData?.img;
             const liderPoderBase = j.liderDespierto && liderCartaData?.poderEvo ? Number(liderCartaData.poderEvo) : Number(liderCartaData?.poder || 0);
-            const esFaseCombo = estadoPartida.faseIndex === 3;
+            const esFaseCombo = estadoPartida.faseIndex === 3 || estadoPartida.faseIndex === 4;
             // Si el líder es el atacante en fase de combo, añadir el poder de combo
             let comboLider = 0;
             if (esFaseCombo && estadoPartida.atacanteSeleccionado?.tipo === 'lider' && estadoPartida.ataqueActual) {
                 comboLider = estadoPartida.ataqueActual.atacanteCombo || 0;
+            }
+            // Si el líder es el defensor en fase de combo defensora, añadir el combo defensivo
+            if (estadoPartida.faseIndex === 4 && estadoPartida.ataqueActual?.objetivo?.tipo === 'lider' && estadoPartida.ataqueActual?.defensorCombo) {
+                comboLider += estadoPartida.ataqueActual.defensorCombo;
             }
             const liderPoderActual = liderPoderBase + (liderObj.buffs.poder || 0) + (liderObj.buffs.batalla || 0) + comboLider;
             // Botones activables del líder
