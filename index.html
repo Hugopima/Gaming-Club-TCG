@@ -4892,7 +4892,17 @@
                     // Recibir animación de choque del rival
                     // Invertir ganaJugador: si el rival ganó, yo perdí
                     if (typeof mostrarChoque === 'function') {
-                        mostrarChoque(data.rivalPower, data.playerPower, data.ganador, !data.ganaJugador);
+                        mostrarChoque(data.rivalPower, data.playerPower, data.ganador, !data.ganaJugador, true);
+                    }
+                } else if (data.tipo === 'animacion-robo') {
+                    // El rival robó una carta: animar en mi pantalla
+                    if (typeof animarRoboRival === 'function') animarRoboRival();
+                } else if (data.tipo === 'intercambio-lider') {
+                    // El rival me envía su liderId
+                    if (estadoPartida) {
+                        estadoPartida.rival.liderId = data.liderId;
+                        estadoPartida.rival.liderZona = { id: data.liderId, rested: false, ataquesRestantes: 0, buffs: { poder: 0, combo: 0, batalla: 0 } };
+                        if (typeof renderizarPartida === 'function') renderizarPartida();
                     }
                 }
             });
@@ -5224,10 +5234,22 @@
             estadoPartida.soyHost = empiezaJugadorLocal;
             estadoPartida.turnoDelJugadorLocal = empiezaJugadorLocal;
 
+            // Enviar mi liderId al rival inmediatamente para que lo conozca
+            if (_socketOnline) {
+                _socketOnline.emit('accion-juego', {
+                    tipo: 'intercambio-lider',
+                    liderId: estadoPartida.jugador.liderId
+                });
+            }
+
             // Mostrar animación de moneda
             mostrarAnimacionMoneda(empiezaJugadorLocal, () => {
-                // Después de la animación, mostrar mulligan
-                iniciarFlujoMulligan(estadoPartida.jugador, estadoPartida.rival);
+                // Después de la animación, mostrar intro de líderes y luego mulligan
+                requestAnimationFrame(() => {
+                    reproducirIntroLideres(() => {
+                        iniciarFlujoMulligan(estadoPartida.jugador, estadoPartida.rival);
+                    });
+                });
             });
         }
 
@@ -5318,20 +5340,24 @@
             if (!estadoPartida || estadoPartida.modo !== 'online') return;
             const snap = data.snapshot;
             if (snap.miEstado) {
+                // Detectar si el rival robó una carta (su mano aumentó)
+                const manoAnterior = estadoPartida.rival.mano.length;
                 // Actualizar líder rival
                 if (snap.miEstado.liderId) {
                     estadoPartida.rival.liderId = snap.miEstado.liderId;
                 }
                 // NO sobrescribir la vida del rival si ya le hicimos daño
-                // Solo actualizar si el rival tiene MENOS vidas (él recibió daño de otra fuente)
                 const vidaRivalSnap = snap.miEstado.vidaCount;
                 if (vidaRivalSnap < estadoPartida.rival.vida.length) {
-                    // El rival tiene menos vidas de las que pensábamos: actualizar
                     estadoPartida.rival.vida = estadoPartida.rival.vida.slice(0, vidaRivalSnap);
                 }
                 // Actualizar mano count
                 while (estadoPartida.rival.mano.length < snap.miEstado.manoCount) estadoPartida.rival.mano.push('desconocida');
                 while (estadoPartida.rival.mano.length > snap.miEstado.manoCount) estadoPartida.rival.mano.pop();
+                // Si la mano aumentó, animar robo del rival
+                if (estadoPartida.rival.mano.length > manoAnterior) {
+                    if (typeof animarRoboRival === 'function') animarRoboRival();
+                }
                 // Actualizar zonas visibles
                 estadoPartida.rival.mana = snap.miEstado.mana || [];
                 estadoPartida.rival.batalla = snap.miEstado.batalla || [];
@@ -5608,6 +5634,28 @@
             const rect = deck.getBoundingClientRect();
             fly.style.position = 'fixed'; fly.style.left = rect.left + 'px'; fly.style.top = rect.top + 'px'; fly.style.zIndex = 3000;
             requestAnimationFrame(() => { fly.style.transition = 'transform .55s ease, opacity .55s ease'; fly.style.transform = `translate(-520px, 360px) rotate(-10deg)`; fly.style.opacity = '0'; });
+            setTimeout(() => fly.remove(), 650);
+        }
+
+        // Animación de robo del rival (desde su mazo hacia su mano)
+        function animarRoboRival() {
+            const deck = document.querySelector('.op-deck-stack');
+            if (!deck) return;
+            const hand = document.getElementById('op-hand-count');
+            const fly = document.createElement('div');
+            fly.className = 'game-card-mini back draw-fly';
+            fly.innerHTML = `<span>GC</span>`;
+            document.body.appendChild(fly);
+            const deckRect = deck.getBoundingClientRect();
+            fly.style.position = 'fixed'; fly.style.left = deckRect.left + 'px'; fly.style.top = deckRect.top + 'px'; fly.style.zIndex = 3000;
+            // Calcular destino (hacia el contador de mano rival)
+            const targetX = hand ? hand.getBoundingClientRect().left - deckRect.left : 100;
+            const targetY = hand ? hand.getBoundingClientRect().top - deckRect.top : 50;
+            requestAnimationFrame(() => {
+                fly.style.transition = 'transform .55s ease, opacity .55s ease';
+                fly.style.transform = `translate(${targetX}px, ${targetY}px) rotate(10deg) scale(.5)`;
+                fly.style.opacity = '0';
+            });
             setTimeout(() => fly.remove(), 650);
         }
 
@@ -6108,16 +6156,21 @@
             return Number(getCardById(id)?.poder || getCardById(id)?.poderEvo || 0);
         }
 
-        function mostrarChoque(playerPower, rivalPower, ganador, ganaJugador) {
+        function mostrarChoque(playerPower, rivalPower, ganador, ganaJugador, esRemoto) {
             const overlay = document.getElementById('clash-overlay');
             document.getElementById('clash-player-power').innerText = playerPower;
             document.getElementById('clash-rival-power').innerText = rivalPower;
             document.getElementById('clash-result').innerText = `${ganador} gana`;
             document.getElementById('clash-result').style.color = ganaJugador ? '#5ee7ff' : '#ff735e';
             overlay.classList.remove('hidden');
-            setTimeout(() => overlay.classList.add('hidden'), 1400);
-            // En modo online, enviar la animación al rival
-            if (estadoPartida && estadoPartida.modo === 'online' && _socketOnline) {
+            // Limpiar cualquier timeout anterior para evitar parpadeo
+            if (window._clashTimeout) clearTimeout(window._clashTimeout);
+            window._clashTimeout = setTimeout(() => {
+                overlay.classList.add('hidden');
+                window._clashTimeout = null;
+            }, 1400);
+            // En modo online, enviar la animación al rival (solo si no es una recepción remota)
+            if (!esRemoto && estadoPartida && estadoPartida.modo === 'online' && _socketOnline) {
                 _socketOnline.emit('accion-juego', {
                     tipo: 'animacion-choque',
                     playerPower: playerPower,
