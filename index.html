@@ -1491,6 +1491,7 @@
     // Mostrar indicador visual de pérdida de vida (-1)
     if (typeof mostrarPerdidaVida === 'function') mostrarPerdidaVida(jugador, 1);
     if (typeof verificarFinPartida === 'function') verificarFinPartida();
+    if (typeof renderizarPartida === 'function') renderizarPartida();
     return carta;
   }
 
@@ -1590,6 +1591,16 @@
     if (u) u.silenciado = Math.max(u.silenciado || 0, turnos || 1);
   }
 
+  // tieneTag local dentro del IIFE (para no depender del script externo)
+  function tieneTagLocal(carta, texto) {
+    if (!carta || !carta.habilidades) return false;
+    const needle = String(texto).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    return carta.habilidades.some(h => {
+      const tag = String(h.tag || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      return tag.includes(needle);
+    });
+  }
+
   function cartaEnZona(id, zona) {
     return getCardById(zona?.copiaDe || id);
   }
@@ -1632,27 +1643,27 @@
 
   function tieneCritico(id) {
     const c = getCardById(id);
-    return tieneTag(c, 'critico') || !!ctx.liderCritico;
+    return tieneTagLocal(c, 'critico') || !!ctx.liderCritico;
   }
 
   function tieneVenganza(zona) {
     if (estaSilenciada(zona)) return false;
     const c = cartaEnZona(zona?.id, zona);
-    return tieneTag(c, 'venganza');
+    return tieneTagLocal(c, 'venganza');
   }
 
   function tieneBloqueador(zona) {
     if (estaSilenciada(zona)) return false;
     const c = cartaEnZona(zona?.id, zona);
-    return tieneTag(c, 'bloqueador');
+    return tieneTagLocal(c, 'bloqueador');
   }
 
   function danoAtacante(id, c) {
     c = c || ctx;
     const carta = getCardById(id);
     const zona = c.atacanteZona;
-    if (zona?.flags?.tripleGolpe || tieneTag(carta, 'triple golpe')) return 3;
-    if (zona?.flags?.dobleGolpe || tieneTag(carta, 'doble golpe')) return 2;
+    if (zona?.flags?.tripleGolpe || tieneTagLocal(carta, 'triple golpe')) return 3;
+    if (zona?.flags?.dobleGolpe || tieneTagLocal(carta, 'doble golpe')) return 2;
     if (c.liderDobleGolpe) return 2;
     return 1;
   }
@@ -3966,8 +3977,7 @@
   }
 
   function alJugar(quien, cardId, zonaRef) {
-    transformarLider(quien);
-    transformarLider(rivalDe(quien));
+    // NO transformar líder automáticamente: solo mediante el botón "Despertar"
     dispatch(cardId, 'alJugar', [quien, cardId, zonaRef]);
     if (typeof renderizarPartida === 'function') renderizarPartida();
   }
@@ -3992,12 +4002,7 @@
     if (atacanteRef?.tipo === 'lider') {
       atacanteId = z.liderId;
       atacanteZona = z.liderZona;
-      // INFINITYCRAFT NO roba al atacar (su habilidad es distinta)
-      const lid = getCardById(z.liderId);
-      const esInfinity = String(lid?.nombre || '').toUpperCase().includes('INFINITYCRAFT');
-      if (!esInfinity) {
-        robarAtaqueLider(quien);
-      }
+      // No llamar robarAtaqueLider aquí: cada líder tiene su propio alAtacarLider que maneja el robo
       dispatch(z.liderId, 'alAtacarLider', [quien, atacanteZona]);
     } else {
       atacanteZona = z.batalla[atacanteRef?.index];
@@ -4882,10 +4887,12 @@
                     }
                 } else if (data.tipo === 'poner-mana' || data.tipo === 'combo' || data.tipo === 'cambiar-fase') {
                     aplicarSnapshotRival(data);
-                    // Mostrar la fase al rival también
-                    if (data.tipo === 'cambiar-fase' && data.snapshot && data.snapshot.faseIndex != null) {
+                    // Actualizar el phase chip del rival directamente
+                    if (data.snapshot && data.snapshot.faseIndex != null) {
                         const fases = ['Carga', 'Principal', 'Combate'];
-                        const fase = fases[data.snapshot.faseIndex] || 'Carga';
+                        const fase = data.snapshot.faseIndex === 3 ? 'Combo' : (fases[data.snapshot.faseIndex] || 'Carga');
+                        const chip = document.getElementById('phase-chip');
+                        if (chip) chip.innerText = fase;
                         if (typeof mostrarFase === 'function') mostrarFase(fase);
                     }
                 } else if (data.tipo === 'animacion-choque') {
@@ -5324,7 +5331,7 @@
             // Enderezar mis cartas
             estadoPartida.jugador.mana.forEach(m => m.rested = false);
             estadoPartida.jugador.batalla.forEach(c => { c.rested = false; c.ataquesRestantes = ataquesPorTurno(c.id); });
-            estadoPartida.jugador.liderZona = { id: estadoPartida.jugador.liderId, rested: false, ataquesRestantes: 1 };
+            estadoPartida.jugador.liderZona = { id: estadoPartida.jugador.liderId, rested: false, ataquesRestantes: 1, buffs: { poder: 0, combo: 0, batalla: 0 } };
             estadoPartida.jugador.manaActivo = estadoPartida.jugador.mana.length;
             estadoPartida.jugador.manaUsadoEsteTurno = false;
             robarDe(estadoPartida.jugador);
@@ -5333,6 +5340,8 @@
             ocultarEsperandoRival();
             mostrarFase('Carga');
             renderizarPartida();
+            // Enviar snapshot al rival para que vea mis cartas enderezadas
+            sincronizarEstadoOnline('cambiar-fase');
         }
 
         // Recibir snapshot del rival (actualización en medio de su turno)
@@ -6351,7 +6360,11 @@
             if (index < 0) return;
             detalleSoloInfo = true;
             cartaDetalleMazo = datosCartas[index];
+            // Si el líder está despertado, mostrar la versión evo por defecto
             detalleMazoEvo = false;
+            if (estadoPartida && estadoPartida.jugador.liderId === id && estadoPartida.jugador.liderDespierto) {
+                detalleMazoEvo = true;
+            }
             pintarDetalleMazo();
             document.getElementById('deck-card-modal').classList.add('open');
         }
