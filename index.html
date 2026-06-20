@@ -1816,11 +1816,21 @@
       // Enviar petición al rival
       window._socketOnline.emit('peticion-rival', {
         token,
+        tipo: 'decision-generica',
         titulo,
         opciones: opcionesSerializadas,
         noCancelable: opcionesExtra?.noCancelable || false
       });
     });
+  }
+
+  // Función para que el código decida si la decisión es del rival o local
+  // En modo online, cuando el efecto afecta al rival, usar esta función
+  async function elegirConModalRival(titulo, opciones, opcionesExtra) {
+    if (estadoPartida && estadoPartida.modo === 'online' && window._socketOnline) {
+      return await enviarDecisionAlRival(titulo, opciones, opcionesExtra);
+    }
+    return elegirConModal(titulo, opciones, opcionesExtra);
   }
 
   // Recibir una petición de decisión del rival (yo soy el rival en este caso)
@@ -1848,12 +1858,28 @@
     if (tipo === 'bloqueador') {
       const z = zonaJugador('jugador');
       const riv = unidadesEnCampo('jugador', u => tieneBloqueador(u) && !u.rested);
+      // Mostrar info del atacante si está disponible
+      let atacanteHtml = '';
+      if (data.atacanteInfo) {
+        const img = data.atacanteInfo.img;
+        atacanteHtml = `<div style="margin-bottom:16px;display:flex;align-items:center;justify-content:center;gap:14px;">
+          ${img ? `<img src="${img}" style="width:80px;height:112px;border-radius:8px;border:2px solid #ff735e;object-fit:cover;">` : ''}
+          <div style="text-align:left;">
+            <div style="color:#ff735e;font-weight:900;font-size:16px;">${data.atacanteInfo.nombre}</div>
+            <div style="color:#fff07c;font-size:20px;font-weight:900;">Poder: ${data.atacanteInfo.poder}</div>
+            <div style="color:#aaa;font-size:12px;">Ataca a ${data.objetivoInfo || 'tu líder'}</div>
+          </div>
+        </div>`;
+      }
       if (!riv.length) {
         window._socketOnline.emit('respuesta-peticion', { token, respuesta: { bloqueo: false } });
         return;
       }
       const opts = opcionesUnidades('jugador', u => tieneBloqueador(u) && !u.rested, 'Bloquear con ');
-      elegirConModal(titulo, opts.concat([{ label: 'No bloquear', value: -1 }])).then(idx => {
+      // Mostrar el atacante antes de la elección
+      mostrarInfoAtacante(atacanteHtml, titulo).then(() => {
+        return elegirConModal(titulo, opts.concat([{ label: 'No bloquear', value: -1 }]));
+      }).then(idx => {
         if (idx == null || idx < 0) {
           window._socketOnline.emit('respuesta-peticion', { token, respuesta: { bloqueo: false } });
         } else {
@@ -1870,12 +1896,27 @@
     if (tipo === 'counter-ataque') {
       const z = zonaJugador('jugador');
       const counters = z.mano.filter(id => tieneTag(getCardById(id), 'counter ataque'));
+      // Mostrar info del atacante si está disponible
+      let atacanteHtml = '';
+      if (data.atacanteInfo) {
+        const img = data.atacanteInfo.img;
+        atacanteHtml = `<div style="margin-bottom:16px;display:flex;align-items:center;justify-content:center;gap:14px;">
+          ${img ? `<img src="${img}" style="width:80px;height:112px;border-radius:8px;border:2px solid #ff735e;object-fit:cover;">` : ''}
+          <div style="text-align:left;">
+            <div style="color:#ff735e;font-weight:900;font-size:16px;">${data.atacanteInfo.nombre}</div>
+            <div style="color:#fff07c;font-size:20px;font-weight:900;">Poder: ${data.atacanteInfo.poder}</div>
+            <div style="color:#aaa;font-size:12px;">Ataca a ${data.objetivoInfo || 'tu líder'}</div>
+          </div>
+        </div>`;
+      }
       if (!counters.length) {
         window._socketOnline.emit('respuesta-peticion', { token, respuesta: { counter: false } });
         return;
       }
       const opts = counters.map(id => ({ label: getCardById(id)?.nombre, value: id, cardId: id }));
-      elegirConModal(titulo, opts.concat([{ label: 'No', value: null }])).then(pick => {
+      mostrarInfoAtacante(atacanteHtml, titulo).then(() => {
+        return elegirConModal(titulo, opts.concat([{ label: 'No', value: null }]));
+      }).then(pick => {
         if (!pick) {
           window._socketOnline.emit('respuesta-peticion', { token, respuesta: { counter: false } });
         } else {
@@ -1892,7 +1933,7 @@
       return;
     }
 
-    // Para otras peticiones, mostrar el modal normal
+    // Para otras peticiones (decision-generica), mostrar el modal normal
     const opcionesRestauradas = opciones.map(o => ({
       label: o.label,
       value: o.value,
@@ -1919,6 +1960,24 @@
     const text = document.getElementById('waiting-rival-text');
     if (text) text.innerText = titulo || 'Esperando al rival...';
     if (overlay) overlay.classList.remove('hidden');
+  }
+
+  // Mostrar info del atacante antes de que el rival decida bloquear/counter
+  function mostrarInfoAtacante(html, titulo) {
+    return new Promise(resolve => {
+      if (!html) { resolve(); return; }
+      // Crear overlay temporal con la info del atacante
+      const overlay = document.createElement('div');
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:2870;background:rgba(0,0,0,.9);display:flex;align-items:center;justify-content:center;padding:24px;';
+      overlay.innerHTML = `<div style="background:rgba(20,10,30,.98);border:2px solid #ff735e;border-radius:16px;padding:30px;text-align:center;max-width:400px;">
+        ${html}
+        <p style="color:#ddd;margin:16px 0;font-size:14px;">${titulo || ''}</p>
+        <button class="plate-btn" onclick="this.closest('div[style*=fixed]').remove();" style="background:linear-gradient(145deg,#5e1f17,#a93226);">Continuar</button>
+      </div>`;
+      document.body.appendChild(overlay);
+      const btn = overlay.querySelector('button');
+      btn.onclick = () => { overlay.remove(); resolve(); };
+    });
   }
 
   function ocultarEsperandoDecisionRival() {
@@ -3188,16 +3247,16 @@
   });
 
   R('bonesy', {
-    alAtacar(quien, ref, zona, objetivo) {
+    async alAtacar(quien, ref, zona, objetivo) {
       if (ctx.objetivo?.tipo === 'lider') {
-        elegirConModal('Bonesy: rival elige', [
+        const v = await elegirConModalRival('Bonesy: el rival elige', [
           { label: 'Descartar top mazo', value: 'mazo' },
           { label: 'Descansar 1 maná activo', value: 'mana' }
-        ]).then(v => {
-          const riv = rivalDe(quien);
-          if (v === 'mazo') { const t = zonaJugador(riv).mazo.pop(); if (t) zonaJugador(riv).descarte.push(t); }
-          else descansarMana(riv, null, 1);
-        });
+        ]);
+        const riv = rivalDe(quien);
+        if (v === 'mazo') { const t = zonaJugador(riv).mazo.pop(); if (t) zonaJugador(riv).descarte.push(t); log('Bonesy: rival descarta la carta superior del mazo.'); }
+        else if (v === 'mana') { descansarMana(riv, null, 1); log('Bonesy: rival descansa 1 maná activo.'); }
+        if (typeof renderizarPartida === 'function') renderizarPartida();
       }
     }
   });
@@ -4098,6 +4157,10 @@
 
   function obtenerActivables(quien) {
     const list = [];
+    // En modo online, solo mostrar activables si es tu turno
+    if (estadoPartida && estadoPartida.modo === 'online' && !estadoPartida.turnoDelJugadorLocal) {
+      return list;
+    }
     const z = zonaJugador(quien);
     const fase = fasesPartida?.[estadoPartida?.faseIndex];
     z.batalla.forEach((u, i) => {
@@ -4134,20 +4197,30 @@
     // En modo online, si el defensor es el rival, enviarle la petición
     if (defensorQuien === 'rival' && estadoPartida && estadoPartida.modo === 'online' && window._socketOnline) {
       const token = `bloq_${++_decisionTokenCounter}`;
+      // Obtener info del atacante para mostrársela al rival
+      const atacante = estadoPartida.ataqueActual?.atacanteZonaRef || estadoPartida.jugador.batalla[estadoPartida.atacanteSeleccionado?.index];
+      const atacanteInfo = atacante ? {
+        id: atacante.id,
+        nombre: getCardById(atacante.id)?.nombre || atacante.id,
+        img: getCardById(atacante.id)?.img || '',
+        poder: MotorEfectos.poderCarta(atacante.id, atacante, { quien: 'jugador', atacanteId: atacante.id, atacanteZona: atacante, objetivo: ataqueCtx.objetivo })
+      } : null;
+      const objetivoInfo = ataqueCtx.objetivo?.tipo === 'lider' ? 'tu líder' : 'una de tus unidades';
       const respuesta = await new Promise(resolve => {
         _decisionTokensPendientes.set(token, resolve);
         mostrarEsperandoDecisionRival('El rival decide si bloquear...');
         window._socketOnline.emit('peticion-rival', {
           token,
           tipo: 'bloqueador',
-          titulo: '¿Usar Bloqueador?',
+          titulo: `¿Usar Bloqueador? El rival ataca a ${objetivoInfo} con:`,
           opciones: [],
-          noCancelable: false
+          noCancelable: false,
+          atacanteInfo: atacanteInfo,
+          objetivoInfo: objetivoInfo
         });
       });
       // Interpretar respuesta del rival
       if (respuesta && respuesta.bloqueo) {
-        // El rival bloqueó con la unidad en el índice 'index'
         const idx = respuesta.index;
         const u = zonaJugador('rival').batalla[idx];
         if (u) {
@@ -4176,21 +4249,30 @@
     // En modo online, si el que contraataca es el rival, enviarle la petición
     if (quien === 'rival' && estadoPartida && estadoPartida.modo === 'online' && window._socketOnline) {
       const token = `count_${++_decisionTokenCounter}`;
+      // Obtener info del atacante para mostrársela al rival
+      const atacante = estadoPartida.ataqueActual?.atacanteZonaRef || estadoPartida.jugador.batalla[estadoPartida.atacanteSeleccionado?.index];
+      const atacanteInfo = atacante ? {
+        id: atacante.id,
+        nombre: getCardById(atacante.id)?.nombre || atacante.id,
+        img: getCardById(atacante.id)?.img || '',
+        poder: MotorEfectos.poderCarta(atacante.id, atacante, { quien: 'jugador', atacanteId: atacante.id, atacanteZona: atacante, objetivo: ataqueCtx.objetivo })
+      } : null;
+      const objetivoInfo = ataqueCtx.objetivo?.tipo === 'lider' ? 'tu líder' : 'una de tus unidades';
       const respuesta = await new Promise(resolve => {
         _decisionTokensPendientes.set(token, resolve);
         mostrarEsperandoDecisionRival('El rival decide si contraatacar...');
         window._socketOnline.emit('peticion-rival', {
           token,
           tipo: 'counter-ataque',
-          titulo: '¿Usar Counter Ataque?',
+          titulo: `¿Usar Counter Ataque? El rival ataca a ${objetivoInfo} con:`,
           opciones: [],
-          noCancelable: false
+          noCancelable: false,
+          atacanteInfo: atacanteInfo,
+          objetivoInfo: objetivoInfo
         });
       });
       // Interpretar respuesta del rival
       if (respuesta && respuesta.counter) {
-        // El rival contraatacó con la carta cartaId
-        // El rival ya descartó en su pantalla, solo registramos
         log(`${getCardById(respuesta.cartaId)?.nombre} niega el ataque (Counter).`);
         return true;
       }
@@ -4256,7 +4338,8 @@
     zonaJugador, rivalDe, robar, barajar, log, tirarDado, registrar,
     crearUnidadCampo, infligirDanoLider, elegirConModal, enderezarMana, invocarToken,
     intentarAbsorberDrag,
-    recibirPeticionRival, recibirRespuestaRival, _decisionParaRival
+    recibirPeticionRival, recibirRespuestaRival, _decisionParaRival,
+    elegirConModalRival: elegirConModalRival
   };
 
   window.MotorEfectos._ctx = ctx;
@@ -4797,8 +4880,20 @@
                         if (typeof verificarFinPartida === 'function') verificarFinPartida();
                         renderizarPartida();
                     }
-                } else if (data.tipo === 'poner-mana' || data.tipo === 'combo') {
+                } else if (data.tipo === 'poner-mana' || data.tipo === 'combo' || data.tipo === 'cambiar-fase') {
                     aplicarSnapshotRival(data);
+                    // Mostrar la fase al rival también
+                    if (data.tipo === 'cambiar-fase' && data.snapshot && data.snapshot.faseIndex != null) {
+                        const fases = ['Carga', 'Principal', 'Combate'];
+                        const fase = fases[data.snapshot.faseIndex] || 'Carga';
+                        if (typeof mostrarFase === 'function') mostrarFase(fase);
+                    }
+                } else if (data.tipo === 'animacion-choque') {
+                    // Recibir animación de choque del rival
+                    // Invertir ganaJugador: si el rival ganó, yo perdí
+                    if (typeof mostrarChoque === 'function') {
+                        mostrarChoque(data.rivalPower, data.playerPower, data.ganador, !data.ganaJugador);
+                    }
                 }
             });
             _socketOnline.on('sala-creada', (data) => {
@@ -5167,14 +5262,14 @@
                     vidaCount: estadoPartida.jugador.vida.length,
                     manoCount: estadoPartida.jugador.mano.length,
                     mazoCount: estadoPartida.jugador.mazo.length,
-                    mana: estadoPartida.jugador.mana,
-                    batalla: estadoPartida.jugador.batalla,
-                    combo: estadoPartida.jugador.combo,
-                    descarte: estadoPartida.jugador.descarte,
-                    campo: estadoPartida.jugador.campo,
+                    mana: JSON.parse(JSON.stringify(estadoPartida.jugador.mana || [])),
+                    batalla: JSON.parse(JSON.stringify(estadoPartida.jugador.batalla || [])),
+                    combo: JSON.parse(JSON.stringify(estadoPartida.jugador.combo || [])),
+                    descarte: estadoPartida.jugador.descarte || [],
+                    campo: JSON.parse(JSON.stringify(estadoPartida.jugador.campo || [])),
                     manaActivo: estadoPartida.jugador.manaActivo,
                     liderDespierto: estadoPartida.jugador.liderDespierto,
-                    liderZona: estadoPartida.jugador.liderZona
+                    liderZona: JSON.parse(JSON.stringify(estadoPartida.jugador.liderZona || {}))
                 }
             };
             _socketOnline.emit('accion-juego', { tipo: tipo || 'snapshot', snapshot });
@@ -5416,6 +5511,8 @@
             if (fase === 'Principal' && window.MotorEfectos) MotorEfectos.alInicioPrincipal('jugador');
             mostrarFase(fase);
             renderizarPartida();
+            // Sincronizar cambio de fase en online
+            if (estadoPartida.modo === 'online') sincronizarEstadoOnline('cambiar-fase');
         }
 
         function finalizarTurno() {
@@ -6019,6 +6116,16 @@
             document.getElementById('clash-result').style.color = ganaJugador ? '#5ee7ff' : '#ff735e';
             overlay.classList.remove('hidden');
             setTimeout(() => overlay.classList.add('hidden'), 1400);
+            // En modo online, enviar la animación al rival
+            if (estadoPartida && estadoPartida.modo === 'online' && _socketOnline) {
+                _socketOnline.emit('accion-juego', {
+                    tipo: 'animacion-choque',
+                    playerPower: playerPower,
+                    rivalPower: rivalPower,
+                    ganador: ganador,
+                    ganaJugador: ganaJugador
+                });
+            }
         }
 
         function intentarCombarDesdeMano(index) {
