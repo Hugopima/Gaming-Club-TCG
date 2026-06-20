@@ -5266,7 +5266,9 @@
         }
 
         function mostrarEsperandoRival() {
-            document.getElementById('waiting-turn-overlay')?.classList.remove('hidden');
+            // Desactivado en modo online para no tapar la pantalla
+            // El bloqueo de interacción lo maneja partidaInteractiva()
+            // document.getElementById('waiting-turn-overlay')?.classList.remove('hidden');
         }
 
         function ocultarEsperandoRival() {
@@ -5435,7 +5437,6 @@
                 estadoPartida.log = 'Esperando al rival...';
                 sincronizarEstadoOnline('fin-turno');
                 estadoPartida.turnoDelJugadorLocal = false;
-                mostrarEsperandoRival();
                 renderizarPartida();
             } else {
                 // Modo solo: comportamiento normal
@@ -5860,9 +5861,16 @@
                 const objFinal = await MotorEfectos.intentarBloqueador('rival', { objetivo: obj });
                 const countered = await MotorEfectos.intentarCounterAtaque('rival', { objetivo: objFinal, noCounter: false });
                 if (countered) {
-                    // counter niega el ataque; la carta que hace counter queda rested
+                    // counter niega el ataque; la carta atacante queda en modo descanso (ha atacado este turno)
+                    const atacante = obtenerAtacanteActual();
+                    if (atacante) {
+                        atacante.ataquesRestantes = Math.max(0, (atacante.ataquesRestantes ?? 1) - 1);
+                        atacante.rested = atacante.ataquesRestantes <= 0;
+                    }
                     estadoPartida.atacanteSeleccionado = null;
-                    estadoPartida.log = 'El ataque ha sido negado por un Counter Ataque.';
+                    estadoPartida.log = 'El ataque ha sido negado por un Counter Ataque. Tu atacante queda en descanso.';
+                    // Sincronizar online
+                    if (estadoPartida.modo === 'online') sincronizarEstadoOnline('atacar');
                     renderizarPartida(); return;
                 }
                 iniciarAtaque(objFinal);
@@ -5885,8 +5893,16 @@
                 const objFinal = await MotorEfectos.intentarBloqueador('rival', { objetivo: obj });
                 const countered = await MotorEfectos.intentarCounterAtaque('rival', { objetivo: objFinal, noCounter: false });
                 if (countered) {
+                    // counter niega el ataque; la carta atacante queda en modo descanso (ha atacado este turno)
+                    const atacante = obtenerAtacanteActual();
+                    if (atacante) {
+                        atacante.ataquesRestantes = Math.max(0, (atacante.ataquesRestantes ?? 1) - 1);
+                        atacante.rested = atacante.ataquesRestantes <= 0;
+                    }
                     estadoPartida.atacanteSeleccionado = null;
-                    estadoPartida.log = 'El ataque ha sido negado por un Counter Ataque.';
+                    estadoPartida.log = 'El ataque ha sido negado por un Counter Ataque. Tu atacante queda en descanso.';
+                    // Sincronizar online
+                    if (estadoPartida.modo === 'online') sincronizarEstadoOnline('atacar');
                     renderizarPartida(); return;
                 }
                 iniciarAtaque(objFinal);
