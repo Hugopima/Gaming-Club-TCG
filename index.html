@@ -4955,18 +4955,17 @@
                         estadoPartida.turnoDelJugadorLocal = false;
                         estadoPartida.rivalComboActual = 0;
                         estadoPartida.rivalAtacanteId = null;
+                        estadoPartida.atacanteSeleccionado = null;
                         // Procesar resultado del combate desde la perspectiva del defensor
                         if (data.resultado) {
                             const r = data.resultado;
                             // Si el defensor (yo) fue destruido
                             if (r.defensorDestruido) {
-                                // Mi unidad defensora fue destruida por el atacante
                                 const idx = r.objetivo?.index;
                                 if (idx != null && estadoPartida.jugador.batalla[idx]) {
                                     const def = estadoPartida.jugador.batalla[idx];
                                     estadoPartida.jugador.descarte.push(def.id);
                                     estadoPartida.jugador.batalla.splice(idx, 1);
-                                    // Llamar alDestruida
                                     if (window.MotorEfectos) MotorEfectos.dispatch(def.id, 'alDestruida', ['jugador']);
                                     estadoPartida.log = 'Tu unidad defensora ha sido destruida.';
                                 }
@@ -4983,9 +4982,9 @@
                                 estadoPartida.log = `El ataque del rival te quita ${r.danoLider} vida${r.danoLider > 1 ? 's' : ''}.`;
                                 if (typeof verificarFinPartida === 'function') verificarFinPartida();
                             }
-                            // Mostrar choque
-                            if (typeof mostrarChoque === 'function') {
-                                mostrarChoque(0, 0, r.ganaAtacante ? 'Atacante' : 'Defensor', !r.ganaAtacante, true);
+                            // Mostrar choque con los poderes reales (invertidos desde mi perspectiva)
+                            if (typeof mostrarChoque === 'function' && r.pa != null && r.pd != null) {
+                                mostrarChoque(r.pd, r.pa, r.ganaAtacante ? 'Atacante' : 'Defensor', !r.ganaAtacante, true);
                             }
                         }
                         renderizarPartida();
@@ -6225,6 +6224,8 @@
             estadoPartida.ataqueActual = estadoPartida.ataqueActual || {};
             estadoPartida.ataqueActual.defensorCombo = 0;
             estadoPartida.ataqueActual.atacantePoderTotal = data.atacantePoder;
+            estadoPartida.ataqueActual.objetivo = data.objetivo; // Guardar objetivo para saber qué defiendo
+            estadoPartida.ataqueActual.atacanteId = data.atacanteId;
             estadoPartida.turnoDelJugadorLocal = true; // Temporalmente mi turno para poder combar
             mostrarFase('Defensa');
             renderizarPartida();
@@ -6364,7 +6365,9 @@
                         atacanteRef: ataque.atacanteRef,
                         defensorDestruido: resultado.ganaAtacante && resultado.objetivo?.tipo === 'unidad',
                         atacanteDestruido: !resultado.ganaAtacante && ataque.atacanteRef?.tipo === 'unidad',
-                        danoLider: resultado.ganaAtacante && resultado.objetivo?.tipo === 'lider' ? danoDeCarta(atacante.id, resultado) : 0
+                        danoLider: resultado.ganaAtacante && resultado.objetivo?.tipo === 'lider' ? danoDeCarta(atacante.id, resultado) : 0,
+                        pa: resultado.pa,
+                        pd: resultado.pd
                     }
                 });
             }
@@ -6444,11 +6447,15 @@
             manaIndexes.forEach(i => estadoPartida.jugador.mana[i].rested = true);
             estadoPartida.jugador.manaActivo = estadoPartida.jugador.mana.filter(m => !m.rested).length;
             let id = pendiente.cardId;
-            if (pendiente.origen === 'mano') estadoPartida.jugador.mano.splice(pendiente.index, 1);
+            if (pendiente.origen === 'mano') {
+                // Buscar por cardId en lugar de índice (más robusto)
+                const manoIdx = estadoPartida.jugador.mano.indexOf(id);
+                if (manoIdx >= 0) estadoPartida.jugador.mano.splice(manoIdx, 1);
+            }
             if (pendiente.origen === 'campo') {
-                // Buscar la carta por referencia para asegurarnos de eliminar la correcta
-                const idxToRemove = estadoPartida.jugador.batalla.findIndex((u, i) => i === pendiente.index);
-                if (idxToRemove >= 0) estadoPartida.jugador.batalla.splice(idxToRemove, 1);
+                // Buscar por cardId en batalla
+                const batallaIdx = estadoPartida.jugador.batalla.findIndex(u => u.id === id);
+                if (batallaIdx >= 0) estadoPartida.jugador.batalla.splice(batallaIdx, 1);
             }
             const carta = getCardById(id);
             const poder = poderCombo(carta);
@@ -6869,7 +6876,8 @@
                 });
             }
             const liderAtacando = esFaseCombo && estadoPartida.atacanteSeleccionado?.tipo === 'lider';
-            const liderHtml = `<div class="game-card-mini ${liderObj.rested ? 'rested' : ''} ${liderAtacando ? 'attack-glow' : ''}" onclick="seleccionarLiderAtacante()" ondblclick="abrirDetalleJuego('${j.liderId}')" style="cursor:pointer" title="Doble click para ver info">
+            const liderDefendiendo = estadoPartida.faseIndex === 4 && estadoPartida.ataqueActual?.objetivo?.tipo === 'lider';
+            const liderHtml = `<div class="game-card-mini ${liderObj.rested ? 'rested' : ''} ${liderAtacando ? 'attack-glow' : ''} ${liderDefendiendo ? 'defend-glow' : ''}" onclick="seleccionarLiderAtacante()" ondblclick="abrirDetalleJuego('${j.liderId}')" style="cursor:pointer" title="Doble click para ver info">
                 <img src="${liderImgActual || ''}" alt="${escapeHtml(liderCartaData?.nombre || '')}">
                 <span class="card-power-badge">${liderPoderActual}</span>
             </div>${liderActivables}`;
