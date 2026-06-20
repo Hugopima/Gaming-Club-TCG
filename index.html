@@ -4714,7 +4714,8 @@
 
         let _socketOnline = null;
         let _onlineRoomId = null;
-        let _onlineEstado = null; // 'buscando', 'creando', 'unido'
+        let _onlinePlayerNum = null; // 1 o 2
+        let _onlineEstado = null;
 
         // Conectar al servidor en silencio al abrir el lobby
         function conectarAlServidorSilencioso() {
@@ -4726,6 +4727,7 @@
                 script.onload = () => {
                     try {
                         _socketOnline = io();
+                        window._socketOnline = _socketOnline; // Exponer para el IIFE
                         configurarEventosSocket(statusEl);
                     } catch (e) {
                         statusEl.innerHTML = '❌ No se pudo conectar al servidor. ¿Está online el servidor?';
@@ -4738,6 +4740,7 @@
             } else {
                 try {
                     _socketOnline = io();
+                    window._socketOnline = _socketOnline; // Exponer para el IIFE
                     configurarEventosSocket(statusEl);
                 } catch (e) {
                     statusEl.innerHTML = '❌ No se pudo conectar.';
@@ -4760,6 +4763,7 @@
             });
             _socketOnline.on('partida-lista', (data) => {
                 _onlineRoomId = data.roomId;
+                _onlinePlayerNum = data.playerNum; // 1 o 2
                 _onlineEstado = null;
                 statusEl.innerHTML = '✅ ¡Rival encontrado!';
                 document.getElementById('online-lobby-overlay').classList.add('hidden');
@@ -4768,8 +4772,8 @@
             // Resultado de la moneda (quién empieza)
             _socketOnline.on('moneda-resultado', (data) => {
                 // data.empiezaJugador1 = true/false
-                // Si soy jugador 1 (playerNum 1), empiezo si data.empiezaJugador1 es true
-                const soyJugador1 = _socketOnline.dataPlayerNum === 1;
+                // Si soy jugador 1, empiezo si data.empiezaJugador1 es true
+                const soyJugador1 = _onlinePlayerNum === 1;
                 const empiezoYo = soyJugador1 ? data.empiezaJugador1 : !data.empiezaJugador1;
                 configurarPartidaOnline(empiezoYo);
             });
@@ -4783,6 +4787,18 @@
                     recibirJugarCartaRival(data);
                 } else if (data.tipo === 'atacar') {
                     recibirAtaqueRival(data);
+                } else if (data.tipo === 'dano-lider') {
+                    // El rival me hizo daño: aplicarlo a mi vida
+                    if (estadoPartida) {
+                        for (let i = 0; i < data.dano; i++) {
+                            if (estadoPartida.jugador.vida.length) estadoPartida.jugador.vida.pop();
+                        }
+                        estadoPartida.log = `El ataque del rival te quita ${data.dano} vida${data.dano > 1 ? 's' : ''}.`;
+                        if (typeof verificarFinPartida === 'function') verificarFinPartida();
+                        renderizarPartida();
+                    }
+                } else if (data.tipo === 'poner-mana' || data.tipo === 'combo') {
+                    aplicarSnapshotRival(data);
                 }
             });
             _socketOnline.on('sala-creada', (data) => {
@@ -5207,11 +5223,21 @@
             if (!estadoPartida || estadoPartida.modo !== 'online') return;
             const snap = data.snapshot;
             if (snap.miEstado) {
-                estadoPartida.rival.liderId = snap.miEstado.liderId;
-                estadoPartida.rival.vida = estadoPartida.rival.vida.slice(0, snap.miEstado.vidaCount);
-                while (estadoPartida.rival.vida.length < snap.miEstado.vidaCount) estadoPartida.rival.vida.push('desconocida');
+                // Actualizar líder rival
+                if (snap.miEstado.liderId) {
+                    estadoPartida.rival.liderId = snap.miEstado.liderId;
+                }
+                // NO sobrescribir la vida del rival si ya le hicimos daño
+                // Solo actualizar si el rival tiene MENOS vidas (él recibió daño de otra fuente)
+                const vidaRivalSnap = snap.miEstado.vidaCount;
+                if (vidaRivalSnap < estadoPartida.rival.vida.length) {
+                    // El rival tiene menos vidas de las que pensábamos: actualizar
+                    estadoPartida.rival.vida = estadoPartida.rival.vida.slice(0, vidaRivalSnap);
+                }
+                // Actualizar mano count
                 while (estadoPartida.rival.mano.length < snap.miEstado.manoCount) estadoPartida.rival.mano.push('desconocida');
                 while (estadoPartida.rival.mano.length > snap.miEstado.manoCount) estadoPartida.rival.mano.pop();
+                // Actualizar zonas visibles
                 estadoPartida.rival.mana = snap.miEstado.mana || [];
                 estadoPartida.rival.batalla = snap.miEstado.batalla || [];
                 estadoPartida.rival.combo = snap.miEstado.combo || [];
@@ -5219,7 +5245,9 @@
                 estadoPartida.rival.campo = snap.miEstado.campo || [];
                 estadoPartida.rival.manaActivo = snap.miEstado.manaActivo || 0;
                 estadoPartida.rival.liderDespierto = snap.miEstado.liderDespierto;
-                estadoPartida.rival.liderZona = snap.miEstado.liderZona;
+                if (snap.miEstado.liderZona) {
+                    estadoPartida.rival.liderZona = snap.miEstado.liderZona;
+                }
             }
             estadoPartida.turno = snap.turno;
             estadoPartida.faseIndex = snap.faseIndex;
@@ -5931,6 +5959,10 @@
                         for (let i = 0; i < dano; i++) if (estadoPartida.rival.vida.length) estadoPartida.rival.vida.pop();
                         estadoPartida.log = `El ataque impacta al lider rival: pierde ${dano} vida${dano > 1 ? 's' : ''}.`;
                     }
+                    // En modo online, enviar el daño al rival para que lo aplique a su vida
+                    if (estadoPartida.modo === 'online' && _socketOnline) {
+                        _socketOnline.emit('accion-juego', { tipo: 'dano-lider', dano: dano });
+                    }
                 } else if (!resultado.leoInmortal) {
                     estadoPartida.log = 'El lider rival resiste el ataque.';
                 }
@@ -5953,6 +5985,8 @@
             estadoPartida.ataqueActual = null;
             estadoPartida.faseIndex = 2;
             renderizarPartida();
+            // Sincronizar online después del ataque
+            if (estadoPartida.modo === 'online') sincronizarEstadoOnline('atacar');
             verificarFinPartida();
         }
 
@@ -6027,6 +6061,8 @@
             estadoPartida.log = `${carta.nombre} suma +${poderCombo(carta)} de combo.`;
             if (window.MotorEfectos) MotorEfectos.alCombo('jugador', id, { ataque: estadoPartida.ataqueActual });
             renderizarPartida();
+            // Sincronizar online
+            if (estadoPartida.modo === 'online') sincronizarEstadoOnline('combo');
         }
 
         function despertarLider() {
@@ -6485,14 +6521,8 @@
             }).join(''));
 
             // === SINCRONIZACIÓN ONLINE ===
-            // Mostrar/ocultar overlay de esperando rival
-            if (estadoPartida.modo === 'online') {
-                if (estadoPartida.turnoDelJugadorLocal) {
-                    ocultarEsperandoRival();
-                } else if (!estadoPartida.introActiva && !estadoPartida.finalizada) {
-                    mostrarEsperandoRival();
-                }
-            }
+            // NO mostrar overlay de esperando rival - el jugador debe ver las acciones en tiempo real
+            // Solo bloquear interacción cuando no es su turno (partidaInteractiva ya lo maneja)
         }
         function obtenerColorBorde(color) {
             if (!color) return 'rgba(255,255,255,0.8)';
