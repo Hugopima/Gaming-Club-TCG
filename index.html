@@ -554,6 +554,8 @@
         .game-card-mini.drag-eligible { outline: 2px dashed rgba(255,240,124,.7); }
         .game-card-mini.attack-glow { outline: 3px solid #ff735e; box-shadow: 0 0 24px rgba(255,115,94,.6); animation: attackPulse 1s ease-in-out infinite alternate; }
         @keyframes attackPulse { to { box-shadow: 0 0 36px rgba(255,115,94,.9); } }
+        .game-card-mini.defend-glow { outline: 3px solid #5ee7ff; box-shadow: 0 0 24px rgba(94,231,255,.6); animation: defendPulse 1s ease-in-out infinite alternate; }
+        @keyframes defendPulse { to { box-shadow: 0 0 36px rgba(94,231,255,.9); } }
 
         /* --- Contador de mazo restante (HUD) --- */
         .deck-count-pill { position: absolute; bottom: -22px; right: -8px; background: rgba(0,0,0,.9); color: #fff07c; border: 2px solid #ffd700; border-radius: 999px; padding: 2px 8px; font-size: 14px; font-weight: 900; }
@@ -3163,16 +3165,20 @@
   });
 
   R('patroclo', {
-    alJugar(quien) {
+    async alJugar(quien) {
       if (String(liderCarta(quien)?.origen || '').toLowerCase().includes('minecraft') || liderNombre(quien).toLowerCase().includes('minecraft')) {
-        patrocloDescarteMano(rivalDe(quien));
+        await patrocloDescarteMano(rivalDe(quien));
       }
     }
   });
   async function patrocloDescarteMano(riv) {
-    while (zonaJugador(riv).mano.length > 3) {
-      await elegirDescarteObligatorio(riv, 'Patroclo: descarta hasta 3 en mano');
+    // El rival descarta hasta quedarse con 3 cartas en mano
+    const z = zonaJugador(riv);
+    while (z.mano.length > 3) {
+      await elegirDescarteObligatorio(riv, 'Patroclo: descarta cartas hasta tener 3 en mano');
     }
+    log('Patroclo: el rival se queda con 3 cartas en mano.');
+    if (typeof renderizarPartida === 'function') renderizarPartida();
   }
 
   R('energia', {
@@ -4920,6 +4926,12 @@
                     if (typeof mostrarNotificacionAtaque === 'function') {
                         mostrarNotificacionAtaque(`${data.atacanteNombre} ataca a ${objTxt}!`);
                     }
+                } else if (data.tipo === 'combo-defensora') {
+                    // Es mi turno de combar para defender
+                    recibirComboDefensora(data);
+                } else if (data.tipo === 'combo-defensora-terminado') {
+                    // El rival terminó su combo defensora, resolver combate
+                    recibirComboDefensoraTerminado(data);
                 }
             });
             _socketOnline.on('sala-creada', (data) => {
@@ -5308,7 +5320,9 @@
                     campo: JSON.parse(JSON.stringify(estadoPartida.jugador.campo || [])),
                     manaActivo: estadoPartida.jugador.manaActivo,
                     liderDespierto: estadoPartida.jugador.liderDespierto,
-                    liderZona: JSON.parse(JSON.stringify(estadoPartida.jugador.liderZona || {}))
+                    liderZona: JSON.parse(JSON.stringify(estadoPartida.jugador.liderZona || {})),
+                    ataqueComboActual: estadoPartida.ataqueActual?.atacanteCombo || 0,
+                    atacanteId: estadoPartida.ataqueActual?.atacanteId || null
                 }
             };
             _socketOnline.emit('accion-juego', { tipo: tipo || 'snapshot', snapshot });
@@ -5389,6 +5403,9 @@
                 if (snap.miEstado.liderZona) {
                     estadoPartida.rival.liderZona = snap.miEstado.liderZona;
                 }
+                // Guardar info del combo del rival para mostrarlo visualmente
+                estadoPartida.rivalComboActual = snap.miEstado.ataqueComboActual || 0;
+                estadoPartida.rivalAtacanteId = snap.miEstado.atacanteId || null;
             }
             estadoPartida.turno = snap.turno;
             estadoPartida.faseIndex = snap.faseIndex;
@@ -5545,7 +5562,8 @@
 
         function pasarFase() {
             if (!partidaInteractiva()) return;
-            if (estadoPartida.faseIndex === 3) return terminarAtaque();
+            if (estadoPartida.faseIndex === 3) return iniciarComboDefensora();
+            if (estadoPartida.faseIndex === 4) return terminarComboDefensora();
             if (estadoPartida.faseIndex >= fasesPartida.length - 1) {
                 estadoPartida.log = 'Ya estas en la ultima fase. Usa Fin turno cuando acabes.';
                 renderizarPartida();
@@ -5731,7 +5749,7 @@
         }
         function soltarEnCombo(event) {
             event.preventDefault();
-            if (!estadoPartida || estadoPartida.faseIndex !== 3 || !estadoPartida.ataqueActual) return;
+            if (!estadoPartida || (estadoPartida.faseIndex !== 3 && estadoPartida.faseIndex !== 4) || !estadoPartida.ataqueActual) return;
             const handData = event.dataTransfer.getData('hand-index');
             const battleData = event.dataTransfer.getData('battle-index');
             // Importante: getData devuelve '' si no se estableció, y Number('') === 0 (NO NaN)
@@ -6111,6 +6129,72 @@
             return estadoPartida.jugador.batalla[ref.index];
         }
 
+        // === FASE DE COMBO DEFENSORA ===
+        function iniciarComboDefensora() {
+            const ataque = estadoPartida.ataqueActual;
+            if (!ataque) return terminarAtaque();
+
+            // En modo online: pedir al rival que decida si quiere combar
+            if (estadoPartida.modo === 'online' && _socketOnline) {
+                // Notificar al rival que es su fase de combo defensora
+                _socketOnline.emit('accion-juego', {
+                    tipo: 'combo-defensora',
+                    atacanteId: ataque.atacanteId,
+                    atacantePoder: ataque.atacanteBase + ataque.atacanteCombo,
+                    objetivo: ataque.objetivo
+                });
+                // Mostrar "esperando al rival" en mi pantalla
+                estadoPartida.faseIndex = 4;
+                estadoPartida.log = 'El rival puede combar para defender...';
+                mostrarFase('Defensa');
+                renderizarPartida();
+            } else {
+                // Modo solo: la IA decide si comba (por ahora no comba)
+                terminarAtaque();
+            }
+        }
+
+        // Recibir la fase de combo defensora del rival (yo soy el defensor)
+        function recibirComboDefensora(data) {
+            if (!estadoPartida || estadoPartida.modo !== 'online') return;
+            estadoPartida.faseIndex = 4;
+            estadoPartida.log = '¡Puedes combar para defender! Arrastra cartas al área de combo o pulsa Siguiente.';
+            estadoPartida.ataqueActual = estadoPartida.ataqueActual || {};
+            estadoPartida.ataqueActual.defensorCombo = 0;
+            estadoPartida.ataqueActual.atacantePoderTotal = data.atacantePoder;
+            estadoPartida.turnoDelJugadorLocal = true; // Temporalmente mi turno para poder combar
+            mostrarFase('Defensa');
+            renderizarPartida();
+        }
+
+        // Cuando el defensor termina su combo
+        function terminarComboDefensora() {
+            if (!estadoPartida || !estadoPartida.ataqueActual) return;
+            const defensorCombo = estadoPartida.ataqueActual.defensorCombo || 0;
+
+            if (estadoPartida.modo === 'online' && _socketOnline) {
+                // Enviar el combo defensora al atacante
+                _socketOnline.emit('accion-juego', {
+                    tipo: 'combo-defensora-terminado',
+                    defensorCombo: defensorCombo
+                });
+                // Volver a modo espera
+                estadoPartida.turnoDelJugadorLocal = false;
+                estadoPartida.log = 'Esperando resolución del combate...';
+                renderizarPartida();
+            } else {
+                terminarAtaque();
+            }
+        }
+
+        // Recibir el combo defensora del rival (yo soy el atacante)
+        function recibirComboDefensoraTerminado(data) {
+            if (!estadoPartida || !estadoPartida.ataqueActual) return;
+            estadoPartida.ataqueActual.defensorCombo = data.defensorCombo || 0;
+            // Ahora resolver el combate
+            terminarAtaque();
+        }
+
         function terminarAtaque() {
             const ataque = estadoPartida.ataqueActual;
             if (!ataque) return;
@@ -6130,12 +6214,13 @@
                 defensorId: ataque.objetivo?.tipo === 'unidad' ? estadoPartida.rival.batalla[ataque.objetivo.index]?.id : undefined
             };
             combateCtx.pa = poderCarta(atacante.id, atacante, combateCtx) + ataque.atacanteCombo;
+            const defensorCombo = ataque.defensorCombo || 0;
             if (ataque.objetivo.tipo === 'lider') {
                 const rivalLider = estadoPartida.rival.liderZona || { id: estadoPartida.rival.liderId };
-                combateCtx.pd = poderCarta(estadoPartida.rival.liderId, rivalLider, { quien: 'rival', defensorId: estadoPartida.rival.liderId, objetivo: ataque.objetivo });
+                combateCtx.pd = poderCarta(estadoPartida.rival.liderId, rivalLider, { quien: 'rival', defensorId: estadoPartida.rival.liderId, objetivo: ataque.objetivo }) + defensorCombo;
             } else {
                 const defensor = estadoPartida.rival.batalla[ataque.objetivo.index];
-                combateCtx.pd = poderCarta(defensor?.id, defensor, { quien: 'rival', defensorZona: defensor, defensorId: defensor?.id, objetivo: ataque.objetivo, defensorIndex: ataque.objetivo.index });
+                combateCtx.pd = poderCarta(defensor?.id, defensor, { quien: 'rival', defensorZona: defensor, defensorId: defensor?.id, objetivo: ataque.objetivo, defensorIndex: ataque.objetivo.index }) + defensorCombo;
             }
             combateCtx.ganaAtacante = combateCtx.pa >= combateCtx.pd;
             combateCtx.bloqueadorUsado = estadoPartida.bloqueadorUsado || false;
@@ -6178,7 +6263,16 @@
                     estadoPartida.log = 'Tu carta gana el combate y destruye a la defensora.';
                 }
             } else if (!resultado.ganaAtacante && !resultado.leoInmortal) {
-                estadoPartida.log = 'La carta rival gana el combate. Tu atacante queda en descanso.';
+                // El atacante pierde: destruirlo
+                if (ataque.atacanteRef?.tipo === 'unidad') {
+                    const atkIdx = ataque.atacanteRef.index;
+                    const atk = estadoPartida.jugador.batalla[atkIdx];
+                    if (atk) {
+                        estadoPartida.jugador.descarte.push(atk.id);
+                        estadoPartida.jugador.batalla.splice(atkIdx, 1);
+                    }
+                }
+                estadoPartida.log = 'La carta rival gana el combate. Tu atacante es destruido.';
             }
 
             estadoPartida.jugador.combo.forEach(c => estadoPartida.jugador.descarte.push(c.id || c));
@@ -6273,10 +6367,17 @@
                 if (idxToRemove >= 0) estadoPartida.jugador.batalla.splice(idxToRemove, 1);
             }
             const carta = getCardById(id);
-            estadoPartida.ataqueActual.atacanteCombo += poderCombo(carta);
+            const poder = poderCombo(carta);
+            // Si estamos en fase 4 (combo defensora), añadir al defensorCombo
+            if (estadoPartida.faseIndex === 4) {
+                estadoPartida.ataqueActual.defensorCombo = (estadoPartida.ataqueActual.defensorCombo || 0) + poder;
+                estadoPartida.log = `${carta.nombre} suma +${poder} de combo defensivo.`;
+            } else {
+                estadoPartida.ataqueActual.atacanteCombo += poder;
+                estadoPartida.log = `${carta.nombre} suma +${poder} de combo.`;
+            }
             estadoPartida.jugador.combo.push({ id, comboMode: true });
             estadoPartida.comboPendiente = null;
-            estadoPartida.log = `${carta.nombre} suma +${poderCombo(carta)} de combo.`;
             if (window.MotorEfectos) MotorEfectos.alCombo('jugador', id, { ataque: estadoPartida.ataqueActual });
             renderizarPartida();
             // Sincronizar online
@@ -6664,7 +6765,13 @@
             const liderCartaData = getCardById(j.liderId);
             const liderImgActual = j.liderDespierto && liderCartaData?.imgEvo ? liderCartaData.imgEvo : liderCartaData?.img;
             const liderPoderBase = j.liderDespierto && liderCartaData?.poderEvo ? Number(liderCartaData.poderEvo) : Number(liderCartaData?.poder || 0);
-            const liderPoderActual = liderPoderBase + (liderObj.buffs.poder || 0) + (liderObj.buffs.batalla || 0);
+            const esFaseCombo = estadoPartida.faseIndex === 3;
+            // Si el líder es el atacante en fase de combo, añadir el poder de combo
+            let comboLider = 0;
+            if (esFaseCombo && estadoPartida.atacanteSeleccionado?.tipo === 'lider' && estadoPartida.ataqueActual) {
+                comboLider = estadoPartida.ataqueActual.atacanteCombo || 0;
+            }
+            const liderPoderActual = liderPoderBase + (liderObj.buffs.poder || 0) + (liderObj.buffs.batalla || 0) + comboLider;
             // Botones activables del líder
             let liderActivables = '';
             if (window.MotorEfectos && estadoPartida.faseIndex >= 1) {
@@ -6673,7 +6780,8 @@
                     liderActivables += `<button class="activable-btn-overlay" onclick="event.stopPropagation(); ejecutarHabilidadActivable('${a.cardId}','${a.key}','lider')">${escapeHtml(a.label || a.key)}</button>`;
                 });
             }
-            const liderHtml = `<div class="game-card-mini ${liderObj.rested ? 'rested' : ''}" onclick="seleccionarLiderAtacante()" ondblclick="abrirDetalleJuego('${j.liderId}')" style="cursor:pointer" title="Doble click para ver info">
+            const liderAtacando = esFaseCombo && estadoPartida.atacanteSeleccionado?.tipo === 'lider';
+            const liderHtml = `<div class="game-card-mini ${liderObj.rested ? 'rested' : ''} ${liderAtacando ? 'attack-glow' : ''}" onclick="seleccionarLiderAtacante()" ondblclick="abrirDetalleJuego('${j.liderId}')" style="cursor:pointer" title="Doble click para ver info">
                 <img src="${liderImgActual || ''}" alt="${escapeHtml(liderCartaData?.nombre || '')}">
                 <span class="card-power-badge">${liderPoderActual}</span>
             </div>${liderActivables}`;
@@ -6684,19 +6792,30 @@
             const rivalLiderBase = r.liderDespierto && rivalLiderData?.poderEvo ? Number(rivalLiderData.poderEvo) : Number(rivalLiderData?.poder || 0);
             const rivalLiderObj = r.liderZona || { id: r.liderId, rested: false };
             if (!rivalLiderObj.buffs) rivalLiderObj.buffs = { poder: 0, combo: 0, batalla: 0 };
-            const rivalLiderPoder = rivalLiderBase + (rivalLiderObj.buffs.poder || 0) + (rivalLiderObj.buffs.batalla || 0);
-            const rivalLiderHtml = `<div class="game-card-mini ${rivalLiderObj.rested ? 'rested' : ''} ${estadoPartida.atacanteSeleccionado !== null ? 'attackable' : ''}" onclick="atacarLiderRival()" ondblclick="abrirDetalleJuego('${r.liderId}')" style="cursor:pointer" title="Doble click para ver info">
+            // Si el líder rival es el atacante y hay combo, añadirlo al poder
+            let rivalComboLider = 0;
+            if (estadoPartida.rivalAtacanteId === r.liderId && estadoPartida.rivalComboActual) {
+                rivalComboLider = estadoPartida.rivalComboActual;
+            }
+            // Si el líder rival es el objetivo y hay combo defensora, añadirlo
+            let rivalDefensaLider = 0;
+            if (estadoPartida.faseIndex === 4 && estadoPartida.ataqueActual?.objetivo?.tipo === 'lider' && estadoPartida.ataqueActual?.defensorCombo) {
+                rivalDefensaLider = estadoPartida.ataqueActual.defensorCombo;
+            }
+            const rivalLiderPoder = rivalLiderBase + (rivalLiderObj.buffs.poder || 0) + (rivalLiderObj.buffs.batalla || 0) + rivalComboLider + rivalDefensaLider;
+            const rivalLiderAtacando = estadoPartida.rivalAtacanteId === r.liderId && estadoPartida.faseIndex === 3;
+            const rivalLiderHtml = `<div class="game-card-mini ${rivalLiderObj.rested ? 'rested' : ''} ${rivalLiderAtacando ? 'attack-glow' : ''} ${estadoPartida.atacanteSeleccionado !== null ? 'attackable' : ''}" onclick="atacarLiderRival()" ondblclick="abrirDetalleJuego('${r.liderId}')" style="cursor:pointer" title="Doble click para ver info">
                 <img src="${rivalLiderImg || ''}" alt="${escapeHtml(rivalLiderData?.nombre || '')}">
                 <span class="card-power-badge">${rivalLiderPoder}</span>
             </div>`;
             renderZona('op-leader-zone', ocultarLideres ? '' : rivalLiderHtml);
-            const esFaseCombo = estadoPartida.faseIndex === 3;
             const atacanteIdx = estadoPartida.atacanteSeleccionado?.tipo === 'unidad' ? estadoPartida.atacanteSeleccionado.index : -1;
             renderZona('player-battle-zone', j.batalla.map((c, i) => {
                 const esAtacante = i === atacanteIdx;
                 const cartaDatos = getCardById(c.id);
                 const esExtraCard = cartaDatos && String(cartaDatos.clase || cartaDatos.tipo || '').toLowerCase().includes('extra');
-                const clickFn = esFaseCombo
+                const esFaseComboODefensa = esFaseCombo || estadoPartida.faseIndex === 4;
+                const clickFn = esFaseComboODefensa
                     ? `abrirDetalleJuego('${c.id}')`
                     : `seleccionarAtacante(${i})`;
                 // Si es el atacante en fase de combo, añadir buff temporal de combo al poder
@@ -6708,7 +6827,7 @@
                         })
                     });
                 }
-                const cardHtml = miniCarta(cConCombo, (c.rested ? 'rested' : '') + (esAtacante && esFaseCombo ? ' attack-glow' : ''), { onClick: clickFn, battleIndex: esFaseCombo && !esAtacante && !esExtraCard ? i : undefined, dropIndex: i });
+                const cardHtml = miniCarta(cConCombo, (c.rested ? 'rested' : '') + (esAtacante && esFaseCombo ? ' attack-glow' : ''), { onClick: clickFn, battleIndex: (esFaseCombo || estadoPartida.faseIndex === 4) && !esAtacante && !esExtraCard ? i : undefined, dropIndex: i });
                 // Añadir botones activables encima de la carta
                 let activarHtml = '';
                 if (window.MotorEfectos && estadoPartida.faseIndex >= 1) {
@@ -6717,19 +6836,40 @@
                         activarHtml += `<button class="activable-btn-overlay" onclick="event.stopPropagation(); ejecutarHabilidadActivable('${a.cardId}','${a.key}','${i}')">${escapeHtml(a.label || a.key)}</button>`;
                     });
                 }
-                // Botón de Combar (solo en fase combo, cartas que no sean atacante ni extra)
+                // Botón de Combar (en fase combo o fase defensora, cartas que no sean atacante ni extra)
                 let combarHtml = '';
-                if (esFaseCombo && !esAtacante && !esExtraCard) {
+                if ((esFaseCombo || estadoPartida.faseIndex === 4) && !esAtacante && !esExtraCard) {
                     combarHtml = `<button class="combar-btn-overlay" onclick="event.stopPropagation(); intentarCombarDesdeCampo(${i})">Combar</button>`;
                 }
                 const overlays = activarHtml + combarHtml;
                 return overlays ? `<div class="activable-wrap">${cardHtml}${overlays}</div>` : cardHtml;
             }).join(''));
-            renderZona('op-battle-zone', r.batalla.map((c, i) => miniCarta(c, `${c.rested ? 'rested ' : ''}${estadoPartida.atacanteSeleccionado !== null && c.rested ? 'attackable' : ''}`, { onClick: `atacarUnidadRival(${i})` })).join(''));
+            renderZona('op-battle-zone', r.batalla.map((c, i) => {
+                // Si la unidad rival es el atacante y hay combo, añadirlo al poder
+                let cConCombo = c;
+                const esAtacanteRival = estadoPartida.rivalAtacanteId === c.id && estadoPartida.faseIndex === 3;
+                if (esAtacanteRival && estadoPartida.rivalComboActual) {
+                    cConCombo = Object.assign({}, c, {
+                        buffs: Object.assign({}, c.buffs || {}, {
+                            batalla: (c.buffs?.batalla || 0) + estadoPartida.rivalComboActual
+                        })
+                    });
+                }
+                // Si la unidad rival es el objetivo y hay combo defensora, añadirlo
+                const esObjetivoDefensa = estadoPartida.faseIndex === 4 && estadoPartida.ataqueActual?.objetivo?.tipo === 'unidad' && estadoPartida.ataqueActual?.objetivo?.index === i && estadoPartida.ataqueActual?.defensorCombo;
+                if (esObjetivoDefensa) {
+                    cConCombo = Object.assign({}, cConCombo, {
+                        buffs: Object.assign({}, cConCombo.buffs || {}, {
+                            batalla: (cConCombo.buffs?.batalla || 0) + estadoPartida.ataqueActual.defensorCombo
+                        })
+                    });
+                }
+                return miniCarta(cConCombo, `${c.rested ? 'rested ' : ''}${esAtacanteRival ? 'attack-glow ' : ''}${esObjetivoDefensa ? 'defend-glow ' : ''}${estadoPartida.atacanteSeleccionado !== null && c.rested ? 'attackable' : ''}`, { onClick: `atacarUnidadRival(${i})` });
+            }).join(''));
             renderZona('player-combo-zone', j.combo.map(c => miniCarta(c, 'combo-card', { comboMode: true })).join(''));
             // Botón de terminar combo siempre accesible si estamos en fase combo
             const comboBtn = document.getElementById('end-combo-btn');
-            if (comboBtn) comboBtn.style.display = estadoPartida.faseIndex === 3 ? 'inline-block' : 'none';
+            if (comboBtn) comboBtn.style.display = (estadoPartida.faseIndex === 3 || estadoPartida.faseIndex === 4) ? 'inline-block' : 'none';
             renderZona('op-combo-zone', r.combo.map(c => miniCarta(c, 'combo-card', { comboMode: true })).join(''));
             renderZona('player-field-zone', j.campo.map(c => {
                 // Si el campo es RELEASE ENERGY, pasar el objeto completo para mostrar contador de cartas debajo
