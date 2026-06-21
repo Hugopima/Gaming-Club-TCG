@@ -4984,17 +4984,14 @@
                             if (r.atacanteDestruido) {
                                 estadoPartida.log = '¡Tu defensa destruye al atacante rival!';
                             }
-                            // Si me hicieron daño al líder
+                            // Si me hicieron daño al líder - NO quitar vida aquí, el mensaje dano-lider ya lo hace
+                            // Solo mostrar el log
                             if (r.danoLider > 0) {
-                                for (let i = 0; i < r.danoLider; i++) {
-                                    if (estadoPartida.jugador.vida.length) estadoPartida.jugador.vida.pop();
-                                }
                                 estadoPartida.log = `El ataque del rival te quita ${r.danoLider} vida${r.danoLider > 1 ? 's' : ''}.`;
-                                if (typeof verificarFinPartida === 'function') verificarFinPartida();
                             }
-                            // Mostrar choque
-                            if (typeof mostrarChoque === 'function') {
-                                mostrarChoque(0, 0, r.ganaAtacante ? 'Atacante' : 'Defensor', !r.ganaAtacante, true);
+                            // Mostrar choque con los poderes reales (invertidos desde mi perspectiva)
+                            if (typeof mostrarChoque === 'function' && r.pa != null && r.pd != null) {
+                                mostrarChoque(r.pd, r.pa, r.ganaAtacante ? 'Atacante' : 'Defensor', !r.ganaAtacante, true);
                             }
                         }
                         renderizarPartida();
@@ -5654,7 +5651,8 @@
                 return alert('No es tu turno.');
             }
             if (estadoPartida.faseIndex < 2) return alert('Solo puedes terminar el turno desde la fase de combate.');
-            if (estadoPartida.faseIndex === 3) return alert('Termina primero la fase de combo.');
+            if (estadoPartida.faseIndex === 3) return alert('Estás en fase de combo. Pulsa Siguiente.');
+            if (estadoPartida.faseIndex === 4) return alert('El rival está defendiendo. Espera.');
 
             if (window.MotorEfectos) MotorEfectos.alFinTurno('jugador');
 
@@ -6205,27 +6203,23 @@
             const ataque = estadoPartida.ataqueActual;
             if (!ataque) return terminarAtaque();
 
-            // En modo online: pedir al rival que decida si quiere combar
             if (estadoPartida.modo === 'online' && _socketOnline) {
-                // Notificar al rival que es su fase de combo defensora
                 _socketOnline.emit('accion-juego', {
                     tipo: 'combo-defensora',
                     atacanteId: ataque.atacanteId,
                     atacantePoder: ataque.atacanteBase + ataque.atacanteCombo,
                     objetivo: ataque.objetivo
                 });
-                // Mostrar "esperando al rival" en mi pantalla
                 estadoPartida.faseIndex = 4;
                 estadoPartida.log = 'El rival puede combar para defender...';
+                estadoPartida.turnoDelJugadorLocal = false; // El atacante NO puede hacer nada
                 mostrarFase('Defensa');
                 renderizarPartida();
             } else {
-                // Modo solo: la IA decide si comba (por ahora no comba)
                 terminarAtaque();
             }
         }
 
-        // Recibir la fase de combo defensora del rival (yo soy el defensor)
         function recibirComboDefensora(data) {
             if (!estadoPartida || estadoPartida.modo !== 'online') return;
             estadoPartida.faseIndex = 4;
@@ -6233,23 +6227,22 @@
             estadoPartida.ataqueActual = estadoPartida.ataqueActual || {};
             estadoPartida.ataqueActual.defensorCombo = 0;
             estadoPartida.ataqueActual.atacantePoderTotal = data.atacantePoder;
-            estadoPartida.turnoDelJugadorLocal = true; // Temporalmente mi turno para poder combar
+            estadoPartida.ataqueActual.objetivo = data.objetivo;
+            estadoPartida.ataqueActual.atacanteId = data.atacanteId;
+            estadoPartida.turnoDelJugadorLocal = true;
             mostrarFase('Defensa');
             renderizarPartida();
         }
 
-        // Cuando el defensor termina su combo
         function terminarComboDefensora() {
             if (!estadoPartida || !estadoPartida.ataqueActual) return;
             const defensorCombo = estadoPartida.ataqueActual.defensorCombo || 0;
 
             if (estadoPartida.modo === 'online' && _socketOnline) {
-                // Enviar el combo defensora al atacante
                 _socketOnline.emit('accion-juego', {
                     tipo: 'combo-defensora-terminado',
                     defensorCombo: defensorCombo
                 });
-                // Volver a modo espera
                 estadoPartida.turnoDelJugadorLocal = false;
                 estadoPartida.log = 'Esperando resolución del combate...';
                 renderizarPartida();
@@ -6258,11 +6251,9 @@
             }
         }
 
-        // Recibir el combo defensora del rival (yo soy el atacante)
         function recibirComboDefensoraTerminado(data) {
             if (!estadoPartida || !estadoPartida.ataqueActual) return;
             estadoPartida.ataqueActual.defensorCombo = data.defensorCombo || 0;
-            // Ahora resolver el combate
             terminarAtaque();
         }
 
@@ -6348,14 +6339,18 @@
             if (resultado.objetivo.tipo === 'lider') {
                 if (resultado.ganaAtacante) {
                     const dano = danoDeCarta(atacante.id, resultado);
-                    if (window.MotorEfectos) MotorEfectos.infligirDanoLider('rival', dano, atacante.id);
-                    else {
-                        for (let i = 0; i < dano; i++) if (estadoPartida.rival.vida.length) estadoPartida.rival.vida.pop();
-                        estadoPartida.log = `El ataque impacta al lider rival: pierde ${dano} vida${dano > 1 ? 's' : ''}.`;
-                    }
-                    // En modo online, enviar el daño al rival para que lo aplique a su vida
+                    // En modo online: NO quitar vida aquí, solo enviarla al rival
+                    // El rival se la quita a sí mismo al recibir el mensaje
                     if (estadoPartida.modo === 'online' && _socketOnline) {
                         _socketOnline.emit('accion-juego', { tipo: 'dano-lider', dano: dano });
+                        estadoPartida.log = `El ataque impacta al lider rival: pierde ${dano} vida${dano > 1 ? 's' : ''}.`;
+                    } else {
+                        // Modo solo: quitar vida normalmente
+                        if (window.MotorEfectos) MotorEfectos.infligirDanoLider('rival', dano, atacante.id);
+                        else {
+                            for (let i = 0; i < dano; i++) if (estadoPartida.rival.vida.length) estadoPartida.rival.vida.pop();
+                            estadoPartida.log = `El ataque impacta al lider rival: pierde ${dano} vida${dano > 1 ? 's' : ''}.`;
+                        }
                     }
                 } else if (!resultado.leoInmortal) {
                     estadoPartida.log = 'El lider rival resiste el ataque.';
@@ -6407,7 +6402,9 @@
                         atacanteRef: ataque.atacanteRef,
                         defensorDestruido: resultado.ganaAtacante && resultado.objetivo?.tipo === 'unidad',
                         atacanteDestruido: !resultado.ganaAtacante && ataque.atacanteRef?.tipo === 'unidad',
-                        danoLider: resultado.ganaAtacante && resultado.objetivo?.tipo === 'lider' ? danoDeCarta(atacante.id, resultado) : 0
+                        danoLider: resultado.ganaAtacante && resultado.objetivo?.tipo === 'lider' ? danoDeCarta(atacante.id, resultado) : 0,
+                        pa: resultado.pa,
+                        pd: resultado.pd
                     }
                 });
             }
