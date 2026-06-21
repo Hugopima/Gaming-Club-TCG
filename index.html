@@ -6268,9 +6268,27 @@
 
         function terminarAtaque() {
             const ataque = estadoPartida.ataqueActual;
-            if (!ataque) return;
+            if (!ataque) {
+                // Safety: si no hay ataque, resetear fase igual para evitar softlock
+                estadoPartida.atacanteSeleccionado = null;
+                estadoPartida.faseIndex = 2;
+                renderizarPartida();
+                return;
+            }
             const atacante = obtenerAtacanteActual();
-            if (!atacante) return;
+            if (!atacante) {
+                // Safety: si no hay atacante, resetear fase igual para evitar softlock
+                estadoPartida.jugador.combo.forEach(c => estadoPartida.jugador.descarte.push(c.id || c));
+                estadoPartida.jugador.combo = [];
+                estadoPartida.atacanteSeleccionado = null;
+                estadoPartida.ataqueActual = null;
+                estadoPartida.faseIndex = 2;
+                estadoPartida.rivalComboActual = 0;
+                estadoPartida.rivalAtacanteId = null;
+                renderizarPartida();
+                if (estadoPartida.modo === 'online') sincronizarEstadoOnline('atacar');
+                return;
+            }
 
             const combateCtx = {
                 atacanteQuien: 'jugador',
@@ -6285,13 +6303,30 @@
                 defensorId: ataque.objetivo?.tipo === 'unidad' ? estadoPartida.rival.batalla[ataque.objetivo.index]?.id : undefined
             };
             combateCtx.pa = poderCarta(atacante.id, atacante, combateCtx) + ataque.atacanteCombo;
+            // Safety: si poderCarta devolvió 0, usar el poder base de la carta
+            if (!combateCtx.pa) {
+                const cartaAtacante = getCardById(atacante.id);
+                combateCtx.pa = Number(cartaAtacante?.poder || cartaAtacante?.poderEvo || 0) + (ataque.atacanteCombo || 0);
+            }
             const defensorCombo = ataque.defensorCombo || 0;
             if (ataque.objetivo.tipo === 'lider') {
-                const rivalLider = estadoPartida.rival.liderZona || { id: estadoPartida.rival.liderId };
+                const rivalLider = estadoPartida.rival.liderZona || { id: estadoPartida.rival.liderId, rested: false, buffs: { poder: 0, combo: 0, batalla: 0 } };
+                if (!rivalLider.buffs) rivalLider.buffs = { poder: 0, combo: 0, batalla: 0 };
                 combateCtx.pd = poderCarta(estadoPartida.rival.liderId, rivalLider, { quien: 'rival', defensorId: estadoPartida.rival.liderId, objetivo: ataque.objetivo }) + defensorCombo;
+                // Safety: si poderCarta devolvió 0, usar el poder base
+                if (!combateCtx.pd) {
+                    const cartaLider = getCardById(estadoPartida.rival.liderId);
+                    const despertado = estadoPartida.rival.liderDespierto;
+                    combateCtx.pd = Number(despertado ? (cartaLider?.poderEvo || cartaLider?.poder) : cartaLider?.poder || 0) + defensorCombo;
+                }
             } else {
                 const defensor = estadoPartida.rival.batalla[ataque.objetivo.index];
                 combateCtx.pd = poderCarta(defensor?.id, defensor, { quien: 'rival', defensorZona: defensor, defensorId: defensor?.id, objetivo: ataque.objetivo, defensorIndex: ataque.objetivo.index }) + defensorCombo;
+                // Safety: si poderCarta devolvió 0, usar el poder base
+                if (!combateCtx.pd && defensor) {
+                    const cartaDefensor = getCardById(defensor.id);
+                    combateCtx.pd = Number(cartaDefensor?.poder || 0) + defensorCombo;
+                }
             }
             combateCtx.ganaAtacante = combateCtx.pa >= combateCtx.pd;
             combateCtx.bloqueadorUsado = estadoPartida.bloqueadorUsado || false;
