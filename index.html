@@ -552,10 +552,6 @@
         /* --- Drag-over highlight --- */
         .game-card-mini.drop-target { outline: 3px solid #5ee7ff; box-shadow: 0 0 22px rgba(94,231,255,.85); }
         .game-card-mini.drag-eligible { outline: 2px dashed rgba(255,240,124,.7); }
-        .game-card-mini.attack-glow { outline: 3px solid #ff735e; box-shadow: 0 0 24px rgba(255,115,94,.6); animation: attackPulse 1s ease-in-out infinite alternate; }
-        @keyframes attackPulse { to { box-shadow: 0 0 36px rgba(255,115,94,.9); } }
-        .game-card-mini.defend-glow { outline: 3px solid #5ee7ff; box-shadow: 0 0 24px rgba(94,231,255,.6); animation: defendPulse 1s ease-in-out infinite alternate; }
-        @keyframes defendPulse { to { box-shadow: 0 0 36px rgba(94,231,255,.9); } }
 
         /* --- Contador de mazo restante (HUD) --- */
         .deck-count-pill { position: absolute; bottom: -22px; right: -8px; background: rgba(0,0,0,.9); color: #fff07c; border: 2px solid #ffd700; border-radius: 999px; padding: 2px 8px; font-size: 14px; font-weight: 900; }
@@ -1495,7 +1491,6 @@
     // Mostrar indicador visual de pérdida de vida (-1)
     if (typeof mostrarPerdidaVida === 'function') mostrarPerdidaVida(jugador, 1);
     if (typeof verificarFinPartida === 'function') verificarFinPartida();
-    if (typeof renderizarPartida === 'function') renderizarPartida();
     return carta;
   }
 
@@ -1595,16 +1590,6 @@
     if (u) u.silenciado = Math.max(u.silenciado || 0, turnos || 1);
   }
 
-  // tieneTag local dentro del IIFE (para no depender del script externo)
-  function tieneTagLocal(carta, texto) {
-    if (!carta || !carta.habilidades) return false;
-    const needle = String(texto).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    return carta.habilidades.some(h => {
-      const tag = String(h.tag || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-      return tag.includes(needle);
-    });
-  }
-
   function cartaEnZona(id, zona) {
     return getCardById(zona?.copiaDe || id);
   }
@@ -1647,27 +1632,27 @@
 
   function tieneCritico(id) {
     const c = getCardById(id);
-    return tieneTagLocal(c, 'critico') || !!ctx.liderCritico;
+    return tieneTag(c, 'critico') || !!ctx.liderCritico;
   }
 
   function tieneVenganza(zona) {
     if (estaSilenciada(zona)) return false;
     const c = cartaEnZona(zona?.id, zona);
-    return tieneTagLocal(c, 'venganza');
+    return tieneTag(c, 'venganza');
   }
 
   function tieneBloqueador(zona) {
     if (estaSilenciada(zona)) return false;
     const c = cartaEnZona(zona?.id, zona);
-    return tieneTagLocal(c, 'bloqueador');
+    return tieneTag(c, 'bloqueador');
   }
 
   function danoAtacante(id, c) {
     c = c || ctx;
     const carta = getCardById(id);
     const zona = c.atacanteZona;
-    if (zona?.flags?.tripleGolpe || tieneTagLocal(carta, 'triple golpe')) return 3;
-    if (zona?.flags?.dobleGolpe || tieneTagLocal(carta, 'doble golpe')) return 2;
+    if (zona?.flags?.tripleGolpe || tieneTag(carta, 'triple golpe')) return 3;
+    if (zona?.flags?.dobleGolpe || tieneTag(carta, 'doble golpe')) return 2;
     if (c.liderDobleGolpe) return 2;
     return 1;
   }
@@ -1831,7 +1816,6 @@
       // Enviar petición al rival
       window._socketOnline.emit('peticion-rival', {
         token,
-        tipo: 'decision-generica',
         titulo,
         opciones: opcionesSerializadas,
         noCancelable: opcionesExtra?.noCancelable || false
@@ -1842,7 +1826,8 @@
   // Función para que el código decida si la decisión es del rival o local
   // En modo online, cuando el efecto afecta al rival, usar esta función
   async function elegirConModalRival(titulo, opciones, opcionesExtra) {
-    if (estadoPartida && estadoPartida.modo === 'online' && window._socketOnline) {
+    const ep = window.estadoPartida || estadoPartida;
+    if (ep && ep.modo === 'online' && window._socketOnline) {
       return await enviarDecisionAlRival(titulo, opciones, opcionesExtra);
     }
     return elegirConModal(titulo, opciones, opcionesExtra);
@@ -1873,28 +1858,12 @@
     if (tipo === 'bloqueador') {
       const z = zonaJugador('jugador');
       const riv = unidadesEnCampo('jugador', u => tieneBloqueador(u) && !u.rested);
-      // Mostrar info del atacante si está disponible
-      let atacanteHtml = '';
-      if (data.atacanteInfo) {
-        const img = data.atacanteInfo.img;
-        atacanteHtml = `<div style="margin-bottom:16px;display:flex;align-items:center;justify-content:center;gap:14px;">
-          ${img ? `<img src="${img}" style="width:80px;height:112px;border-radius:8px;border:2px solid #ff735e;object-fit:cover;">` : ''}
-          <div style="text-align:left;">
-            <div style="color:#ff735e;font-weight:900;font-size:16px;">${data.atacanteInfo.nombre}</div>
-            <div style="color:#fff07c;font-size:20px;font-weight:900;">Poder: ${data.atacanteInfo.poder}</div>
-            <div style="color:#aaa;font-size:12px;">Ataca a ${data.objetivoInfo || 'tu líder'}</div>
-          </div>
-        </div>`;
-      }
       if (!riv.length) {
         window._socketOnline.emit('respuesta-peticion', { token, respuesta: { bloqueo: false } });
         return;
       }
       const opts = opcionesUnidades('jugador', u => tieneBloqueador(u) && !u.rested, 'Bloquear con ');
-      // Mostrar el atacante antes de la elección
-      mostrarInfoAtacante(atacanteHtml, titulo).then(() => {
-        return elegirConModal(titulo, opts.concat([{ label: 'No bloquear', value: -1 }]));
-      }).then(idx => {
+      elegirConModal(titulo, opts.concat([{ label: 'No bloquear', value: -1 }])).then(idx => {
         if (idx == null || idx < 0) {
           window._socketOnline.emit('respuesta-peticion', { token, respuesta: { bloqueo: false } });
         } else {
@@ -1911,33 +1880,22 @@
     if (tipo === 'counter-ataque') {
       const z = zonaJugador('jugador');
       const counters = z.mano.filter(id => tieneTag(getCardById(id), 'counter ataque'));
-      // Mostrar info del atacante si está disponible
-      let atacanteHtml = '';
-      if (data.atacanteInfo) {
-        const img = data.atacanteInfo.img;
-        atacanteHtml = `<div style="margin-bottom:16px;display:flex;align-items:center;justify-content:center;gap:14px;">
-          ${img ? `<img src="${img}" style="width:80px;height:112px;border-radius:8px;border:2px solid #ff735e;object-fit:cover;">` : ''}
-          <div style="text-align:left;">
-            <div style="color:#ff735e;font-weight:900;font-size:16px;">${data.atacanteInfo.nombre}</div>
-            <div style="color:#fff07c;font-size:20px;font-weight:900;">Poder: ${data.atacanteInfo.poder}</div>
-            <div style="color:#aaa;font-size:12px;">Ataca a ${data.objetivoInfo || 'tu líder'}</div>
-          </div>
-        </div>`;
-      }
       if (!counters.length) {
         window._socketOnline.emit('respuesta-peticion', { token, respuesta: { counter: false } });
         return;
       }
       const opts = counters.map(id => ({ label: getCardById(id)?.nombre, value: id, cardId: id }));
-      mostrarInfoAtacante(atacanteHtml, titulo).then(() => {
-        return elegirConModal(titulo, opts.concat([{ label: 'No', value: null }]));
-      }).then(pick => {
+      elegirConModal(titulo, opts.concat([{ label: 'No', value: null }])).then(pick => {
         if (!pick) {
           window._socketOnline.emit('respuesta-peticion', { token, respuesta: { counter: false } });
         } else {
           const hi = z.mano.indexOf(pick);
           if (hi >= 0) {
             descartarCartaMano('jugador', hi);
+            // Notificación de counter para el defensor
+            if (typeof mostrarNotificacionCounter === 'function') {
+                mostrarNotificacionCounter(getCardById(pick)?.nombre || 'Counter');
+            }
             window._socketOnline.emit('respuesta-peticion', { token, respuesta: { counter: true, cartaId: pick } });
           } else {
             window._socketOnline.emit('respuesta-peticion', { token, respuesta: { counter: false } });
@@ -1948,7 +1906,7 @@
       return;
     }
 
-    // Para otras peticiones (decision-generica), mostrar el modal normal
+    // Para otras peticiones, mostrar el modal normal
     const opcionesRestauradas = opciones.map(o => ({
       label: o.label,
       value: o.value,
@@ -1977,32 +1935,13 @@
     if (overlay) overlay.classList.remove('hidden');
   }
 
-  // Mostrar info del atacante antes de que el rival decida bloquear/counter
-  function mostrarInfoAtacante(html, titulo) {
-    return new Promise(resolve => {
-      if (!html) { resolve(); return; }
-      // Crear overlay temporal con la info del atacante
-      const overlay = document.createElement('div');
-      overlay.style.cssText = 'position:fixed;inset:0;z-index:2870;background:rgba(0,0,0,.9);display:flex;align-items:center;justify-content:center;padding:24px;';
-      overlay.innerHTML = `<div style="background:rgba(20,10,30,.98);border:2px solid #ff735e;border-radius:16px;padding:30px;text-align:center;max-width:400px;">
-        ${html}
-        <p style="color:#ddd;margin:16px 0;font-size:14px;">${titulo || ''}</p>
-        <button class="plate-btn" onclick="this.closest('div[style*=fixed]').remove();" style="background:linear-gradient(145deg,#5e1f17,#a93226);">Continuar</button>
-      </div>`;
-      document.body.appendChild(overlay);
-      const btn = overlay.querySelector('button');
-      btn.onclick = () => { overlay.remove(); resolve(); };
-    });
-  }
-
   function ocultarEsperandoDecisionRival() {
     document.getElementById('waiting-rival-decision')?.classList.add('hidden');
   }
 
   async function elegirDescarteObligatorio(jugador, titulo) {
     // En modo online, si la decisión es para el rival, enviarle la petición
-    const ep = window.estadoPartida || estadoPartida;
-    if (jugador === 'rival' && ep && ep.modo === 'online' && window._socketOnline) {
+    if (jugador === 'rival' && estadoPartida && estadoPartida.modo === 'online' && window._socketOnline) {
       // Enviar petición al rival para que descarte en su pantalla
       const token = `desc_${++_decisionTokenCounter}`;
       return new Promise(resolve => {
@@ -2180,13 +2119,8 @@
 
   R('blue_lider_01', {
     async alAtacarLider(quien) {
-      // INFINITYCRAFT: ambos descartan 1. Si tiene Anillo de Cobre, solo el rival descarta.
-      if (campoActivo(quien)?.id === 'anillo') {
-        // Solo el rival descarta
-        await elegirDescarteObligatorio(rivalDe(quien), 'INFINITYCRAFT (con Anillo): el rival descarta 1 carta');
-      } else {
-        await ambosDescartan('INFINITYCRAFT: descarta 1 carta');
-      }
+      // INFINITYCRAFT NO roba al atacar (su habilidad es: ambos descartan 1)
+      if (campoActivo(quien)?.id !== 'anillo') await ambosDescartan('INFINITYCRAFT: descarta 1 carta');
     },
     puedeAtacarObjetivo(atacanteId, objetivo, quien) {
       if (objetivo?.tipo === 'unidad') return false;
@@ -3170,20 +3104,16 @@
   });
 
   R('patroclo', {
-    async alJugar(quien) {
+    alJugar(quien) {
       if (String(liderCarta(quien)?.origen || '').toLowerCase().includes('minecraft') || liderNombre(quien).toLowerCase().includes('minecraft')) {
-        await patrocloDescarteMano(rivalDe(quien));
+        patrocloDescarteMano(rivalDe(quien));
       }
     }
   });
   async function patrocloDescarteMano(riv) {
-    // El rival descarta hasta quedarse con 3 cartas en mano
-    const z = zonaJugador(riv);
-    while (z.mano.length > 3) {
-      await elegirDescarteObligatorio(riv, 'Patroclo: descarta cartas hasta tener 3 en mano');
+    while (zonaJugador(riv).mano.length > 3) {
+      await elegirDescarteObligatorio(riv, 'Patroclo: descarta hasta 3 en mano');
     }
-    log('Patroclo: el rival se queda con 3 cartas en mano.');
-    if (typeof renderizarPartida === 'function') renderizarPartida();
   }
 
   R('energia', {
@@ -3222,15 +3152,8 @@
 
   R('podrido', {
     alPerderCombateDefensa(c) {
-      // Podrido como defensor pierde (atacante gana): invocar token
       invocarToken(c.atacanteQuien === 'jugador' ? 'rival' : 'jugador', 'tokenz', true);
       barajar(c.atacanteQuien === 'jugador' ? 'rival' : 'jugador');
-      log('Podrido invoca a Podrido Rabioso.');
-    },
-    alDestruida(quien) {
-      // Podrido destruida de cualquier forma: invocar token
-      invocarToken(quien, 'tokenz', true);
-      log('Podrido invoca a Podrido Rabioso.');
     }
   });
 
@@ -3279,16 +3202,16 @@
   });
 
   R('bonesy', {
-    async alAtacar(quien, ref, zona, objetivo) {
+    alAtacar(quien, ref, zona, objetivo) {
       if (ctx.objetivo?.tipo === 'lider') {
-        const v = await elegirConModalRival('Bonesy: el rival elige', [
+        elegirConModal('Bonesy: rival elige', [
           { label: 'Descartar top mazo', value: 'mazo' },
           { label: 'Descansar 1 maná activo', value: 'mana' }
-        ]);
-        const riv = rivalDe(quien);
-        if (v === 'mazo') { const t = zonaJugador(riv).mazo.pop(); if (t) zonaJugador(riv).descarte.push(t); log('Bonesy: rival descarta la carta superior del mazo.'); }
-        else if (v === 'mana') { descansarMana(riv, null, 1); log('Bonesy: rival descansa 1 maná activo.'); }
-        if (typeof renderizarPartida === 'function') renderizarPartida();
+        ]).then(v => {
+          const riv = rivalDe(quien);
+          if (v === 'mazo') { const t = zonaJugador(riv).mazo.pop(); if (t) zonaJugador(riv).descarte.push(t); }
+          else descansarMana(riv, null, 1);
+        });
       }
     }
   });
@@ -3998,7 +3921,8 @@
   }
 
   function alJugar(quien, cardId, zonaRef) {
-    // NO transformar líder automáticamente: solo mediante el botón "Despertar"
+    transformarLider(quien);
+    transformarLider(rivalDe(quien));
     dispatch(cardId, 'alJugar', [quien, cardId, zonaRef]);
     if (typeof renderizarPartida === 'function') renderizarPartida();
   }
@@ -4023,7 +3947,12 @@
     if (atacanteRef?.tipo === 'lider') {
       atacanteId = z.liderId;
       atacanteZona = z.liderZona;
-      // No llamar robarAtaqueLider aquí: cada líder tiene su propio alAtacarLider que maneja el robo
+      // INFINITYCRAFT NO roba al atacar (su habilidad es distinta)
+      const lid = getCardById(z.liderId);
+      const esInfinity = String(lid?.nombre || '').toUpperCase().includes('INFINITYCRAFT');
+      if (!esInfinity) {
+        robarAtaqueLider(quien);
+      }
       dispatch(z.liderId, 'alAtacarLider', [quien, atacanteZona]);
     } else {
       atacanteZona = z.batalla[atacanteRef?.index];
@@ -4183,10 +4112,6 @@
 
   function obtenerActivables(quien) {
     const list = [];
-    // En modo online, solo mostrar activables si es tu turno
-    if (estadoPartida && estadoPartida.modo === 'online' && !estadoPartida.turnoDelJugadorLocal) {
-      return list;
-    }
     const z = zonaJugador(quien);
     const fase = fasesPartida?.[estadoPartida?.faseIndex];
     z.batalla.forEach((u, i) => {
@@ -4223,30 +4148,20 @@
     // En modo online, si el defensor es el rival, enviarle la petición
     if (defensorQuien === 'rival' && estadoPartida && estadoPartida.modo === 'online' && window._socketOnline) {
       const token = `bloq_${++_decisionTokenCounter}`;
-      // Obtener info del atacante para mostrársela al rival
-      const atacante = estadoPartida.ataqueActual?.atacanteZonaRef || estadoPartida.jugador.batalla[estadoPartida.atacanteSeleccionado?.index];
-      const atacanteInfo = atacante ? {
-        id: atacante.id,
-        nombre: getCardById(atacante.id)?.nombre || atacante.id,
-        img: getCardById(atacante.id)?.img || '',
-        poder: MotorEfectos.poderCarta(atacante.id, atacante, { quien: 'jugador', atacanteId: atacante.id, atacanteZona: atacante, objetivo: ataqueCtx.objetivo })
-      } : null;
-      const objetivoInfo = ataqueCtx.objetivo?.tipo === 'lider' ? 'tu líder' : 'una de tus unidades';
       const respuesta = await new Promise(resolve => {
         _decisionTokensPendientes.set(token, resolve);
         mostrarEsperandoDecisionRival('El rival decide si bloquear...');
         window._socketOnline.emit('peticion-rival', {
           token,
           tipo: 'bloqueador',
-          titulo: `¿Usar Bloqueador? El rival ataca a ${objetivoInfo} con:`,
+          titulo: '¿Usar Bloqueador?',
           opciones: [],
-          noCancelable: false,
-          atacanteInfo: atacanteInfo,
-          objetivoInfo: objetivoInfo
+          noCancelable: false
         });
       });
       // Interpretar respuesta del rival
       if (respuesta && respuesta.bloqueo) {
+        // El rival bloqueó con la unidad en el índice 'index'
         const idx = respuesta.index;
         const u = zonaJugador('rival').batalla[idx];
         if (u) {
@@ -4275,31 +4190,25 @@
     // En modo online, si el que contraataca es el rival, enviarle la petición
     if (quien === 'rival' && estadoPartida && estadoPartida.modo === 'online' && window._socketOnline) {
       const token = `count_${++_decisionTokenCounter}`;
-      // Obtener info del atacante para mostrársela al rival
-      const atacante = estadoPartida.ataqueActual?.atacanteZonaRef || estadoPartida.jugador.batalla[estadoPartida.atacanteSeleccionado?.index];
-      const atacanteInfo = atacante ? {
-        id: atacante.id,
-        nombre: getCardById(atacante.id)?.nombre || atacante.id,
-        img: getCardById(atacante.id)?.img || '',
-        poder: MotorEfectos.poderCarta(atacante.id, atacante, { quien: 'jugador', atacanteId: atacante.id, atacanteZona: atacante, objetivo: ataqueCtx.objetivo })
-      } : null;
-      const objetivoInfo = ataqueCtx.objetivo?.tipo === 'lider' ? 'tu líder' : 'una de tus unidades';
       const respuesta = await new Promise(resolve => {
         _decisionTokensPendientes.set(token, resolve);
         mostrarEsperandoDecisionRival('El rival decide si contraatacar...');
         window._socketOnline.emit('peticion-rival', {
           token,
           tipo: 'counter-ataque',
-          titulo: `¿Usar Counter Ataque? El rival ataca a ${objetivoInfo} con:`,
+          titulo: '¿Usar Counter Ataque?',
           opciones: [],
-          noCancelable: false,
-          atacanteInfo: atacanteInfo,
-          objetivoInfo: objetivoInfo
+          noCancelable: false
         });
       });
       // Interpretar respuesta del rival
       if (respuesta && respuesta.counter) {
+        // El rival contraatacó con la carta cartaId
         log(`${getCardById(respuesta.cartaId)?.nombre} niega el ataque (Counter).`);
+        // Notificación visual
+        if (typeof mostrarNotificacionCounter === 'function') {
+            mostrarNotificacionCounter(getCardById(respuesta.cartaId)?.nombre || 'Counter');
+        }
         return true;
       }
       return false;
@@ -4319,6 +4228,16 @@
     const counterEnCampo = zonaJugador(quien).batalla.find(u => u.id === pick);
     if (counterEnCampo) { counterEnCampo.rested = true; counterEnCampo.ataquesRestantes = 0; }
     log(`${getCardById(pick)?.nombre} niega el ataque.`);
+    // Notificación visual de counter
+    if (typeof mostrarNotificacionCounter === 'function') {
+        mostrarNotificacionCounter(getCardById(pick)?.nombre || 'Counter');
+    }
+    // Renderizar inmediatamente para que se vea en el descarte
+    if (typeof renderizarPartida === 'function') renderizarPartida();
+    // En online, sincronizar para que el rival vea la carta en el descarte
+    if (estadoPartida && estadoPartida.modo === 'online' && window._socketOnline) {
+        sincronizarEstadoOnline('counter');
+    }
     return true;
   }
 
@@ -4824,8 +4743,7 @@
 
         let _socketOnline = null;
         let _onlineRoomId = null;
-        let _onlinePlayerNum = null; // 1 o 2
-        let _onlineEstado = null;
+        let _onlineEstado = null; // 'buscando', 'creando', 'unido'
 
         // Conectar al servidor en silencio al abrir el lobby
         function conectarAlServidorSilencioso() {
@@ -4837,7 +4755,6 @@
                 script.onload = () => {
                     try {
                         _socketOnline = io();
-                        window._socketOnline = _socketOnline; // Exponer para el IIFE
                         configurarEventosSocket(statusEl);
                     } catch (e) {
                         statusEl.innerHTML = '❌ No se pudo conectar al servidor. ¿Está online el servidor?';
@@ -4850,7 +4767,6 @@
             } else {
                 try {
                     _socketOnline = io();
-                    window._socketOnline = _socketOnline; // Exponer para el IIFE
                     configurarEventosSocket(statusEl);
                 } catch (e) {
                     statusEl.innerHTML = '❌ No se pudo conectar.';
@@ -4873,7 +4789,6 @@
             });
             _socketOnline.on('partida-lista', (data) => {
                 _onlineRoomId = data.roomId;
-                _onlinePlayerNum = data.playerNum; // 1 o 2
                 _onlineEstado = null;
                 statusEl.innerHTML = '✅ ¡Rival encontrado!';
                 document.getElementById('online-lobby-overlay').classList.add('hidden');
@@ -4882,8 +4797,8 @@
             // Resultado de la moneda (quién empieza)
             _socketOnline.on('moneda-resultado', (data) => {
                 // data.empiezaJugador1 = true/false
-                // Si soy jugador 1, empiezo si data.empiezaJugador1 es true
-                const soyJugador1 = _onlinePlayerNum === 1;
+                // Si soy jugador 1 (playerNum 1), empiezo si data.empiezaJugador1 es true
+                const soyJugador1 = _socketOnline.dataPlayerNum === 1;
                 const empiezoYo = soyJugador1 ? data.empiezaJugador1 : !data.empiezaJugador1;
                 configurarPartidaOnline(empiezoYo);
             });
@@ -4898,55 +4813,43 @@
                 } else if (data.tipo === 'atacar') {
                     recibirAtaqueRival(data);
                 } else if (data.tipo === 'dano-lider') {
-                    // El rival me hizo daño: aplicarlo a mi vida
                     if (estadoPartida) {
-                        for (let i = 0; i < data.dano; i++) {
-                            if (estadoPartida.jugador.vida.length) estadoPartida.jugador.vida.pop();
-                        }
+                        for (let i = 0; i < data.dano; i++) { if (estadoPartida.jugador.vida.length) estadoPartida.jugador.vida.pop(); }
                         estadoPartida.log = `El ataque del rival te quita ${data.dano} vida${data.dano > 1 ? 's' : ''}.`;
                         if (typeof verificarFinPartida === 'function') verificarFinPartida();
                         renderizarPartida();
                     }
-                } else if (data.tipo === 'poner-mana' || data.tipo === 'combo' || data.tipo === 'cambiar-fase') {
+                } else if (data.tipo === 'poner-mana' || data.tipo === 'combo' || data.tipo === 'cambiar-fase' || data.tipo === 'counter') {
                     aplicarSnapshotRival(data);
-                    // Actualizar el phase chip del rival directamente
-                    if (data.snapshot && data.snapshot.faseIndex != null) {
+                    if ((data.tipo === 'cambiar-fase' || data.tipo === 'counter') && data.snapshot && data.snapshot.faseIndex != null) {
                         const fases = ['Carga', 'Principal', 'Combate'];
-                        const fase = data.snapshot.faseIndex === 3 ? 'Combo' : (fases[data.snapshot.faseIndex] || 'Carga');
+                        const fase = data.snapshot.faseIndex === 3 ? 'Combo' : (data.snapshot.faseIndex === 4 ? 'Defensa' : (fases[data.snapshot.faseIndex] || 'Carga'));
                         const chip = document.getElementById('phase-chip');
                         if (chip) chip.innerText = fase;
                         if (typeof mostrarFase === 'function') mostrarFase(fase);
                     }
                 } else if (data.tipo === 'animacion-choque') {
-                    // Recibir animación de choque del rival
-                    // Invertir ganaJugador: si el rival ganó, yo perdí
                     if (typeof mostrarChoque === 'function') {
                         mostrarChoque(data.rivalPower, data.playerPower, data.ganador, !data.ganaJugador, true);
                     }
                 } else if (data.tipo === 'animacion-robo') {
-                    // El rival robó una carta: animar en mi pantalla
                     if (typeof animarRoboRival === 'function') animarRoboRival();
                 } else if (data.tipo === 'intercambio-lider') {
-                    // El rival me envía su liderId
                     if (estadoPartida) {
                         estadoPartida.rival.liderId = data.liderId;
                         estadoPartida.rival.liderZona = { id: data.liderId, rested: false, ataquesRestantes: 0, buffs: { poder: 0, combo: 0, batalla: 0 } };
                         if (typeof renderizarPartida === 'function') renderizarPartida();
                     }
                 } else if (data.tipo === 'notificacion-ataque') {
-                    // El rival me ataca: mostrar notificación
                     const objTxt = data.objetivo?.tipo === 'lider' ? 'tu líder' : 'una de tus unidades';
                     if (typeof mostrarNotificacionAtaque === 'function') {
                         mostrarNotificacionAtaque(`${data.atacanteNombre} ataca a ${objTxt}!`);
                     }
                 } else if (data.tipo === 'combo-defensora') {
-                    // Es mi turno de combar para defender
                     recibirComboDefensora(data);
                 } else if (data.tipo === 'combo-defensora-terminado') {
-                    // El rival terminó su combo defensora, resolver combate
                     recibirComboDefensoraTerminado(data);
                 } else if (data.tipo === 'limpiar-combo-defensora') {
-                    // El combate terminó: limpiar combo del defensor y procesar resultado
                     if (estadoPartida) {
                         estadoPartida.jugador.combo.forEach(c => estadoPartida.jugador.descarte.push(c.id || c));
                         estadoPartida.jugador.combo = [];
@@ -4956,10 +4859,8 @@
                         estadoPartida.rivalComboActual = 0;
                         estadoPartida.rivalAtacanteId = null;
                         estadoPartida.atacanteSeleccionado = null;
-                        // Procesar resultado del combate desde la perspectiva del defensor
                         if (data.resultado) {
                             const r = data.resultado;
-                            // Si el defensor (yo) fue destruido
                             if (r.defensorDestruido) {
                                 const idx = r.objetivo?.index;
                                 if (idx != null && estadoPartida.jugador.batalla[idx]) {
@@ -4970,19 +4871,14 @@
                                     estadoPartida.log = 'Tu unidad defensora ha sido destruida.';
                                 }
                             }
-                            // Si el atacante rival fue destruido (yo gané la defensa)
                             if (r.atacanteDestruido) {
                                 estadoPartida.log = '¡Tu defensa destruye al atacante rival!';
                             }
-                            // Si me hicieron daño al líder
                             if (r.danoLider > 0) {
-                                for (let i = 0; i < r.danoLider; i++) {
-                                    if (estadoPartida.jugador.vida.length) estadoPartida.jugador.vida.pop();
-                                }
+                                for (let i = 0; i < r.danoLider; i++) { if (estadoPartida.jugador.vida.length) estadoPartida.jugador.vida.pop(); }
                                 estadoPartida.log = `El ataque del rival te quita ${r.danoLider} vida${r.danoLider > 1 ? 's' : ''}.`;
                                 if (typeof verificarFinPartida === 'function') verificarFinPartida();
                             }
-                            // Mostrar choque con los poderes reales (invertidos desde mi perspectiva)
                             if (typeof mostrarChoque === 'function' && r.pa != null && r.pd != null) {
                                 mostrarChoque(r.pd, r.pa, r.ganaAtacante ? 'Atacante' : 'Defensor', !r.ganaAtacante, true);
                             }
@@ -5258,7 +5154,6 @@
                 soyHost: true,
                 turnoDelJugadorLocal: true
             };
-            window.estadoPartida = estadoPartida; // Exponer para el IIFE
             estadoPartida.jugador.liderZona = { id: estadoPartida.jugador.liderId, rested: false, ataquesRestantes: 0 };
             estadoPartida.rival.liderZona = { id: estadoPartida.rival.liderId, rested: false, ataquesRestantes: 0 };
             ocultarPantallasPrincipales();
@@ -5291,7 +5186,7 @@
                             if (estadoPartida.turnoDelJugadorLocal) {
                                 estadoPartida.log = '¡Tu turno! Arrastra cartas al área de batalla.';
                             } else {
-                                estadoPartida.log = 'El rival está jugando...';
+                                estadoPartida.log = 'Esperando al rival...';
                             }
                         } else {
                             estadoPartida.log = 'Mano inicial robada. Arrastra cartas al area de batalla o a ENERGY.';
@@ -5320,22 +5215,10 @@
             estadoPartida.soyHost = empiezaJugadorLocal;
             estadoPartida.turnoDelJugadorLocal = empiezaJugadorLocal;
 
-            // Enviar mi liderId al rival inmediatamente para que lo conozca
-            if (_socketOnline) {
-                _socketOnline.emit('accion-juego', {
-                    tipo: 'intercambio-lider',
-                    liderId: estadoPartida.jugador.liderId
-                });
-            }
-
             // Mostrar animación de moneda
             mostrarAnimacionMoneda(empiezaJugadorLocal, () => {
-                // Después de la animación, mostrar intro de líderes y luego mulligan
-                requestAnimationFrame(() => {
-                    reproducirIntroLideres(() => {
-                        iniciarFlujoMulligan(estadoPartida.jugador, estadoPartida.rival);
-                    });
-                });
+                // Después de la animación, mostrar mulligan
+                iniciarFlujoMulligan(estadoPartida.jugador, estadoPartida.rival);
             });
         }
 
@@ -5370,17 +5253,14 @@
                     vidaCount: estadoPartida.jugador.vida.length,
                     manoCount: estadoPartida.jugador.mano.length,
                     mazoCount: estadoPartida.jugador.mazo.length,
-                    mana: JSON.parse(JSON.stringify(estadoPartida.jugador.mana || [])),
-                    batalla: JSON.parse(JSON.stringify(estadoPartida.jugador.batalla || [])),
-                    combo: JSON.parse(JSON.stringify(estadoPartida.jugador.combo || [])),
-                    descarte: estadoPartida.jugador.descarte || [],
-                    campo: JSON.parse(JSON.stringify(estadoPartida.jugador.campo || [])),
+                    mana: estadoPartida.jugador.mana,
+                    batalla: estadoPartida.jugador.batalla,
+                    combo: estadoPartida.jugador.combo,
+                    descarte: estadoPartida.jugador.descarte,
+                    campo: estadoPartida.jugador.campo,
                     manaActivo: estadoPartida.jugador.manaActivo,
                     liderDespierto: estadoPartida.jugador.liderDespierto,
-                    liderZona: JSON.parse(JSON.stringify(estadoPartida.jugador.liderZona || {})),
-                    ataqueComboActual: estadoPartida.ataqueActual?.atacanteCombo || 0,
-                    atacanteId: estadoPartida.ataqueActual?.atacanteId || null,
-                    defensorCombo: estadoPartida.ataqueActual?.defensorCombo || 0
+                    liderZona: estadoPartida.jugador.liderZona
                 }
             };
             _socketOnline.emit('accion-juego', { tipo: tipo || 'snapshot', snapshot });
@@ -5413,7 +5293,7 @@
             // Enderezar mis cartas
             estadoPartida.jugador.mana.forEach(m => m.rested = false);
             estadoPartida.jugador.batalla.forEach(c => { c.rested = false; c.ataquesRestantes = ataquesPorTurno(c.id); });
-            estadoPartida.jugador.liderZona = { id: estadoPartida.jugador.liderId, rested: false, ataquesRestantes: 1, buffs: { poder: 0, combo: 0, batalla: 0 } };
+            estadoPartida.jugador.liderZona = { id: estadoPartida.jugador.liderId, rested: false, ataquesRestantes: 1 };
             estadoPartida.jugador.manaActivo = estadoPartida.jugador.mana.length;
             estadoPartida.jugador.manaUsadoEsteTurno = false;
             robarDe(estadoPartida.jugador);
@@ -5422,8 +5302,6 @@
             ocultarEsperandoRival();
             mostrarFase('Carga');
             renderizarPartida();
-            // Enviar snapshot al rival para que vea mis cartas enderezadas
-            sincronizarEstadoOnline('cambiar-fase');
         }
 
         // Recibir snapshot del rival (actualización en medio de su turno)
@@ -5431,25 +5309,11 @@
             if (!estadoPartida || estadoPartida.modo !== 'online') return;
             const snap = data.snapshot;
             if (snap.miEstado) {
-                // Detectar si el rival robó una carta (su mano aumentó)
-                const manoAnterior = estadoPartida.rival.mano.length;
-                // Actualizar líder rival
-                if (snap.miEstado.liderId) {
-                    estadoPartida.rival.liderId = snap.miEstado.liderId;
-                }
-                // NO sobrescribir la vida del rival si ya le hicimos daño
-                const vidaRivalSnap = snap.miEstado.vidaCount;
-                if (vidaRivalSnap < estadoPartida.rival.vida.length) {
-                    estadoPartida.rival.vida = estadoPartida.rival.vida.slice(0, vidaRivalSnap);
-                }
-                // Actualizar mano count
+                estadoPartida.rival.liderId = snap.miEstado.liderId;
+                estadoPartida.rival.vida = estadoPartida.rival.vida.slice(0, snap.miEstado.vidaCount);
+                while (estadoPartida.rival.vida.length < snap.miEstado.vidaCount) estadoPartida.rival.vida.push('desconocida');
                 while (estadoPartida.rival.mano.length < snap.miEstado.manoCount) estadoPartida.rival.mano.push('desconocida');
                 while (estadoPartida.rival.mano.length > snap.miEstado.manoCount) estadoPartida.rival.mano.pop();
-                // Si la mano aumentó, animar robo del rival
-                if (estadoPartida.rival.mano.length > manoAnterior) {
-                    if (typeof animarRoboRival === 'function') animarRoboRival();
-                }
-                // Actualizar zonas visibles
                 estadoPartida.rival.mana = snap.miEstado.mana || [];
                 estadoPartida.rival.batalla = snap.miEstado.batalla || [];
                 estadoPartida.rival.combo = snap.miEstado.combo || [];
@@ -5457,13 +5321,7 @@
                 estadoPartida.rival.campo = snap.miEstado.campo || [];
                 estadoPartida.rival.manaActivo = snap.miEstado.manaActivo || 0;
                 estadoPartida.rival.liderDespierto = snap.miEstado.liderDespierto;
-                estadoPartida.rival.mazoCount = snap.miEstado.mazoCount; // Guardar count del mazo
-                if (snap.miEstado.liderZona) {
-                    estadoPartida.rival.liderZona = snap.miEstado.liderZona;
-                }
-                // Guardar info del combo del rival para mostrarlo visualmente
-                estadoPartida.rivalComboActual = snap.miEstado.ataqueComboActual || 0;
-                estadoPartida.rivalAtacanteId = snap.miEstado.atacanteId || null;
+                estadoPartida.rival.liderZona = snap.miEstado.liderZona;
             }
             estadoPartida.turno = snap.turno;
             estadoPartida.faseIndex = snap.faseIndex;
@@ -5482,9 +5340,7 @@
         }
 
         function mostrarEsperandoRival() {
-            // Desactivado en modo online para no tapar la pantalla
-            // El bloqueo de interacción lo maneja partidaInteractiva()
-            // document.getElementById('waiting-turn-overlay')?.classList.remove('hidden');
+            document.getElementById('waiting-turn-overlay')?.classList.remove('hidden');
         }
 
         function ocultarEsperandoRival() {
@@ -5633,8 +5489,6 @@
             if (fase === 'Principal' && window.MotorEfectos) MotorEfectos.alInicioPrincipal('jugador');
             mostrarFase(fase);
             renderizarPartida();
-            // Sincronizar cambio de fase en online
-            if (estadoPartida.modo === 'online') sincronizarEstadoOnline('cambiar-fase');
         }
 
         function finalizarTurno() {
@@ -5653,9 +5507,10 @@
                 estadoPartida.turno += 1;
                 estadoPartida.faseIndex = 0;
                 estadoPartida.atacanteSeleccionado = null;
-                estadoPartida.log = 'Es el turno del rival.';
+                estadoPartida.log = 'Esperando al rival...';
                 sincronizarEstadoOnline('fin-turno');
                 estadoPartida.turnoDelJugadorLocal = false;
+                mostrarEsperandoRival();
                 renderizarPartida();
             } else {
                 // Modo solo: comportamiento normal
@@ -5733,28 +5588,6 @@
             setTimeout(() => fly.remove(), 650);
         }
 
-        // Animación de robo del rival (desde su mazo hacia su mano)
-        function animarRoboRival() {
-            const deck = document.querySelector('.op-deck-stack');
-            if (!deck) return;
-            const hand = document.getElementById('op-hand-count');
-            const fly = document.createElement('div');
-            fly.className = 'game-card-mini back draw-fly';
-            fly.innerHTML = `<span>GC</span>`;
-            document.body.appendChild(fly);
-            const deckRect = deck.getBoundingClientRect();
-            fly.style.position = 'fixed'; fly.style.left = deckRect.left + 'px'; fly.style.top = deckRect.top + 'px'; fly.style.zIndex = 3000;
-            // Calcular destino (hacia el contador de mano rival)
-            const targetX = hand ? hand.getBoundingClientRect().left - deckRect.left : 100;
-            const targetY = hand ? hand.getBoundingClientRect().top - deckRect.top : 50;
-            requestAnimationFrame(() => {
-                fly.style.transition = 'transform .55s ease, opacity .55s ease';
-                fly.style.transform = `translate(${targetX}px, ${targetY}px) rotate(10deg) scale(.5)`;
-                fly.style.opacity = '0';
-            });
-            setTimeout(() => fly.remove(), 650);
-        }
-
         function permitirDrop(event) { event.preventDefault(); }
         function arrastrarCartaMano(event, index) { event.dataTransfer.setData('hand-index', String(index)); }
         function arrastrarCartaCampo(event, index) { event.dataTransfer.setData('battle-index', String(index)); }
@@ -5807,7 +5640,7 @@
         }
         function soltarEnCombo(event) {
             event.preventDefault();
-            if (!estadoPartida || (estadoPartida.faseIndex !== 3 && estadoPartida.faseIndex !== 4) || !estadoPartida.ataqueActual) return;
+            if (!estadoPartida || estadoPartida.faseIndex !== 3 || !estadoPartida.ataqueActual) return;
             const handData = event.dataTransfer.getData('hand-index');
             const battleData = event.dataTransfer.getData('battle-index');
             // Importante: getData devuelve '' si no se estableció, y Number('') === 0 (NO NaN)
@@ -5920,10 +5753,6 @@
             // Comprobar evolución especial
             const evo = costoEvolucion(carta, estadoPartida.jugador);
             if (evo) {
-                // Verificar que hay maná suficiente
-                if (evo.costeTotal > estadoPartida.jugador.manaActivo) {
-                    return alert(`No tienes maná suficiente para evolucionar. Necesitas ${evo.costeTotal} maná.`);
-                }
                 if (!confirm(`¿Evolucionar "${carta.nombre}" al coste reducido de ${evo.costeTotal} maná?`)) return;
                 if (evo.esBonnieEvo) {
                     const bi = estadoPartida.jugador.batalla.findIndex(u => u.id === 'bonnie');
@@ -6092,88 +5921,63 @@
             estadoPartida.faseIndex = 3;
             estadoPartida.log = 'Fase de combo: arrastra cartas de tu mano o campo al area de combo.';
             mostrarFase('Combo');
-            // Mostrar notificación de ataque
-            const nombreAtacante = getCardById(atacante.id)?.nombre || 'Unidad';
-            const objetivoTxt = objetivo.tipo === 'lider' ? 'el líder rival' : 'una unidad rival';
-            mostrarNotificacionAtaque(`${nombreAtacante} ataca a ${objetivoTxt}!`);
-            // Sincronizar online: enviar notificación de ataque al rival
-            if (estadoPartida.modo === 'online' && _socketOnline) {
-                _socketOnline.emit('accion-juego', {
-                    tipo: 'notificacion-ataque',
-                    atacanteId: atacante.id,
-                    atacanteNombre: nombreAtacante,
-                    objetivo: objetivo
-                });
-            }
             renderizarPartida();
-        }
-
-        function mostrarNotificacionAtaque(texto) {
-            const notif = document.createElement('div');
-            notif.style.cssText = 'position:fixed;top:120px;left:50%;transform:translateX(-50%);z-index:3400;background:linear-gradient(145deg,#a93226,#5e1f17);color:white;padding:14px 30px;border-radius:999px;font-weight:900;font-size:18px;text-transform:uppercase;letter-spacing:1px;box-shadow:0 0 30px rgba(255,115,94,.6);text-shadow:0 2px 4px #000;animation:notifPulse .5s ease;pointer-events:none;';
-            notif.textContent = '⚔️ ' + texto;
-            document.body.appendChild(notif);
-            setTimeout(() => { notif.style.transition = 'opacity .5s, transform .5s'; notif.style.opacity = '0'; notif.style.transform = 'translateX(-50%) translateY(-20px)'; }, 2000);
-            setTimeout(() => notif.remove(), 2600);
         }
 
         async function atacarLiderRival() {
             if (!estadoPartida.atacanteSeleccionado) return abrirDetalleJuego(estadoPartida.rival.liderId);
-            if (window.MotorEfectos && !MotorEfectos.puedeAtacarObjetivo(obtenerAtacanteActual()?.id, { tipo: 'lider' }, 'jugador')) {
-                return alert('Tu atacante no puede golpear al lider rival.');
-            }
-            const obj = { tipo: 'lider' };
-            // Bloqueador y Counter
-            if (window.MotorEfectos) {
-                const objFinal = await MotorEfectos.intentarBloqueador('rival', { objetivo: obj });
-                const countered = await MotorEfectos.intentarCounterAtaque('rival', { objetivo: objFinal, noCounter: false });
-                if (countered) {
-                    // counter niega el ataque; la carta atacante queda en modo descanso (ha atacado este turno)
-                    const atacante = obtenerAtacanteActual();
-                    if (atacante) {
-                        atacante.ataquesRestantes = Math.max(0, (atacante.ataquesRestantes ?? 1) - 1);
-                        atacante.rested = atacante.ataquesRestantes <= 0;
-                    }
-                    estadoPartida.atacanteSeleccionado = null;
-                    estadoPartida.log = 'El ataque ha sido negado por un Counter Ataque. Tu atacante queda en descanso.';
-                    // Sincronizar online
-                    if (estadoPartida.modo === 'online') sincronizarEstadoOnline('atacar');
-                    renderizarPartida(); return;
+            if (estadoPartida._ataqueEnProgreso) return;
+            estadoPartida._ataqueEnProgreso = true;
+            try {
+                if (window.MotorEfectos && !MotorEfectos.puedeAtacarObjetivo(obtenerAtacanteActual()?.id, { tipo: 'lider' }, 'jugador')) {
+                    return alert('Tu atacante no puede golpear al lider rival.');
                 }
-                iniciarAtaque(objFinal);
-            } else { iniciarAtaque(obj); }
+                const obj = { tipo: 'lider' };
+                if (window.MotorEfectos) {
+                    const objFinal = await MotorEfectos.intentarBloqueador('rival', { objetivo: obj });
+                    const countered = await MotorEfectos.intentarCounterAtaque('rival', { objetivo: objFinal, noCounter: false });
+                    if (countered) {
+                        const atacante = obtenerAtacanteActual();
+                        if (atacante) { atacante.ataquesRestantes = Math.max(0, (atacante.ataquesRestantes ?? 1) - 1); atacante.rested = atacante.ataquesRestantes <= 0; }
+                        estadoPartida.atacanteSeleccionado = null;
+                        estadoPartida.log = 'El ataque ha sido negado por un Counter Ataque. Tu atacante queda en descanso.';
+                        if (estadoPartida.modo === 'online') sincronizarEstadoOnline('atacar');
+                        renderizarPartida(); return;
+                    }
+                    iniciarAtaque(objFinal);
+                } else { iniciarAtaque(obj); }
+            } finally { estadoPartida._ataqueEnProgreso = false; }
         }
 
         async function atacarUnidadRival(index) {
             if (!estadoPartida.atacanteSeleccionado) return abrirDetalleJuego(estadoPartida.rival.batalla[index]?.id);
-            const defensor = estadoPartida.rival.batalla[index];
-            if (!defensor) return;
-            if (window.MotorEfectos && !MotorEfectos.puedeAtacarObjetivo(obtenerAtacanteActual()?.id, { tipo: 'unidad', index }, 'jugador')) {
-                return alert('No puedes atacar esa unidad.');
-            }
-            if (!defensor.rested) {
-                const puedeActivo = window.MotorEfectos && MotorEfectos.puedeAtacarObjetivo(obtenerAtacanteActual()?.id, { tipo: 'unidad', index }, 'jugador');
-                if (!puedeActivo) return alert('Solo puedes atacar unidades rivales giradas (salvo excepciones).');
-            }
-            const obj = { tipo: 'unidad', index };
-            if (window.MotorEfectos) {
-                const objFinal = await MotorEfectos.intentarBloqueador('rival', { objetivo: obj });
-                const countered = await MotorEfectos.intentarCounterAtaque('rival', { objetivo: objFinal, noCounter: false });
-                if (countered) {
-                    // counter niega el ataque; la carta atacante queda en modo descanso (ha atacado este turno)
-                    const atacante = obtenerAtacanteActual();
-                    if (atacante) {
-                        atacante.ataquesRestantes = Math.max(0, (atacante.ataquesRestantes ?? 1) - 1);
-                        atacante.rested = atacante.ataquesRestantes <= 0;
-                    }
-                    estadoPartida.atacanteSeleccionado = null;
-                    estadoPartida.log = 'El ataque ha sido negado por un Counter Ataque. Tu atacante queda en descanso.';
-                    // Sincronizar online
-                    if (estadoPartida.modo === 'online') sincronizarEstadoOnline('atacar');
-                    renderizarPartida(); return;
+            if (estadoPartida._ataqueEnProgreso) return;
+            estadoPartida._ataqueEnProgreso = true;
+            try {
+                const defensor = estadoPartida.rival.batalla[index];
+                if (!defensor) return;
+                if (window.MotorEfectos && !MotorEfectos.puedeAtacarObjetivo(obtenerAtacanteActual()?.id, { tipo: 'unidad', index }, 'jugador')) {
+                    return alert('No puedes atacar esa unidad.');
                 }
-                iniciarAtaque(objFinal);
-            } else { iniciarAtaque(obj); }
+                if (!defensor.rested) {
+                    const puedeActivo = window.MotorEfectos && MotorEfectos.puedeAtacarObjetivo(obtenerAtacanteActual()?.id, { tipo: 'unidad', index }, 'jugador');
+                    if (!puedeActivo) return alert('Solo puedes atacar unidades rivales giradas (salvo excepciones).');
+                }
+                const obj = { tipo: 'unidad', index };
+                if (window.MotorEfectos) {
+                    const objFinal = await MotorEfectos.intentarBloqueador('rival', { objetivo: obj });
+                    const countered = await MotorEfectos.intentarCounterAtaque('rival', { objetivo: objFinal, noCounter: false });
+                    if (countered) {
+                        const atacante = obtenerAtacanteActual();
+                        if (atacante) { atacante.ataquesRestantes = Math.max(0, (atacante.ataquesRestantes ?? 1) - 1); atacante.rested = atacante.ataquesRestantes <= 0; }
+                        estadoPartida.atacanteSeleccionado = null;
+                        estadoPartida.log = 'El ataque ha sido negado por un Counter Ataque. Tu atacante queda en descanso.';
+                        if (estadoPartida.modo === 'online') sincronizarEstadoOnline('atacar');
+                        renderizarPartida(); return;
+                    }
+                    iniciarAtaque(objFinal);
+                } else { iniciarAtaque(obj); }
+            } finally { estadoPartida._ataqueEnProgreso = false; }
         }
 
         function obtenerAtacanteActual() {
@@ -6195,28 +5999,22 @@
         function iniciarComboDefensora() {
             const ataque = estadoPartida.ataqueActual;
             if (!ataque) return terminarAtaque();
-
-            // En modo online: pedir al rival que decida si quiere combar
             if (estadoPartida.modo === 'online' && _socketOnline) {
-                // Notificar al rival que es su fase de combo defensora
                 _socketOnline.emit('accion-juego', {
                     tipo: 'combo-defensora',
                     atacanteId: ataque.atacanteId,
                     atacantePoder: ataque.atacanteBase + ataque.atacanteCombo,
                     objetivo: ataque.objetivo
                 });
-                // Mostrar "esperando al rival" en mi pantalla
                 estadoPartida.faseIndex = 4;
                 estadoPartida.log = 'El rival puede combar para defender...';
                 mostrarFase('Defensa');
                 renderizarPartida();
             } else {
-                // Modo solo: la IA decide si comba (por ahora no comba)
                 terminarAtaque();
             }
         }
 
-        // Recibir la fase de combo defensora del rival (yo soy el defensor)
         function recibirComboDefensora(data) {
             if (!estadoPartida || estadoPartida.modo !== 'online') return;
             estadoPartida.faseIndex = 4;
@@ -6224,25 +6022,18 @@
             estadoPartida.ataqueActual = estadoPartida.ataqueActual || {};
             estadoPartida.ataqueActual.defensorCombo = 0;
             estadoPartida.ataqueActual.atacantePoderTotal = data.atacantePoder;
-            estadoPartida.ataqueActual.objetivo = data.objetivo; // Guardar objetivo para saber qué defiendo
+            estadoPartida.ataqueActual.objetivo = data.objetivo;
             estadoPartida.ataqueActual.atacanteId = data.atacanteId;
-            estadoPartida.turnoDelJugadorLocal = true; // Temporalmente mi turno para poder combar
+            estadoPartida.turnoDelJugadorLocal = true;
             mostrarFase('Defensa');
             renderizarPartida();
         }
 
-        // Cuando el defensor termina su combo
         function terminarComboDefensora() {
             if (!estadoPartida || !estadoPartida.ataqueActual) return;
             const defensorCombo = estadoPartida.ataqueActual.defensorCombo || 0;
-
             if (estadoPartida.modo === 'online' && _socketOnline) {
-                // Enviar el combo defensora al atacante
-                _socketOnline.emit('accion-juego', {
-                    tipo: 'combo-defensora-terminado',
-                    defensorCombo: defensorCombo
-                });
-                // Volver a modo espera
+                _socketOnline.emit('accion-juego', { tipo: 'combo-defensora-terminado', defensorCombo });
                 estadoPartida.turnoDelJugadorLocal = false;
                 estadoPartida.log = 'Esperando resolución del combate...';
                 renderizarPartida();
@@ -6251,11 +6042,9 @@
             }
         }
 
-        // Recibir el combo defensora del rival (yo soy el atacante)
         function recibirComboDefensoraTerminado(data) {
             if (!estadoPartida || !estadoPartida.ataqueActual) return;
             estadoPartida.ataqueActual.defensorCombo = data.defensorCombo || 0;
-            // Ahora resolver el combate
             terminarAtaque();
         }
 
@@ -6278,13 +6067,12 @@
                 defensorId: ataque.objetivo?.tipo === 'unidad' ? estadoPartida.rival.batalla[ataque.objetivo.index]?.id : undefined
             };
             combateCtx.pa = poderCarta(atacante.id, atacante, combateCtx) + ataque.atacanteCombo;
-            const defensorCombo = ataque.defensorCombo || 0;
             if (ataque.objetivo.tipo === 'lider') {
                 const rivalLider = estadoPartida.rival.liderZona || { id: estadoPartida.rival.liderId };
-                combateCtx.pd = poderCarta(estadoPartida.rival.liderId, rivalLider, { quien: 'rival', defensorId: estadoPartida.rival.liderId, objetivo: ataque.objetivo }) + defensorCombo;
+                combateCtx.pd = poderCarta(estadoPartida.rival.liderId, rivalLider, { quien: 'rival', defensorId: estadoPartida.rival.liderId, objetivo: ataque.objetivo });
             } else {
                 const defensor = estadoPartida.rival.batalla[ataque.objetivo.index];
-                combateCtx.pd = poderCarta(defensor?.id, defensor, { quien: 'rival', defensorZona: defensor, defensorId: defensor?.id, objetivo: ataque.objetivo, defensorIndex: ataque.objetivo.index }) + defensorCombo;
+                combateCtx.pd = poderCarta(defensor?.id, defensor, { quien: 'rival', defensorZona: defensor, defensorId: defensor?.id, objetivo: ataque.objetivo, defensorIndex: ataque.objetivo.index });
             }
             combateCtx.ganaAtacante = combateCtx.pa >= combateCtx.pd;
             combateCtx.bloqueadorUsado = estadoPartida.bloqueadorUsado || false;
@@ -6311,10 +6099,6 @@
                         for (let i = 0; i < dano; i++) if (estadoPartida.rival.vida.length) estadoPartida.rival.vida.pop();
                         estadoPartida.log = `El ataque impacta al lider rival: pierde ${dano} vida${dano > 1 ? 's' : ''}.`;
                     }
-                    // En modo online, enviar el daño al rival para que lo aplique a su vida
-                    if (estadoPartida.modo === 'online' && _socketOnline) {
-                        _socketOnline.emit('accion-juego', { tipo: 'dano-lider', dano: dano });
-                    }
                 } else if (!resultado.leoInmortal) {
                     estadoPartida.log = 'El lider rival resiste el ataque.';
                 }
@@ -6325,22 +6109,9 @@
                     estadoPartida.rival.descarte.push(defensor.id);
                     estadoPartida.rival.batalla.splice(idx, 1);
                     estadoPartida.log = 'Tu carta gana el combate y destruye a la defensora.';
-                    // Llamar alDestruida del defensor
-                    if (window.MotorEfectos) MotorEfectos.dispatch(defensor.id, 'alDestruida', ['rival']);
                 }
             } else if (!resultado.ganaAtacante && !resultado.leoInmortal) {
-                // El atacante pierde: destruirlo
-                if (ataque.atacanteRef?.tipo === 'unidad') {
-                    const atkIdx = ataque.atacanteRef.index;
-                    const atk = estadoPartida.jugador.batalla[atkIdx];
-                    if (atk) {
-                        estadoPartida.jugador.descarte.push(atk.id);
-                        estadoPartida.jugador.batalla.splice(atkIdx, 1);
-                        // Llamar alDestruida del atacante
-                        if (window.MotorEfectos) MotorEfectos.dispatch(atk.id, 'alDestruida', ['jugador']);
-                    }
-                }
-                estadoPartida.log = 'La carta rival gana el combate. Tu atacante es destruido.';
+                estadoPartida.log = 'La carta rival gana el combate. Tu atacante queda en descanso.';
             }
 
             estadoPartida.jugador.combo.forEach(c => estadoPartida.jugador.descarte.push(c.id || c));
@@ -6349,28 +6120,7 @@
             estadoPartida.atacanteSeleccionado = null;
             estadoPartida.ataqueActual = null;
             estadoPartida.faseIndex = 2;
-            // Limpiar combo defensora
-            estadoPartida.rivalComboActual = 0;
-            estadoPartida.rivalAtacanteId = null;
             renderizarPartida();
-            // Sincronizar online después del ataque
-            if (estadoPartida.modo === 'online') sincronizarEstadoOnline('atacar');
-            // Enviar orden al defensor de limpiar su combo y actualizar su campo
-            if (estadoPartida.modo === 'online' && _socketOnline) {
-                _socketOnline.emit('accion-juego', {
-                    tipo: 'limpiar-combo-defensora',
-                    resultado: {
-                        ganaAtacante: resultado.ganaAtacante,
-                        objetivo: resultado.objetivo,
-                        atacanteRef: ataque.atacanteRef,
-                        defensorDestruido: resultado.ganaAtacante && resultado.objetivo?.tipo === 'unidad',
-                        atacanteDestruido: !resultado.ganaAtacante && ataque.atacanteRef?.tipo === 'unidad',
-                        danoLider: resultado.ganaAtacante && resultado.objetivo?.tipo === 'lider' ? danoDeCarta(atacante.id, resultado) : 0,
-                        pa: resultado.pa,
-                        pd: resultado.pd
-                    }
-                });
-            }
             verificarFinPartida();
         }
 
@@ -6379,29 +6129,32 @@
             return Number(getCardById(id)?.poder || getCardById(id)?.poderEvo || 0);
         }
 
-        function mostrarChoque(playerPower, rivalPower, ganador, ganaJugador, esRemoto) {
+        function mostrarNotificacionAtaque(texto) {
+            const notif = document.createElement('div');
+            notif.style.cssText = 'position:fixed;top:120px;left:50%;transform:translateX(-50%);z-index:3400;background:linear-gradient(145deg,#a93226,#5e1f17);color:white;padding:14px 30px;border-radius:999px;font-weight:900;font-size:18px;text-transform:uppercase;letter-spacing:1px;box-shadow:0 0 30px rgba(255,115,94,.6);text-shadow:0 2px 4px #000;pointer-events:none;';
+            notif.textContent = '⚔️ ' + texto;
+            document.body.appendChild(notif);
+            setTimeout(() => { notif.style.transition = 'opacity .5s, transform .5s'; notif.style.opacity = '0'; notif.style.transform = 'translateX(-50%) translateY(-20px)'; }, 2000);
+            setTimeout(() => notif.remove(), 2600);
+        }
+
+        function mostrarNotificacionCounter(nombreCarta) {
+            const notif = document.createElement('div');
+            notif.style.cssText = 'position:fixed;top:120px;left:50%;transform:translateX(-50%);z-index:3400;background:linear-gradient(145deg,#8e44ad,#4a235a);color:white;padding:14px 30px;border-radius:999px;font-weight:900;font-size:18px;text-transform:uppercase;letter-spacing:1px;box-shadow:0 0 30px rgba(142,68,173,.7);text-shadow:0 2px 4px #000;pointer-events:none;';
+            notif.textContent = '🛡️ ¡' + nombreCarta + ' niega el ataque!';
+            document.body.appendChild(notif);
+            setTimeout(() => { notif.style.transition = 'opacity .5s, transform .5s'; notif.style.opacity = '0'; notif.style.transform = 'translateX(-50%) translateY(-20px)'; }, 2500);
+            setTimeout(() => notif.remove(), 3100);
+        }
+
+        function mostrarChoque(playerPower, rivalPower, ganador, ganaJugador) {
             const overlay = document.getElementById('clash-overlay');
             document.getElementById('clash-player-power').innerText = playerPower;
             document.getElementById('clash-rival-power').innerText = rivalPower;
             document.getElementById('clash-result').innerText = `${ganador} gana`;
             document.getElementById('clash-result').style.color = ganaJugador ? '#5ee7ff' : '#ff735e';
             overlay.classList.remove('hidden');
-            // Limpiar cualquier timeout anterior para evitar parpadeo
-            if (window._clashTimeout) clearTimeout(window._clashTimeout);
-            window._clashTimeout = setTimeout(() => {
-                overlay.classList.add('hidden');
-                window._clashTimeout = null;
-            }, 1400);
-            // En modo online, enviar la animación al rival (solo si no es una recepción remota)
-            if (!esRemoto && estadoPartida && estadoPartida.modo === 'online' && _socketOnline) {
-                _socketOnline.emit('accion-juego', {
-                    tipo: 'animacion-choque',
-                    playerPower: playerPower,
-                    rivalPower: rivalPower,
-                    ganador: ganador,
-                    ganaJugador: ganaJugador
-                });
-            }
+            setTimeout(() => overlay.classList.add('hidden'), 1400);
         }
 
         function intentarCombarDesdeMano(index) {
@@ -6447,32 +6200,19 @@
             manaIndexes.forEach(i => estadoPartida.jugador.mana[i].rested = true);
             estadoPartida.jugador.manaActivo = estadoPartida.jugador.mana.filter(m => !m.rested).length;
             let id = pendiente.cardId;
-            if (pendiente.origen === 'mano') {
-                // Buscar por cardId en lugar de índice (más robusto)
-                const manoIdx = estadoPartida.jugador.mano.indexOf(id);
-                if (manoIdx >= 0) estadoPartida.jugador.mano.splice(manoIdx, 1);
-            }
+            if (pendiente.origen === 'mano') estadoPartida.jugador.mano.splice(pendiente.index, 1);
             if (pendiente.origen === 'campo') {
-                // Buscar por cardId en batalla
-                const batallaIdx = estadoPartida.jugador.batalla.findIndex(u => u.id === id);
-                if (batallaIdx >= 0) estadoPartida.jugador.batalla.splice(batallaIdx, 1);
+                // Buscar la carta por referencia para asegurarnos de eliminar la correcta
+                const idxToRemove = estadoPartida.jugador.batalla.findIndex((u, i) => i === pendiente.index);
+                if (idxToRemove >= 0) estadoPartida.jugador.batalla.splice(idxToRemove, 1);
             }
             const carta = getCardById(id);
-            const poder = poderCombo(carta);
-            // Si estamos en fase 4 (combo defensora), añadir al defensorCombo
-            if (estadoPartida.faseIndex === 4) {
-                estadoPartida.ataqueActual.defensorCombo = (estadoPartida.ataqueActual.defensorCombo || 0) + poder;
-                estadoPartida.log = `${carta.nombre} suma +${poder} de combo defensivo.`;
-            } else {
-                estadoPartida.ataqueActual.atacanteCombo += poder;
-                estadoPartida.log = `${carta.nombre} suma +${poder} de combo.`;
-            }
+            estadoPartida.ataqueActual.atacanteCombo += poderCombo(carta);
             estadoPartida.jugador.combo.push({ id, comboMode: true });
             estadoPartida.comboPendiente = null;
+            estadoPartida.log = `${carta.nombre} suma +${poderCombo(carta)} de combo.`;
             if (window.MotorEfectos) MotorEfectos.alCombo('jugador', id, { ataque: estadoPartida.ataqueActual });
             renderizarPartida();
-            // Sincronizar online
-            if (estadoPartida.modo === 'online') sincronizarEstadoOnline('combo');
         }
 
         function despertarLider() {
@@ -6585,11 +6325,7 @@
             if (index < 0) return;
             detalleSoloInfo = true;
             cartaDetalleMazo = datosCartas[index];
-            // Si el líder está despertado, mostrar la versión evo por defecto
             detalleMazoEvo = false;
-            if (estadoPartida && estadoPartida.jugador.liderId === id && estadoPartida.jugador.liderDespierto) {
-                detalleMazoEvo = true;
-            }
             pintarDetalleMazo();
             document.getElementById('deck-card-modal').classList.add('open');
         }
@@ -6840,7 +6576,7 @@
             document.getElementById('player-life-count').innerText = j.vida.length;
             document.getElementById('op-life-count').innerText = r.vida.length;
             document.getElementById('player-deck-count').innerText = j.mazo.length;
-            document.getElementById('op-deck-count').innerText = r.mazo.length || (r.mazoCount !== undefined ? r.mazoCount : 0);
+            document.getElementById('op-deck-count').innerText = r.mazo.length;
             document.getElementById('player-energy-active').innerText = j.manaActivo;
             document.getElementById('player-energy-total').innerText = j.mana.length;
             document.getElementById('op-energy-active').innerText = r.manaActivo || 0;
@@ -6856,17 +6592,7 @@
             const liderCartaData = getCardById(j.liderId);
             const liderImgActual = j.liderDespierto && liderCartaData?.imgEvo ? liderCartaData.imgEvo : liderCartaData?.img;
             const liderPoderBase = j.liderDespierto && liderCartaData?.poderEvo ? Number(liderCartaData.poderEvo) : Number(liderCartaData?.poder || 0);
-            const esFaseCombo = estadoPartida.faseIndex === 3 || estadoPartida.faseIndex === 4;
-            // Si el líder es el atacante en fase de combo, añadir el poder de combo
-            let comboLider = 0;
-            if (esFaseCombo && estadoPartida.atacanteSeleccionado?.tipo === 'lider' && estadoPartida.ataqueActual) {
-                comboLider = estadoPartida.ataqueActual.atacanteCombo || 0;
-            }
-            // Si el líder es el defensor en fase de combo defensora, añadir el combo defensivo
-            if (estadoPartida.faseIndex === 4 && estadoPartida.ataqueActual?.objetivo?.tipo === 'lider' && estadoPartida.ataqueActual?.defensorCombo) {
-                comboLider += estadoPartida.ataqueActual.defensorCombo;
-            }
-            const liderPoderActual = liderPoderBase + (liderObj.buffs.poder || 0) + (liderObj.buffs.batalla || 0) + comboLider;
+            const liderPoderActual = liderPoderBase + (liderObj.buffs.poder || 0) + (liderObj.buffs.batalla || 0);
             // Botones activables del líder
             let liderActivables = '';
             if (window.MotorEfectos && estadoPartida.faseIndex >= 1) {
@@ -6875,9 +6601,7 @@
                     liderActivables += `<button class="activable-btn-overlay" onclick="event.stopPropagation(); ejecutarHabilidadActivable('${a.cardId}','${a.key}','lider')">${escapeHtml(a.label || a.key)}</button>`;
                 });
             }
-            const liderAtacando = esFaseCombo && estadoPartida.atacanteSeleccionado?.tipo === 'lider';
-            const liderDefendiendo = estadoPartida.faseIndex === 4 && estadoPartida.ataqueActual?.objetivo?.tipo === 'lider';
-            const liderHtml = `<div class="game-card-mini ${liderObj.rested ? 'rested' : ''} ${liderAtacando ? 'attack-glow' : ''} ${liderDefendiendo ? 'defend-glow' : ''}" onclick="seleccionarLiderAtacante()" ondblclick="abrirDetalleJuego('${j.liderId}')" style="cursor:pointer" title="Doble click para ver info">
+            const liderHtml = `<div class="game-card-mini ${liderObj.rested ? 'rested' : ''}" onclick="seleccionarLiderAtacante()" ondblclick="abrirDetalleJuego('${j.liderId}')" style="cursor:pointer" title="Doble click para ver info">
                 <img src="${liderImgActual || ''}" alt="${escapeHtml(liderCartaData?.nombre || '')}">
                 <span class="card-power-badge">${liderPoderActual}</span>
             </div>${liderActivables}`;
@@ -6888,42 +6612,22 @@
             const rivalLiderBase = r.liderDespierto && rivalLiderData?.poderEvo ? Number(rivalLiderData.poderEvo) : Number(rivalLiderData?.poder || 0);
             const rivalLiderObj = r.liderZona || { id: r.liderId, rested: false };
             if (!rivalLiderObj.buffs) rivalLiderObj.buffs = { poder: 0, combo: 0, batalla: 0 };
-            // Si el líder rival es el atacante y hay combo, añadirlo al poder
-            let rivalComboLider = 0;
-            if (estadoPartida.rivalAtacanteId === r.liderId && estadoPartida.rivalComboActual) {
-                rivalComboLider = estadoPartida.rivalComboActual;
-            }
-            // Si el líder rival es el objetivo y hay combo defensora, añadirlo
-            let rivalDefensaLider = 0;
-            if (estadoPartida.faseIndex === 4 && estadoPartida.ataqueActual?.objetivo?.tipo === 'lider' && estadoPartida.ataqueActual?.defensorCombo) {
-                rivalDefensaLider = estadoPartida.ataqueActual.defensorCombo;
-            }
-            const rivalLiderPoder = rivalLiderBase + (rivalLiderObj.buffs.poder || 0) + (rivalLiderObj.buffs.batalla || 0) + rivalComboLider + rivalDefensaLider;
-            const rivalLiderAtacando = estadoPartida.rivalAtacanteId === r.liderId && estadoPartida.faseIndex === 3;
-            const rivalLiderHtml = `<div class="game-card-mini ${rivalLiderObj.rested ? 'rested' : ''} ${rivalLiderAtacando ? 'attack-glow' : ''} ${estadoPartida.atacanteSeleccionado !== null ? 'attackable' : ''}" onclick="atacarLiderRival()" ondblclick="abrirDetalleJuego('${r.liderId}')" style="cursor:pointer" title="Doble click para ver info">
+            const rivalLiderPoder = rivalLiderBase + (rivalLiderObj.buffs.poder || 0) + (rivalLiderObj.buffs.batalla || 0);
+            const rivalLiderHtml = `<div class="game-card-mini ${estadoPartida.atacanteSeleccionado !== null ? 'attackable' : ''}" onclick="atacarLiderRival()" ondblclick="abrirDetalleJuego('${r.liderId}')" style="cursor:pointer" title="Doble click para ver info">
                 <img src="${rivalLiderImg || ''}" alt="${escapeHtml(rivalLiderData?.nombre || '')}">
                 <span class="card-power-badge">${rivalLiderPoder}</span>
             </div>`;
             renderZona('op-leader-zone', ocultarLideres ? '' : rivalLiderHtml);
+            const esFaseCombo = estadoPartida.faseIndex === 3;
             const atacanteIdx = estadoPartida.atacanteSeleccionado?.tipo === 'unidad' ? estadoPartida.atacanteSeleccionado.index : -1;
             renderZona('player-battle-zone', j.batalla.map((c, i) => {
                 const esAtacante = i === atacanteIdx;
                 const cartaDatos = getCardById(c.id);
                 const esExtraCard = cartaDatos && String(cartaDatos.clase || cartaDatos.tipo || '').toLowerCase().includes('extra');
-                const esFaseComboODefensa = esFaseCombo || estadoPartida.faseIndex === 4;
-                const clickFn = esFaseComboODefensa
+                const clickFn = esFaseCombo
                     ? `abrirDetalleJuego('${c.id}')`
                     : `seleccionarAtacante(${i})`;
-                // Si es el atacante en fase de combo, añadir buff temporal de combo al poder
-                let cConCombo = c;
-                if (esAtacante && esFaseCombo && estadoPartida.ataqueActual) {
-                    cConCombo = Object.assign({}, c, {
-                        buffs: Object.assign({}, c.buffs || {}, {
-                            batalla: (c.buffs?.batalla || 0) + (estadoPartida.ataqueActual.atacanteCombo || 0)
-                        })
-                    });
-                }
-                const cardHtml = miniCarta(cConCombo, (c.rested ? 'rested' : '') + (esAtacante && esFaseCombo ? ' attack-glow' : ''), { onClick: clickFn, battleIndex: (esFaseCombo || estadoPartida.faseIndex === 4) && !esAtacante && !esExtraCard ? i : undefined, dropIndex: i });
+                const cardHtml = miniCarta(c, (c.rested ? 'rested' : ''), { onClick: clickFn, battleIndex: esFaseCombo && !esAtacante && !esExtraCard ? i : undefined, dropIndex: i });
                 // Añadir botones activables encima de la carta
                 let activarHtml = '';
                 if (window.MotorEfectos && estadoPartida.faseIndex >= 1) {
@@ -6932,40 +6636,19 @@
                         activarHtml += `<button class="activable-btn-overlay" onclick="event.stopPropagation(); ejecutarHabilidadActivable('${a.cardId}','${a.key}','${i}')">${escapeHtml(a.label || a.key)}</button>`;
                     });
                 }
-                // Botón de Combar (en fase combo o fase defensora, cartas que no sean atacante ni extra)
+                // Botón de Combar (solo en fase combo, cartas que no sean atacante ni extra)
                 let combarHtml = '';
-                if ((esFaseCombo || estadoPartida.faseIndex === 4) && !esAtacante && !esExtraCard) {
+                if (esFaseCombo && !esAtacante && !esExtraCard) {
                     combarHtml = `<button class="combar-btn-overlay" onclick="event.stopPropagation(); intentarCombarDesdeCampo(${i})">Combar</button>`;
                 }
                 const overlays = activarHtml + combarHtml;
                 return overlays ? `<div class="activable-wrap">${cardHtml}${overlays}</div>` : cardHtml;
             }).join(''));
-            renderZona('op-battle-zone', r.batalla.map((c, i) => {
-                // Si la unidad rival es el atacante y hay combo, añadirlo al poder
-                let cConCombo = c;
-                const esAtacanteRival = estadoPartida.rivalAtacanteId === c.id && estadoPartida.faseIndex === 3;
-                if (esAtacanteRival && estadoPartida.rivalComboActual) {
-                    cConCombo = Object.assign({}, c, {
-                        buffs: Object.assign({}, c.buffs || {}, {
-                            batalla: (c.buffs?.batalla || 0) + estadoPartida.rivalComboActual
-                        })
-                    });
-                }
-                // Si la unidad rival es el objetivo y hay combo defensora, añadirlo
-                const esObjetivoDefensa = estadoPartida.faseIndex === 4 && estadoPartida.ataqueActual?.objetivo?.tipo === 'unidad' && estadoPartida.ataqueActual?.objetivo?.index === i && estadoPartida.ataqueActual?.defensorCombo;
-                if (esObjetivoDefensa) {
-                    cConCombo = Object.assign({}, cConCombo, {
-                        buffs: Object.assign({}, cConCombo.buffs || {}, {
-                            batalla: (cConCombo.buffs?.batalla || 0) + estadoPartida.ataqueActual.defensorCombo
-                        })
-                    });
-                }
-                return miniCarta(cConCombo, `${c.rested ? 'rested ' : ''}${esAtacanteRival ? 'attack-glow ' : ''}${esObjetivoDefensa ? 'defend-glow ' : ''}${estadoPartida.atacanteSeleccionado !== null && c.rested ? 'attackable' : ''}`, { onClick: `atacarUnidadRival(${i})` });
-            }).join(''));
+            renderZona('op-battle-zone', r.batalla.map((c, i) => miniCarta(c, `${c.rested ? 'rested ' : ''}${estadoPartida.atacanteSeleccionado !== null && c.rested ? 'attackable' : ''}`, { onClick: `atacarUnidadRival(${i})` })).join(''));
             renderZona('player-combo-zone', j.combo.map(c => miniCarta(c, 'combo-card', { comboMode: true })).join(''));
             // Botón de terminar combo siempre accesible si estamos en fase combo
             const comboBtn = document.getElementById('end-combo-btn');
-            if (comboBtn) comboBtn.style.display = (estadoPartida.faseIndex === 3 || estadoPartida.faseIndex === 4) ? 'inline-block' : 'none';
+            if (comboBtn) comboBtn.style.display = estadoPartida.faseIndex === 3 ? 'inline-block' : 'none';
             renderZona('op-combo-zone', r.combo.map(c => miniCarta(c, 'combo-card', { comboMode: true })).join(''));
             renderZona('player-field-zone', j.campo.map(c => {
                 // Si el campo es RELEASE ENERGY, pasar el objeto completo para mostrar contador de cartas debajo
@@ -6988,8 +6671,14 @@
             }).join(''));
 
             // === SINCRONIZACIÓN ONLINE ===
-            // NO mostrar overlay de esperando rival - el jugador debe ver las acciones en tiempo real
-            // Solo bloquear interacción cuando no es su turno (partidaInteractiva ya lo maneja)
+            // Mostrar/ocultar overlay de esperando rival
+            if (estadoPartida.modo === 'online') {
+                if (estadoPartida.turnoDelJugadorLocal) {
+                    ocultarEsperandoRival();
+                } else if (!estadoPartida.introActiva && !estadoPartida.finalizada) {
+                    mostrarEsperandoRival();
+                }
+            }
         }
         function obtenerColorBorde(color) {
             if (!color) return 'rgba(255,255,255,0.8)';
