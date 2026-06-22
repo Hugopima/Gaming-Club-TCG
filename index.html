@@ -6370,6 +6370,9 @@
         function seleccionarAtacante(index) {
             const unidad = estadoPartida.jugador.batalla[index];
             if (!estadoPartida || estadoPartida.faseIndex !== 2) return abrirDetalleJuego(unidad?.id);
+            // Si hay un ataque en curso (bloqueador/counter/combo), no se puede cambiar de atacante:
+            // el objetivo ya está fijado y no debe poder modificarse.
+            if (estadoPartida._ataqueEnProgreso || estadoPartida.ataqueActual) return abrirDetalleJuego(unidad?.id);
             if (!puedeAtacarAhora(unidad)) return abrirDetalleJuego(unidad?.id);
             estadoPartida.atacanteSeleccionado = { tipo: 'unidad', index };
             estadoPartida._ataqueEfectoDisparado = false;
@@ -6379,6 +6382,8 @@
 
         function seleccionarLiderAtacante() {
             if (!estadoPartida || estadoPartida.faseIndex !== 2) return abrirDetalleJuego(estadoPartida?.jugador?.liderId);
+            // Si hay un ataque en curso, no se puede cambiar de atacante.
+            if (estadoPartida._ataqueEnProgreso || estadoPartida.ataqueActual) return abrirDetalleJuego(estadoPartida?.jugador?.liderId);
             const liderZona = estadoPartida.jugador.liderZona || (estadoPartida.jugador.liderZona = { id: estadoPartida.jugador.liderId, rested: false, ataquesRestantes: 1 });
             if (!puedeAtacarAhora(liderZona)) return abrirDetalleJuego(liderZona.id);
             estadoPartida.atacanteSeleccionado = { tipo: 'lider' };
@@ -6454,8 +6459,12 @@
                 if (window.MotorEfectos && !MotorEfectos.puedeAtacarObjetivo(obtenerAtacanteActual()?.id, { tipo: 'lider' }, 'jugador')) {
                     return alert('Tu atacante no puede golpear al lider rival.');
                 }
-                const obj = { tipo: 'lider' };
+                let obj = { tipo: 'lider' };
                 // Llamar alDeclararAtaque ANTES de bloqueador/counter (para que Aquaman funcione)
+                // alDeclararAtaque puede devolver un objetivo modificado por habilidades (ej. Aquaman),
+                // y luego intentarBloqueador puede redirigir el ataque a la unidad bloqueadora.
+                // El atacante NO puede re-elegir objetivo: el flujo bloqueador/counter está protegido
+                // por _ataqueEnProgreso, que impide que atacarLiderRival/atacarUnidadRival se reinicien.
                 if (window.MotorEfectos) {
                     const objDec = MotorEfectos.alDeclararAtaque('jugador', estadoPartida.atacanteSeleccionado, obj);
                     if (objDec === null) { estadoPartida._ataqueEnProgreso = false; renderizarPartida(); return; }
@@ -6667,9 +6676,18 @@
             if (resultado.objetivo.tipo === 'lider') {
                 if (resultado.ganaAtacante) {
                     const dano = danoDeCarta(atacante.id, resultado);
-                    // En modo online: NO quitar vida aquí, solo enviarla al rival
-                    // El rival se la quita a sí mismo al recibir el mensaje
+                    // IMPORTANTE: el daño al líder se aplica SIEMPRE aquí, en cuanto termina la batalla,
+                    // para que la vida del rival se actualice en pantalla de inmediato (no en la siguiente fase).
                     if (estadoPartida.modo === 'online' && _socketOnline) {
+                        // Modo online: aplicar localmente Y avisar al rival para que se lo quite en su pantalla.
+                        // Antes solo se emitía el mensaje y la vida del rival no bajaba en la pantalla del
+                        // atacante hasta que el rival mandaba un snapshot (lo que daba la sensación de que
+                        // el daño se aplicaba "en la siguiente fase").
+                        if (window.MotorEfectos) {
+                            MotorEfectos.infligirDanoLider('rival', dano, atacante.id);
+                        } else {
+                            for (let i = 0; i < dano; i++) if (estadoPartida.rival.vida.length) estadoPartida.rival.vida.pop();
+                        }
                         _socketOnline.emit('accion-juego', { tipo: 'dano-lider', dano: dano });
                         estadoPartida.log = `El ataque impacta al lider rival: pierde ${dano} vida${dano > 1 ? 's' : ''}.`;
                     } else {
@@ -7280,7 +7298,11 @@
             if (rivalLiderObj.flags?.dobleGolpe || rivalLiderObj.flags?.tripleGolpe) {
                 rivalLiderBadge = `<span class="ability-badge ${rivalLiderObj.flags?.tripleGolpe ? 'badge-x3' : 'badge-x2'}" style="position:absolute;top:-9px;right:-6px;z-index:6;">${rivalLiderObj.flags?.tripleGolpe ? 'x3' : 'x2'}</span>`;
             }
-            const rivalLiderHtml = `<div class="game-card-mini ${rivalLiderObj.rested ? 'rested' : ''} ${rivalLiderAtacando ? 'attack-glow' : ''} ${estadoPartida.atacanteSeleccionado !== null ? 'attackable' : ''}" onclick="atacarLiderRival()" ondblclick="abrirDetalleJuego('${r.liderId}')" style="cursor:pointer" title="Doble click para ver info">
+            // Solo se muestra el borde 'attackable' si hay un atacante seleccionado Y no hay ningún
+            // ataque en curso. Una vez iniciado el flujo de ataque (bloqueador/counter/combo), el
+            // objetivo ya está fijado y no debe poder cambiarse, así que ocultamos el resaltado.
+            const _ataqueEnCurso = estadoPartida._ataqueEnProgreso || !!estadoPartida.ataqueActual;
+            const rivalLiderHtml = `<div class="game-card-mini ${rivalLiderObj.rested ? 'rested' : ''} ${rivalLiderAtacando ? 'attack-glow' : ''} ${estadoPartida.atacanteSeleccionado !== null && !_ataqueEnCurso ? 'attackable' : ''}" onclick="atacarLiderRival()" ondblclick="abrirDetalleJuego('${r.liderId}')" style="cursor:pointer" title="Doble click para ver info">
                 ${rivalLiderBadge}
                 <img src="${rivalLiderImg || ''}" alt="${escapeHtml(rivalLiderData?.nombre || '')}">
                 <span class="card-power-badge">${rivalLiderPoder}</span>
@@ -7342,7 +7364,10 @@
                     });
                 }
                 let extraCls = `${c.rested ? 'rested ' : ''}${esAtacanteRival ? 'attack-glow ' : ''}${esObjetivoDefensa ? 'defend-glow ' : ''}`;
-                if (estadoPartida.atacanteSeleccionado !== null && (c.rested || c.id === 'kirk')) extraCls += 'attackable ';
+                // Solo se permite elegir objetivo si hay atacante seleccionado Y no hay ataque en curso.
+                // Una vez arrancado el flujo (bloqueador/counter/combo), el objetivo ya no se puede cambiar.
+                const _ataqueEnCurso = estadoPartida._ataqueEnProgreso || !!estadoPartida.ataqueActual;
+                if (estadoPartida.atacanteSeleccionado !== null && !_ataqueEnCurso && (c.rested || c.id === 'kirk')) extraCls += 'attackable ';
                 return miniCarta(cConCombo, extraCls, { onClick: `atacarUnidadRival(${i})` });
             }).join(''));
             renderZona('player-combo-zone', j.combo.map(c => miniCarta(c, 'combo-card', { comboMode: true })).join(''));
