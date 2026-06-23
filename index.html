@@ -6854,10 +6854,52 @@
                     const idx = Number(btn.dataset.idx);
                     const cp = counterPlaysValidos[idx];
                     if (!cp) return;
-                    // Usar directamente intentarJugarDesdeMano con el índice de la carta.
-                    intentarJugarDesdeMano(cp.i);
+                    // Ejecutar el counter play directamente (sin pasar por intentarJugarDesdeMano)
+                    usarCounterPlayDirecto(cp);
                 };
             });
+        }
+
+        // Ejecutar un counter play directamente: paga maná, niega la carta rival, descarta el counter play.
+        function usarCounterPlayDirecto(cp) {
+            if (!estadoPartida || !estadoPartida._counterPlayPendiente) {
+                return alert('Ya no hay una carta rival pendiente para negar.');
+            }
+            const carta = cp.c;
+            const id = cp.id;
+            const handIndex = cp.i;
+            // Verificar que la carta sigue en la mano
+            if (estadoPartida.jugador.mano[handIndex] !== id) {
+                return alert('La carta de Counter Play ya no está en tu mano.');
+            }
+            // Pagar el coste de maná
+            const coste = window.MotorEfectos ? MotorEfectos.costeEfectivo(carta, estadoPartida.jugador, handIndex) : Number(carta.costeTotal || 0);
+            if (coste > estadoPartida.jugador.manaActivo) {
+                return alert(`No tienes maná suficiente. Necesitas ${coste} maná.`);
+            }
+            // Pagar maná
+            let resto = coste;
+            estadoPartida.jugador.mana.forEach(m => { if (resto > 0 && !m.rested) { m.rested = true; resto--; } });
+            estadoPartida.jugador.manaActivo = estadoPartida.jugador.mana.filter(m => !m.rested).length;
+            // Negar la carta rival: enviarla al descarte del rival
+            const cardIdNegada = estadoPartida._counterPlayPendiente.cardId;
+            const cartaRival = getCardById(cardIdNegada);
+            estadoPartida.rival.descarte.push(cardIdNegada);
+            // Si la unidad ya estaba en el campo del rival (en mi vista), quitarla
+            const idxRival = estadoPartida.rival.batalla.findIndex(u => u && u.id === cardIdNegada);
+            if (idxRival >= 0) estadoPartida.rival.batalla.splice(idxRival, 1);
+            log(`¡Counter Play! La carta del rival "${cartaRival?.nombre || cardIdNegada}" es negada y va al descarte.`);
+            // La carta de counter play va al descarte
+            estadoPartida.jugador.descarte.push(id);
+            estadoPartida.jugador.mano.splice(handIndex, 1);
+            estadoPartida._counterPlayPendiente = null;
+            // Notificar al rival para que envíe su carta al descarte
+            if (estadoPartida.modo === 'online' && _socketOnline) {
+                _socketOnline.emit('accion-juego', { tipo: 'counter-play-descarte', cardIdNegada: cardIdNegada, nombre: cartaRival?.nombre || '' });
+                // Enviar snapshot con el maná actualizado
+                sincronizarEstadoOnline('counter-play');
+            }
+            renderizarPartida();
         }
 
         function recibirAtaqueRival(data) {
