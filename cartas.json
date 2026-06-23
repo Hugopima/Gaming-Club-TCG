@@ -189,7 +189,7 @@
     "lore": "Mari cuida mucho de sus amigos, y siempre intenta tener cosas para ellos cuando reciben daño… Espera… ¿Qué es eso detrás de ti?",
     "habilidades": [
       { "tag": "Automático", "css": "tag-auto", "desc": "Cuando este Líder ataca, roba 1 carta." },
-      { "tag": "Automático", "css": "tag-auto", "desc": "Una vez por turno, cuando una de tus unidades de origen \"OMORI\" sea atacada, puedes mirar la carta superior de tu mazo y decidir si la dejas ahí o la mandas a la pila de descartes." },
+      { "tag": "Activar: Batalla", "css": "tag-active", "desc": "Una vez por turno, cuando una de tus unidades de origen \"OMORI\" sea atacada, puedes mirar la carta superior de tu mazo y decidir si la dejas ahí o la mandas a la pila de descartes." },
       { "tag": "Transformación", "css": "tag-trans", "desc": "Al llegar a cuatro vidas, dale la vuelta a esta carta." }
     ],
     "habilidadesEvo": [
