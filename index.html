@@ -1440,6 +1440,8 @@
   function crearUnidadCampo(id, opts) {
     opts = opts || {};
     const ataques = typeof ataquesPorTurno === 'function' ? ataquesPorTurno(id) : 1;
+    // Leer flags del registro de efectos (inmunidadHabilidades, noDestruible, noDerrotable).
+    const reg = REGISTRO_EFECTOS[id] || {};
     return {
       id,
       rested: !!opts.rested,
@@ -1451,9 +1453,9 @@
       noAtacar: !!opts.noAtacar,
       noCombo: !!opts.noCombo,
       debajo: opts.debajo || [],
-      inmunidadHabilidades: !!opts.inmunidadHabilidades,
-      noDestruible: !!opts.noDestruible,
-      noDerrotable: !!opts.noDerrotable
+      inmunidadHabilidades: opts.inmunidadHabilidades != null ? !!opts.inmunidadHabilidades : !!reg.inmunidadHabilidades,
+      noDestruible: opts.noDestruible != null ? !!opts.noDestruible : !!reg.noDestruible,
+      noDerrotable: opts.noDerrotable != null ? !!opts.noDerrotable : !!reg.noDerrotable
     };
   }
 
@@ -1660,6 +1662,8 @@
 
   function tieneBloqueador(zona) {
     if (estaSilenciada(zona)) return false;
+    // Nexusgc: la unidad seleccionada no puede bloquear.
+    if (zona?.flags?.nexusBloqueada) return false;
     const c = cartaEnZona(zona?.id, zona);
     return tieneTagLocal(c, 'bloqueador');
   }
@@ -1744,8 +1748,20 @@
       .filter(x => !filtro || filtro(x.u, x.i, getCardById(x.u.id)));
   }
 
+  // Verifica si una unidad es inmune a habilidades rivales (Paloma, Vagabundo, INFINITYCRAFT).
+  function esInmuneHabilidades(unidad) {
+    if (!unidad) return false;
+    const reg = REGISTRO_EFECTOS[unidad.copiaDe || unidad.id];
+    return !!(reg?.inmunidadHabilidades || reg?.noDestruible);
+  }
+
   function opcionesUnidades(quien, filtro, prefijo) {
-    return unidadesEnCampo(quien, filtro).map(({ u, i }) => ({
+    // Por defecto, excluir unidades inmunes a habilidades (Paloma, Vagabundo, INFINITYCRAFT)
+    // salvo que el filtro explícito las incluya.
+    return unidadesEnCampo(quien, (u, i, c) => {
+      if (esInmuneHabilidades(u)) return false;
+      return !filtro || filtro(u, i, c);
+    }).map(({ u, i }) => ({
       label: `${prefijo || ''}${getCardById(u.id)?.nombre || u.id}`,
       value: i,
       cardId: u.id
@@ -1944,7 +1960,7 @@
         // Pagar impuesto de Charlie Kirk (si el rival tiene a Kirk en campo).
         // El receptor (yo) soy el que counter; el rival es el atacante.
         const riv = 'rival';
-        if (unidadesEnCampo(riv, u => getCardById(u.id)?.id === 'kirk').length) {
+        if (unidadesEnCampo(riv, u => u.id === 'kirk').length) {
           const pago = await elegirConModal('Charlie Kirk: paga 1 maná extra o el Counter se niega', [
             { label: 'Pagar 1 maná', value: true }, { label: 'Negar Counter', value: false }
           ]);
@@ -2280,6 +2296,9 @@
       if (liderCarta(quien).esEvo) return [];
       if (habilidadUsada(claveTurno(quien, 'rl2_act'))) return [];
       if (zonaJugador(quien).mano.length < 5) return [];
+      // Requiere tener al menos 1 unidad roja en juego.
+      const tieneUnidadRoja = unidadesEnCampo(quien, (u, i, c) => colorNormalizadaCarta(c) === 'rojo' && !esInmuneHabilidades(u)).length > 0;
+      if (!tieneUnidadRoja) return [];
       return [{ key: 'buffRoja', label: '+5000 a unidad roja (este turno)' }];
     },
     async ejecutarActivar(key, quien) {
@@ -2982,14 +3001,15 @@
       if (idx != null) {
         const u = zonaJugador(rivalDe(quien)).batalla[idx];
         if (u) {
-          u.silenciado = Math.max(u.silenciado || 0, 3);
+          // Silenciar hasta el final del turno del oponente: silenciado = 1 (se quita al final del próximo turno del dueño).
+          u.silenciado = Math.max(u.silenciado || 0, 1);
           u.noCombo = true;
           if (!u.flags) u.flags = {};
           u.flags.silenciadoBalloon = true;
           log('Balloon Boy: unidad rival silenciada y sin combo hasta el final de tu siguiente turno.');
           // En online, avisar al rival para que silencie su unidad en su pantalla.
           if (estadoPartida?.modo === 'online' && typeof enviarEfectoRival === 'function' && u.id) {
-            enviarEfectoRival({ tipo: 'silenciar', cardId: u.id, turnos: 3, flag: 'silenciadoBalloon', noCombo: true, nombre: 'Balloon Boy' });
+            enviarEfectoRival({ tipo: 'silenciar', cardId: u.id, turnos: 1, flag: 'silenciadoBalloon', noCombo: true, nombre: 'Balloon Boy' });
           }
         }
       }
@@ -3044,8 +3064,16 @@
     alUsarBloqueador(quien) {
       const riv = rivalDe(quien);
       if (zonaJugador(riv).mano.length) {
-        descartarAleatorio(riv);
-        log('P. Diddy: el rival descarta 1 carta al usar bloqueador.');
+        const cartaDescartada = descartarAleatorio(riv);
+        log('P. Diddy: el rival descarta 1 carta al usar bloqueador' + (cartaDescartada ? ' (' + (getCardById(cartaDescartada)?.nombre || cartaDescartada) + ')' : '') + '.');
+        // En online, si el descarte es del jugador local (riv='jugador'), sincronizar al rival.
+        if (estadoPartida?.modo === 'online' && riv === 'jugador' && typeof sincronizarEstadoOnline === 'function') {
+          sincronizarEstadoOnline('rdiddy');
+        }
+        // Si el descarte es del rival (riv='rival'), avisar al rival para que descarte en su pantalla.
+        if (estadoPartida?.modo === 'online' && riv === 'rival' && typeof enviarEfectoRival === 'function') {
+          enviarEfectoRival({ tipo: 'descartar-mano', aleatorio: true, nombre: 'P. Diddy' });
+        }
       }
       if (zonaJugador(riv).combo.length) {
         const c = zonaJugador(riv).combo.pop();
@@ -3053,7 +3081,6 @@
         log('P. Diddy mueve combo rival al descarte.');
       }
       if (typeof renderizarPartida === 'function') renderizarPartida();
-      syncOnline('rdiddy');
     }
   });
 
@@ -3239,17 +3266,18 @@
       const riv = rivalDe(quien);
       const opts = opcionesUnidades(riv).map(o => ({ ...o, cardId: zonaJugador(riv).batalla[o.value]?.id }));
       if (!opts.length) { log('Cancelado en Twitter: el rival no tiene unidades.'); return; }
-      const idx = await elegirConModal('Cancelado en Twitter: elige unidad rival a silenciar hasta el final de tu siguiente turno', opts);
+      const idx = await elegirConModal('Cancelado en Twitter: elige unidad rival a silenciar hasta el próximo turno del rival', opts);
       if (idx != null) {
         const u = zonaJugador(riv).batalla[idx];
         if (u) {
-          u.silenciado = Math.max(u.silenciado || 0, 3); // 3 turnos para asegurar que dura hasta el final del siguiente turno del rival
+          // Silenciar hasta el próximo turno del rival: silenciado = 1 (se quita al final del próximo turno del dueño).
+          u.silenciado = Math.max(u.silenciado || 0, 1);
           if (!u.flags) u.flags = {};
           u.flags.silenciadoTwitter = true;
-          log('Cancelado en Twitter: unidad rival silenciada hasta el final de tu siguiente turno.');
+          log('Cancelado en Twitter: unidad rival sin habilidades hasta el próximo turno del rival.');
           // En online, avisar al rival para que silencie su unidad en su pantalla.
           if (estadoPartida?.modo === 'online' && typeof enviarEfectoRival === 'function' && u.id) {
-            enviarEfectoRival({ tipo: 'silenciar', cardId: u.id, turnos: 3, flag: 'silenciadoTwitter', nombre: 'Cancelado en Twitter' });
+            enviarEfectoRival({ tipo: 'silenciar', cardId: u.id, turnos: 1, flag: 'silenciadoTwitter', nombre: 'Cancelado en Twitter' });
           }
         }
       }
@@ -3259,9 +3287,10 @@
   });
 
   R('paloma', {
-    inmunidadHabilidades: true,
-    // Paloma no puede ser objetivo de habilidades rivales
-    // Esto se verifica en dispatch: si la carta objetivo tiene inmunidadHabilidades, no se ejecuta
+    inmunidadHabilidades: true
+    // Paloma no puede ser objetivo de habilidades rivales.
+    // La inmunidad se verifica en: dispatch (hooks alSerAtacada/alSerAtacadaPor),
+    // destruirUnidad, y en las cartas que seleccionan unidades (usan el helper esInmuneHabilidades).
   });
 
   R('juegos', {
@@ -3533,19 +3562,7 @@
   });
 
   R('podrido', {
-    alPerderCombateDefensa(c) {
-      const quienInvoca = c.atacanteQuien === 'jugador' ? 'rival' : 'jugador';
-      invocarToken(quienInvoca, 'tokenz', true);
-      barajar(quienInvoca);
-      log('Podrido invoca a Podrido Rabioso.');
-      // Si es turno del rival, el token no puede atacar
-      const z = zonaJugador(quienInvoca);
-      const token = z.batalla[z.batalla.length - 1];
-      if (token && token.id === 'tokenz' && estadoPartida && estadoPartida.turnoDelJugadorLocal === false) {
-        token.noAtacar = true;
-      }
-      if (typeof renderizarPartida === 'function') renderizarPartida();
-    },
+    // Podrido invoca a Podrido Rabioso al ser destruida (en combate o por habilidad).
     alDestruida(quien) {
       invocarToken(quien, 'tokenz', true);
       log('Podrido invoca a Podrido Rabioso.');
@@ -3555,6 +3572,11 @@
         token.noAtacar = true;
       }
       if (typeof renderizarPartida === 'function') renderizarPartida();
+      // En online, avisar al rival para que invoque el token en su pantalla.
+      if (estadoPartida?.modo === 'online' && typeof enviarEfectoRival === 'function') {
+        enviarEfectoRival({ tipo: 'invocar-token', tokenId: 'tokenz', nombre: 'Podrido Rabioso' });
+      }
+      syncOnline('podrido');
     }
   });
 
@@ -3738,28 +3760,28 @@
 
   R('calaveras', {
     // Calaveras dispara su efecto al DECLARAR el ataque contra él (antes de counter/bloqueo/combo).
-    // Si el defensor descarta 1 carta, el ataque continúa normalmente.
-    // Si no, el ataque se niega y el atacante queda en descanso.
+    // El ATACANTE decide: descartar 1 carta (ataque continúa) o no (ataque negado, atacante queda en descanso).
     async alSerAtacadaPor(ataqueCtx) {
       // ataqueCtx = { atacanteQuien, atacanteZona, atacanteId, objetivo }
-      const defensor = rivalDe(ataqueCtx.atacanteQuien);
-      const z = zonaJugador(defensor);
-      if (!z.mano.length) { log('Calaveras: no tienes cartas en mano, el ataque continúa.'); return; }
-      const v = await elegirConModalRival('Calaveras: ¿descartar 1 carta? Si no lo haces, el ataque es negado y tu carta permanece en descanso.', [
+      const atacante = ataqueCtx.atacanteQuien;
+      const z = zonaJugador(atacante);
+      if (!z.mano.length) { log('Calaveras: el atacante no tiene cartas en mano, el ataque continúa.'); return; }
+      const v = await elegirConModal('Calaveras: ¿descartar 1 carta? Si no lo haces, el ataque es negado y tu atacante queda en descanso.', [
         { label: 'Descartar 1 carta (ataque continúa)', value: 'desc' },
         { label: 'No descartar (negar ataque)', value: 'no' }
       ]);
       if (v === 'desc') {
-        await elegirDescarteObligatorio(defensor, 'Calaveras: elige una carta para descartar');
-        log('Calaveras: el defensor descarta 1 carta, el ataque continúa.');
+        await elegirDescarteObligatorio(atacante, 'Calaveras: elige una carta para descartar');
+        log('Calaveras: el atacante descarta 1 carta, el ataque continúa.');
+        if (estadoPartida?.modo === 'online' && typeof sincronizarEstadoOnline === 'function') sincronizarEstadoOnline('calaveras');
       } else {
         ataqueCtx.cancelarCombate = true;
         // El atacante queda en descanso
         const atk = ataqueCtx.atacanteZona;
         if (atk) { atk.ataquesRestantes = Math.max(0, (atk.ataquesRestantes ?? 1) - 1); atk.rested = atk.ataquesRestantes <= 0; }
         log('Calaveras niega el ataque. El atacante queda en descanso.');
+        if (estadoPartida?.modo === 'online' && typeof sincronizarEstadoOnline === 'function') sincronizarEstadoOnline('calaveras');
       }
-      syncOnline('calaveras');
     }
   });
 
@@ -3800,17 +3822,31 @@
 
   // —— NEGRAS / MEMES / OMORI ——
   R('rostros', {
-    alJugar(quien) {
+    async alJugar(quien) {
       const zR = zonaJugador(rivalDe(quien));
-      const tops = zR.mazo.splice(-3, 3);
-      if (tops.length) {
-        elegirConModal('Manda 1 top rival al fondo', tops.map(id => ({ label: getCardById(id)?.nombre, value: id })).concat([{ label: 'Ninguna', value: null }])).then(pick => {
-          if (pick) { tops.splice(tops.indexOf(pick), 1); zR.mazo.unshift(pick); }
-          zR.mazo = tops.concat(zR.mazo);
-        });
+      if (!zR.mazo.length) { log('Rostros Pixelados: el rival no tiene cartas en el mazo.'); return; }
+      // Mira las 3 cartas superiores del mazo rival.
+      const tops = zR.mazo.slice(-3);
+      const opts = tops.map(id => ({ label: getCardById(id)?.nombre || id, value: id, cardId: id })).concat([{ label: 'Ninguna', value: null }]);
+      const pick = await elegirConModal('Rostros Pixelados: elige 1 de las 3 cartas superiores del mazo rival para mandarla al fondo', opts);
+      if (pick) {
+        // Sacar la carta del mazo rival y ponerla al fondo.
+        const idx = zR.mazo.lastIndexOf(pick);
+        if (idx >= 0) {
+          const [card] = zR.mazo.splice(idx, 1);
+          zR.mazo.unshift(card); // fondo del mazo
+        }
+        log('Rostros Pixelados: mandas una carta del mazo rival al fondo.');
+        // En online, avisar al rival para que reorganice su mazo.
+        if (estadoPartida?.modo === 'online' && typeof enviarEfectoRival === 'function') {
+          enviarEfectoRival({ tipo: 'rostros-mazo', cardId: pick, nombre: 'Rostros Pixelados' });
+        }
+      } else {
+        log('Rostros Pixelados: no eliges ninguna carta.');
       }
       robar(quien, 1);
       activarDesafioIniciador(quien);
+      syncOnline('rostros');
     }
   });
 
@@ -3895,20 +3931,23 @@
       // Curriculum se puede usar desde la mano en fase principal
       if (estadoPartida?.faseIndex !== 1) return [];
       if (habilidadUsada(claveTurno(quien, 'curr_act'))) return [];
+      // Requiere tener al menos 1 carta en mano (además de Curriculum).
+      const z = zonaJugador(quien);
+      if (z.mano.filter(id => id !== 'curriculum').length === 0) return [];
       return [{ key: 'curriculum', label: 'Activar: carta de mano → maná' }];
     },
     async ejecutarActivar(key, quien, extra) {
       const z = zonaJugador(quien);
-      const idx = await elegirConModal('Currículum: elige carta de tu mano para añadir como maná', z.mano.map((id, i) => ({ label: getCardById(id)?.nombre || id, value: i, cardId: id })));
+      // Elegir carta de la mano (excluyendo la propia Curriculum) para añadir como maná.
+      const opts = z.mano.map((id, i) => ({ label: getCardById(id)?.nombre || id, value: i, cardId: id }))
+        .filter(o => o.cardId !== 'curriculum');
+      if (!opts.length) { log('Currículum: no hay cartas para añadir como maná.'); return; }
+      const idx = await elegirConModal('Currículum: elige carta de tu mano para añadir como maná', opts);
       if (idx != null) {
         const [id] = z.mano.splice(idx, 1);
         z.mana.push({ id, rested: true });
         z.manaActivo = z.mana.filter(m => !m.rested).length;
-        // Curriculum se descarta al usarse (es Extra)
-        if (extra?.handIndex != null && z.mano[extra.handIndex] !== 'curriculum') {
-          // Si curriculum ya no está en mano, buscarlo en descarte
-        }
-        // Asegurar que curriculum se descarta
+        // Curriculum se descarta al usarse (es Extra).
         const currInHand = z.mano.indexOf('curriculum');
         if (currInHand >= 0) {
           z.mano.splice(currInHand, 1);
@@ -3917,23 +3956,40 @@
         marcarHabilidadUsada(claveTurno(quien, 'curr_act'));
         log('Currículum: carta añadida como maná en modo descanso. Currículum se descarta.');
         if (typeof renderizarPartida === 'function') renderizarPartida();
+        syncOnline('curriculum');
       }
     }
   });
 
   R('tung', {
     alCombo(quien, cardId, comboCtx) {
-      if (comboCtx?.atacanteZona) addFlag(comboCtx.atacanteZona, 'dobleGolpe', true);
+      if (comboCtx?.atacanteZona) {
+        addFlag(comboCtx.atacanteZona, 'dobleGolpe', true);
+        addFlag(comboCtx.atacanteZona, '_dobleGolpeTemporal', true);
+      }
       if (comboCtx?.infligeDano) enderezarMana(quien, null, 1);
     }
   });
 
   R('skibidi', {
     alJugar(quien) {
-      unidadesEnCampo(rivalDe(quien), (u, i, c) => !String(c?.origen || '').toLowerCase().includes('meme')).forEach(({ u }) => {
+      const riv = rivalDe(quien);
+      const afectadas = [];
+      unidadesEnCampo(riv, (u, i, c) => !String(c?.origen || '').toLowerCase().includes('meme')).forEach(({ u }) => {
         addBuff(u, 'poder', -5000);
+        if (!u.flags) u.flags = {};
         u.flags.skibidiDebuff = true;
+        afectadas.push(u.id);
       });
+      if (afectadas.length) {
+        log('Skibidi Toilet: -5000 a ' + afectadas.length + ' unidad(es) rival(es) hasta el final del próximo turno del rival.');
+        // En online, avisar al rival para que aplique el debuff en sus unidades.
+        if (estadoPartida?.modo === 'online' && typeof enviarEfectoRival === 'function') {
+          afectadas.forEach(cardId => enviarEfectoRival({ tipo: 'skibidi-debuff', cardId: cardId, nombre: 'Skibidi Toilet' }));
+        }
+      }
+      if (typeof renderizarPartida === 'function') renderizarPartida();
+      syncOnline('skibidi');
     }
   });
 
@@ -3948,10 +4004,18 @@
     async alDeclararAtaque(quien, ref, obj) {
       const opts = opcionesUnidades(rivalDe(quien), (u, i, c) => Number(c?.costeTotal || 99) <= 3);
       if (opts.length) {
-        const idx = await elegirConModal('Nexus: bloquea unidad ≤3', opts.concat([{ label: 'Ninguna', value: -1 }]));
+        const idx = await elegirConModal('Nexus: bloquea unidad ≤3 (no puede bloquear ni combear)', opts.concat([{ label: 'Ninguna', value: -1 }]));
         if (idx >= 0) {
-          zonaJugador(rivalDe(quien)).batalla[idx].noAtacar = true;
-          zonaJugador(rivalDe(quien)).batalla[idx].noCombo = true;
+          const u = zonaJugador(rivalDe(quien)).batalla[idx];
+          u.noAtacar = true;
+          u.noCombo = true;
+          // Marcar como no bloqueadora también (se comprueba en tieneBloqueador).
+          if (!u.flags) u.flags = {};
+          u.flags.nexusBloqueada = true;
+          // En online, avisar al rival.
+          if (estadoPartida?.modo === 'online' && typeof enviarEfectoRival === 'function' && u.id) {
+            enviarEfectoRival({ tipo: 'nexus-bloqueo', cardId: u.id, nombre: 'Nexusgc' });
+          }
         }
       }
       return obj;
@@ -4213,16 +4277,42 @@
 
   R('sweetheart', {
     async alJugar(quien) {
-      const v = await elegirConModal('Sweetheart: rival descarta o destruye ≤4', [
-        { label: 'Descartar carta', value: 'desc' },
+      const riv = rivalDe(quien);
+      // El RIVAL elige: descartar 1 carta o destruir una de sus unidades ≤4.
+      const v = await elegirConModalRival('Sweetheart: ¿descartar 1 carta o destruir unidad ≤4?', [
+        { label: 'Descartar 1 carta', value: 'desc' },
         { label: 'Destruir unidad ≤4', value: 'kill' }
       ]);
-      const riv = rivalDe(quien);
-      if (v === 'desc') descartarAleatorio(riv);
-      else {
-        const idx = await elegirConModal('Unidad ≤4', opcionesUnidades(riv, (u, i, c) => Number(c?.costeTotal || 99) <= 4));
-        if (idx != null) destruirUnidad(riv, idx);
+      if (v === 'desc') {
+        await elegirDescarteObligatorio(riv, 'Sweetheart: elige una carta para descartar');
+        log('Sweetheart: el rival descarta 1 carta.');
+        if (estadoPartida?.modo === 'online' && typeof sincronizarEstadoOnline === 'function') sincronizarEstadoOnline('sweetheart');
+      } else if (v === 'kill') {
+        const opts = opcionesUnidades(riv, (u, i, c) => Number(c?.costeTotal || 99) <= 4);
+        if (opts.length) {
+          // El rival elige qué unidad destruir (por cardId para evitar problemas de índice).
+          const optsConCardId = opts.map(o => ({ label: o.label, value: o.cardId, cardId: o.cardId }));
+          const pickCardId = await elegirConModalRival('Sweetheart: elige unidad ≤4 para destruir', optsConCardId.concat([{ label: 'No destruir', value: null }]));
+          if (pickCardId) {
+            // Buscar la unidad por cardId en la vista del emisor.
+            const idxLocal = zonaJugador(riv).batalla.findIndex(u => u && u.id === pickCardId);
+            if (idxLocal >= 0) {
+              const u = zonaJugador(riv).batalla[idxLocal];
+              destruirUnidad(riv, idxLocal);
+              log('Sweetheart: el rival destruye una de sus unidades.');
+              // En online, avisar al rival para que destruya su unidad en su pantalla.
+              if (estadoPartida?.modo === 'online' && typeof enviarEfectoRival === 'function') {
+                enviarEfectoRival({ tipo: 'destruir-unidad', cardId: pickCardId, nombre: 'Sweetheart' });
+              }
+            }
+          }
+        } else {
+          log('Sweetheart: el rival no tiene unidades ≤4, descarta en su lugar.');
+          await elegirDescarteObligatorio(riv, 'Sweetheart: elige una carta para descartar');
+        }
+        if (estadoPartida?.modo === 'online' && typeof sincronizarEstadoOnline === 'function') sincronizarEstadoOnline('sweetheart');
       }
+      if (typeof renderizarPartida === 'function') renderizarPartida();
     }
   });
 
@@ -4296,6 +4386,10 @@
       u.flags.enfurecido = true;
       log('Joe se enfurece: +5000 poder y Doble Golpe hasta el final de tu siguiente turno.');
       if (typeof renderizarPartida === 'function') renderizarPartida();
+      // En online, avisar al rival para que aplique el buff en su vista de mi Joe.
+      if (estadoPartida?.modo === 'online' && typeof enviarEfectoRival === 'function') {
+        enviarEfectoRival({ tipo: 'buff-joe', cardId: u.id, nombre: 'Joe' });
+      }
       syncOnline('joe');
     });
   }
@@ -4551,9 +4645,11 @@
     }
     if (!c.ganaAtacante && c.atacanteZona) {
       dispatch(c.atacanteId, 'alPerderCombate', [c]);
-      if (c.objetivo?.tipo === 'unidad' && !c.ganaAtacante) {
-        dispatch(c.atacanteId, 'alPerderCombateDefensa', [c]);
-      }
+    }
+    // alPerderCombateDefensa: lo sufre el DEFENSOR cuando PIERDE (ganaAtacante = true y objetivo es unidad).
+    if (c.ganaAtacante && c.objetivo?.tipo === 'unidad' && !c.destruccionVenganza && !c.leoInmortal) {
+      const defId2 = zonaJugador(rivalDe(c.atacanteQuien)).batalla[c.objetivo.index]?.id;
+      if (defId2) dispatch(defId2, 'alPerderCombateDefensa', [c]);
     }
     if (c.venganzaPendiente) {
       if (c.venganzaPendiente === 'atacante' && c.objetivo?.tipo === 'unidad') {
@@ -4754,6 +4850,8 @@
   }
 
   async function intentarCounterAtaque(quien, ataqueCtx) {
+    // Si noCounter (Aquaman con 2+ unidades descansadas), no se puede counter.
+    if (ataqueCtx?.noCounter) return false;
     // En modo online, si el que contraataca es el rival, enviarle la petición
     if (quien === 'rival' && estadoPartida && estadoPartida.modo === 'online' && window._socketOnline) {
       const token = `count_${++_decisionTokenCounter}`;
@@ -5394,7 +5492,15 @@
                     // El rival me hizo daño: aplicarlo a mi vida
                     if (estadoPartida) {
                         for (let i = 0; i < data.dano; i++) {
-                            if (estadoPartida.jugador.vida.length) estadoPartida.jugador.vida.pop();
+                            if (estadoPartida.jugador.vida.length) {
+                                const cartaVida = estadoPartida.jugador.vida.pop();
+                                // Si el ataque fue crítico, la carta de vida va al descarte (no a la mano).
+                                if (data.critico && cartaVida && cartaVida !== 'desconocida') {
+                                    estadoPartida.jugador.descarte.push(cartaVida);
+                                } else if (cartaVida && cartaVida !== 'desconocida') {
+                                    estadoPartida.jugador.mano.push(cartaVida);
+                                }
+                            }
                         }
                         estadoPartida.log = `El ataque del rival te quita ${data.dano} vida${data.dano > 1 ? 's' : ''}.`;
                         if (typeof verificarFinPartida === 'function') verificarFinPartida();
@@ -5456,16 +5562,16 @@
                     // El rival robó una carta: animar en mi pantalla
                     if (typeof animarRoboRival === 'function') animarRoboRival();
                 } else if (data.tipo === 'animacion-dado') {
-                    // El rival tiró un dado: mostrar la misma animación
-                    if (typeof mostrarDadoAnimado === 'function') {
-                        mostrarDadoAnimado(data.resultado);
-                    } else if (typeof mostrarDado === 'function') {
+                    // El rival tiró un dado: mostrar el resultado SIN requerir click del receptor.
+                    // El receptor solo ve el resultado, no lo "tira".
+                    if (typeof mostrarDado === 'function') {
                         mostrarDado(data.resultado);
                     }
                 } else if (data.tipo === 'dados-hasnan') {
-                    // Hasnan (Brawl Stars): mostrar ambos dados
-                    if (typeof mostrarDadoAnimado === 'function') {
-                        mostrarDadoAnimado(data.d1).then(() => mostrarDadoAnimado(data.d2));
+                    // Hasnan (Brawl Stars): mostrar ambos dados (sin click, solo informativo para el receptor)
+                    if (typeof mostrarDado === 'function') {
+                        mostrarDado(data.d1);
+                        setTimeout(() => mostrarDado(data.d2), 1300);
                     }
                 } else if (data.tipo === 'intercambio-lider') {
                     // El rival me envía su liderId
@@ -6038,6 +6144,66 @@
                         }
                         break;
                     }
+                    case 'buff-joe': {
+                        // El rival tiene un Joe que se enfureció: aplicar buff en MI vista del rival.
+                        const u = estadoPartida.rival.batalla.find(u => u && u.id === efecto.cardId);
+                        if (u) {
+                            if (!u.buffs) u.buffs = { poder: 0, combo: 0, batalla: 0 };
+                            u.buffs.poder = (u.buffs.poder || 0) + 5000;
+                            if (!u.flags) u.flags = {};
+                            u.flags.dobleGolpe = true;
+                            u.flags.enfurecido = true;
+                        }
+                        break;
+                    }
+                    case 'skibidi-debuff': {
+                        // El rival aplicó Skibidi Toilet a una de mis unidades: aplicar -5000 poder.
+                        const u = z.batalla.find(u => u && u.id === efecto.cardId);
+                        if (u) {
+                            if (!u.buffs) u.buffs = { poder: 0, combo: 0, batalla: 0 };
+                            u.buffs.poder = (u.buffs.poder || 0) - 5000;
+                            if (!u.flags) u.flags = {};
+                            u.flags.skibidiDebuff = true;
+                        }
+                        break;
+                    }
+                    case 'invocar-token': {
+                        // El rival invocó un token (ej. Podrido Rabioso): invocarlo en mi vista del rival.
+                        if (window.MotorEfectos && MotorEfectos.crearUnidadCampo) {
+                            const token = MotorEfectos.crearUnidadCampo(efecto.tokenId, { rested: false });
+                            estadoPartida.rival.batalla.push(token);
+                            estadoPartida.log = `El rival invoca ${efecto.nombre || efecto.tokenId}.`;
+                        }
+                        break;
+                    }
+                    case 'rostros-mazo': {
+                        // El rival jugó Rostros Pixelados: mover mi carta del top al fondo del mazo.
+                        if (z.mazo.length) {
+                            const idx = z.mazo.lastIndexOf(efecto.cardId);
+                            if (idx >= 0) {
+                                const [card] = z.mazo.splice(idx, 1);
+                                z.mazo.unshift(card);
+                            } else if (z.mazo.length) {
+                                // Si no se encuentra por id (carta desconocida), mover la del top.
+                                const top = z.mazo.pop();
+                                z.mazo.unshift(top);
+                            }
+                            estadoPartida.log = 'Rostros Pixelados: una carta de tu mazo va al fondo.';
+                        }
+                        break;
+                    }
+                    case 'nexus-bloqueo': {
+                        // El rival jugó Nexusgc: mi unidad no puede bloquear ni combear.
+                        const u = z.batalla.find(u => u && u.id === efecto.cardId);
+                        if (u) {
+                            u.noAtacar = true;
+                            u.noCombo = true;
+                            if (!u.flags) u.flags = {};
+                            u.flags.nexusBloqueada = true;
+                            estadoPartida.log = 'Nexusgc: una de tus unidades no puede bloquear ni combear.';
+                        }
+                        break;
+                    }
                 }
             } catch (e) { console.error('Error aplicando efecto remoto:', e, efecto); }
             if (typeof renderizarPartida === 'function') renderizarPartida();
@@ -6078,6 +6244,14 @@
         function recibirFinTurnoRival(data) {
             if (!estadoPartida || estadoPartida.modo !== 'online') return;
             const snap = data.snapshot;
+            // Preservar flags locales de las cartas del rival (arañaBloqueada, silenciado, etc.)
+            // porque el snapshot del rival no los incluye (el rival no sabe que su carta está afectada).
+            const flagsPreservados = {};
+            (estadoPartida.rival.batalla || []).forEach((u, i) => {
+                if (u && u.flags && (u.flags.arañaBloqueada || u.flags.silenciadoBalloon || u.flags.silenciadoTwitter)) {
+                    flagsPreservados[u.id] = { flags: JSON.parse(JSON.stringify(u.flags)), silenciado: u.silenciado, noAtacar: u.noAtacar, noCombo: u.noCombo };
+                }
+            });
             // Actualizar el estado del rival con el snapshot
             if (snap.miEstado) {
                 estadoPartida.rival.liderId = snap.miEstado.liderId;
@@ -6087,6 +6261,15 @@
                 while (estadoPartida.rival.mano.length > snap.miEstado.manoCount) estadoPartida.rival.mano.pop();
                 estadoPartida.rival.mana = snap.miEstado.mana || [];
                 estadoPartida.rival.batalla = snap.miEstado.batalla || [];
+                // Restaurar flags preservados en las cartas del rival.
+                estadoPartida.rival.batalla.forEach(u => {
+                    if (u && flagsPreservados[u.id]) {
+                        u.flags = Object.assign({}, u.flags || {}, flagsPreservados[u.id].flags);
+                        if (flagsPreservados[u.id].silenciado) u.silenciado = flagsPreservados[u.id].silenciado;
+                        if (flagsPreservados[u.id].noAtacar) u.noAtacar = true;
+                        if (flagsPreservados[u.id].noCombo) u.noCombo = true;
+                    }
+                });
                 estadoPartida.rival.combo = snap.miEstado.combo || [];
                 estadoPartida.rival.descarte = snap.miEstado.descarte || [];
                 estadoPartida.rival.campo = snap.miEstado.campo || [];
@@ -6098,6 +6281,25 @@
             estadoPartida.faseIndex = 0;
             // Ahora es mi turno
             estadoPartida.turnoDelJugadorLocal = true;
+            // Decrementar arañaBloqueada y silenciado de las cartas del RIVAL (acaba de terminar su turno).
+            estadoPartida.rival.batalla.forEach(c => {
+                if (c.flags?.arañaBloqueada) {
+                    c.flags.arañaBloqueada--;
+                    if (c.flags.arañaBloqueada <= 0) {
+                        c.flags.arañaBloqueada = false;
+                        c.noAtacar = false;
+                        c.noCombo = false;
+                    }
+                }
+                if (c.silenciado > 0) {
+                    c.silenciado--;
+                    if (c.silenciado <= 0 && c.flags) {
+                        c.flags.silenciadoTwitter = false;
+                        c.flags.silenciadoBalloon = false;
+                        if (c.noCombo) c.noCombo = false;
+                    }
+                }
+            });
             // Enderezar mis cartas (excepto las bloqueadas por Araña Madre)
             estadoPartida.jugador.mana.forEach(m => m.rested = false);
             estadoPartida.jugador.batalla.forEach(c => { if (!c.flags?.arañaBloqueada) { c.rested = false; c.ataquesRestantes = ataquesPorTurno(c.id); } });
@@ -6139,7 +6341,28 @@
                 }
                 // Actualizar zonas visibles
                 estadoPartida.rival.mana = snap.miEstado.mana || [];
+                // Preservar flags locales de las cartas del rival (arañaBloqueada, silenciado, skibidiDebuff, etc.)
+                const flagsPreservados = {};
+                (estadoPartida.rival.batalla || []).forEach(u => {
+                    if (u && u.flags && (u.flags.arañaBloqueada || u.flags.silenciadoBalloon || u.flags.silenciadoTwitter || u.flags.skibidiDebuff)) {
+                        flagsPreservados[u.id] = { flags: JSON.parse(JSON.stringify(u.flags)), silenciado: u.silenciado, noAtacar: u.noAtacar, noCombo: u.noCombo, buffs: u.buffs ? JSON.parse(JSON.stringify(u.buffs)) : null };
+                    }
+                });
                 estadoPartida.rival.batalla = snap.miEstado.batalla || [];
+                // Restaurar flags preservados.
+                estadoPartida.rival.batalla.forEach(u => {
+                    if (u && flagsPreservados[u.id]) {
+                        const fp = flagsPreservados[u.id];
+                        u.flags = Object.assign({}, u.flags || {}, fp.flags);
+                        if (fp.silenciado) u.silenciado = fp.silenciado;
+                        if (fp.noAtacar) u.noAtacar = true;
+                        if (fp.noCombo) u.noCombo = true;
+                        // Preservar buffs de poder (skibidi) si el snapshot no los trae.
+                        if (fp.buffs && fp.buffs.poder && (!u.buffs || !u.buffs.poder)) {
+                            u.buffs = Object.assign({}, u.buffs || { poder: 0, combo: 0, batalla: 0 }, { poder: fp.buffs.poder });
+                        }
+                    }
+                });
                 estadoPartida.rival.combo = snap.miEstado.combo || [];
                 estadoPartida.rival.descarte = snap.miEstado.descarte || [];
                 estadoPartida.rival.campo = snap.miEstado.campo || [];
@@ -6741,15 +6964,26 @@
                 const cartaRival = getCardById(estadoPartida._counterPlayPendiente.cardId);
                 const reg = window.MotorEfectos ? MotorEfectos.REGISTRO_EFECTOS[id] : null;
                 if (reg && reg.alCounterPlay && reg.alCounterPlay('jugador', cartaRival)) {
+                    const cardIdNegada = estadoPartida._counterPlayPendiente.cardId;
                     // Negar la carta: devolverla a la mano y seguir pagando maná
                     const rival = estadoPartida.rival;
-                    rival.mano.push(estadoPartida._counterPlayPendiente.cardId);
-                    // El maná ya se gastó
+                    // Quitar la unidad rival del campo (si ya estaba).
+                    const idxR = rival.batalla.findIndex(u => u && u.id === cardIdNegada);
+                    if (idxR >= 0) rival.batalla.splice(idxR, 1);
+                    rival.mano.push(cardIdNegada);
                     log('¡Counter Play! La carta del rival es devuelta a su mano.');
                     // Descartar la carta de counter play
                     estadoPartida.jugador.descarte.push(id);
                     estadoPartida.jugador.mano.splice(index, 1);
                     estadoPartida._counterPlayPendiente = null;
+                    // Avisar al rival para que devuelva la carta a su mano.
+                    if (estadoPartida.modo === 'online' && _socketOnline) {
+                        _socketOnline.emit('accion-juego', { tipo: 'counter-play-aplicado', cardIdNegada: cardIdNegada });
+                        sincronizarEstadoOnline('counter-play');
+                    }
+                    // Cerrar el prompt de counter play si está abierto.
+                    const cpPrompt = document.getElementById('counter-play-prompt');
+                    if (cpPrompt) cpPrompt.remove();
                     renderizarPartida();
                     return;
                 } else {
@@ -7218,16 +7452,12 @@
                     // IMPORTANTE: el daño al líder se aplica SIEMPRE aquí, en cuanto termina la batalla,
                     // para que la vida del rival se actualice en pantalla de inmediato (no en la siguiente fase).
                     if (estadoPartida.modo === 'online' && _socketOnline) {
-                        // Modo online: aplicar localmente Y avisar al rival para que se lo quite en su pantalla.
-                        // Antes solo se emitía el mensaje y la vida del rival no bajaba en la pantalla del
-                        // atacante hasta que el rival mandaba un snapshot (lo que daba la sensación de que
-                        // el daño se aplicaba "en la siguiente fase").
-                        if (window.MotorEfectos) {
-                            MotorEfectos.infligirDanoLider('rival', dano, atacante.id);
-                        } else {
-                            for (let i = 0; i < dano; i++) if (estadoPartida.rival.vida.length) estadoPartida.rival.vida.pop();
-                        }
-                        _socketOnline.emit('accion-juego', { tipo: 'dano-lider', dano: dano });
+                        // Modo online: solo quitar la vida localmente (sin mover carta al descarte,
+                        // porque el atacante no sabe qué carta de vida tiene el rival).
+                        // El rival se encarga de mover su carta real al descarte/mano al recibir el mensaje.
+                        for (let i = 0; i < dano; i++) if (estadoPartida.rival.vida.length) estadoPartida.rival.vida.pop();
+                        const _esCritico = tieneTag(getCardById(atacante.id), 'critico') || (window.MotorEfectos?.ctx?.liderCritico);
+                        _socketOnline.emit('accion-juego', { tipo: 'dano-lider', dano: dano, critico: !!_esCritico });
                         estadoPartida.log = `El ataque impacta al lider rival: pierde ${dano} vida${dano > 1 ? 's' : ''}.`;
                     } else {
                         // Modo solo: quitar vida normalmente
@@ -7366,6 +7596,10 @@
             if (zona.rested) {
                 return alert('No puedes combear con una unidad en modo descanso.');
             }
+            // No se puede combear si la unidad tiene noCombo (Nexusgc, Balloon Boy, etc.)
+            if (zona.noCombo) {
+                return alert('Esta unidad no puede realizar combos.');
+            }
             const carta = getCardById(zona.id);
             const coste = costeCombo(carta);
             estadoPartida.comboPendiente = { origen: 'campo', index, cardId: zona.id };
@@ -7398,7 +7632,7 @@
             }
             estadoPartida.jugador.combo.push({ id, comboMode: true });
             estadoPartida.comboPendiente = null;
-            if (window.MotorEfectos) MotorEfectos.alCombo('jugador', id, { ataque: estadoPartida.ataqueActual });
+            if (window.MotorEfectos) MotorEfectos.alCombo('jugador', id, { ataque: estadoPartida.ataqueActual, atacanteZona: estadoPartida.ataqueActual?.atacanteZonaRef, infligeDano: false });
             renderizarPartida();
             // Sincronizar online
             if (estadoPartida.modo === 'online') sincronizarEstadoOnline('combo');
@@ -7406,12 +7640,17 @@
 
         function despertarLider() {
             if (!estadoPartida) return;
+            // Solo se puede despertar en tu turno.
+            if (estadoPartida.modo === 'online' && !estadoPartida.turnoDelJugadorLocal) {
+                return alert('Solo puedes despertar a tu líder en tu turno.');
+            }
             if (estadoPartida.jugador.vida.length > 4) return;
             if (window.MotorEfectos) MotorEfectos.transformarLider('jugador');
             else {
                 estadoPartida.jugador.liderDespierto = true;
                 estadoPartida.log = 'Tu lider despierta.';
             }
+            if (estadoPartida.modo === 'online') sincronizarEstadoOnline('despertar');
             renderizarPartida();
         }
 
@@ -7557,8 +7796,8 @@
             document.getElementById('surrender-dialog')?.classList.add('hidden');
             // Limpiar estado persistido
             try { localStorage.removeItem('gc_tcg_partida_online'); } catch (e) {}
-            // Desconectar socket si está conectado
-            if (_socketOnline && estadoPartida && estadoPartida.modo === 'online') {
+            // Solo enviar 'rendirse' si la partida NO está finalizada (evita cambiar derrota por victoria).
+            if (_socketOnline && estadoPartida && estadoPartida.modo === 'online' && !estadoPartida.finalizada) {
                 _socketOnline.emit('rendirse');
             }
             estadoPartida = null;
@@ -7792,6 +8031,17 @@
             let comboLider = 0;
             if (esFaseCombo && estadoPartida.atacanteSeleccionado?.tipo === 'lider' && estadoPartida.ataqueActual) {
                 comboLider = estadoPartida.ataqueActual.atacanteCombo || 0;
+                // Llamar a modificarPoderBatalla para que cartas con bonus por combo (Peppa) reflejen su poder.
+                if (window.MotorEfectos && liderObj) {
+                    const ctxAux = MotorEfectos.ctx || {};
+                    const mod = MotorEfectos.modificarPoderBatalla(j.liderId, liderObj, Object.assign({}, ctxAux, {
+                        atacanteId: j.liderId,
+                        atacanteQuien: 'jugador',
+                        atacanteZona: liderObj,
+                        quien: 'jugador'
+                    }));
+                    if (mod) comboLider += mod;
+                }
             }
             // Si el líder es el defensor en fase de combo defensora, añadir el combo defensivo
             if (estadoPartida.faseIndex === 4 && estadoPartida.ataqueActual?.objetivo?.tipo === 'lider' && estadoPartida.ataqueActual?.defensorCombo) {
@@ -7827,8 +8077,19 @@
             if (!rivalLiderObj.buffs) rivalLiderObj.buffs = { poder: 0, combo: 0, batalla: 0 };
             // Si el líder rival es el atacante y hay combo, añadirlo al poder
             let rivalComboLider = 0;
-            if (estadoPartida.rivalAtacanteId === r.liderId && estadoPartida.rivalComboActual) {
-                rivalComboLider = estadoPartida.rivalComboActual;
+            if (estadoPartida.rivalAtacanteId === r.liderId && (estadoPartida.faseIndex === 3 || estadoPartida.faseIndex === 4)) {
+                rivalComboLider = estadoPartida.rivalComboActual || 0;
+                // Llamar a modificarPoderBatalla para que cartas con bonus por combo (Peppa) reflejen su poder.
+                if (window.MotorEfectos && rivalLiderObj) {
+                    const ctxAux = MotorEfectos.ctx || {};
+                    const mod = MotorEfectos.modificarPoderBatalla(r.liderId, rivalLiderObj, Object.assign({}, ctxAux, {
+                        atacanteId: r.liderId,
+                        atacanteQuien: 'rival',
+                        atacanteZona: rivalLiderObj,
+                        quien: 'rival'
+                    }));
+                    if (mod) rivalComboLider += mod;
+                }
             }
             // Si el líder rival es el objetivo y hay combo defensora, añadirlo
             let rivalDefensaLider = 0;
@@ -7958,7 +8219,11 @@
                 // Solo se permite elegir objetivo si hay atacante seleccionado Y no hay ataque en curso.
                 // Una vez arrancado el flujo (bloqueador/counter/combo), el objetivo ya no se puede cambiar.
                 const _ataqueEnCurso = estadoPartida._ataqueEnProgreso || !!estadoPartida.ataqueActual;
-                if (estadoPartida.atacanteSeleccionado !== null && !_ataqueEnCurso && (c.rested || c.id === 'kirk')) extraCls += 'attackable ';
+                // Determinar si el atacante seleccionado puede atacar unidades activas (Kel, Gang, Kirk defensor).
+                const _atacanteSel = obtenerAtacanteActual?.();
+                const _atacanteId = _atacanteSel?.id;
+                const _puedeAtacarActivas = _atacanteId === 'kel' || _atacanteId === 'gang';
+                if (estadoPartida.atacanteSeleccionado !== null && !_ataqueEnCurso && (c.rested || c.id === 'kirk' || _puedeAtacarActivas)) extraCls += 'attackable ';
                 return miniCarta(cConCombo, extraCls, { onClick: `atacarUnidadRival(${i})` });
             }).join(''));
             renderZona('player-combo-zone', j.combo.map(c => miniCarta(c, 'combo-card', { comboMode: true })).join(''));
@@ -7983,7 +8248,20 @@
             renderZona('player-hand-zone', j.mano.map((id, index) => {
                 const rot = (index - (totalHand - 1) / 2) * 4;
                 const y = Math.abs(index - (totalHand - 1) / 2) * 4;
-                return miniCarta(id, '', { handIndex: index, onClick: `abrirDetalleJuego('${id}')`, fanStyle: `--fan-rot:${rot}deg; --fan-y:${y}px;` });
+                // En turno del rival, las cartas de Counter Play se pueden jugar con click.
+                const c = getCardById(id);
+                const esCP = c && tieneTag(c, 'counter play') && estadoPartida._counterPlayPendiente;
+                const clickFn = esCP ? `intentarJugarDesdeMano(${index})` : `abrirDetalleJuego('${id}')`;
+                // Botones activables desde la mano (ej. Curriculum).
+                let activarHtml = '';
+                if (window.MotorEfectos && estadoPartida.faseIndex >= 1) {
+                    const activables = MotorEfectos.obtenerActivables('jugador').filter(a => a.cardId === id && a.handIndex === index);
+                    activables.forEach(a => {
+                        activarHtml += `<button class="activable-btn-overlay" onclick="event.stopPropagation(); ejecutarHabilidadActivable('${a.cardId}','${a.key}','${index}')">${escapeHtml(a.label || a.key)}</button>`;
+                    });
+                }
+                const cardHtml = miniCarta(id, '', { handIndex: index, onClick: clickFn, fanStyle: `--fan-rot:${rot}deg; --fan-y:${y}px;` });
+                return activarHtml ? `<div class="activable-wrap">${cardHtml}${activarHtml}</div>` : cardHtml;
             }).join(''));
 
             // === SINCRONIZACIÓN ONLINE ===
