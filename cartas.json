@@ -121,7 +121,7 @@
     ],
     "habilidadesEvo": [
       { "tag": "Automático", "css": "tag-auto", "desc": "Cuando esta carta ataca, roba 1 carta." },
-      { "tag": "Automático", "css": "tag-auto", "desc": "Al inicio de tu fase principal, elige una unidad del rival en modo activo y cámbiala a modo descanso. No puede enderezarse en el siguiente turno del rival a menos que este pague 1 de maná." }
+      { "tag": "Activar: Principal", "css": "tag-active", "desc": "[Una vez por turno] Elige una unidad del rival en modo activo y cámbiala a modo descanso. No puede enderezarse en el siguiente turno del rival a menos que este pague 1 de maná." }
     ]
   },
   {
