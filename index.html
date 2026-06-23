@@ -2571,16 +2571,16 @@
       }
       if (estadoPartida?.modo === 'online' && typeof sincronizarEstadoOnline === 'function') sincronizarEstadoOnline('something');
     },
-    // Mari (no evo): Activar: Principal. Una vez por turno, cuando una de tus unidades
-    // de origen OMORI fue atacada en el turno del rival, puedes mirar la carta superior
-    // de tu mazo y decidir si la dejas o la mandas al descarte.
+    // Mari (no evo): Activar: Principal con botón.
+    // Se activa cuando Mari ataca Y una unidad OMORI fue atacada/derrotada
+    // en el turno del rival anterior.
     activablesLider(quien) {
       const z = zonaJugador(quien);
       if (z.liderDespierto) return []; // Solo Mari base, no SOMETHING
       if (habilidadUsada(claveTurno(quien, 'bl2_top'))) return [];
-      // Solo disponible si una unidad OMORI fue atacada en el turno del rival
+      // Disponible en fase Principal si el flag está activo
       if (!estadoPartida?._omoriAtacadaTurnoRival) return [];
-      return [{ key: 'mariTop', label: 'Activar: Principal - Mirar top del mazo (OMORI atacada)' }];
+      return [{ key: 'mariTop', label: 'Activar: Mirar top del mazo (OMORI atacada)' }];
     },
     async ejecutarActivar(key, quien) {
       if (key !== 'mariTop') return;
@@ -2817,7 +2817,6 @@
   R('angel', {
     async alAtacar(quien, ref, zona) {
       // Habilidad USABLE UNA SOLA VEZ por partida POR CARTA
-      // Usamos el id único de la zona (timestamp + id) para diferenciar instancias
       if (!zona) return;
       if (!zona._uid) zona._uid = `${zona.id || 'angel'}_${Date.now()}_${Math.random()}`;
       const cartaUid = zona._uid;
@@ -2830,8 +2829,16 @@
         marcarHabilidadUsada(`angel_${cartaUid}`);
         log('Angel toma 1 vida y gana +10000 y Doble Golpe (esta carta ya no puede usarlo más).');
         if (typeof renderizarPartida === 'function') renderizarPartida();
-        // Sincronizar al rival para que vea el buff y el badge de doble golpe
-        if (estadoPartida?.modo === 'online' && typeof sincronizarEstadoOnline === 'function') {
+        // Sincronizar al rival INMEDIATAMENTE con un mensaje específico de angel-buff
+        // para que actualice su vista (buff +10000 + badge doble golpe) cuanto antes.
+        if (estadoPartida?.modo === 'online' && window._socketOnline) {
+          // Buscar el índice de la unidad Angel para que el rival la identifique
+          const angelIdx = zonaJugador(quien).batalla.findIndex(u => u === zona);
+          window._socketOnline.emit('accion-juego', {
+            tipo: 'angel-buff',
+            cardId: 'angel',
+            index: angelIdx
+          });
           sincronizarEstadoOnline('angel-buff');
         }
       }
@@ -3745,16 +3752,25 @@
 
   R('podrido', {
     alDestruida(quien) {
+      // Invocar 2 Podrido Rabioso (según la habilidad de la carta)
       invocarToken(quien, 'tokenz', true);
-      log('Podrido invoca a Podrido Rabioso.');
+      invocarToken(quien, 'tokenz', true);
+      log('Podrido invoca a 2 Podrido Rabioso.');
       const z = zonaJugador(quien);
-      const token = z.batalla[z.batalla.length - 1];
-      if (token && token.id === 'tokenz' && estadoPartida && quien !== 'jugador') {
-        token.noAtacar = true;
-      }
+      // Los tokens invocados no deben desaparecer al fin de turno.
+      // Asegurarnos de que no tengan el flag destruirFinTurno.
+      z.batalla.forEach(u => {
+        if (u.id === 'tokenz') {
+          if (!u.flags) u.flags = {};
+          u.flags.destruirFinTurno = false;
+          if (estadoPartida && quien !== 'jugador') {
+            u.noAtacar = true;
+          }
+        }
+      });
       if (typeof renderizarPartida === 'function') renderizarPartida();
       if (estadoPartida?.modo === 'online' && typeof enviarEfectoRival === 'function') {
-        enviarEfectoRival({ tipo: 'invocar-token', tokenId: 'tokenz', nombre: 'Podrido Rabioso' });
+        enviarEfectoRival({ tipo: 'invocar-token', tokenId: 'tokenz', nombre: 'Podrido Rabioso', cantidad: 2 });
       }
       syncOnline('podrido');
     }
@@ -4841,8 +4857,14 @@
       dispatch(defZona?.id, 'alSerAtacada', [c, defZona]);
       // Mari (no evo): si la unidad defensora es de origen OMORI, marcar el flag
       // para que la habilidad Activar: Principal esté disponible en el siguiente turno.
+      // El flag se setea tanto si la unidad es atacada como si es derrotada.
       const defCarta = getCardById(defZona?.id);
       if (defCarta && String(defCarta.origen || '').toLowerCase().includes('omori') && !zonaJugador(defQuien).liderDespierto) {
+        if (estadoPartida) estadoPartida._omoriAtacadaTurnoRival = true;
+      }
+      // Mari: también setear el flag cuando un ATACANTE OMORI es derrotado (defensor gana)
+      const atkCarta = getCardById(c.atacanteId);
+      if (atkCarta && String(atkCarta.origen || '').toLowerCase().includes('omori') && !zonaJugador(c.atacanteQuien).liderDespierto) {
         if (estadoPartida) estadoPartida._omoriAtacadaTurnoRival = true;
       }
       // Si el líder defensor está evolucionado y tiene alAtacarLiderEvo, dispararlo (ej. SOMETHING al ser atacado).
@@ -4921,14 +4943,9 @@
     ctx.desafioJugado = null;
     _finTurnoCallbacks.forEach(fn => { try { fn(quien); } catch (e) { console.error(e); } });
     _finTurnoCallbacks = [];
-    // Devolver unidades temporales (Echen a Ana) al final del turno.
+    // Echen a Ana: las unidades destruidas NO vuelven al campo (van al descarte).
+    // Limpiar cualquier referencia temporal por si acaso.
     if (estadoPartida?._unidadesTemporales?.length) {
-      estadoPartida._unidadesTemporales.forEach(t => {
-        if (t.quien === quien) {
-          zonaJugador(quien).batalla.push(t.unidad);
-          log('Una unidad temporalmente retirada vuelve al campo.');
-        }
-      });
       estadoPartida._unidadesTemporales = estadoPartida._unidadesTemporales.filter(t => t.quien !== quien);
     }
     zonaJugador(quien).batalla.forEach(u => {
@@ -5879,6 +5896,21 @@
                 } else if (data.tipo === 'combo-defensora-terminado') {
                     // El rival terminó su combo defensora, resolver combate
                     recibirComboDefensoraTerminado(data);
+                } else if (data.tipo === 'angel-buff') {
+                    // Angel: el rival usó la habilidad. Aplicar buff visualmente en mi vista.
+                    if (estadoPartida && data.index != null) {
+                        const u = estadoPartida.rival.batalla[data.index];
+                        if (u && u.id === 'angel') {
+                            // addBuff y addFlag vienen del MotorEfectos (IIFE), pero podemos
+                            // modificar directamente los buffs/flags de la zona.
+                            if (!u.buffs) u.buffs = { poder: 0, combo: 0, batalla: 0 };
+                            u.buffs.poder += 10000;
+                            if (!u.flags) u.flags = {};
+                            u.flags.dobleGolpe = true;
+                            estadoPartida.log = 'Angel rival toma 1 vida y gana +10000 y Doble Golpe.';
+                            renderizarPartida();
+                        }
+                    }
                 } else if (data.tipo === 'rostros-move') {
                     // Rostros Pixelados: el rival eligió una carta de mi mazo para mandar al fondo
                     if (estadoPartida) {
@@ -6473,9 +6505,14 @@
                     }
                     case 'invocar-token': {
                         if (window.MotorEfectos && MotorEfectos.crearUnidadCampo) {
-                            const token = MotorEfectos.crearUnidadCampo(efecto.tokenId, { rested: false });
-                            estadoPartida.rival.batalla.push(token);
-                            estadoPartida.log = `El rival invoca ${efecto.nombre || efecto.tokenId}.`;
+                            const cantidad = efecto.cantidad || 1;
+                            for (let i = 0; i < cantidad; i++) {
+                                const token = MotorEfectos.crearUnidadCampo(efecto.tokenId, { rested: false });
+                                if (!token.flags) token.flags = {};
+                                token.flags.destruirFinTurno = false; // Tokens persisten
+                                estadoPartida.rival.batalla.push(token);
+                            }
+                            estadoPartida.log = `El rival invoca ${cantidad} ${efecto.nombre || efecto.tokenId}.`;
                         }
                         break;
                     }
@@ -6505,13 +6542,13 @@
                         break;
                     }
                     case 'echen-temporal': {
-                        // El rival jugó Echen a Ana: sacar mi unidad del campo temporalmente.
+                        // Echen a Ana: la unidad es DESTRUIDA (va al descarte, NO vuelve al campo)
                         const idx = z.batalla.findIndex(u => u && u.id === efecto.cardId);
                         if (idx >= 0) {
-                            const [removida] = z.batalla.splice(idx, 1);
-                            if (!estadoPartida._unidadesTemporales) estadoPartida._unidadesTemporales = [];
-                            estadoPartida._unidadesTemporales.push({ quien: 'jugador', unidad: removida });
-                            estadoPartida.log = 'Echen a Ana: una de tus unidades vuelve al final del turno.';
+                            const removida = z.batalla[idx];
+                            z.batalla.splice(idx, 1);
+                            z.descarte.push(removida.id);
+                            estadoPartida.log = 'Echen a Ana: una de tus unidades es destruida.';
                         }
                         break;
                     }
@@ -6752,38 +6789,51 @@
         }
 
         function mostrarBotonCounterPlay(counterPlays, cartaRival) {
-            // Mostrar un overlay con un botón para usar Counter Play.
-            // El overlay desaparece tras 8 segundos, pero _counterPlayPendiente NO se borra
-            // (el jugador puede arrastrar la carta al campo en cualquier momento del turno rival).
+            // Mostrar un overlay con un botón directo "Usar Counter Play" para esta carta.
+            // El overlay desaparece tras 10 segundos, pero _counterPlayPendiente NO se borra.
             const old = document.getElementById('counter-play-prompt');
             if (old) old.remove();
             const ov = document.createElement('div');
             ov.id = 'counter-play-prompt';
-            ov.style.cssText = 'position:fixed;top:80px;right:20px;z-index:3300;background:rgba(20,10,30,.98);border:2px solid #ff735e;border-radius:12px;padding:16px;max-width:280px;box-shadow:0 0 25px rgba(255,115,94,.6);color:white;';
+            ov.style.cssText = 'position:fixed;top:80px;right:20px;z-index:3300;background:rgba(20,10,30,.98);border:2px solid #ff735e;border-radius:12px;padding:16px;max-width:300px;box-shadow:0 0 25px rgba(255,115,94,.6);color:white;';
+            // Si hay un solo counter play, mostrar botón directo.
+            // Si hay varios, mostrar selector.
+            let botonesHtml = '';
+            if (counterPlays.length === 1) {
+                const cp = counterPlays[0];
+                botonesHtml = `<button class="plate-btn" id="cp-use-btn" style="width:100%;margin-bottom:6px;background:linear-gradient(145deg,#5e1f17,#a93226);">Usar ${escapeHtml(cp.c.nombre || 'Counter Play')}</button>`;
+            } else {
+                counterPlays.forEach((cp, i) => {
+                    botonesHtml += `<button class="plate-btn cp-pick-btn" data-idx="${i}" style="width:100%;margin-bottom:6px;background:linear-gradient(145deg,#5e1f17,#a93226);">Usar ${escapeHtml(cp.c.nombre || 'Counter Play')}</button>`;
+                });
+            }
             ov.innerHTML = `<div style="font-weight:900;font-size:14px;margin-bottom:8px;">¿Counter Play?</div>
-                <div style="font-size:12px;margin-bottom:12px;color:#ddd;">El rival juega <b>${escapeHtml(cartaRival.nombre || '')}</b>. Arrastra tu Counter Play al campo o usa el botón.</div>
-                <button class="plate-btn" id="cp-use-btn" style="width:100%;margin-bottom:6px;background:linear-gradient(145deg,#5e1f17,#a93226);">Ver Counter Plays</button>
+                <div style="font-size:12px;margin-bottom:12px;color:#ddd;">El rival juega <b>${escapeHtml(cartaRival.nombre || '')}</b>. Usa un Counter Play para negarlo.</div>
+                ${botonesHtml}
                 <button class="plate-btn" id="cp-skip-btn" style="width:100%;background:#333;">Cerrar</button>`;
             document.body.appendChild(ov);
             // El timeout solo cierra el overlay visual, NO borra _counterPlayPendiente.
-            const timeout = setTimeout(() => { ov.remove(); }, 8000);
+            const timeout = setTimeout(() => { ov.remove(); }, 10000);
             document.getElementById('cp-skip-btn').onclick = () => {
                 clearTimeout(timeout);
                 ov.remove();
-                // NO borrar _counterPlayPendiente: el jugador puede arrastrar más tarde.
             };
-            document.getElementById('cp-use-btn').onclick = async () => {
+            const usarCounterPlay = (idx) => {
                 clearTimeout(timeout);
                 ov.remove();
-                // Mostrar selector de counter plays.
-                const opts = counterPlays.map(x => ({ label: x.c.nombre, value: x.i, cardId: x.id }));
-                const pick = await elegirConModal('Elige una carta de Counter Play', opts.concat([{ label: 'No usar', value: -1 }]));
-                if (pick == null || pick < 0) {
-                    return;
-                }
-                // Usar intentarJugarDesdeMano que ya maneja el counter play.
-                intentarJugarDesdeMano(pick);
+                if (idx == null || idx < 0) return;
+                const cp = counterPlays[idx];
+                if (!cp) return;
+                // Usar directamente intentarJugarDesdeMano con el índice de la carta.
+                intentarJugarDesdeMano(cp.i);
             };
+            if (counterPlays.length === 1) {
+                document.getElementById('cp-use-btn').onclick = () => usarCounterPlay(0);
+            } else {
+                ov.querySelectorAll('.cp-pick-btn').forEach(btn => {
+                    btn.onclick = () => usarCounterPlay(Number(btn.dataset.idx));
+                });
+            }
         }
 
         function recibirAtaqueRival(data) {
@@ -7508,6 +7558,8 @@
         function seleccionarAtacante(index) {
             const unidad = estadoPartida.jugador.batalla[index];
             if (!estadoPartida || estadoPartida.faseIndex !== 2) return abrirDetalleJuego(unidad?.id);
+            // En modo online, no se puede seleccionar atacante en el turno del rival
+            if (estadoPartida.modo === 'online' && !estadoPartida.turnoDelJugadorLocal) return abrirDetalleJuego(unidad?.id);
             // Si hay un ataque en curso (bloqueador/counter/combo), no se puede cambiar de atacante:
             // el objetivo ya está fijado y no debe poder modificarse.
             if (estadoPartida._ataqueEnProgreso || estadoPartida.ataqueActual) return abrirDetalleJuego(unidad?.id);
@@ -7520,6 +7572,8 @@
 
         function seleccionarLiderAtacante() {
             if (!estadoPartida || estadoPartida.faseIndex !== 2) return abrirDetalleJuego(estadoPartida?.jugador?.liderId);
+            // En modo online, no se puede seleccionar atacante en el turno del rival
+            if (estadoPartida.modo === 'online' && !estadoPartida.turnoDelJugadorLocal) return abrirDetalleJuego(estadoPartida?.jugador?.liderId);
             // Si hay un ataque en curso, no se puede cambiar de atacante.
             if (estadoPartida._ataqueEnProgreso || estadoPartida.ataqueActual) return abrirDetalleJuego(estadoPartida?.jugador?.liderId);
             const liderZona = estadoPartida.jugador.liderZona || (estadoPartida.jugador.liderZona = { id: estadoPartida.jugador.liderId, rested: false, ataquesRestantes: 1 });
