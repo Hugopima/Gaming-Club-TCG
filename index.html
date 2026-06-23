@@ -367,6 +367,24 @@
                 radial-gradient(circle, rgba(255,215,0,0.16), transparent 48%),
                 linear-gradient(145deg, #050505, #2f1809);
             border-color: #ffd700;
+            background-image: url('imagenes/atras.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        .game-card-mini.back::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: url('imagenes/atras.png');
+            background-size: cover;
+            background-position: center;
+            border-radius: inherit;
+            z-index: 0;
+        }
+        .game-card-mini.back > * {
+            position: relative;
+            z-index: 1;
         }
         .life-orb {
             width: 74px;
@@ -2424,46 +2442,52 @@
   R('green_lider_01', {
     alAtacarLider(quien) { robar(quien, 1); },
     activablesLider(quien) {
-      if (liderCarta(quien).esEvo) return []; // La evo es automática al inicio de fase principal
+      const z = zonaJugador(quien);
+      const esEvo = !!(z.liderDespierto && liderCarta(quien).esEvo);
+      if (esEvo) {
+        // Toñi la infectada (evo): Activar: Principal con botón
+        if (estadoPartida?.faseIndex !== 1) return [];
+        if (habilidadUsada(claveTurno(quien, 'gl1_evo'))) return [];
+        const activas = unidadesEnCampo(rivalDe(quien), u => !u.rested);
+        if (!activas.length) return [];
+        return [{ key: 'toniEvo', label: 'Activar: Descansar unidad rival (coste enderezar)' }];
+      }
+      // Toñi la panadera (base)
       if (estadoPartida?.faseIndex !== 1) return [];
       if (habilidadUsada(claveTurno(quien, 'gl1_act'))) return [];
       return [{ key: 'manaDesc', label: 'Activar Principal: descarta 1 → maná' }];
     },
     async ejecutarActivar(key, quien) {
-      if (key !== 'manaDesc') return;
-      await elegirDescarteObligatorio(quien, 'Toñi: descarta 1 carta');
-      const z = zonaJugador(quien);
-      const opts = z.descarte.map((id, i) => ({ label: getCardById(id)?.nombre || id, value: { src: 'desc', i }, cardId: id }))
-        .concat(z.mano.map((id, i) => ({ label: (getCardById(id)?.nombre || id) + ' (mano)', value: { src: 'mano', i }, cardId: id })));
-      const pick = await elegirConModal('Toñi: elige carta para maná (del descarte o de tu mano)', opts);
-      if (pick?.src === 'desc') { const [id] = z.descarte.splice(pick.i, 1); z.mana.push({ id, rested: true }); }
-      else if (pick?.src === 'mano') { const [id] = z.mano.splice(pick.i, 1); z.mana.push({ id, rested: true }); }
-      z.manaActivo = z.mana.filter(m => !m.rested).length;
-      marcarHabilidadUsada(claveTurno(quien, 'gl1_act'));
-      log('Toñi la panadera: carta añadida como maná en modo descanso.');
-      if (typeof renderizarPartida === 'function') renderizarPartida();
-    },
-    // Evo: al inicio de fase principal, descansar una unidad rival activa con coste de enderezar.
-    async alInicioPrincipalEvo(quien) {
-      if (!liderCarta(quien).esEvo) return;
-      if (habilidadUsada(claveTurno(quien, 'gl1_evo'))) return;
-      const riv = rivalDe(quien);
-      const activas = unidadesEnCampo(riv, u => !u.rested);
-      if (!activas.length) return;
-      const opts = opcionesUnidades(riv, u => !u.rested);
-      const idx = await elegirConModal('Toñi la infectada: elige unidad rival activa para descansar', opts.concat([{ label: 'Ninguna', value: -1 }]));
-      if (idx != null && idx >= 0) {
-        const u = zonaJugador(riv).batalla[idx];
-        u.rested = true;
-        if (!u.flags) u.flags = {};
-        u.flags.enderezarCoste = 1;
-        log('Toñi la infectada descansa a ' + (getCardById(u.id)?.nombre || u.id) + '. No se endereza el próximo turno del rival salvo que pague 1 maná.');
-        marcarHabilidadUsada(claveTurno(quien, 'gl1_evo'));
-        if (estadoPartida?.modo === 'online' && typeof enviarEfectoRival === 'function' && u.id) {
-          enviarEfectoRival({ tipo: 'descansar-unidad', cardId: u.id, nombre: 'Toñi la infectada', arañaBloqueada: false, enderezarCoste: true });
-        }
+      if (key === 'manaDesc') {
+        await elegirDescarteObligatorio(quien, 'Toñi: descarta 1 carta');
+        const z = zonaJugador(quien);
+        const opts = z.descarte.map((id, i) => ({ label: getCardById(id)?.nombre || id, value: { src: 'desc', i }, cardId: id }))
+          .concat(z.mano.map((id, i) => ({ label: (getCardById(id)?.nombre || id) + ' (mano)', value: { src: 'mano', i }, cardId: id })));
+        const pick = await elegirConModal('Toñi: elige carta para maná (del descarte o de tu mano)', opts);
+        if (pick?.src === 'desc') { const [id] = z.descarte.splice(pick.i, 1); z.mana.push({ id, rested: true }); }
+        else if (pick?.src === 'mano') { const [id] = z.mano.splice(pick.i, 1); z.mana.push({ id, rested: true }); }
+        z.manaActivo = z.mana.filter(m => !m.rested).length;
+        marcarHabilidadUsada(claveTurno(quien, 'gl1_act'));
+        log('Toñi la panadera: carta añadida como maná en modo descanso.');
         if (typeof renderizarPartida === 'function') renderizarPartida();
-        syncOnline('toni-evo');
+      } else if (key === 'toniEvo') {
+        // Toñi la infectada (evo): elegir unidad rival activa para descansar
+        const riv = rivalDe(quien);
+        const opts = opcionesUnidades(riv, u => !u.rested);
+        const idx = await elegirConModal('Toñi la infectada: elige unidad rival activa para descansar', opts.concat([{ label: 'Ninguna', value: -1 }]));
+        if (idx != null && idx >= 0) {
+          const u = zonaJugador(riv).batalla[idx];
+          u.rested = true;
+          if (!u.flags) u.flags = {};
+          u.flags.enderezarCoste = 1;
+          log('Toñi la infectada descansa a ' + (getCardById(u.id)?.nombre || u.id) + '. El rival debe pagar 1 maná para enderezarla.');
+          marcarHabilidadUsada(claveTurno(quien, 'gl1_evo'));
+          if (estadoPartida?.modo === 'online' && typeof enviarEfectoRival === 'function' && u.id) {
+            enviarEfectoRival({ tipo: 'descansar-unidad', cardId: u.id, nombre: 'Toñi la infectada', arañaBloqueada: false, enderezarCoste: true });
+          }
+          if (typeof renderizarPartida === 'function') renderizarPartida();
+          syncOnline('toni-evo');
+        }
       }
     }
   });
@@ -2578,7 +2602,7 @@
       const z = zonaJugador(quien);
       if (z.liderDespierto) return []; // Solo Mari base, no SOMETHING
       if (habilidadUsada(claveTurno(quien, 'bl2_top'))) return [];
-      // Disponible en fase Principal si el flag está activo
+      // Disponible en fase Principal o Combate si el flag está activo
       if (!estadoPartida?._omoriAtacadaTurnoRival) return [];
       return [{ key: 'mariTop', label: 'Activar: Mirar top del mazo (OMORI atacada)' }];
     },
@@ -3752,25 +3776,22 @@
 
   R('podrido', {
     alDestruida(quien) {
-      // Invocar 2 Podrido Rabioso (según la habilidad de la carta)
+      // Invocar SOLO 1 Podrido Rabioso
       invocarToken(quien, 'tokenz', true);
-      invocarToken(quien, 'tokenz', true);
-      log('Podrido invoca a 2 Podrido Rabioso.');
+      log('Podrido invoca a 1 Podrido Rabioso.');
       const z = zonaJugador(quien);
-      // Los tokens invocados no deben desaparecer al fin de turno.
-      // Asegurarnos de que no tengan el flag destruirFinTurno.
-      z.batalla.forEach(u => {
-        if (u.id === 'tokenz') {
-          if (!u.flags) u.flags = {};
-          u.flags.destruirFinTurno = false;
-          if (estadoPartida && quien !== 'jugador') {
-            u.noAtacar = true;
-          }
+      // El token invocado NO debe desaparecer al fin de turno.
+      const token = z.batalla[z.batalla.length - 1];
+      if (token && token.id === 'tokenz') {
+        if (!token.flags) token.flags = {};
+        token.flags.destruirFinTurno = false;
+        if (estadoPartida && quien !== 'jugador') {
+          token.noAtacar = true;
         }
-      });
+      }
       if (typeof renderizarPartida === 'function') renderizarPartida();
       if (estadoPartida?.modo === 'online' && typeof enviarEfectoRival === 'function') {
-        enviarEfectoRival({ tipo: 'invocar-token', tokenId: 'tokenz', nombre: 'Podrido Rabioso', cantidad: 2 });
+        enviarEfectoRival({ tipo: 'invocar-token', tokenId: 'tokenz', nombre: 'Podrido Rabioso', cantidad: 1 });
       }
       syncOnline('podrido');
     }
@@ -4775,16 +4796,7 @@
 
   async function alInicioPrincipal(quien) {
     Object.keys(REGISTRO_EFECTOS).forEach(id => dispatch(id, 'alInicioPrincipal', [quien]));
-    const z = zonaJugador(quien);
-    const lider = liderCarta(quien);
-    const esEvo = !!(z.liderDespierto && lider?.esEvo);
-    // Toñi la infectada: elegir unidad rival activa para descansar.
-    if (quien === 'jugador' && esEvo && String(lider.nombre).toLowerCase().includes('infectada')) {
-      const regL = REGISTRO_EFECTOS[z.liderId];
-      if (regL?.alInicioPrincipalEvo) {
-        await regL.alInicioPrincipalEvo(quien);
-      }
-    }
+    // Toñi la infectada ahora usa Activar: Principal con botón (no automático)
   }
 
   async function alAtacar(quien, atacanteRef) {
@@ -5950,6 +5962,10 @@
                                         if (window.MotorEfectos && typeof MotorEfectos.onMinecraftDerrotada === 'function') {
                                             MotorEfectos.onMinecraftDerrotada('jugador', defId);
                                         }
+                                    }
+                                    // Mari trigger: si la unidad destruida es OMORI, setear flag
+                                    if (defId && String(getCardById(defId)?.origen || '').toLowerCase().includes('omori')) {
+                                        estadoPartida._omoriAtacadaTurnoRival = true;
                                     }
                                     estadoPartida.jugador.descarte.push(defId);
                                     estadoPartida.jugador.batalla.splice(idx, 1);
@@ -7173,6 +7189,9 @@
             if (!deck) return;
             const fly = document.createElement('div');
             fly.className = 'game-card-mini back draw-fly';
+            fly.style.backgroundImage = "url('imagenes/atras.png')";
+            fly.style.backgroundSize = 'cover';
+            fly.style.backgroundPosition = 'center';
             fly.innerHTML = `<span>GC</span>`;
             document.body.appendChild(fly);
             const rect = deck.getBoundingClientRect();
@@ -7188,6 +7207,9 @@
             const hand = document.getElementById('op-hand-count');
             const fly = document.createElement('div');
             fly.className = 'game-card-mini back draw-fly';
+            fly.style.backgroundImage = "url('imagenes/atras.png')";
+            fly.style.backgroundSize = 'cover';
+            fly.style.backgroundPosition = 'center';
             fly.innerHTML = `<span>GC</span>`;
             document.body.appendChild(fly);
             const deckRect = deck.getBoundingClientRect();
@@ -7368,6 +7390,7 @@
                 return alert('Las cartas de Counter Ataque solo se pueden usar en respuesta a un ataque del rival.');
             }
             // Counter Play se puede jugar en turno rival si hay una carta rival pendiente
+            // El coste de maná se OMITE al usarlo como counter play (es gratis)
             if (tieneTag(carta, 'counter play')) {
                 if (!estadoPartida._counterPlayPendiente) {
                     return alert('Las cartas de Counter Play solo se pueden usar en respuesta a una carta del rival.');
@@ -7376,14 +7399,14 @@
                 const cartaRival = getCardById(estadoPartida._counterPlayPendiente.cardId);
                 const reg = window.MotorEfectos ? MotorEfectos.REGISTRO_EFECTOS[id] : null;
                 if (reg && reg.alCounterPlay && reg.alCounterPlay('jugador', cartaRival)) {
-                    // Negar la carta: enviarla al descarte del rival (NO a la mano)
+                    // Negar la carta: enviarla al descarte del rival
                     const cardIdNegada = estadoPartida._counterPlayPendiente.cardId;
                     estadoPartida.rival.descarte.push(cardIdNegada);
                     // Si la unidad ya estaba en el campo del rival (en mi vista), quitarla
                     const idxRival = estadoPartida.rival.batalla.findIndex(u => u && u.id === cardIdNegada);
                     if (idxRival >= 0) estadoPartida.rival.batalla.splice(idxRival, 1);
                     log(`¡Counter Play! La carta del rival "${cartaRival?.nombre || cardIdNegada}" es negada y va al descarte.`);
-                    // Descartar la carta de counter play
+                    // La carta de counter play va al descarte (gratis, sin pagar maná)
                     estadoPartida.jugador.descarte.push(id);
                     estadoPartida.jugador.mano.splice(index, 1);
                     estadoPartida._counterPlayPendiente = null;
@@ -7558,7 +7581,9 @@
         function seleccionarAtacante(index) {
             const unidad = estadoPartida.jugador.batalla[index];
             if (!estadoPartida || estadoPartida.faseIndex !== 2) return abrirDetalleJuego(unidad?.id);
-            // En modo online, no se puede seleccionar atacante en el turno del rival
+            // No se puede seleccionar atacante en el turno del rival (online o 1v1)
+            if (estadoPartida.turnoDelJugadorLocal === false) return abrirDetalleJuego(unidad?.id);
+            // En modo online, explícitamente check turnoDelJugadorLocal
             if (estadoPartida.modo === 'online' && !estadoPartida.turnoDelJugadorLocal) return abrirDetalleJuego(unidad?.id);
             // Si hay un ataque en curso (bloqueador/counter/combo), no se puede cambiar de atacante:
             // el objetivo ya está fijado y no debe poder modificarse.
@@ -7572,7 +7597,9 @@
 
         function seleccionarLiderAtacante() {
             if (!estadoPartida || estadoPartida.faseIndex !== 2) return abrirDetalleJuego(estadoPartida?.jugador?.liderId);
-            // En modo online, no se puede seleccionar atacante en el turno del rival
+            // No se puede seleccionar atacante en el turno del rival (online o 1v1)
+            if (estadoPartida.turnoDelJugadorLocal === false) return abrirDetalleJuego(estadoPartida?.jugador?.liderId);
+            // En modo online, explícitamente check turnoDelJugadorLocal
             if (estadoPartida.modo === 'online' && !estadoPartida.turnoDelJugadorLocal) return abrirDetalleJuego(estadoPartida?.jugador?.liderId);
             // Si hay un ataque en curso, no se puede cambiar de atacante.
             if (estadoPartida._ataqueEnProgreso || estadoPartida.ataqueActual) return abrirDetalleJuego(estadoPartida?.jugador?.liderId);
@@ -7927,6 +7954,10 @@
                     const atkIdx = ataque.atacanteRef.index;
                     const atk = estadoPartida.jugador.batalla[atkIdx];
                     if (atk) {
+                        // Mari trigger: si el atacante destruido es OMORI, setear flag
+                        if (atk.id && String(getCardById(atk.id)?.origen || '').toLowerCase().includes('omori')) {
+                            estadoPartida._omoriAtacadaTurnoRival = true;
+                        }
                         estadoPartida.jugador.descarte.push(atk.id);
                         estadoPartida.jugador.batalla.splice(atkIdx, 1);
                         // Llamar alDestruida del atacante
@@ -8370,7 +8401,7 @@
         function miniCarta(idOrObj, extra = '', opts = {}) {
             const obj = typeof idOrObj === 'string' ? { id: idOrObj } : idOrObj;
             const carta = getCardById(obj.id);
-            if (!carta) return `<div class="game-card-mini back">?</div>`;
+            if (!carta) return `<div class="game-card-mini back"><img src="imagenes/atras.png" onerror="this.style.display='none'" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:8px;" alt="Carta"></div>`;
             const index = datosCartas.findIndex(c => getCardId(c) === obj.id);
             const draggable = opts.handIndex !== undefined ? `draggable="true" ondragstart="arrastrarCartaMano(event, ${opts.handIndex})"` : '';
             const fieldDrag = opts.battleIndex !== undefined ? `draggable="true" ondragstart="arrastrarCartaCampo(event, ${opts.battleIndex})"` : '';
