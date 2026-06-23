@@ -95,8 +95,7 @@
     ],
     "habilidadesEvo": [
       { "tag": "Automático", "css": "tag-auto", "desc": "Cuando este Líder ataca, roba 1 carta." },
-      { "tag": "Activar: Principal", "css": "tag-active", "desc": "[Una vez por turno] Elige 1 carta de origen <Grupo> o <Minecraft> en tu pila de descartes y devuélvela al fondo de tu mazo: Elige hasta 1 de tus manás azules en modo descanso y cámbialo a modo activo." },
-      { "tag": "Automático", "css": "tag-auto", "desc": "[Una vez por turno] Cuando tu oponente juega una unidad usando una habilidad (es decir, que la invoque gratis o por efectos, no pagando su coste normal de maná), tu oponente debe elegir 1 carta de su mano y mandarla a la pila de descartes." }
+      { "tag": "Activar: Principal", "css": "tag-active", "desc": "[Una vez por turno] Elige 1 carta de origen <Grupo> o <Minecraft> en tu pila de descartes y devuélvela al fondo de tu mazo: Elige hasta 1 de tus manás azules en modo descanso y cámbialo a modo activo." }
     ]
   },
   {
