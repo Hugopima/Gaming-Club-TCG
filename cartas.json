@@ -95,7 +95,8 @@
     ],
     "habilidadesEvo": [
       { "tag": "Automático", "css": "tag-auto", "desc": "Cuando este Líder ataca, roba 1 carta." },
-      { "tag": "Activar: Principal", "css": "tag-active", "desc": "[Una vez por turno] Elige 1 carta de origen <Grupo> o <Minecraft> en tu pila de descartes y devuélvela al fondo de tu mazo: Elige hasta 1 de tus manás azules en modo descanso y cámbialo a modo activo." }
+      { "tag": "Activar: Principal", "css": "tag-active", "desc": "[Una vez por turno] Elige 1 carta de origen <Grupo> o <Minecraft> en tu pila de descartes y devuélvela al fondo de tu mazo: Elige hasta 1 de tus manás azules en modo descanso y cámbialo a modo activo." },
+      { "tag": "Automático", "css": "tag-auto", "desc": "[Una vez por turno] Cuando tu oponente juega una unidad usando una habilidad (es decir, que la invoque gratis o por efectos, no pagando su coste normal de maná), tu oponente debe elegir 1 carta de su mano y mandarla a la pila de descartes." }
     ]
   },
   {
@@ -120,7 +121,7 @@
     ],
     "habilidadesEvo": [
       { "tag": "Automático", "css": "tag-auto", "desc": "Cuando esta carta ataca, roba 1 carta." },
-      { "tag": "Activar: Principal", "css": "tag-active", "desc": "Al inicio de tu fase principal, elige una unidad del rival en modo activo y cámbiala a modo descanso. No puede enderezarse en el siguiente turno del rival a menos que este pague 1 de maná." }
+      { "tag": "Automático", "css": "tag-auto", "desc": "Al inicio de tu fase principal, elige una unidad del rival en modo activo y cámbiala a modo descanso. No puede enderezarse en el siguiente turno del rival a menos que este pague 1 de maná." }
     ]
   },
   {
@@ -189,7 +190,7 @@
     "lore": "Mari cuida mucho de sus amigos, y siempre intenta tener cosas para ellos cuando reciben daño… Espera… ¿Qué es eso detrás de ti?",
     "habilidades": [
       { "tag": "Automático", "css": "tag-auto", "desc": "Cuando este Líder ataca, roba 1 carta." },
-      { "tag": "Activar: Batalla", "css": "tag-active", "desc": "Una vez por turno, cuando una de tus unidades de origen \"OMORI\" sea atacada, puedes mirar la carta superior de tu mazo y decidir si la dejas ahí o la mandas a la pila de descartes." },
+      { "tag": "Activar: Principal", "css": "tag-active", "desc": "[Una vez por turno] Cuando una de tus unidades de origen \"OMORI\" haya sido atacada en el turno del rival, puedes mirar la carta superior de tu mazo y decidir si la dejas ahí o la mandas a la pila de descartes." },
       { "tag": "Transformación", "css": "tag-trans", "desc": "Al llegar a cuatro vidas, dale la vuelta a esta carta." }
     ],
     "habilidadesEvo": [
@@ -643,7 +644,7 @@
     "costeColor": 1,
     "lore": "Siempre echar a Ana es el primer paso hacia la victoria.",
     "habilidades": [
-      { "tag": "Activar", "css": "tag-active", "desc": "Principal. Ambos jugadores deben elegir una unidad de su propio campo (que no sea el Líder) y mandarla directamente a la pila de descartes. Si no controlas unidades, tu oponente debe descartar la carta superior de su mazo." }
+      { "tag": "Activar", "css": "tag-active", "desc": "Principal. Ambos jugadores deben elegir una unidad de su propio campo (que no sea el Líder) y mandarla directamente a la pila de descartes. La unidad del rival es elegida por el rival. Si no controlas unidades, tu oponente debe descartar la carta superior de su mazo." }
     ]
   },
   {
@@ -938,7 +939,7 @@
     "combo": "0+5000",
     "lore": "Cuidado con su aceite de bebé. Es muy resbaladizo…",
     "habilidades": [
-      { "tag": "Automático", "css": "tag-auto", "desc": "Al activar su bloqueador, puedes mover 1 carta de la zona de combo del rival a su pila de descartes."},
+      { "tag": "Automático", "css": "tag-auto", "desc": "Al activar su bloqueador, el rival debe elegir 1 carta de su mano y llevarla a su pila de descartes. Luego, puedes mover 1 carta de la zona de combo del rival a su pila de descartes."},
       { "tag": "Bloqueador", "css": "tag-bloqueo", "desc": "Cuando el rival ataca, puedes cambiar esta carta a modo descanso para convertirla en el nuevo objetivo del ataque." }
     ]
   },
@@ -978,7 +979,7 @@
     "combo": "1+10000",
     "lore": "¡El poder de la tecnología! Si aprendes a pronunciar el nombre completo de su hijo te hago bizum.",
     "habilidades": [
-      { "tag": "Activar", "css": "tag-active", "desc": "Principal : Una vez por turno, puedes pagar 1 maná rojo para robar 2 cartas y luego descartar 1."},
+      { "tag": "Activar", "css": "tag-active", "desc": "Principal : Una vez por turno, puedes pagar 1 maná azul para robar 2 cartas y luego descartar 1."},
       { "tag": "Doble Golpe", "css": "tag-doble", "desc": "Si esta carta inflige daño, inflige 2 puntos de daño en lugar de 1." }
     ]
   },
@@ -1209,7 +1210,7 @@
     "combo": "0+5000",
     "lore": "DYMYTRY se enfrentó a Patroclo en las antiguas guerras de Patroclo… A día de hoy sigue dando guerra…",
     "habilidades": [
-      { "tag": "Activar", "css": "tag-active", "desc": "Absorción: Coloca 1 \"Juan\" de tu mano debajo de esta carta: Elige hasta 1 “Juan” con un coste de energía de 5 o menos de tu mazo y colócala encima de esta carta." }
+      { "tag": "Activar", "css": "tag-active", "desc": "Absorción: Coloca 1 \"Juan\" de tu mano debajo de esta carta: Elige hasta 1 “Dymytry” con un coste de energía de 5 o menos de tu mazo y colócala encima de esta carta." }
     ]
   },
   {
