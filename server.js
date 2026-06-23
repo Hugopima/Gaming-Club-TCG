@@ -212,6 +212,19 @@ io.on('connection', (socket) => {
         // Notificar al rival que ganó
         socket.to(roomId).emit('rival-rendido');
         partidasActivas.delete(roomId);
+        // Limpiar dataRoomId de AMBOS jugadores para que puedan buscar nueva partida
+        socket.dataRoomId = null;
+        socket.dataPlayerNum = null;
+        const sala = io.sockets.adapter.rooms.get(roomId);
+        if (sala) {
+            sala.forEach(sid => {
+                const s = io.sockets.sockets.get(sid);
+                if (s && s.id !== socket.id) {
+                    s.dataRoomId = null;
+                    s.dataPlayerNum = null;
+                }
+            });
+        }
         console.log(`🏳️ ${socket.id} se rindió en ${roomId}`);
     });
 
@@ -222,7 +235,41 @@ io.on('connection', (socket) => {
         // Notificar al rival (si sigue conectado) que perdió
         socket.to(roomId).emit('victoria-desconexion');
         partidasActivas.delete(roomId);
+        // Limpiar dataRoomId de AMBOS jugadores
+        socket.dataRoomId = null;
+        socket.dataPlayerNum = null;
+        const sala = io.sockets.adapter.rooms.get(roomId);
+        if (sala) {
+            sala.forEach(sid => {
+                const s = io.sockets.sockets.get(sid);
+                if (s && s.id !== socket.id) {
+                    s.dataRoomId = null;
+                    s.dataPlayerNum = null;
+                }
+            });
+        }
         console.log(`⚡ ${socket.id} reclamó victoria por desconexión en ${roomId}`);
+    });
+
+    // === PARTIDA TERMINADA (fin normal, no rendición) ===
+    socket.on('partida-terminada', () => {
+        const roomId = socket.dataRoomId;
+        if (!roomId) return;
+        partidasActivas.delete(roomId);
+        // Limpiar dataRoomId de AMBOS jugadores para que puedan buscar nueva partida
+        socket.dataRoomId = null;
+        socket.dataPlayerNum = null;
+        const sala = io.sockets.adapter.rooms.get(roomId);
+        if (sala) {
+            sala.forEach(sid => {
+                const s = io.sockets.sockets.get(sid);
+                if (s && s.id !== socket.id) {
+                    s.dataRoomId = null;
+                    s.dataPlayerNum = null;
+                }
+            });
+        }
+        console.log(`🏁 ${socket.id} terminó partida en ${roomId}`);
     });
 
     // === DESCONECTAR ===
@@ -297,6 +344,3 @@ server.listen(PORT, () => {
     console.log('Esperando jugadores...');
     console.log('');
 });
-
-
-
