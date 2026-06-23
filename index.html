@@ -247,7 +247,7 @@
         .game-card-mini { width: 64px; height: 92px; flex: 0 0 auto; border-radius: 6px; border: 2px solid rgba(255,255,255,0.65); background: #050505; overflow: hidden; position: relative; cursor: pointer; }
         .game-card-mini img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .game-card-mini.rested { transform: rotate(90deg); margin: 0 14px; }
-        .game-card-mini.back { background: linear-gradient(145deg, #101010, #3b240e); border-color: var(--gold); display: flex; align-items: center; justify-content: center; color: var(--gold); font-weight: 900; }
+        .game-card-mini.back { border-color: var(--gold); display: flex; align-items: center; justify-content: center; color: var(--gold); font-weight: 900; }
         .card-stack-count { position: absolute; right: 5px; bottom: 4px; background: rgba(0,0,0,0.85); color: var(--gold-light); border: 1px solid var(--gold); border-radius: 999px; padding: 2px 7px; font-size: 12px; font-weight: 900; }
         .hand-zone { grid-column: 1 / span 3; min-height: 118px; }
         .mana-zone .game-card-mini { width: 58px; height: 82px; }
@@ -517,7 +517,8 @@
         .card-pile { position: relative; width: 82px; height: 116px; }
         .card-pile::before, .card-pile::after { content: ''; position: absolute; inset: 0; border-radius: 8px; background: #f8f8f8; transform: translate(8px,-8px); opacity: .72; box-shadow: 0 8px 16px rgba(0,0,0,.4); }
         .card-pile::after { transform: translate(4px,-4px); opacity: .88; }
-        .card-pile img, .card-pile .pile-back { position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; object-fit: cover; border-radius: 8px; border: 2px solid #ffd700; background: radial-gradient(circle, rgba(255,215,0,.22), #140803 60%); display: flex; align-items: center; justify-content: center; color: #ffd700; font-size: 22px; }
+        .card-pile img, .card-pile .pile-back { position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; object-fit: cover; border-radius: 8px; border: 2px solid #ffd700; display: flex; align-items: center; justify-content: center; color: #ffd700; font-size: 22px; }
+        .card-pile .pile-back { background: radial-gradient(circle, rgba(255,215,0,.22), #140803 60%); }
         .game-card-mini { width: 96px; height: 136px; border-radius: 8px; border: 2px solid rgba(255,255,255,.88); background: #030303; box-shadow: 0 12px 22px rgba(0,0,0,.55); overflow: visible; position: relative; cursor: grab; flex: 0 0 auto; }
         .game-card-mini img { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; display: block; overflow: hidden; }
         .game-card-mini:hover { transform: translateY(-18px) scale(1.12); z-index: 50; box-shadow: 0 20px 40px rgba(0,0,0,.72), 0 0 22px rgba(64,226,255,.45); }
@@ -3790,9 +3791,8 @@
         }
       }
       if (typeof renderizarPartida === 'function') renderizarPartida();
-      if (estadoPartida?.modo === 'online' && typeof enviarEfectoRival === 'function') {
-        enviarEfectoRival({ tipo: 'invocar-token', tokenId: 'tokenz', nombre: 'Podrido Rabioso', cantidad: 1 });
-      }
+      // En online, el snapshot (syncOnline) ya incluye el token en batalla.
+      // NO enviar enviarEfectoRival (causaría duplicado: snapshot + invocar-token).
       syncOnline('podrido');
     }
   });
@@ -4960,6 +4960,12 @@
     if (estadoPartida?._unidadesTemporales?.length) {
       estadoPartida._unidadesTemporales = estadoPartida._unidadesTemporales.filter(t => t.quien !== quien);
     }
+    // Limpiar flag enderezarCoste de Toñi evo (el efecto dura solo 1 turno)
+    zonaJugador(quien).batalla.forEach(u => {
+      if (u.flags?.enderezarCoste) {
+        u.flags.enderezarCoste = false;
+      }
+    });
     zonaJugador(quien).batalla.forEach(u => {
       if (u.silenciado > 0) u.silenciado--;
       if (u.flags?.destruirFinTurno) {
@@ -6806,23 +6812,29 @@
 
         function mostrarBotonCounterPlay(counterPlays, cartaRival) {
             // Mostrar un overlay con un botón directo "Usar Counter Play" para esta carta.
-            // El overlay desaparece tras 10 segundos, pero _counterPlayPendiente NO se borra.
+            // Solo mostrar counter plays que puedan negar la carta rival Y que tengas maná para pagar.
             const old = document.getElementById('counter-play-prompt');
             if (old) old.remove();
+            // Filtrar counter plays que puedan negar la carta rival
+            const counterPlaysValidos = counterPlays.filter(cp => {
+                const reg = window.MotorEfectos ? MotorEfectos.REGISTRO_EFECTOS[cp.id] : null;
+                return reg && reg.alCounterPlay && reg.alCounterPlay('jugador', cartaRival);
+            });
+            if (!counterPlaysValidos.length) return; // No hay counter plays válidos
             const ov = document.createElement('div');
             ov.id = 'counter-play-prompt';
             ov.style.cssText = 'position:fixed;top:80px;right:20px;z-index:3300;background:rgba(20,10,30,.98);border:2px solid #ff735e;border-radius:12px;padding:16px;max-width:300px;box-shadow:0 0 25px rgba(255,115,94,.6);color:white;';
-            // Si hay un solo counter play, mostrar botón directo.
-            // Si hay varios, mostrar selector.
+            // Mostrar un botón por cada counter play válido, con su coste de maná
             let botonesHtml = '';
-            if (counterPlays.length === 1) {
-                const cp = counterPlays[0];
-                botonesHtml = `<button class="plate-btn" id="cp-use-btn" style="width:100%;margin-bottom:6px;background:linear-gradient(145deg,#5e1f17,#a93226);">Usar ${escapeHtml(cp.c.nombre || 'Counter Play')}</button>`;
-            } else {
-                counterPlays.forEach((cp, i) => {
-                    botonesHtml += `<button class="plate-btn cp-pick-btn" data-idx="${i}" style="width:100%;margin-bottom:6px;background:linear-gradient(145deg,#5e1f17,#a93226);">Usar ${escapeHtml(cp.c.nombre || 'Counter Play')}</button>`;
-                });
-            }
+            counterPlaysValidos.forEach((cp, i) => {
+                const coste = window.MotorEfectos ? MotorEfectos.costeEfectivo(cp.c, estadoPartida.jugador, cp.i) : Number(cp.c.costeTotal || 0);
+                const puedePagar = coste <= estadoPartida.jugador.manaActivo;
+                const estilo = puedePagar
+                    ? 'background:linear-gradient(145deg,#5e1f17,#a93226);'
+                    : 'background:#555;opacity:0.6;cursor:not-allowed;';
+                const txtMana = coste > 0 ? ` (${coste} maná)` : '';
+                botonesHtml += `<button class="plate-btn cp-pick-btn" data-idx="${i}" ${puedePagar ? '' : 'disabled'} style="width:100%;margin-bottom:6px;${estilo}">Usar ${escapeHtml(cp.c.nombre || 'Counter Play')}${txtMana}${puedePagar ? '' : ' (sin maná)'}</button>`;
+            });
             ov.innerHTML = `<div style="font-weight:900;font-size:14px;margin-bottom:8px;">¿Counter Play?</div>
                 <div style="font-size:12px;margin-bottom:12px;color:#ddd;">El rival juega <b>${escapeHtml(cartaRival.nombre || '')}</b>. Usa un Counter Play para negarlo.</div>
                 ${botonesHtml}
@@ -6834,22 +6846,18 @@
                 clearTimeout(timeout);
                 ov.remove();
             };
-            const usarCounterPlay = (idx) => {
-                clearTimeout(timeout);
-                ov.remove();
-                if (idx == null || idx < 0) return;
-                const cp = counterPlays[idx];
-                if (!cp) return;
-                // Usar directamente intentarJugarDesdeMano con el índice de la carta.
-                intentarJugarDesdeMano(cp.i);
-            };
-            if (counterPlays.length === 1) {
-                document.getElementById('cp-use-btn').onclick = () => usarCounterPlay(0);
-            } else {
-                ov.querySelectorAll('.cp-pick-btn').forEach(btn => {
-                    btn.onclick = () => usarCounterPlay(Number(btn.dataset.idx));
-                });
-            }
+            ov.querySelectorAll('.cp-pick-btn').forEach(btn => {
+                btn.onclick = () => {
+                    if (btn.disabled) return;
+                    clearTimeout(timeout);
+                    ov.remove();
+                    const idx = Number(btn.dataset.idx);
+                    const cp = counterPlaysValidos[idx];
+                    if (!cp) return;
+                    // Usar directamente intentarJugarDesdeMano con el índice de la carta.
+                    intentarJugarDesdeMano(cp.i);
+                };
+            });
         }
 
         function recibirAtaqueRival(data) {
@@ -7390,7 +7398,6 @@
                 return alert('Las cartas de Counter Ataque solo se pueden usar en respuesta a un ataque del rival.');
             }
             // Counter Play se puede jugar en turno rival si hay una carta rival pendiente
-            // El coste de maná se OMITE al usarlo como counter play (es gratis)
             if (tieneTag(carta, 'counter play')) {
                 if (!estadoPartida._counterPlayPendiente) {
                     return alert('Las cartas de Counter Play solo se pueden usar en respuesta a una carta del rival.');
@@ -7399,6 +7406,15 @@
                 const cartaRival = getCardById(estadoPartida._counterPlayPendiente.cardId);
                 const reg = window.MotorEfectos ? MotorEfectos.REGISTRO_EFECTOS[id] : null;
                 if (reg && reg.alCounterPlay && reg.alCounterPlay('jugador', cartaRival)) {
+                    // Pagar el coste de maná de la carta de counter play
+                    const coste = window.MotorEfectos ? MotorEfectos.costeEfectivo(carta, estadoPartida.jugador, index) : Number(carta.costeTotal || 0);
+                    if (coste > estadoPartida.jugador.manaActivo) {
+                        return alert(`No tienes maná suficiente para usar este Counter Play. Necesitas ${coste} maná.`);
+                    }
+                    // Pagar maná
+                    let resto = coste;
+                    estadoPartida.jugador.mana.forEach(m => { if (resto > 0 && !m.rested) { m.rested = true; resto--; } });
+                    estadoPartida.jugador.manaActivo = estadoPartida.jugador.mana.filter(m => !m.rested).length;
                     // Negar la carta: enviarla al descarte del rival
                     const cardIdNegada = estadoPartida._counterPlayPendiente.cardId;
                     estadoPartida.rival.descarte.push(cardIdNegada);
@@ -7406,7 +7422,7 @@
                     const idxRival = estadoPartida.rival.batalla.findIndex(u => u && u.id === cardIdNegada);
                     if (idxRival >= 0) estadoPartida.rival.batalla.splice(idxRival, 1);
                     log(`¡Counter Play! La carta del rival "${cartaRival?.nombre || cardIdNegada}" es negada y va al descarte.`);
-                    // La carta de counter play va al descarte (gratis, sin pagar maná)
+                    // La carta de counter play va al descarte
                     estadoPartida.jugador.descarte.push(id);
                     estadoPartida.jugador.mano.splice(index, 1);
                     estadoPartida._counterPlayPendiente = null;
@@ -8470,7 +8486,7 @@
         }
 
         function pilaDorso(cantidad) {
-            return `<div class="card-pile"><img src="atras.png" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" alt="Mazo"><span class="pile-back" style="display:none;">GC</span></div>`;
+            return `<div class="card-pile"><img src="imagenes/atras.png" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" alt="Mazo"><span class="pile-back" style="display:none;">GC</span></div>`;
         }
 
         function renderZona(id, contenido) { const el = document.getElementById(id); if (el) el.innerHTML = contenido || ''; }
