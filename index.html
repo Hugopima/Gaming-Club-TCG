@@ -6754,7 +6754,7 @@
                 'Todas mis unidades:', estadoPartida.jugador.batalla.map(u => ({ id: u?.id, rested: u?.rested, enderezarCoste: u?.flags?.enderezarCoste })));
               for (const c of unidadesCoste) {
                 if (estadoPartida.jugador.manaActivo >= 1) {
-                  const pagar = await elegirConModal('Toñi la infectada: ¿Pagar 1 maná para enderezar a ' + (getCardById(c.id)?.nombre || c.id) + '?', [
+                  const pagar = await MotorEfectos.elegirConModal('Toñi la infectada: ¿Pagar 1 maná para enderezar a ' + (getCardById(c.id)?.nombre || c.id) + '?', [
                     { label: 'Sí, pagar 1 maná', value: true },
                     { label: 'No, dejar en descanso', value: false }
                   ]);
@@ -6766,7 +6766,7 @@
                       estadoPartida.jugador.manaActivo--;
                       c.rested = false;
                       c.ataquesRestantes = ataquesPorTurno(c.id);
-                      log('Pagas 1 maná y enderezas a ' + (getCardById(c.id)?.nombre || c.id) + '.');
+                      MotorEfectos.log('Pagas 1 maná y enderezas a ' + (getCardById(c.id)?.nombre || c.id) + '.');
                     }
                   }
                 }
@@ -6966,7 +6966,7 @@
             if (!estadoPartida.rival.descarte.includes(cardIdNegada)) {
                 estadoPartida.rival.descarte.push(cardIdNegada);
             }
-            log(`¡Counter Play! La carta del rival "${cartaRival?.nombre || cardIdNegada}" es negada y va al descarte.`);
+            MotorEfectos.log(`¡Counter Play! La carta del rival "${cartaRival?.nombre || cardIdNegada}" es negada y va al descarte.`);
             // La carta de counter play va al descarte
             estadoPartida.jugador.descarte.push(id);
             estadoPartida.jugador.mano.splice(currentHandIndex, 1);
@@ -7235,7 +7235,7 @@
                   const unidadesCoste = estadoPartida.jugador.batalla.filter(c => c.flags?.enderezarCoste && c.rested);
                   for (const c of unidadesCoste) {
                     if (estadoPartida.jugador.manaActivo >= 1) {
-                      const pagar = await elegirConModal('Toñi la infectada: ¿Pagar 1 maná para enderezar a ' + (getCardById(c.id)?.nombre || c.id) + '?', [
+                      const pagar = await MotorEfectos.elegirConModal('Toñi la infectada: ¿Pagar 1 maná para enderezar a ' + (getCardById(c.id)?.nombre || c.id) + '?', [
                         { label: 'Sí, pagar 1 maná', value: true },
                         { label: 'No, dejar en descanso', value: false }
                       ]);
@@ -7246,7 +7246,7 @@
                           estadoPartida.jugador.manaActivo--;
                           c.rested = false;
                           c.ataquesRestantes = ataquesPorTurno(c.id);
-                          log('Pagas 1 maná y enderezas a ' + (getCardById(c.id)?.nombre || c.id) + '.');
+                          MotorEfectos.log('Pagas 1 maná y enderezas a ' + (getCardById(c.id)?.nombre || c.id) + '.');
                         }
                       }
                     }
