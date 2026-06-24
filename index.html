@@ -6025,6 +6025,8 @@
 
         function guardarListaMazos() {
             localStorage.setItem('gc_tcg_mazos', JSON.stringify(mazosGuardados));
+            // Sync Supabase (debounced)
+            programarGuardadoSupabase();
         }
 
         function renderizarSelectorMazos() {
@@ -6328,9 +6330,16 @@
             const user = getDiscordUser();
             if (user) {
                 if (confirm('¿Cerrar sesión de Discord?')) {
-                    localStorage.removeItem('gc_tcg_discord_user');
-                    actualizarBotonDiscord();
-                    location.reload();
+                    // Forzar guardado en Supabase antes de cerrar
+                    if (_timeoutGuardadoSupabase) {
+                        clearTimeout(_timeoutGuardadoSupabase);
+                        _timeoutGuardadoSupabase = null;
+                    }
+                    guardarInventarioSupabase().then(() => {
+                        localStorage.removeItem('gc_tcg_discord_user');
+                        actualizarBotonDiscord();
+                        location.reload();
+                    });
                 }
                 return;
             }
@@ -6382,31 +6391,105 @@
                     const errText = await res.text();
                     console.error('Error en auth Discord:', res.status, errText);
                     alert('Error al iniciar sesión con Discord (' + res.status + '): ' + errText + '\n\nVerifica que las variables DISCORD_CLIENT_ID y DISCORD_CLIENT_SECRET estén configuradas en Render, y que el redirect URI en Discord sea: ' + DISCORD_REDIRECT_URI);
-                    // Redirigir a la raíz incluso en error para que las imágenes carguen
                     window.location.href = '/';
                     return;
                 }
                 const data = await res.json();
                 if (data.user) {
                     localStorage.setItem('gc_tcg_discord_user', JSON.stringify(data.user));
+                    // Cargar inventario de Supabase si vino en la respuesta
                     if (data.inventario) {
-                        _inventario = data.inventario;
-                        guardarInventario();
+                        aplicarInventarioDeSupabase(data.inventario);
                     }
                     // Redirigir a la raíz para que las rutas relativas (imagenes/, etc.) funcionen.
-                    // Los datos del usuario ya están en localStorage, así que no se pierden.
                     window.location.href = '/';
                     return;
                 }
             } catch (e) {
                 console.error('Error en Discord callback:', e);
                 alert('Error de conexión al iniciar sesión con Discord: ' + e.message + '\n\nVerifica que el servidor esté funcionando y que las variables de entorno estén configuradas.');
-                // Redirigir a la raíz incluso en error
                 window.location.href = '/';
                 return;
             }
-            // Si no había code o algo falló sin excepción, redirigir a la raíz
             window.location.href = '/';
+        }
+
+        // Aplicar inventario cargado de Supabase al estado local
+        function aplicarInventarioDeSupabase(inv) {
+            if (!inv) return;
+            _inventario = {
+                coins: inv.coins ?? 5000,
+                energy: inv.energy ?? 1000,
+                cartas: inv.cartas || {}
+            };
+            // Cargar stats
+            if (inv.stats) {
+                _statsJugador = inv.stats;
+                // Asegurar campos obligatorios
+                if (!_statsJugador.logrosReclamados) _statsJugador.logrosReclamados = [];
+                if (_statsJugador.ultimoLogin === undefined) _statsJugador.ultimoLogin = null;
+                if (_statsJugador.loginClaimedHoy === undefined) _statsJugador.loginClaimedHoy = false;
+                if (_statsJugador.primeraVictoriaHoy === undefined) _statsJugador.primeraVictoriaHoy = false;
+            }
+            // Cargar misiones
+            if (inv.misiones) {
+                _misionesState = inv.misiones;
+            }
+            // Cargar mazos
+            if (inv.mazos && Array.isArray(inv.mazos)) {
+                try {
+                    localStorage.setItem('gc_tcg_mazos', JSON.stringify(inv.mazos));
+                } catch (e) {}
+            }
+            guardarInventario();
+            guardarStats();
+            guardarMisiones();
+            actualizarBarraMonedas();
+        }
+
+        // Guardar inventario en Supabase (si hay sesión de Discord)
+        async function guardarInventarioSupabase() {
+            const user = getDiscordUser();
+            if (!user || !_inventario) return;
+            try {
+                await fetch(DISCORD_API_BASE + '/api/guardar-inventario', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        discord_id: user.id,
+                        coins: _inventario.coins,
+                        energy: _inventario.energy,
+                        cartas: _inventario.cartas,
+                        stats: _statsJugador,
+                        misiones: _misionesState,
+                        mazos: JSON.parse(localStorage.getItem('gc_tcg_mazos') || '[]')
+                    })
+                });
+            } catch (e) {
+                console.error('Error guardando en Supabase:', e);
+            }
+        }
+
+        // Cargar inventario de Supabase al iniciar la app si hay sesión
+        async function cargarInventarioSupabaseSiLogueado() {
+            const user = getDiscordUser();
+            if (!user) return false;
+            try {
+                const res = await fetch(DISCORD_API_BASE + '/api/cargar-inventario', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ discord_id: user.id })
+                });
+                if (!res.ok) return false;
+                const data = await res.json();
+                if (data.inventario) {
+                    aplicarInventarioDeSupabase(data.inventario);
+                    return true;
+                }
+            } catch (e) {
+                console.error('Error cargando de Supabase:', e);
+            }
+            return false;
         }
 
 
@@ -6528,9 +6611,13 @@
 
         function guardarStats() {
             try { localStorage.setItem('gc_tcg_stats', JSON.stringify(_statsJugador)); } catch (e) {}
+            // Sync Supabase (debounced)
+            programarGuardadoSupabase();
         }
         function guardarMisiones() {
             try { localStorage.setItem('gc_tcg_misiones', JSON.stringify(_misionesState)); } catch (e) {}
+            // Sync Supabase (debounced)
+            programarGuardadoSupabase();
         }
 
         function verificarLoginDiario() {
@@ -6789,6 +6876,20 @@
             try {
                 localStorage.setItem('gc_tcg_inventario', JSON.stringify(_inventario));
             } catch (e) { console.error('Error guardando inventario:', e); }
+            // Sync Supabase (debounced)
+            programarGuardadoSupabase();
+        }
+
+        // Debounce para no saturar Supabase con guardados constantes
+        let _timeoutGuardadoSupabase = null;
+        function programarGuardadoSupabase() {
+            // Solo si hay sesión de Discord
+            if (!getDiscordUser()) return;
+            if (_timeoutGuardadoSupabase) clearTimeout(_timeoutGuardadoSupabase);
+            _timeoutGuardadoSupabase = setTimeout(() => {
+                guardarInventarioSupabase();
+                _timeoutGuardadoSupabase = null;
+            }, 2000); // Esperar 2s sin cambios antes de guardar
         }
 
         function getCantidadCarta(id) {
@@ -10990,7 +11091,14 @@
         window.addEventListener('load', async () => {
             // Cargar inventario al inicio (para mostrar monedas en menú principal)
             await cargarBaseDeDatos();
-            cargarInventario();
+            // Si hay sesión de Discord, cargar inventario de Supabase (nube)
+            const sesionDiscord = getDiscordUser();
+            if (sesionDiscord) {
+                await cargarInventarioSupabaseSiLogueado();
+            } else {
+                // Modo invitado: cargar de localStorage
+                cargarInventario();
+            }
             cargarStats();
             cargarNombreJugador();
             // Discord: manejar callback si viene con ?code=
@@ -11037,6 +11145,27 @@
 
         // Prevenir F5 durante partida online (con aviso)
         window.addEventListener('beforeunload', (e) => {
+            // Forzar guardado en Supabase si hay sesión y hay cambios pendientes
+            if (getDiscordUser() && _timeoutGuardadoSupabase) {
+                clearTimeout(_timeoutGuardadoSupabase);
+                _timeoutGuardadoSupabase = null;
+                // Usar sendBeacon para que se ejecute aunque se cierre la página
+                const user = getDiscordUser();
+                if (user && _inventario) {
+                    const payload = JSON.stringify({
+                        discord_id: user.id,
+                        coins: _inventario.coins,
+                        energy: _inventario.energy,
+                        cartas: _inventario.cartas,
+                        stats: _statsJugador,
+                        misiones: _misionesState,
+                        mazos: JSON.parse(localStorage.getItem('gc_tcg_mazos') || '[]')
+                    });
+                    try {
+                        navigator.sendBeacon(DISCORD_API_BASE + '/api/guardar-inventario', new Blob([payload], { type: 'application/json' }));
+                    } catch (err) {}
+                }
+            }
             if (estadoPartida && estadoPartida.modo === 'online' && !estadoPartida.finalizada) {
                 // Guardar estado antes de salir
                 guardarEstadoOnline();
