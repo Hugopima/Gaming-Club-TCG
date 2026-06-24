@@ -1293,6 +1293,78 @@
             .rarity-banner.rara { font-size: 18px; }
             .rarity-banner.super-rara { font-size: 19px; }
         }
+
+        /* ===== BARRA SUPERIOR DE MONEDAS (MENÚ PRINCIPAL) ===== */
+        .currency-bar {
+            position: fixed; top: 14px; right: 16px; z-index: 200;
+            display: flex; gap: 10px; align-items: center;
+        }
+        .currency-pill {
+            display: flex; align-items: center; gap: 6px;
+            background: rgba(0,0,0,.55); border: 1px solid var(--gold);
+            border-radius: 999px; padding: 5px 14px 5px 8px;
+            font-weight: 900; color: var(--gold-light); font-size: 14px;
+        }
+        .currency-pill img { width: 22px; height: 22px; object-fit: contain; }
+        .currency-pill.energy { border-color: #5ee7ff; color: #c5f0ff; }
+        .currency-pill.energy img { filter: drop-shadow(0 0 4px rgba(94,231,255,.6)); }
+
+        /* ===== CONTADOR DE COPIAS EN CARTAS ===== */
+        .owned-count {
+            position: absolute; bottom: 4px; right: 4px;
+            background: rgba(0,0,0,.85); color: var(--gold-light);
+            border: 1.5px solid var(--gold); border-radius: 8px;
+            padding: 1px 7px; font-size: 12px; font-weight: 900;
+            z-index: 5; min-width: 18px; text-align: center;
+            pointer-events: none;
+        }
+        .owned-count.zero { color: #888; border-color: #555; background: rgba(0,0,0,.7); }
+        .card { position: relative; }
+        .deck-card { position: relative; }
+        .deck-card-img { position: relative; }
+
+        /* ===== BOTONES FABRICAR / RECICLAR ===== */
+        .craft-section {
+            margin-top: 18px; padding-top: 16px;
+            border-top: 2px dashed rgba(255,215,0,.25);
+        }
+        .craft-section .craft-title {
+            font-size: 13px; font-weight: 900; text-transform: uppercase;
+            color: var(--gold-light); margin-bottom: 10px; letter-spacing: 1px;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .craft-section .craft-title img { width: 18px; height: 18px; }
+        .craft-buttons { display: flex; gap: 10px; }
+        .craft-btn, .recycle-btn {
+            flex: 1; padding: 10px 14px; border-radius: 10px;
+            font-weight: 900; font-size: 13px; cursor: pointer;
+            text-transform: uppercase; letter-spacing: 1px;
+            border: 2px solid; transition: all .15s;
+            display: flex; align-items: center; justify-content: center; gap: 5px;
+        }
+        .craft-btn {
+            background: linear-gradient(145deg, #1a6d3c, #0d4a28); border-color: #49ef78; color: white;
+        }
+        .craft-btn:hover:not(:disabled) { background: linear-gradient(145deg, #2a8d4c, #1d5a38); transform: translateY(-1px); }
+        .craft-btn:disabled { opacity: .45; cursor: not-allowed; filter: grayscale(.5); }
+        .recycle-btn {
+            background: linear-gradient(145deg, #8a3a1a, #5a2010); border-color: #ff735e; color: white;
+        }
+        .recycle-btn:hover:not(:disabled) { background: linear-gradient(145deg, #aa4a2a, #7a3020); transform: translateY(-1px); }
+        .recycle-btn:disabled { opacity: .45; cursor: not-allowed; filter: grayscale(.5); }
+        .craft-btn img, .recycle-btn img { width: 16px; height: 16px; }
+
+        /* Estilos para tarjetas en la pila (fix del movimiento fantasma) */
+        .stacked-card.no-transition { transition: none !important; }
+
+        /* Botón de info en la tienda */
+        .shop-info-btn {
+            background: rgba(0,0,0,.5); border: 2px solid var(--gold); border-radius: 50%;
+            width: 36px; height: 36px; color: var(--gold-light); font-weight: 900;
+            font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: transform .15s; flex-shrink: 0;
+        }
+        .shop-info-btn:hover { transform: scale(1.1); }
     </style>
 </head>
 <body>
@@ -1304,6 +1376,16 @@
     </div>
 
     <main id="main-menu">
+        <div class="currency-bar" id="currency-bar">
+            <div class="currency-pill" id="coins-pill" title="GamingCoins">
+                <img src="imagenes/moneda.png" alt="moneda" onerror="this.style.display='none'">
+                <span id="coins-amount">0</span>
+            </div>
+            <div class="currency-pill energy" id="energy-pill" title="Club Energy">
+                <img src="imagenes/energy.png" alt="energy" onerror="this.style.display='none'">
+                <span id="energy-amount">0</span>
+            </div>
+        </div>
         <div class="logo-container">
             <img src="https://i.postimg.cc/y6pH3tbL/1776704252476.webp" alt="Logo Gaming Club" class="logo-img">
         </div>
@@ -1354,6 +1436,23 @@
                         <div class="info-box" id="box-rareza" style="grid-column: span 2;"><span class="info-label">Rareza</span><span id="p-rareza" class="info-value rarity-val"></span></div>
                     </div>
                     <div id="skill-container"></div>
+                    <div id="craft-recycle-section" class="craft-section" style="display:none">
+                        <div class="craft-title">
+                            <img src="imagenes/energy.png" alt="energy" onerror="this.style.display='none'">
+                            <span>Club Energy</span>
+                        </div>
+                        <div class="craft-buttons">
+                            <button class="craft-btn" id="btn-fabricar" onclick="fabricarCarta()">
+                                <img src="imagenes/energy.png" alt="" onerror="this.style.display='none'">
+                                <span id="fabricar-label">Fabricar</span>
+                            </button>
+                            <button class="recycle-btn" id="btn-reciclar" onclick="reciclarCarta()">
+                                <img src="imagenes/energy.png" alt="" onerror="this.style.display='none'">
+                                <span id="reciclar-label">Reciclar</span>
+                            </button>
+                        </div>
+                        <p id="craft-info" style="font-size:11px;color:#aaa;text-align:center;margin-top:8px;"></p>
+                    </div>
                 </div>
             </aside>
         </main>
@@ -1414,38 +1513,10 @@
         <header class="shop-header">
             <button class="plate-btn btn-nav" onclick="volverAlMenuDesdeTienda()">Volver al Inicio</button>
             <div class="shop-title">🛒 Tienda</div>
-            <div class="shop-currency"><span class="coin-icon">🪙</span><span id="shop-coins">∞</span></div>
+            <button class="shop-info-btn" onclick="toggleInfoModal()" title="Probabilidades">i</button>
+            <div class="shop-currency" id="shop-currency-display"><img src="imagenes/moneda.png" alt="moneda" style="width:20px;height:20px;vertical-align:middle" onerror="this.style.display='none'"> <span id="shop-coins">∞</span></div>
         </header>
-        <div class="shop-content">
-            <div class="expansion-section">
-                <div class="expansion-banner">
-                    <h2>🌍 Mundos Cruzados</h2>
-                    <p>La primera expansión de Gaming Club TCG. 108 cartas de todos los orígenes: Minecraft, OMORI, FNAF, Grupo y más.</p>
-                </div>
-                <div class="pack-grid">
-                    <div class="pack-card">
-                        <img src="imagenes/pack1.png" alt="Sobre Mundos Cruzados" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22140%22 height=%22200%22><rect width=%22140%22 height=%22200%22 fill=%22%234020a0%22/><text x=%2270%22 y=%22100%22 fill=%22white%22 font-size=%2218%22 text-anchor=%22middle%22>PACK</text></svg>'">
-                        <div class="pack-name">Sobre Mundos Cruzados</div>
-                        <div class="pack-desc">6 cartas por sobre.<br>Garantía mínima: 1 Rara o superior.</div>
-                        <div class="pack-actions">
-                            <button class="pack-buy-btn" onclick="abrirSobre(1)">
-                                <span class="price-tag">🪙 Abrir 1 sobre</span>
-                            </button>
-                            <button class="pack-buy-btn ten" onclick="abrirSobre(10)">
-                                <span class="price-tag">🪙 Abrir 10 sobres</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ===== OVERLAY DE APERTURA DE SOBRE ===== -->
-    <div id="pack-opening-overlay">
-        <div class="pack-counter" id="pack-counter" style="display:none"></div>
-        <button class="pack-info-btn" id="pack-info-btn" onclick="toggleInfoModal()" title="Probabilidades">i</button>
-        <div class="pack-info-modal" id="pack-info-modal">
+        <div class="pack-info-modal" id="pack-info-modal" style="position:fixed;z-index:3600;display:none">
             <h3>Probabilidades por slot</h3>
             <table>
                 <thead>
@@ -1460,6 +1531,34 @@
             <p style="font-size:11px;color:#aaa;text-align:center;margin-top:12px;">Garantía mínima: al menos 1 Rara o superior por sobre.</p>
             <button class="info-close" onclick="toggleInfoModal()">Cerrar</button>
         </div>
+        <div class="shop-content">
+            <div class="expansion-section">
+                <div class="expansion-banner">
+                    <h2>🌍 Mundos Cruzados</h2>
+                    <p>La primera expansión de Gaming Club TCG. 108 cartas de todos los orígenes: Minecraft, OMORI, FNAF, Grupo y más.</p>
+                </div>
+                <div class="pack-grid">
+                    <div class="pack-card">
+                        <img src="imagenes/pack1.png" alt="Sobre Mundos Cruzados" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22140%22 height=%22200%22><rect width=%22140%22 height=%22200%22 fill=%22%234020a0%22/><text x=%2270%22 y=%22100%22 fill=%22white%22 font-size=%2218%22 text-anchor=%22middle%22>PACK</text></svg>'">
+                        <div class="pack-name">Sobre Mundos Cruzados</div>
+                        <div class="pack-desc">6 cartas por sobre.<br>Garantía mínima: 1 Rara o superior.</div>
+                        <div class="pack-actions">
+                            <button class="pack-buy-btn" onclick="abrirSobre(1)">
+                                <span class="price-tag">Abrir 1 sobre</span>
+                            </button>
+                            <button class="pack-buy-btn ten" onclick="abrirSobre(10)">
+                                <span class="price-tag">Abrir 10 sobres</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== OVERLAY DE APERTURA DE SOBRE ===== -->
+    <div id="pack-opening-overlay">
+        <div class="pack-counter" id="pack-counter" style="display:none"></div>
         <div class="pack-stage" id="pack-stage">
             <!-- Aquí se inyecta el sobre 3D o las cartas reveladas -->
         </div>
@@ -5662,13 +5761,17 @@
         function irAColeccion() {
             document.getElementById('main-menu').classList.add('hidden');
             document.getElementById('collection-wrapper').classList.remove('hidden');
-            cargarBaseDeDatos().then(renderizarBiblioteca);
+            cargarBaseDeDatos().then(() => {
+                cargarInventario();
+                renderizarBiblioteca();
+            });
         }
 
         async function irAMazos() {
             document.getElementById('main-menu').classList.add('hidden');
             document.getElementById('deck-menu-screen').classList.remove('hidden');
             await cargarBaseDeDatos();
+            cargarInventario();
             cargarMazosGuardados();
             renderizarSelectorMazos();
         }
@@ -5794,9 +5897,13 @@
             gl.innerHTML = ""; gu.innerHTML = ""; ge.innerHTML = ""; gt.innerHTML = "";
 
             datosCartas.forEach((c, i) => {
+                const id = getCardId(c);
+                const cantidad = getCantidadCarta(id);
+                const cantidadHtml = esToken(c) ? '' : `<span class="owned-count ${cantidad === 0 ? 'zero' : ''}">${cantidad}</span>`;
                 const cardHtml = `<div class="card" style="border-color: ${obtenerColorBorde(c.color)}" onclick="abrirPanel(${i})">
                     ${c.img ? `<img src="${c.img}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">` : ''}
                     <div class="card-name-fallback" style="display:none; color: white; padding: 20px; text-align: center; font-weight: bold; height: 100%; align-items: center; justify-content: center; background: #111;">${escapeHtml(c.nombre)}</div>
+                    ${cantidadHtml}
                 </div>`;
                 const claseCarta = claseNormalizada(c);
                 if (claseCarta === "lider") gl.innerHTML += cardHtml;
@@ -5813,13 +5920,16 @@
                 if (esToken(c)) return;
                 const id = getCardId(c);
                 const copias = copiasEnMazo(id);
+                const poseidas = getCantidadCarta(id);
                 const lider = esLider(c);
                 const agotado = !lider && copias >= 4;
+                const cantidadHtml = `<span class="owned-count ${poseidas === 0 ? 'zero' : ''}" style="bottom:auto;top:4px;right:4px;">${poseidas}</span>`;
                 libContainer.innerHTML += `
                     <div class="deck-card" style="border-color: ${obtenerColorBorde(c.color)}">
                         <div class="deck-card-img" onclick="abrirDetalleMazo(${i})">
                             ${c.img ? `<img src="${c.img}" alt="${escapeHtml(c.nombre)}">` : ''}
                             <span class="copy-badge">${lider ? (miMazo.liderId === id ? 'L' : '-') : copias + '/4'}</span>
+                            ${cantidadHtml}
                         </div>
                         <div class="deck-card-name">${escapeHtml(c.nombre)}</div>
                         <div class="single-action">
@@ -5955,6 +6065,7 @@
                         ${acciones}${activarBtns}${momolacBtn}${evoBtn}
                         ${(c.imgEvo || c.nombreEvo) ? `<button class="plate-btn btn-nav" onclick="detalleMazoEvo = !detalleMazoEvo; pintarDetalleMazo();">Dar la vuelta</button>` : ''}
                     </div>
+                    ${!detalleSoloInfo && !esToken(c) ? htmlCraftRecycle(getCardId(c), c.rareza, c.nombre) : ''}
                 </div>
                 <div>
                     <div class="panel-header">${escapeHtml(nombre)}</div>
@@ -5989,6 +6100,190 @@
         }
 
 
+        // ===== INVENTARIO, MONEDAS Y FABRICACIÓN =====
+        // Estructura: { coins: number, energy: number, cartas: { cardId: cantidad } }
+        let _inventario = null;
+
+        function cargarInventario() {
+            try {
+                const data = localStorage.getItem('gc_tcg_inventario');
+                if (data) {
+                    _inventario = JSON.parse(data);
+                } else {
+                    _inventario = { coins: 5000, energy: 1000, cartas: {} };
+                    // Dar todas las cartas para testeo (comentar en producción)
+                    // Para testeo real: dar 4 copias de cada carta
+                    if (datosCartas && datosCartas.length) {
+                        datosCartas.forEach(c => {
+                            if (!c || esToken(c)) return;
+                            const id = getCardId(c);
+                            _inventario.cartas[id] = 4; // 4 copias para testeo
+                        });
+                    }
+                    guardarInventario();
+                }
+            } catch (e) {
+                console.error('Error cargando inventario:', e);
+                _inventario = { coins: 5000, energy: 1000, cartas: {} };
+            }
+            actualizarBarraMonedas();
+        }
+
+        function guardarInventario() {
+            try {
+                localStorage.setItem('gc_tcg_inventario', JSON.stringify(_inventario));
+            } catch (e) { console.error('Error guardando inventario:', e); }
+        }
+
+        function getCantidadCarta(id) {
+            if (!_inventario) return 0;
+            return _inventario.cartas[id] || 0;
+        }
+
+        function actualizarBarraMonedas() {
+            if (!_inventario) return;
+            const coinsEl = document.getElementById('coins-amount');
+            const energyEl = document.getElementById('energy-amount');
+            if (coinsEl) coinsEl.textContent = _inventario.coins;
+            if (energyEl) energyEl.textContent = _inventario.energy;
+            // Actualizar también la tienda si está visible
+            const shopCoins = document.getElementById('shop-coins');
+            if (shopCoins) shopCoins.textContent = _inventario.coins;
+        }
+
+        // Tabla de costes de tokens por rareza (fabricar y reciclar)
+        const COSTES_TOKENS = {
+            'comun': { fabricar: 20, reciclar: 5 },
+            'infrecuente': { fabricar: 80, reciclar: 20 },
+            'rara': { fabricar: 300, reciclar: 80 },
+            'super rara': { fabricar: 1200, reciclar: 300 }
+        };
+
+        function getCosteTokens(rareza) {
+            const r = normalizarRareza(rareza);
+            return COSTES_TOKENS[r] || COSTES_TOKENS.comun;
+        }
+
+        function fabricarCarta() {
+            if (!_inventario || indexActual == null) return;
+            const c = datosCartas[indexActual];
+            if (!c) return;
+            const id = getCardId(c);
+            const coste = getCosteTokens(c.rareza).fabricar;
+            if (_inventario.energy < coste) {
+                alert('No tienes suficiente Club Energy. Necesitas ' + coste + ' y tienes ' + _inventario.energy + '.');
+                return;
+            }
+            if (!confirm('¿Fabricar "' + (c.nombre || id) + '" por ' + coste + ' Club Energy?')) return;
+            _inventario.energy -= coste;
+            _inventario.cartas[id] = (_inventario.cartas[id] || 0) + 1;
+            guardarInventario();
+            actualizarBarraMonedas();
+            actualizarPanel(c); // refrescar para actualizar botones
+            renderizarBiblioteca(); // refrescar contadores
+            alert('¡Carta fabricada!');
+        }
+
+        function reciclarCarta() {
+            if (!_inventario || indexActual == null) return;
+            const c = datosCartas[indexActual];
+            if (!c) return;
+            const id = getCardId(c);
+            const cantidad = getCantidadCarta(id);
+            if (cantidad <= 0) {
+                alert('No tienes esta carta para reciclar.');
+                return;
+            }
+            const ganancia = getCosteTokens(c.rareza).reciclar;
+            if (!confirm('¿Reciclar 1 copia de "' + (c.nombre || id) + '" por ' + ganancia + ' Club Energy?')) return;
+            _inventario.cartas[id] = cantidad - 1;
+            if (_inventario.cartas[id] <= 0) delete _inventario.cartas[id];
+            _inventario.energy += ganancia;
+            guardarInventario();
+            actualizarBarraMonedas();
+            actualizarPanel(c);
+            renderizarBiblioteca();
+            alert('¡Carta reciclada! +' + ganancia + ' Club Energy');
+        }
+
+        // Para mazos: fabricar/reciclar desde el detalle de mazo
+        function fabricarCartaMazo() {
+            if (!_inventario || !cartaDetalleMazo) return;
+            const c = cartaDetalleMazo;
+            const id = getCardId(c);
+            const coste = getCosteTokens(c.rareza).fabricar;
+            if (_inventario.energy < coste) {
+                alert('No tienes suficiente Club Energy. Necesitas ' + coste + ' y tienes ' + _inventario.energy + '.');
+                return;
+            }
+            if (!confirm('¿Fabricar "' + (c.nombre || id) + '" por ' + coste + ' Club Energy?')) return;
+            _inventario.energy -= coste;
+            _inventario.cartas[id] = (_inventario.cartas[id] || 0) + 1;
+            guardarInventario();
+            actualizarBarraMonedas();
+            pintarDetalleMazo();
+            renderizarEditor();
+            alert('¡Carta fabricada!');
+        }
+
+        function reciclarCartaMazo() {
+            if (!_inventario || !cartaDetalleMazo) return;
+            const c = cartaDetalleMazo;
+            const id = getCardId(c);
+            const cantidad = getCantidadCarta(id);
+            if (cantidad <= 0) {
+                alert('No tienes esta carta para reciclar.');
+                return;
+            }
+            const ganancia = getCosteTokens(c.rareza).reciclar;
+            if (!confirm('¿Reciclar 1 copia de "' + (c.nombre || id) + '" por ' + ganancia + ' Club Energy?')) return;
+            _inventario.cartas[id] = cantidad - 1;
+            if (_inventario.cartas[id] <= 0) delete _inventario.cartas[id];
+            _inventario.energy += ganancia;
+            guardarInventario();
+            actualizarBarraMonedas();
+            pintarDetalleMazo();
+            renderizarEditor();
+            alert('¡Carta reciclada! +' + ganancia + ' Club Energy');
+        }
+
+        // HTML para los botones de fabricar/reciclar (reutilizable en colección y mazos)
+        function htmlCraftRecycle(cardId, rareza, nombre) {
+            const coste = getCosteTokens(rareza);
+            const cantidad = getCantidadCarta(cardId);
+            const energia = _inventario ? _inventario.energy : 0;
+            const puedeFabricar = energia >= coste.fabricar;
+            const puedeReciclar = cantidad > 0;
+            const fabLabel = `Fabricar (${coste.fabricar})`;
+            const recLabel = `Reciclar (+${coste.reciclar})`;
+            const fabDisabled = puedeFabricar ? '' : 'disabled';
+            const recDisabled = puedeReciclar ? '' : 'disabled';
+            // Determinar qué función llamar según contexto (colección vs mazo)
+            const fabFn = typeof cartaDetalleMazo !== 'undefined' && cartaDetalleMazo ? 'fabricarCartaMazo()' : 'fabricarCarta()';
+            const recFn = typeof cartaDetalleMazo !== 'undefined' && cartaDetalleMazo ? 'reciclarCartaMazo()' : 'reciclarCarta()';
+            return `
+                <div class="craft-section">
+                    <div class="craft-title">
+                        <img src="imagenes/energy.png" alt="energy" onerror="this.style.display='none'">
+                        <span>Club Energy — Posees: ${cantidad}</span>
+                    </div>
+                    <div class="craft-buttons">
+                        <button class="craft-btn" ${fabDisabled} onclick="${fabFn}">
+                            <img src="imagenes/energy.png" alt="" onerror="this.style.display='none'">
+                            <span>${fabLabel}</span>
+                        </button>
+                        <button class="recycle-btn" ${recDisabled} onclick="${recFn}">
+                            <img src="imagenes/energy.png" alt="" onerror="this.style.display='none'">
+                            <span>${recLabel}</span>
+                        </button>
+                    </div>
+                    <p style="font-size:11px;color:#aaa;text-align:center;margin-top:8px;">
+                        ${puedeFabricar ? 'Tienes energía suficiente para fabricar.' : `Te faltan ${coste.fabricar - energia} Club Energy.`}
+                    </p>
+                </div>`;
+        }
+
+
         // ===== TIENDA Y SOBRES =====
         // Pool de cartas por rareza (se rellena al cargar cartas.json)
         let _poolPorRareza = { comun: [], infrecuente: [], rara: [], 'super rara': [] };
@@ -6018,8 +6313,7 @@
             document.getElementById('shop-screen').classList.remove('hidden');
             cargarBaseDeDatos().then(() => {
                 construirPoolsDeRareza();
-                // Testeo: monedas infinitas
-                document.getElementById('shop-coins').innerHTML = '<img src="imagenes/moneda.png" alt="moneda" style="width:20px;height:20px;vertical-align:middle" onerror="this.style.display=\'none\'"> ∞';
+                cargarInventario();
             });
         }
 
@@ -6135,6 +6429,7 @@
             navBtn.classList.remove('show');
 
             // Construir la pila: cada carta desplazada ligeramente
+            // Usar no-transition para evitar el movimiento fantasma al posicionarse
             let html = '<div class="card-stack" id="card-stack">';
             // Renderizar en orden inverso para que la primera esté arriba (z-index alto)
             for (let i = cartas.length - 1; i >= 0; i--) {
@@ -6145,7 +6440,7 @@
                 const offset = i * 3; // desplazamiento en px para simular pila
                 const zIndex = cartas.length - i;
                 const esActual = (i === _packState.indice);
-                html += `<div class="stacked-card" 
+                html += `<div class="stacked-card no-transition" 
                     data-idx="${i}" 
                     style="transform: translateX(calc(-50% + ${offset}px)); z-index: ${zIndex};"
                     onclick="clickCartaPila(${i})">
@@ -6162,6 +6457,10 @@
             html += '</div>';
             html += '<div class="pack-hint" id="card-hint">👆 Toca la carta para revelar</div>';
             stage.innerHTML = html;
+            // Tras un frame, quitar no-transition para que las animaciones posteriores funcionen
+            requestAnimationFrame(() => {
+                document.querySelectorAll('.stacked-card.no-transition').forEach(el => el.classList.remove('no-transition'));
+            });
         }
 
         function textoRareza(rareza) {
@@ -6253,6 +6552,7 @@
             const cartas = _packState.cartas;
             const idx = _packState.indice;
             // Re-renderizar la pila sin las cartas ya salidas (índices < idx)
+            // Usar no-transition para evitar el movimiento fantasma al posicionarse
             let html = '<div class="card-stack" id="card-stack">';
             for (let i = cartas.length - 1; i >= idx; i--) {
                 const item = cartas[i];
@@ -6263,7 +6563,7 @@
                 const offset = relIdx * 3;
                 const zIndex = cartas.length - i;
                 const esActual = (i === idx);
-                html += `<div class="stacked-card" 
+                html += `<div class="stacked-card no-transition" 
                     data-idx="${i}" 
                     style="transform: translateX(calc(-50% + ${offset}px)); z-index: ${zIndex};"
                     onclick="clickCartaPila(${i})">
@@ -6280,6 +6580,10 @@
             html += '</div>';
             html += '<div class="pack-hint" id="card-hint">👆 Toca la carta para revelar</div>';
             stage.innerHTML = html;
+            // Tras un frame, quitar no-transition para que las animaciones posteriores funcionen
+            requestAnimationFrame(() => {
+                document.querySelectorAll('.stacked-card.no-transition').forEach(el => el.classList.remove('no-transition'));
+            });
         }
 
         // Botón "Siguiente" / "Ver resumen"
@@ -6309,6 +6613,17 @@
 
         function mostrarResumenSobre() {
             _packState.fase = 'resumen';
+            // Añadir las cartas del sobre al inventario (al mostrar el resumen)
+            if (_inventario) {
+                _packState.cartas.forEach(item => {
+                    const id = getCardId(item.carta);
+                    if (id) {
+                        _inventario.cartas[id] = (_inventario.cartas[id] || 0) + 1;
+                    }
+                });
+                guardarInventario();
+                actualizarBarraMonedas();
+            }
             const stage = document.getElementById('pack-stage');
             const navBtn = document.getElementById('pack-nav-btn');
             const cartas = _packState.cartas;
@@ -9608,6 +9923,38 @@
                 const container = document.querySelector('#info-panel .panel-content') || document.querySelector('#info-panel');
                 if (container) container.appendChild(btn);
             }
+
+            // Sección de Fabricar / Reciclar (solo en colección, no durante partida)
+            const craftSection = document.getElementById('craft-recycle-section');
+            if (craftSection) {
+                if (estadoPartida || esToken(c)) {
+                    // Durante partida o para tokens: ocultar
+                    craftSection.style.display = 'none';
+                } else {
+                    craftSection.style.display = 'block';
+                    const coste = getCosteTokens(c.rareza);
+                    const id = getCardId(c);
+                    const cantidad = getCantidadCarta(id);
+                    const energia = _inventario ? _inventario.energy : 0;
+                    const puedeFabricar = energia >= coste.fabricar;
+                    const puedeReciclar = cantidad > 0;
+                    const fabLabel = `Fabricar (${coste.fabricar})`;
+                    const recLabel = `Reciclar (+${coste.reciclar})`;
+                    const fabBtn = document.getElementById('btn-fabricar');
+                    const recBtn = document.getElementById('btn-reciclar');
+                    const fabLabelEl = document.getElementById('fabricar-label');
+                    const recLabelEl = document.getElementById('reciclar-label');
+                    const infoEl = document.getElementById('craft-info');
+                    if (fabBtn) fabBtn.disabled = !puedeFabricar;
+                    if (recBtn) recBtn.disabled = !puedeReciclar;
+                    if (fabLabelEl) fabLabelEl.textContent = fabLabel;
+                    if (recLabelEl) recLabelEl.textContent = recLabel;
+                    if (infoEl) {
+                        infoEl.innerHTML = `Posees: <b>${cantidad}</b> copias. ` +
+                            (puedeFabricar ? 'Puedes fabricar.' : `Te faltan ${coste.fabricar - energia} Club Energy.`);
+                    }
+                }
+            }
         }
 
         function toggleEvo() {
@@ -9638,6 +9985,9 @@
         // === PROTECCIÓN F5 Y RECONEXIÓN ===
         // Al cargar la página, comprobar si hay una partida online guardada
         window.addEventListener('load', async () => {
+            // Cargar inventario al inicio (para mostrar monedas en menú principal)
+            await cargarBaseDeDatos();
+            cargarInventario();
             const partidaGuardada = cargarEstadoOnline();
             if (partidaGuardada) {
                 // Hay una partida guardada: preguntar si quiere reconectar
