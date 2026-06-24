@@ -2486,8 +2486,11 @@
           u.flags.enderezarCoste = 1;
           log('Toñi la infectada descansa a ' + (getCardById(u.id)?.nombre || u.id) + '. El rival debe pagar 1 maná para enderezarla.');
           marcarHabilidadUsada(claveTurno(quien, 'gl1_evo'));
-          if (estadoPartida?.modo === 'online' && typeof enviarEfectoRival === 'function' && u.id) {
-            enviarEfectoRival({ tipo: 'descansar-unidad', cardId: u.id, nombre: 'Toñi la infectada', arañaBloqueada: false, enderezarCoste: true });
+          // Bug Verde fix: enviar el efecto al rival de forma robusta usando window.enviarEfectoRival.
+          // Usar window. explícitamente para evitar problemas de scope dentro del IIFE.
+          // Enviar tanto el cardId como el index (fallback) para que el receptor encuentre la unidad.
+          if (estadoPartida?.modo === 'online' && u.id && typeof window.enviarEfectoRival === 'function') {
+            window.enviarEfectoRival({ tipo: 'descansar-unidad', cardId: u.id, index: idx, nombre: 'Toñi la infectada', arañaBloqueada: false, enderezarCoste: true });
           }
           if (typeof renderizarPartida === 'function') renderizarPartida();
           syncOnline('toni-evo');
@@ -6498,7 +6501,11 @@
                             z.batalla.forEach(u => { if (!u.rested) u.rested = true; });
                             estadoPartida.log = `${efecto.nombre || 'El rival'} pone todas tus unidades en descanso.`;
                         } else if (efecto.cardId) {
-                            const u = z.batalla.find(u => u && u.id === efecto.cardId);
+                            let u = z.batalla.find(u => u && u.id === efecto.cardId);
+                            // Bug Verde fix: si no se encuentra por cardId, intentar por índice (fallback).
+                            if (!u && efecto.index != null && z.batalla[efecto.index]) {
+                                u = z.batalla[efecto.index];
+                            }
                             if (u) {
                                 u.rested = true;
                                 u.flags = u.flags || {};
@@ -6515,6 +6522,8 @@
                                     u.flags.enderezarCoste = 1;
                                 }
                                 estadoPartida.log = `${efecto.nombre || 'El rival'} pone una de tus unidades en descanso.`;
+                            } else {
+                                console.warn('[Toñi] No se encontró la unidad para descansar-unidad. cardId:', efecto.cardId, 'batalla:', z.batalla.map(x => x?.id));
                             }
                         }
                         break;
@@ -6740,6 +6749,9 @@
             // Procesar unidades con enderezarCoste (Toñi la infectada): ofrecer pagar 1 maná
             (async () => {
               const unidadesCoste = estadoPartida.jugador.batalla.filter(c => c.flags?.enderezarCoste && c.rested);
+              // Bug Verde fix: log de debug para diagnosticar si el flag llega al receptor.
+              console.log('[Toñi] Inicio de turno. Unidades con enderezarCoste y rested:', unidadesCoste.length, 
+                'Todas mis unidades:', estadoPartida.jugador.batalla.map(u => ({ id: u?.id, rested: u?.rested, enderezarCoste: u?.flags?.enderezarCoste })));
               for (const c of unidadesCoste) {
                 if (estadoPartida.jugador.manaActivo >= 1) {
                   const pagar = await elegirConModal('Toñi la infectada: ¿Pagar 1 maná para enderezar a ' + (getCardById(c.id)?.nombre || c.id) + '?', [
@@ -6888,6 +6900,7 @@
 
         // Ejecutar un counter play directamente: paga maná, niega la carta rival, descarta el counter play.
         function usarCounterPlayDirecto(cp) {
+            console.log('[Juegos Indios] usarCounterPlayDirecto llamado. cp:', cp, '_counterPlayPendiente:', estadoPartida?._counterPlayPendiente);
             if (!estadoPartida || !estadoPartida._counterPlayPendiente) {
                 alert('Ya no hay una carta rival pendiente para negar.');
                 return;
@@ -6916,24 +6929,33 @@
                     coste: coste
                 });
             } else {
-                ejecutarCounterPlay(handIndex);
+                ejecutarCounterPlay(handIndex, id);
             }
         }
 
         // Bug Rojo fix: ejecutar el counter play una vez pagado el maná (o si coste era 0).
-        function ejecutarCounterPlay(handIndex) {
+        function ejecutarCounterPlay(handIndex, cardIdParam) {
+            console.log('[Juegos Indios] ejecutarCounterPlay llamado. handIndex:', handIndex, 'cardIdParam:', cardIdParam, '_counterPlayPendiente:', estadoPartida?._counterPlayPendiente);
             if (!estadoPartida || !estadoPartida._counterPlayPendiente) {
                 alert('Ya no hay una carta rival pendiente para negar.');
                 return;
             }
-            // Re-verificar que la carta sigue en la mano
-            const id = estadoPartida.pagoPendiente?.cardId || estadoPartida.jugador.mano[handIndex];
+            // Bug Rojo fix: obtener el ID de la carta de counter play de forma robusta.
+            // Priorizar el cardId pasado como parámetro (desde confirmarPagoMana),
+            // luego pagoPendiente.cardId, luego buscar por handIndex.
+            let id = cardIdParam || estadoPartida.pagoPendiente?.cardId;
+            if (!id && handIndex >= 0) {
+                id = estadoPartida.jugador.mano[handIndex];
+            }
+            if (!id) {
+                alert('No se pudo encontrar la carta de Counter Play.');
+                return;
+            }
             const currentHandIndex = estadoPartida.jugador.mano.indexOf(id);
             if (currentHandIndex < 0) {
                 alert('La carta de Counter Play ya no está en tu mano.');
                 return;
             }
-            const carta = getCardById(id);
             // Negar la carta rival: enviarla al descarte del rival
             const cardIdNegada = estadoPartida._counterPlayPendiente.cardId;
             const cartaRival = getCardById(cardIdNegada);
@@ -7619,7 +7641,8 @@
                 estadoPartida.jugador.manaActivo = estadoPartida.jugador.mana.filter(m => !m.rested).length;
                 // Cerrar el modal antes de ejecutar (ejecutarCounterPlay limpia pagoPendiente).
                 document.getElementById('mana-pay-modal').classList.add('hidden');
-                ejecutarCounterPlay(p.handIndex);
+                // Pasar el cardId explícitamente para evitar problemas de índice.
+                ejecutarCounterPlay(p.handIndex, p.cardId);
                 return;
             }
             else resolverJugarCarta(p.handIndex, p.seleccion);
