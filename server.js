@@ -24,15 +24,31 @@ app.use(express.json());
 // Servir archivos estáticos desde la carpeta actual
 app.use(express.static(__dirname));
 
+// Función auxiliar: resolver la ruta del juego.html
+// (puede llamarse juego.html o index.html según el deploy)
+function getJuegoPath() {
+    const fs = require('fs');
+    const candidatos = [
+        path.join(__dirname, 'juego.html'),
+        path.join(__dirname, 'index.html'),
+        path.join(process.cwd(), 'juego.html'),
+        path.join(process.cwd(), 'index.html')
+    ];
+    for (const p of candidatos) {
+        if (fs.existsSync(p)) return p;
+    }
+    return path.join(__dirname, 'juego.html');
+}
+
 // Ruta principal: servir el juego
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'juego.html'));
+    res.sendFile(getJuegoPath());
 });
 
 // Ruta de callback de Discord: sirve el juego, que detectara ?code= en la URL
 // y llamara a /auth/discord para intercambiar el code por el token.
 app.get('/auth/discord/callback', (req, res) => {
-    res.sendFile(path.join(__dirname, 'juego.html'));
+    res.sendFile(getJuegoPath());
 });
 
 // === DISCORD OAUTH2 ===
