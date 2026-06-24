@@ -1156,9 +1156,10 @@
         .stacked-card {
             position: absolute; top: 0; left: 50%; transform: translateX(-50%);
             width: 280px; height: 392px; cursor: pointer;
-            transform-style: preserve-3d; transition: transform .55s cubic-bezier(.4,.1,.2,1), opacity .4s ease;
+            transform-style: preserve-3d; transition: opacity .4s ease;
             will-change: transform, opacity;
         }
+        .stacked-card.with-transform-transition { transition: transform .55s cubic-bezier(.4,.1,.2,1), opacity .4s ease; }
         .stacked-card.flipping { animation: cardFlip .5s ease forwards; }
         @keyframes cardFlip {
             0% { transform: translateX(-50%) rotateY(0) scale(1); }
@@ -1354,8 +1355,8 @@
         .recycle-btn:disabled { opacity: .45; cursor: not-allowed; filter: grayscale(.5); }
         .craft-btn img, .recycle-btn img { width: 16px; height: 16px; }
 
-        /* Estilos para tarjetas en la pila (fix del movimiento fantasma) */
-        .stacked-card.no-transition { transition: none !important; }
+        /* Estilos para tarjetas en la pila */
+        .stacked-card.sliding-out-prep { transition: none !important; }
 
         /* Botón de info en la tienda */
         .shop-info-btn {
@@ -1365,6 +1366,58 @@
             transition: transform .15s; flex-shrink: 0;
         }
         .shop-info-btn:hover { transform: scale(1.1); }
+
+        /* ===== MODAL DE CRÉDITOS ===== */
+        .credits-overlay {
+            position: fixed; inset: 0; z-index: 3700; display: none;
+            background: rgba(0,0,0,.92); align-items: center; justify-content: center; padding: 20px;
+        }
+        .credits-overlay.active { display: flex; }
+        .credits-modal {
+            width: min(640px, 95vw); max-height: 90vh; overflow-y: auto;
+            background: linear-gradient(180deg, #1a1030, #0a0518);
+            border: 2px solid var(--gold); border-radius: 18px; padding: 36px 32px;
+            box-shadow: 0 0 60px rgba(255,215,0,.3); position: relative;
+        }
+        .credits-modal h2 {
+            color: var(--gold-light); font-size: 26px; text-align: center; margin: 0 0 20px;
+            text-transform: uppercase; letter-spacing: 2px;
+            text-shadow: 0 0 12px rgba(255,240,124,.4);
+        }
+        .credits-modal h3 {
+            color: #ff735e; font-size: 15px; margin: 18px 0 8px;
+            text-transform: uppercase; letter-spacing: 1px;
+            border-bottom: 1px solid rgba(255,115,94,.3); padding-bottom: 4px;
+        }
+        .credits-modal p, .credits-modal li {
+            color: #d0c8e0; font-size: 13px; line-height: 1.6; margin: 6px 0;
+        }
+        .credits-modal ul { margin: 8px 0; padding-left: 20px; }
+        .credits-modal .credits-close {
+            position: absolute; top: 12px; right: 14px;
+            background: rgba(255,115,94,.2); border: 1px solid #ff735e; border-radius: 50%;
+            width: 32px; height: 32px; color: #ff735e; font-size: 18px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .credits-modal .credits-close:hover { background: rgba(255,115,94,.4); }
+        .credits-modal .credits-contact {
+            background: rgba(94,231,255,.08); border: 1px solid rgba(94,231,255,.3);
+            border-radius: 10px; padding: 10px 14px; margin-top: 12px; text-align: center;
+        }
+        .credits-modal .credits-contact a { color: #5ee7ff; text-decoration: none; font-weight: 900; }
+
+        /* ===== BOTÓN DISCORD LOGIN ===== */
+        .discord-login-btn {
+            position: fixed; top: 14px; left: 16px; z-index: 200;
+            display: flex; align-items: center; gap: 8px;
+            background: #5865F2; border: 2px solid #7984F5; border-radius: 10px;
+            padding: 6px 14px; color: white; font-weight: 900; font-size: 13px;
+            cursor: pointer; transition: all .15s; box-shadow: 0 0 15px rgba(88,101,242,.4);
+        }
+        .discord-login-btn:hover { background: #4752C8; transform: translateY(-1px); }
+        .discord-login-btn img { width: 20px; height: 20px; }
+        .discord-login-btn.logged-in { background: #2BA633; border-color: #4ee06a; box-shadow: 0 0 15px rgba(46,166,51,.4); }
+        .discord-user-info { font-size: 11px; font-weight: 600; opacity: .9; }
     </style>
 </head>
 <body>
@@ -1376,6 +1429,10 @@
     </div>
 
     <main id="main-menu">
+        <button class="discord-login-btn" id="discord-login-btn" onclick="loginDiscord()">
+            <img src="imagenes/discord.png" alt="Discord" onerror="this.style.display='none'">
+            <span id="discord-btn-label">Iniciar sesión</span>
+        </button>
         <div class="currency-bar" id="currency-bar">
             <div class="currency-pill" id="coins-pill" title="GamingCoins">
                 <img src="imagenes/moneda.png" alt="moneda" onerror="this.style.display='none'">
@@ -1399,8 +1456,53 @@
                 <button class="plate-btn btn-nav" onclick="irAMazos()">MAZOS</button>
                 <button class="plate-btn btn-nav" onclick="irATienda()">TIENDA</button>
             </div>
+            <div class="sub-btns" style="margin-top:8px;">
+                <button class="plate-btn btn-nav" onclick="abrirCreditos()">CRÉDITOS</button>
+            </div>
         </div>
     </main>
+
+    <!-- Modal de Créditos -->
+    <div class="credits-overlay" id="credits-overlay">
+        <div class="credits-modal">
+            <button class="credits-close" onclick="cerrarCreditos()">×</button>
+            <h2>Créditos y Aviso Legal</h2>
+            <p style="text-align:center;font-weight:900;color:var(--gold-light);font-size:16px;">Gaming Club - Proyecto Fan-Made</p>
+            <h3>Aviso de Derechos de Autor</h3>
+            <p>Este juego es un proyecto independiente desarrollado sin ánimo de lucro exclusivamente para fines recreativos. No tenemos ninguna afiliación oficial con las marcas mencionadas a continuación. Todos los personajes y elementos pertenecen a sus respectivos titulares de derechos.</p>
+            <h3>Titulares de Propiedad Intelectual</h3>
+            <ul>
+                <li>Bandai Namco Entertainment Inc.</li>
+                <li>Microsoft Corporation / Mojang Studios</li>
+                <li>Supercell</li>
+                <li>InnerSloth LLC</li>
+                <li>Omocat, LLC</li>
+                <li>Scott Games / Clickteam</li>
+                <li>DaFuq!?Boom!</li>
+                <li>tinyBuild</li>
+                <li>8-4, Ltd.</li>
+                <li>Re-Logic</li>
+                <li>Roblox Corporation</li>
+                <li>Netflix, Inc.</li>
+                <li>Psyonix LLC</li>
+                <li>Editorial Susaeta</li>
+                <li>Mob Entertainment</li>
+                <li>Snail Games</li>
+            </ul>
+            <h3>Figuras Públicas</h3>
+            <p>Las representaciones de personalidades reales se utilizan bajo el derecho a la sátira y el homenaje creativo.</p>
+            <h3>Equipo de Desarrollo</h3>
+            <ul>
+                <li><b>Desarrollo y Dirección:</b> Hugopima</li>
+                <li><b>Colaboración y Soporte:</b> Hog128, remsleeper, Megalberto</li>
+            </ul>
+            <h3>Contacto</h3>
+            <div class="credits-contact">
+                Para cualquier consulta relacionada con los activos utilizados:<br>
+                <a href="mailto:gmclub.clips@gmail.com">gmclub.clips@gmail.com</a>
+            </div>
+        </div>
+    </div>
 
     <div id="collection-wrapper" class="hidden" style="height: 100%; display: flex; flex-direction: column;">
         <header class="top-bar">
@@ -1516,7 +1618,7 @@
             <button class="shop-info-btn" onclick="toggleInfoModal()" title="Probabilidades">i</button>
             <div class="shop-currency" id="shop-currency-display"><img src="imagenes/moneda.png" alt="moneda" style="width:20px;height:20px;vertical-align:middle" onerror="this.style.display='none'"> <span id="shop-coins">∞</span></div>
         </header>
-        <div class="pack-info-modal" id="pack-info-modal" style="position:fixed;z-index:3600;display:none">
+        <div class="pack-info-modal" id="pack-info-modal" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:3600;display:none">
             <h3>Probabilidades por slot</h3>
             <table>
                 <thead>
@@ -1700,7 +1802,7 @@
             <h2 style="color:#fff07c;text-transform:uppercase;margin-top:0;margin-bottom:30px;font-size:36px;">¿Cómo quieres jugar?</h2>
             <div style="display:flex;gap:20px;justify-content:center;flex-wrap:wrap;">
                 <button class="plate-btn" style="min-width:200px;padding:20px 30px;font-size:18px;" onclick="cerrarPlayMode(); iniciarPartida('solo')">
-                    🎮 JUGAR SOLO<br><small style="font-size:12px;font-weight:400;">Contra la IA</small>
+                    🎮 JUGAR VS IA<br><small style="font-size:12px;font-weight:400;">Contra la Inteligencia Artificial</small>
                 </button>
                 <button class="plate-btn btn-blue" style="min-width:200px;padding:20px 30px;font-size:18px;" onclick="iniciarPartidaOnline()">
                     🌐 JUGAR ONLINE<br><small style="font-size:12px;font-weight:400;">Contra otra persona</small>
@@ -5923,7 +6025,7 @@
                 const poseidas = getCantidadCarta(id);
                 const lider = esLider(c);
                 const agotado = !lider && copias >= 4;
-                const cantidadHtml = `<span class="owned-count ${poseidas === 0 ? 'zero' : ''}" style="bottom:auto;top:4px;right:4px;">${poseidas}</span>`;
+                const cantidadHtml = `<span class="owned-count ${poseidas === 0 ? 'zero' : ''}" style="bottom:auto;right:auto;top:4px;left:4px;">${poseidas}</span>`;
                 libContainer.innerHTML += `
                     <div class="deck-card" style="border-color: ${obtenerColorBorde(c.color)}">
                         <div class="deck-card-img" onclick="abrirDetalleMazo(${i})">
@@ -6097,6 +6199,95 @@
             guardarListaMazos();
             alert("Mazo guardado correctamente.");
             volverASelectorMazos();
+        }
+
+
+        // ===== CRÉDITOS =====
+        function abrirCreditos() {
+            document.getElementById('credits-overlay').classList.add('active');
+        }
+        function cerrarCreditos() {
+            document.getElementById('credits-overlay').classList.remove('active');
+        }
+
+        // ===== DISCORD LOGIN =====
+        // IMPORTANTE: Reemplaza CLIENT_ID con tu Client ID de Discord (ver instrucciones).
+        // El redirect URI debe estar configurado en Discord Developer Portal.
+        const DISCORD_CLIENT_ID = '1519320034059620472'; // Client ID de Discord
+        const DISCORD_REDIRECT_URI = window.location.origin + '/auth/discord/callback';
+        const DISCORD_API_BASE = window.location.origin;
+
+        function loginDiscord() {
+            // Si ya hay sesión, cerrar sesión
+            const user = getDiscordUser();
+            if (user) {
+                if (confirm('¿Cerrar sesión de Discord?')) {
+                    localStorage.removeItem('gc_tcg_discord_user');
+                    actualizarBotonDiscord();
+                    location.reload();
+                }
+                return;
+            }
+            // Redirigir a Discord OAuth2
+            const params = new URLSearchParams({
+                client_id: DISCORD_CLIENT_ID,
+                redirect_uri: DISCORD_REDIRECT_URI,
+                response_type: 'code',
+                scope: 'identify email',
+                prompt: 'consent'
+            });
+            window.location.href = 'https://discord.com/api/oauth2/authorize?' + params.toString();
+        }
+
+        function getDiscordUser() {
+            try {
+                const data = localStorage.getItem('gc_tcg_discord_user');
+                return data ? JSON.parse(data) : null;
+            } catch (e) { return null; }
+        }
+
+        function actualizarBotonDiscord() {
+            const btn = document.getElementById('discord-login-btn');
+            const label = document.getElementById('discord-btn-label');
+            if (!btn || !label) return;
+            const user = getDiscordUser();
+            if (user) {
+                btn.classList.add('logged-in');
+                label.innerHTML = `<span class="discord-user-info">${escapeHtml(user.username)}</span>`;
+            } else {
+                btn.classList.remove('logged-in');
+                label.textContent = 'Iniciar sesión';
+            }
+        }
+
+        // Manejar callback de Discord (cuando vuelve con ?code=...)
+        async function manejarCallbackDiscord() {
+            const params = new URLSearchParams(window.location.search);
+            const code = params.get('code');
+            if (!code) return;
+            try {
+                // Llamar al backend para intercambiar el code por un token
+                const res = await fetch(DISCORD_API_BASE + '/auth/discord', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code, redirect_uri: DISCORD_REDIRECT_URI })
+                });
+                if (!res.ok) throw new Error('Error en auth');
+                const data = await res.json();
+                if (data.user) {
+                    localStorage.setItem('gc_tcg_discord_user', JSON.stringify(data.user));
+                    if (data.inventario) {
+                        _inventario = data.inventario;
+                        guardarInventario();
+                    }
+                    actualizarBotonDiscord();
+                }
+            } catch (e) {
+                console.error('Error en Discord callback:', e);
+                alert('Error al iniciar sesión con Discord. Revisa la consola.');
+            }
+            // Limpiar la URL
+            window.history.replaceState({}, document.title, window.location.pathname);
         }
 
 
@@ -6429,7 +6620,7 @@
             navBtn.classList.remove('show');
 
             // Construir la pila: cada carta desplazada ligeramente
-            // Usar no-transition para evitar el movimiento fantasma al posicionarse
+            // (sin transición inicial para evitar movimiento fantasma; se añade después)
             let html = '<div class="card-stack" id="card-stack">';
             // Renderizar en orden inverso para que la primera esté arriba (z-index alto)
             for (let i = cartas.length - 1; i >= 0; i--) {
@@ -6440,7 +6631,7 @@
                 const offset = i * 3; // desplazamiento en px para simular pila
                 const zIndex = cartas.length - i;
                 const esActual = (i === _packState.indice);
-                html += `<div class="stacked-card no-transition" 
+                html += `<div class="stacked-card"
                     data-idx="${i}" 
                     style="transform: translateX(calc(-50% + ${offset}px)); z-index: ${zIndex};"
                     onclick="clickCartaPila(${i})">
@@ -6457,9 +6648,12 @@
             html += '</div>';
             html += '<div class="pack-hint" id="card-hint">👆 Toca la carta para revelar</div>';
             stage.innerHTML = html;
-            // Tras un frame, quitar no-transition para que las animaciones posteriores funcionen
+            // Tras dos frames, añadir la transición de transform para que las animaciones posteriores funcionen
+            // (sin causar el movimiento fantasma inicial)
             requestAnimationFrame(() => {
-                document.querySelectorAll('.stacked-card.no-transition').forEach(el => el.classList.remove('no-transition'));
+                requestAnimationFrame(() => {
+                    document.querySelectorAll('.stacked-card').forEach(el => el.classList.add('with-transform-transition'));
+                });
             });
         }
 
@@ -6552,7 +6746,7 @@
             const cartas = _packState.cartas;
             const idx = _packState.indice;
             // Re-renderizar la pila sin las cartas ya salidas (índices < idx)
-            // Usar no-transition para evitar el movimiento fantasma al posicionarse
+            // (sin transición inicial para evitar movimiento fantasma; se añade después)
             let html = '<div class="card-stack" id="card-stack">';
             for (let i = cartas.length - 1; i >= idx; i--) {
                 const item = cartas[i];
@@ -6563,7 +6757,7 @@
                 const offset = relIdx * 3;
                 const zIndex = cartas.length - i;
                 const esActual = (i === idx);
-                html += `<div class="stacked-card no-transition" 
+                html += `<div class="stacked-card"
                     data-idx="${i}" 
                     style="transform: translateX(calc(-50% + ${offset}px)); z-index: ${zIndex};"
                     onclick="clickCartaPila(${i})">
@@ -6580,9 +6774,11 @@
             html += '</div>';
             html += '<div class="pack-hint" id="card-hint">👆 Toca la carta para revelar</div>';
             stage.innerHTML = html;
-            // Tras un frame, quitar no-transition para que las animaciones posteriores funcionen
+            // Tras dos frames, añadir la transición de transform para que las animaciones posteriores funcionen
             requestAnimationFrame(() => {
-                document.querySelectorAll('.stacked-card.no-transition').forEach(el => el.classList.remove('no-transition'));
+                requestAnimationFrame(() => {
+                    document.querySelectorAll('.stacked-card').forEach(el => el.classList.add('with-transform-transition'));
+                });
             });
         }
 
@@ -6655,7 +6851,9 @@
 
         function toggleInfoModal() {
             const modal = document.getElementById('pack-info-modal');
-            if (modal) modal.classList.toggle('active');
+            if (modal) {
+                modal.style.display = (modal.style.display === 'none' || modal.style.display === '') ? 'block' : 'none';
+            }
         }
 
         function cerrarAperturaSobre() {
@@ -7195,11 +7393,28 @@
 
         function crearRivalBasico() {
             const lideres = datosCartas.filter(esLider);
-            const unidadesBaratas = datosCartas.filter(c => claseNormalizada(c) === 'unidad' && !esToken(c) && Number(c.costeTotal || 0) <= 3).slice(0, 8);
-            const extras = datosCartas.filter(c => claseNormalizada(c) === 'extra').slice(0, 4);
-            const mazoRival = barajar([...unidadesBaratas, ...unidadesBaratas, ...extras].map(getCardId));
+            const liderElegido = lideres[Math.floor(Math.random() * lideres.length)] || datosCartas[0];
+            // Construir un mazo aleatorio de 50 cartas (4 copias máx de cada)
+            const unidades = datosCartas.filter(c => claseNormalizada(c) === 'unidad' && !esToken(c));
+            const extras = datosCartas.filter(c => claseNormalizada(c) === 'extra');
+            const mazoRival = [];
+            // 40 unidades (hasta 4 copias de cada)
+            while (mazoRival.length < 40 && unidades.length) {
+                const c = unidades[Math.floor(Math.random() * unidades.length)];
+                const id = getCardId(c);
+                const copias = mazoRival.filter(x => x === id).length;
+                if (copias < 4) mazoRival.push(id);
+            }
+            // 10 extras
+            while (mazoRival.length < 50 && extras.length) {
+                const c = extras[Math.floor(Math.random() * extras.length)];
+                const id = getCardId(c);
+                const copias = mazoRival.filter(x => x === id).length;
+                if (copias < 4) mazoRival.push(id);
+            }
+            barajarListaLocal(mazoRival);
             return {
-                liderId: getCardId(lideres[0] || datosCartas[0]),
+                liderId: getCardId(liderElegido),
                 mazo: mazoRival,
                 vida: [], mano: [], mana: [], batalla: [], combo: [], descarte: [], campo: [], manaActivo: 0, liderDespierto: false
             };
@@ -7331,7 +7546,8 @@
                 while (jugador.vida.length < 8 && jugador.mazo.length) { jugador.vida.push(jugador.mazo.pop()); }
                 if (estadoPartida.modo !== 'online') {
                     while (rival.vida.length < 8 && rival.mazo.length) { rival.vida.push(rival.mazo.pop()); }
-                    prepararCampoRival(rival);
+                    // La IA NO tiene cartas pre-colocadas; juega desde cero como el jugador.
+                    // prepararCampoRival eliminado.
                 } else {
                     // En online, el rival tiene 8 vidas "desconocidas"
                     while (rival.vida.length < 8) { rival.vida.push('desconocida'); }
@@ -8200,62 +8416,230 @@
                 estadoPartida.turnoDelJugadorLocal = false;
                 renderizarPartida();
             } else {
-                // Modo solo: comportamiento normal
+                // Modo solo: ahora juega la IA, y después vuelve el turno del jugador.
+                estadoPartida.turnoDelJugadorLocal = false;
                 estadoPartida.turno += 1;
-                estadoPartida.faseIndex = 0;
-                estadoPartida.atacanteSeleccionado = null;
-                estadoPartida.jugador.mana.forEach(m => m.rested = false);
-                estadoPartida.jugador.batalla.forEach(c => {
-                  if (!c.flags?.arañaBloqueada && !c.flags?.enderezarCoste) {
-                    c.rested = false;
-                    c.ataquesRestantes = ataquesPorTurno(c.id);
-                  }
-                });
-                estadoPartida.jugador.liderZona = { id: estadoPartida.jugador.liderId, rested: false, ataquesRestantes: 1 };
-                estadoPartida.jugador.manaActivo = estadoPartida.jugador.mana.length;
-                estadoPartida.jugador.manaUsadoEsteTurno = false;
-                robarDe(estadoPartida.jugador);
-                estadoPartida.jugador.roboDeTurnoHecho = true;
-                estadoPartida.log = 'Nuevo turno: enderezas tus cartas y robas automaticamente 1 carta.';
-                mostrarFase('Carga');
+                estadoPartida.log = 'Turno de la IA...';
                 renderizarPartida();
-                // Procesar unidades con enderezarCoste (Toñi la infectada): ofrecer pagar 1 maná
-                (async () => {
-                  const unidadesCoste = estadoPartida.jugador.batalla.filter(c => c.flags?.enderezarCoste && c.rested);
-                  for (const c of unidadesCoste) {
-                    if (estadoPartida.jugador.manaActivo >= 1) {
-                      const pagar = await MotorEfectos.elegirConModal('Toñi la infectada: ¿Pagar 1 maná para enderezar a ' + (getCardById(c.id)?.nombre || c.id) + '?', [
-                        { label: 'Sí, pagar 1 maná', value: true },
-                        { label: 'No, dejar en descanso', value: false }
-                      ]);
-                      if (pagar) {
-                        const manaIdx = estadoPartida.jugador.mana.findIndex(m => !m.rested);
-                        if (manaIdx >= 0) {
-                          estadoPartida.jugador.mana[manaIdx].rested = true;
-                          estadoPartida.jugador.manaActivo--;
-                          c.rested = false;
-                          c.ataquesRestantes = ataquesPorTurno(c.id);
-                          MotorEfectos.log('Pagas 1 maná y enderezas a ' + (getCardById(c.id)?.nombre || c.id) + '.');
-                        }
-                      }
-                    }
-                    // Bug Verde fix (solo mode): limpiar el flag del defensor tras su decisión.
-                    // En modo solo la IA no decide pagar (no tiene prompt), así que limpiamos
-                    // el flag de sus unidades al inicio del turno del jugador (atacante original).
-                    if (c.flags) c.flags.enderezarCoste = false;
-                  }
-                  // Limpiar enderezarCoste de las unidades del RIVAL (IA) en modo solo.
-                  // La IA no puede decidir pagar, así que su unidad se queda descansada este turno
-                  // (ya lo está) y el flag se limpia para no persistir.
-                  (estadoPartida.rival.batalla || []).forEach(u => {
-                    if (u && u.flags && u.flags.enderezarCoste) {
-                      u.flags.enderezarCoste = false;
-                    }
-                  });
-                  renderizarPartida();
-                })();
+                // Ejecutar turno de la IA tras un breve delay para que se vea el log
+                setTimeout(() => ejecutarTurnoIA(), 800);
             }
         }
+
+        // ===== IA QUE JUEGA EL JUEGO =====
+        // Heurística simple: la IA pone maná, juega cartas que pueda pagar, ataca con todo lo que tenga,
+        // y termina el turno. No usa counter plays ni bloqueadores por ahora (se puede ampliar).
+        async function ejecutarTurnoIA() {
+            if (!estadoPartida || estadoPartida.finalizada) return;
+            const r = estadoPartida.rival;
+            if (!r) return;
+
+            // === FASE DE CARGA ===
+            estadoPartida.faseIndex = 0;
+            // Enderezar maná y unidades de la IA
+            r.mana.forEach(m => m.rested = false);
+            r.batalla.forEach(c => {
+                if (!c.flags?.arañaBloqueada && !c.flags?.enderezarCoste) {
+                    c.rested = false;
+                    c.ataquesRestantes = ataquesPorTurno(c.id);
+                }
+            });
+            r.liderZona = { id: r.liderId, rested: false, ataquesRestantes: 1, buffs: { poder: 0, combo: 0, batalla: 0 } };
+            r.manaActivo = r.mana.length;
+            r.manaUsadoEsteTurno = false;
+            // Robar 1 carta
+            if (r.mazo.length) {
+                r.mano.push(r.mazo.pop());
+                if (typeof animarRoboRival === 'function') animarRoboRival();
+            }
+            estadoPartida.log = 'La IA roba y endereza sus cartas.';
+            renderizarPartida();
+            await sleep(700);
+
+            // === FASE PRINCIPAL ===
+            estadoPartida.faseIndex = 1;
+            if (window.MotorEfectos) MotorEfectos.alInicioPrincipal('rival');
+            estadoPartida.log = 'La IA juega cartas...';
+            renderizarPartida();
+            await sleep(400);
+
+            // 1. Poner maná: la IA pone cartas de coste alto como maná si tiene pocas
+            // Heurística: poner cartas de mano como maná hasta tener 4-5 maná, priorizando extras y cartas caras
+            while (r.mana.length < 5 && r.mano.length > 1) {
+                // Elegir la carta menos útil para maná: extras primero, luego la de mayor coste
+                let idxMana = -1;
+                let mejorScore = -1;
+                for (let i = 0; i < r.mano.length; i++) {
+                    const c = getCardById(r.mano[i]);
+                    if (!c) continue;
+                    let score = 0;
+                    if (claseNormalizada(c) === 'extra') score += 100;
+                    score += Number(c.costeTotal || 0);
+                    if (score > mejorScore) { mejorScore = score; idxMana = i; }
+                }
+                if (idxMana < 0) break;
+                const idMan = r.mano[idxMana];
+                r.mano.splice(idxMana, 1);
+                r.mana.push({ id: idMan, rested: true });
+                estadoPartida.log = 'La IA pone una carta como maná.';
+                renderizarPartida();
+                await sleep(500);
+            }
+            // Enderezar todo el maná recién puesto
+            r.mana.forEach(m => m.rested = false);
+            r.manaActivo = r.mana.filter(m => !m.rested).length;
+
+            // 2. Jugar unidades: la IA juega la unidad más cara que pueda pagar, repitiendo
+            let jugoAlgo = true;
+            let iteraciones = 0;
+            while (jugoAlgo && iteraciones < 10) {
+                jugoAlgo = false;
+                iteraciones++;
+                // Buscar la unidad jugable más cara
+                let idxJugar = -1;
+                let mejorCoste = -1;
+                for (let i = 0; i < r.mano.length; i++) {
+                    const c = getCardById(r.mano[i]);
+                    if (!c) continue;
+                    if (claseNormalizada(c) !== 'unidad') continue;
+                    if (esToken(c)) continue;
+                    const coste = Number(c.costeTotal || 0);
+                    if (coste <= r.manaActivo && coste > mejorCoste) {
+                        // Verificar que pueda jugar (puedeJugar)
+                        if (window.MotorEfectos && !MotorEfectos.puedeJugar(c, r)) continue;
+                        mejorCoste = coste;
+                        idxJugar = i;
+                    }
+                }
+                if (idxJugar >= 0) {
+                    const idJugar = r.mano[idxJugar];
+                    const carta = getCardById(idJugar);
+                    // Pagar maná (girar las necesarias)
+                    let resto = Number(carta.costeTotal || 0);
+                    r.mana.forEach(m => { if (resto > 0 && !m.rested) { m.rested = true; resto--; } });
+                    r.manaActivo = r.mana.filter(m => !m.rested).length;
+                    r.mano.splice(idxJugar, 1);
+                    const u = window.MotorEfectos ? MotorEfectos.crearUnidadCampo(idJugar, { rested: false }) : { id: idJugar, rested: false, ataquesRestantes: ataquesPorTurno(idJugar) };
+                    r.batalla.push(u);
+                    if (window.MotorEfectos) MotorEfectos.alJugar('rival', idJugar, u);
+                    estadoPartida.log = 'La IA juega ' + (carta.nombre || idJugar) + '.';
+                    renderizarPartida();
+                    await sleep(700);
+                    jugoAlgo = true;
+                }
+            }
+
+            // === FASE DE COMBATE ===
+            estadoPartida.faseIndex = 2;
+            estadoPartida.log = 'La IA ataca...';
+            renderizarPartida();
+            await sleep(500);
+
+            // La IA ataca con todas las unidades activas que puedan atacar
+            // Heurística: atacar al líder rival si no hay bloqueadores; si hay unidades rivales descansadas, atacarlas
+            const j = estadoPartida.jugador;
+            for (let i = 0; i < r.batalla.length; i++) {
+                const u = r.batalla[i];
+                if (!u || u.rested || (u.ataquesRestantes ?? 0) <= 0 || u.noAtacar) continue;
+                // Decidir objetivo: si hay unidades rivales descansadas, atacar la de menor poder
+                let objetivo = { tipo: 'lider' };
+                const descansadas = j.batalla.map((c, idx) => ({ c, idx })).filter(x => x.c && x.c.rested);
+                if (descansadas.length) {
+                    // Atacar la de menor poder
+                    descansadas.sort((a, b) => Number(getCardById(a.c.id)?.poder || 0) - Number(getCardById(b.c.id)?.poder || 0));
+                    objetivo = { tipo: 'unidad', index: descansadas[0].idx };
+                }
+                // Ejecutar ataque
+                estadoPartida.log = 'La IA ataca con ' + (getCardById(u.id)?.nombre || u.id) + '.';
+                renderizarPartida();
+                await sleep(500);
+                // Simular el ataque llamando a iniciarAtaque desde la perspectiva del rival
+                await ejecutarAtaqueIA(i, objetivo);
+                await sleep(800);
+                // Verificar fin de partida
+                if (estadoPartida.finalizada) return;
+            }
+
+            // === FIN DE TURNO DE LA IA ===
+            if (window.MotorEfectos) MotorEfectos.alFinTurno('rival');
+            estadoPartida.turno += 1;
+            estadoPartida.faseIndex = 0;
+            estadoPartida.atacanteSeleccionado = null;
+            estadoPartida.log = '¡Tu turno!';
+            estadoPartida.turnoDelJugadorLocal = true;
+            // Enderezar maná y unidades del jugador
+            estadoPartida.jugador.mana.forEach(m => m.rested = false);
+            estadoPartida.jugador.batalla.forEach(c => {
+                if (!c.flags?.arañaBloqueada && !c.flags?.enderezarCoste) {
+                    c.rested = false;
+                    c.ataquesRestantes = ataquesPorTurno(c.id);
+                }
+            });
+            estadoPartida.jugador.liderZona = { id: estadoPartida.jugador.liderId, rested: false, ataquesRestantes: 1, buffs: { poder: 0, combo: 0, batalla: 0 } };
+            estadoPartida.jugador.manaActivo = estadoPartida.jugador.mana.length;
+            robarDe(estadoPartida.jugador);
+            mostrarFase('Carga');
+            renderizarPartida();
+        }
+
+        // Ejecutar un ataque de la IA
+        async function ejecutarAtaqueIA(unidadIndex, objetivo) {
+            const r = estadoPartida.rival;
+            const j = estadoPartida.jugador;
+            const atacante = r.batalla[unidadIndex];
+            if (!atacante) return;
+            // Calcular poder del atacante
+            const poderBase = window.MotorEfectos
+                ? MotorEfectos.poderCarta(atacante.id, atacante, { quien: 'rival', atacanteId: atacante.id, atacanteZona: atacante })
+                : Number(getCardById(atacante.id)?.poder || 0);
+            // Calcular poder del defensor
+            let poderDefensor = 0;
+            if (objetivo.tipo === 'lider') {
+                const lid = getCardById(j.liderId);
+                poderDefensor = j.liderDespierto ? Number(lid?.poderEvo || 0) : Number(lid?.poder || 0);
+            } else {
+                const def = j.batalla[objetivo.index];
+                if (def) poderDefensor = Number(getCardById(def.id)?.poder || 0);
+            }
+            const ganaAtacante = poderBase >= poderDefensor;
+            // Marcar atacante como descansado
+            atacante.ataquesRestantes = Math.max(0, (atacante.ataquesRestantes ?? 1) - 1);
+            atacante.rested = atacante.ataquesRestantes <= 0;
+            // Resolver
+            if (objetivo.tipo === 'lider') {
+                if (ganaAtacante) {
+                    const dano = danoDeCarta(atacante.id, {});
+                    for (let i = 0; i < dano; i++) {
+                        if (j.vida.length) j.vida.pop();
+                    }
+                    estadoPartida.log = 'La IA inflige ' + dano + ' daño a tu líder.';
+                } else {
+                    estadoPartida.log = 'Tu líder resiste el ataque de la IA.';
+                }
+            } else {
+                const def = j.batalla[objetivo.index];
+                if (def) {
+                    if (ganaAtacante) {
+                        // El defensor es destruido
+                        j.descarte.push(def.id);
+                        j.batalla.splice(objetivo.index, 1);
+                        if (window.MotorEfectos) MotorEfectos.dispatch(def.id, 'alDestruida', ['jugador']);
+                        estadoPartida.log = 'La IA destruye a ' + (getCardById(def.id)?.nombre || def.id) + '.';
+                    } else {
+                        // El atacante es destruido
+                        r.descarte.push(atacante.id);
+                        r.batalla.splice(unidadIndex, 1);
+                        if (window.MotorEfectos) MotorEfectos.dispatch(atacante.id, 'alDestruida', ['rival']);
+                        estadoPartida.log = 'Tu ' + (getCardById(def.id)?.nombre || '') + ' destruye al atacante de la IA.';
+                    }
+                }
+            }
+            mostrarChoque(poderBase, poderDefensor, ganaAtacante ? 'Atacante' : 'Defensor', ganaAtacante);
+            renderizarPartida();
+            if (typeof verificarFinPartida === 'function') verificarFinPartida();
+        }
+
+        function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
         function mostrarFase(texto) {
             const ribbon = document.getElementById('phase-ribbon');
@@ -9988,6 +10372,9 @@
             // Cargar inventario al inicio (para mostrar monedas en menú principal)
             await cargarBaseDeDatos();
             cargarInventario();
+            // Discord: manejar callback si viene con ?code=
+            await manejarCallbackDiscord();
+            actualizarBotonDiscord();
             const partidaGuardada = cargarEstadoOnline();
             if (partidaGuardada) {
                 // Hay una partida guardada: preguntar si quiere reconectar
