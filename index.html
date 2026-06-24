@@ -3777,23 +3777,57 @@
 
   R('podrido', {
     alDestruida(quien) {
-      // Invocar SOLO 1 Podrido Rabioso
-      invocarToken(quien, 'tokenz', true);
-      log('Podrido invoca a 1 Podrido Rabioso.');
+      // Bug 1 fix: invocar SOLO 1 Podrido Rabioso.
+      // El token recién creado se marca con _origenPodrido = true y destruirFinTurno = false
+      // para diferenciarlo de cualquier otro tokenz "fantasma" que pudiera aparecer por
+      // sincronización online. Al final, nos aseguramos de que solo quede 1 tokenz con
+      // _origenPodrido = true en la zona, eliminando cualquier duplicado fantasma.
       const z = zonaJugador(quien);
-      // El token invocado NO debe desaparecer al fin de turno.
-      const token = z.batalla[z.batalla.length - 1];
-      if (token && token.id === 'tokenz') {
-        if (!token.flags) token.flags = {};
-        token.flags.destruirFinTurno = false;
-        if (estadoPartida && quien !== 'jugador') {
-          token.noAtacar = true;
+      // Contar tokens tokenz legítimos (con _origenPodrido) ya existentes
+      const tokensLegitimos = z.batalla.filter(u => u && u.id === 'tokenz' && u.flags && u.flags._origenPodrido).length;
+      if (tokensLegitimos === 0) {
+        invocarToken(quien, 'tokenz', true);
+        log('Podrido invoca a 1 Podrido Rabioso.');
+      }
+      // Marcar TODOS los tokenz como persistentes (destruirFinTurno = false)
+      // y eliminar cualquier duplicado fantasma (sin _origenPodrido) que pudiera existir.
+      const tokenzIndices = [];
+      z.batalla.forEach((u, i) => {
+        if (u && u.id === 'tokenz') {
+          if (!u.flags) u.flags = {};
+          u.flags.destruirFinTurno = false;
+          tokenzIndices.push(i);
+        }
+      });
+      // El PRIMER tokenz de la lista es el legítimo (el más antiguo).
+      // Los tokenz adicionales que no tengan _origenPodrido son fantasmas y se eliminan.
+      if (tokenzIndices.length > 1) {
+        // Marcar el primero como legítimo
+        const primerIdx = tokenzIndices[0];
+        if (z.batalla[primerIdx]) {
+          if (!z.batalla[primerIdx].flags) z.batalla[primerIdx].flags = {};
+          z.batalla[primerIdx].flags._origenPodrido = true;
+        }
+        // Eliminar los demás (fantasmas) - hacerlo en orden inverso para no romper índices
+        for (let k = tokenzIndices.length - 1; k >= 1; k--) {
+          z.batalla.splice(tokenzIndices[k], 1);
+        }
+      } else if (tokenzIndices.length === 1) {
+        // Solo hay 1 tokenz, marcarlo como legítimo
+        const u = z.batalla[tokenzIndices[0]];
+        if (u) {
+          if (!u.flags) u.flags = {};
+          u.flags._origenPodrido = true;
+          if (estadoPartida && quien !== 'jugador') {
+            u.noAtacar = true;
+          }
         }
       }
       if (typeof renderizarPartida === 'function') renderizarPartida();
-      // En online, el snapshot (syncOnline) ya incluye el token en batalla.
-      // NO enviar enviarEfectoRival (causaría duplicado: snapshot + invocar-token).
-      syncOnline('podrido');
+      // En online, NO enviamos syncOnline('podrido') porque el tipo 'podrido' no está
+      // manejado en el receptor (sería un no-op) y cada cliente ya crea su propio token
+      // localmente al recibir 'limpiar-combo-defensora'. Enviar un snapshot extra solo
+      // añadiría ruido sin beneficio.
     }
   });
 
@@ -5850,7 +5884,9 @@
                         estadoPartida.log = `¡Counter Play del rival! Tu carta "${data.nombre || ''}" es negada y va al descarte.`;
                         renderizarPartida();
                     }
-                } else if (data.tipo === 'poner-mana' || data.tipo === 'combo' || data.tipo === 'cambiar-fase') {
+                } else if (data.tipo === 'poner-mana' || data.tipo === 'combo' || data.tipo === 'cambiar-fase' || data.tipo === 'counter-play') {
+                    // Bug 3 fix: incluir 'counter-play' para que el rival reciba el snapshot
+                    // con el maná actualizado y la mano actualizada tras usar un counter play.
                     aplicarSnapshotRival(data);
                     // Actualizar el phase chip del rival directamente
                     if (data.snapshot && data.snapshot.faseIndex != null) {
@@ -6617,8 +6653,11 @@
             // Preservar flags locales de las cartas del rival (arañaBloqueada, silenciado, skibidiDebuff, etc.)
             // porque el snapshot del rival no los incluye.
             const flagsPreservados = {};
+            // Bug 2 fix: NO preservar enderezarCoste de Toñi la infectada.
+            // Ese flag debe durar solo hasta el turno del rival (que decide si paga 1 maná).
+            // Si lo preservamos, el efecto duraría demasiados turnos en la vista del jugador.
             (estadoPartida.rival.batalla || []).forEach(u => {
-                if (u && u.flags && (u.flags.arañaBloqueada || u.flags.silenciadoBalloon || u.flags.silenciadoTwitter || u.flags.skibidiDebuff || u.flags.nexusBloqueada || u.flags.enderezarCoste)) {
+                if (u && u.flags && (u.flags.arañaBloqueada || u.flags.silenciadoBalloon || u.flags.silenciadoTwitter || u.flags.skibidiDebuff || u.flags.nexusBloqueada)) {
                     flagsPreservados[u.id] = { flags: JSON.parse(JSON.stringify(u.flags)), silenciado: u.silenciado, noAtacar: u.noAtacar, noCombo: u.noCombo, buffs: u.buffs ? JSON.parse(JSON.stringify(u.buffs)) : null };
                 }
             });
@@ -6750,8 +6789,10 @@
                 estadoPartida.rival.mana = snap.miEstado.mana || [];
                 // Preservar flags locales de las cartas del rival (arañaBloqueada, silenciado, skibidiDebuff, etc.)
                 const flagsPreservados = {};
+                // Bug 2 fix: NO preservar enderezarCoste de Toñi la infectada.
+                // Ese flag debe durar solo hasta el turno del rival (que decide si paga 1 maná).
                 (estadoPartida.rival.batalla || []).forEach(u => {
-                    if (u && u.flags && (u.flags.arañaBloqueada || u.flags.silenciadoBalloon || u.flags.silenciadoTwitter || u.flags.skibidiDebuff || u.flags.nexusBloqueada || u.flags.enderezarCoste)) {
+                    if (u && u.flags && (u.flags.arañaBloqueada || u.flags.silenciadoBalloon || u.flags.silenciadoTwitter || u.flags.skibidiDebuff || u.flags.nexusBloqueada)) {
                         flagsPreservados[u.id] = { flags: JSON.parse(JSON.stringify(u.flags)), silenciado: u.silenciado, noAtacar: u.noAtacar, noCombo: u.noCombo, buffs: u.buffs ? JSON.parse(JSON.stringify(u.buffs)) : null };
                     }
                 });
@@ -6863,19 +6904,22 @@
         // Ejecutar un counter play directamente: paga maná, niega la carta rival, descarta el counter play.
         function usarCounterPlayDirecto(cp) {
             if (!estadoPartida || !estadoPartida._counterPlayPendiente) {
-                return alert('Ya no hay una carta rival pendiente para negar.');
+                alert('Ya no hay una carta rival pendiente para negar.');
+                return;
             }
             const carta = cp.c;
             const id = cp.id;
-            const handIndex = cp.i;
-            // Verificar que la carta sigue en la mano
-            if (estadoPartida.jugador.mano[handIndex] !== id) {
-                return alert('La carta de Counter Play ya no está en tu mano.');
+            // Bug 3 fix: buscar la carta por ID en la mano (no por índice, que puede estar desactualizado).
+            const handIndex = estadoPartida.jugador.mano.indexOf(id);
+            if (handIndex < 0) {
+                alert('La carta de Counter Play ya no está en tu mano.');
+                return;
             }
             // Pagar el coste de maná
             const coste = window.MotorEfectos ? MotorEfectos.costeEfectivo(carta, estadoPartida.jugador, handIndex) : Number(carta.costeTotal || 0);
             if (coste > estadoPartida.jugador.manaActivo) {
-                return alert(`No tienes maná suficiente. Necesitas ${coste} maná.`);
+                alert(`No tienes maná suficiente. Necesitas ${coste} maná y tienes ${estadoPartida.jugador.manaActivo}.`);
+                return;
             }
             // Pagar maná
             let resto = coste;
@@ -6884,10 +6928,13 @@
             // Negar la carta rival: enviarla al descarte del rival
             const cardIdNegada = estadoPartida._counterPlayPendiente.cardId;
             const cartaRival = getCardById(cardIdNegada);
-            estadoPartida.rival.descarte.push(cardIdNegada);
             // Si la unidad ya estaba en el campo del rival (en mi vista), quitarla
             const idxRival = estadoPartida.rival.batalla.findIndex(u => u && u.id === cardIdNegada);
             if (idxRival >= 0) estadoPartida.rival.batalla.splice(idxRival, 1);
+            // Añadir al descarte del rival (solo si no está ya, para evitar duplicados)
+            if (!estadoPartida.rival.descarte.includes(cardIdNegada)) {
+                estadoPartida.rival.descarte.push(cardIdNegada);
+            }
             log(`¡Counter Play! La carta del rival "${cartaRival?.nombre || cardIdNegada}" es negada y va al descarte.`);
             // La carta de counter play va al descarte
             estadoPartida.jugador.descarte.push(id);
@@ -6896,7 +6943,7 @@
             // Notificar al rival para que envíe su carta al descarte
             if (estadoPartida.modo === 'online' && _socketOnline) {
                 _socketOnline.emit('accion-juego', { tipo: 'counter-play-descarte', cardIdNegada: cardIdNegada, nombre: cartaRival?.nombre || '' });
-                // Enviar snapshot con el maná actualizado
+                // Enviar snapshot con el maná actualizado y la mano actualizada
                 sincronizarEstadoOnline('counter-play');
             }
             renderizarPartida();
@@ -7169,6 +7216,16 @@
                     }
                     if (c.flags) c.flags.enderezarCoste = false;
                   }
+                  // Bug 2 fix (solo mode): limpiar enderezarCoste de las unidades del RIVAL
+                  // (IA) al empezar el siguiente turno del jugador. El efecto de Toñi la infectada
+                  // dura solo 1 turno: cuando termina el turno del jugador que la activó, el efecto
+                  // debe desaparecer. En modo solo la IA no puede decidir pagar, así que simplemente
+                  // limpiamos el flag (la unidad se queda como esté — descansada si no se enderezó).
+                  (estadoPartida.rival.batalla || []).forEach(u => {
+                    if (u && u.flags && u.flags.enderezarCoste) {
+                      u.flags.enderezarCoste = false;
+                    }
+                  });
                   renderizarPartida();
                 })();
             }
@@ -7448,31 +7505,9 @@
                 const cartaRival = getCardById(estadoPartida._counterPlayPendiente.cardId);
                 const reg = window.MotorEfectos ? MotorEfectos.REGISTRO_EFECTOS[id] : null;
                 if (reg && reg.alCounterPlay && reg.alCounterPlay('jugador', cartaRival)) {
-                    // Pagar el coste de maná de la carta de counter play
-                    const coste = window.MotorEfectos ? MotorEfectos.costeEfectivo(carta, estadoPartida.jugador, index) : Number(carta.costeTotal || 0);
-                    if (coste > estadoPartida.jugador.manaActivo) {
-                        return alert(`No tienes maná suficiente para usar este Counter Play. Necesitas ${coste} maná.`);
-                    }
-                    // Pagar maná
-                    let resto = coste;
-                    estadoPartida.jugador.mana.forEach(m => { if (resto > 0 && !m.rested) { m.rested = true; resto--; } });
-                    estadoPartida.jugador.manaActivo = estadoPartida.jugador.mana.filter(m => !m.rested).length;
-                    // Negar la carta: enviarla al descarte del rival
-                    const cardIdNegada = estadoPartida._counterPlayPendiente.cardId;
-                    estadoPartida.rival.descarte.push(cardIdNegada);
-                    // Si la unidad ya estaba en el campo del rival (en mi vista), quitarla
-                    const idxRival = estadoPartida.rival.batalla.findIndex(u => u && u.id === cardIdNegada);
-                    if (idxRival >= 0) estadoPartida.rival.batalla.splice(idxRival, 1);
-                    log(`¡Counter Play! La carta del rival "${cartaRival?.nombre || cardIdNegada}" es negada y va al descarte.`);
-                    // La carta de counter play va al descarte
-                    estadoPartida.jugador.descarte.push(id);
-                    estadoPartida.jugador.mano.splice(index, 1);
-                    estadoPartida._counterPlayPendiente = null;
-                    // Notificar al rival para que envíe su carta al descarte
-                    if (estadoPartida.modo === 'online' && _socketOnline) {
-                        _socketOnline.emit('accion-juego', { tipo: 'counter-play-descarte', cardIdNegada: cardIdNegada, nombre: cartaRival?.nombre || '' });
-                    }
-                    renderizarPartida();
+                    // Bug 3 fix: reutilizar la lógica de usarCounterPlayDirecto para evitar duplicación
+                    // de código y asegurar consistencia entre el botón y arrastrar la carta.
+                    usarCounterPlayDirecto({ c: carta, id: id, i: index });
                     return;
                 } else {
                     return alert('Esta carta de Counter Play no puede negar la carta del rival.');
