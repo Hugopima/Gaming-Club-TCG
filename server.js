@@ -13,12 +13,13 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
+const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-// Parse JSON bodies (para los endpoints de Discord OAuth)
+// Parse JSON bodies (para los endpoints de Discord OAuth y Supabase)
 app.use(express.json());
 
 // Servir archivos estáticos desde la carpeta actual
@@ -57,6 +58,90 @@ app.get('/auth/discord/callback', (req, res) => {
 //   DISCORD_CLIENT_SECRET = tu Client Secret de Discord
 const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID || 'TU_CLIENT_ID_AQUI';
 const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET || 'TU_CLIENT_SECRET_AQUI';
+
+// === SUPABASE ===
+// IMPORTANTE: Configura estas variables de entorno en Render:
+//   SUPABASE_URL       = tu Project URL de Supabase
+//   SUPABASE_ANON_KEY  = tu anon public key de Supabase
+const SUPABASE_URL = process.env.SUPABASE_URL || '';
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || '';
+let supabase = null;
+if (SUPABASE_URL && SUPABASE_ANON_KEY) {
+    supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    console.log('✅ Supabase conectado');
+} else {
+    console.warn('⚠️ Supabase no configurado (falta SUPABASE_URL o SUPABASE_ANON_KEY)');
+}
+
+// Inventario por defecto para nuevos usuarios
+function inventarioDefault(username) {
+    return {
+        coins: 5000,
+        energy: 1000,
+        cartas: {},
+        stats: {
+            partidasJugadas: 0, victoriasIA: 0, victoriasOnline: 0, derrotas: 0,
+            mejorRacha: 0, rachaActual: 0, sobresAbiertos: 0,
+            despertares: 0, cartasFabricadas: 0, cartasRecicladas: 0,
+            counterPlays: 0, bloqueadores: 0,
+            cartasUnicas: 0, comunesUnicas: 0, infrecuentesUnicas: 0, rarasUnicas: 0, superRarasUnicas: 0,
+            logrosReclamados: [],
+            ultimoLogin: null, loginClaimedHoy: false, primeraVictoriaHoy: false
+        },
+        misiones: {
+            diarias: [],
+            semanales: [],
+            fechaDiarias: null,
+            fechaSemanales: null
+        },
+        mazos: []
+    };
+}
+
+// Cargar o crear inventario en Supabase
+async function cargarOCrearInventario(discordId, username) {
+    if (!supabase) return null;
+    try {
+        // Intentar cargar
+        const { data, error } = await supabase
+            .from('inventarios')
+            .select('*')
+            .eq('discord_id', discordId)
+            .single();
+        if (data) {
+            // Actualizar username por si cambió
+            if (data.username !== username) {
+                await supabase.from('inventarios').update({ username, updated_at: new Date() }).eq('discord_id', discordId);
+                data.username = username;
+            }
+            return data;
+        }
+        // No existe: crear
+        const nuevoInv = inventarioDefault(username);
+        const { data: nuevo, error: errInsert } = await supabase
+            .from('inventarios')
+            .insert({
+                discord_id: discordId,
+                username: username,
+                coins: nuevoInv.coins,
+                energy: nuevoInv.energy,
+                cartas: nuevoInv.cartas,
+                stats: nuevoInv.stats,
+                misiones: nuevoInv.misiones,
+                mazos: nuevoInv.mazos
+            })
+            .select()
+            .single();
+        if (errInsert) {
+            console.error('Error creando inventario:', errInsert);
+            return null;
+        }
+        return nuevo;
+    } catch (e) {
+        console.error('Error en cargarOCrearInventario:', e);
+        return null;
+    }
+}
 
 // fetch nativo (Node 18+). Si usas Node < 18, instala node-fetch: npm install node-fetch
 const fetch = global.fetch || require('node-fetch').default;
@@ -100,19 +185,72 @@ app.post('/auth/discord', async (req, res) => {
         }
         const userData = await userRes.json();
 
-        // 3. Devolver los datos al cliente
-        // Aqui podrias cargar el inventario asociado a este usuario desde una base de datos.
+        // 3. Cargar o crear inventario en Supabase
+        const inventario = await cargarOCrearInventario(userData.id, userData.username);
+
+        // 4. Devolver los datos al cliente (usuario + inventario)
         res.json({
             user: {
                 id: userData.id,
                 username: userData.username,
                 avatar: userData.avatar,
                 email: userData.email
-            }
-            // inventario: cargarInventarioDeBD(userData.id)  // <- Implementar cuando haya BD
+            },
+            inventario: inventario
         });
     } catch (e) {
         console.error('Error en /auth/discord:', e);
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
+});
+
+// === ENDPOINTS DE INVENTARIO (SUPABASE) ===
+
+// Guardar inventario completo
+app.post('/api/guardar-inventario', async (req, res) => {
+    try {
+        const { discord_id, coins, energy, cartas, stats, misiones, mazos } = req.body;
+        if (!discord_id) return res.status(400).json({ error: 'Falta discord_id' });
+        if (!supabase) return res.status(500).json({ error: 'Supabase no configurado' });
+
+        const { data, error } = await supabase
+            .from('inventarios')
+            .upsert({
+                discord_id: discord_id,
+                coins: coins,
+                energy: energy,
+                cartas: cartas || {},
+                stats: stats || {},
+                misiones: misiones || {},
+                mazos: mazos || [],
+                updated_at: new Date()
+            })
+            .select()
+            .single();
+
+        if (error) {
+            console.error('Error guardando inventario:', error);
+            return res.status(500).json({ error: 'Error al guardar inventario' });
+        }
+        res.json({ success: true, inventario: data });
+    } catch (e) {
+        console.error('Error en /api/guardar-inventario:', e);
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
+});
+
+// Cargar inventario
+app.post('/api/cargar-inventario', async (req, res) => {
+    try {
+        const { discord_id } = req.body;
+        if (!discord_id) return res.status(400).json({ error: 'Falta discord_id' });
+        if (!supabase) return res.status(500).json({ error: 'Supabase no configurado' });
+
+        const inventario = await cargarOCrearInventario(discord_id, '');
+        if (!inventario) return res.status(404).json({ error: 'Inventario no encontrado' });
+        res.json({ inventario });
+    } catch (e) {
+        console.error('Error en /api/cargar-inventario:', e);
         res.status(500).json({ error: 'Error interno del servidor' });
     }
 });
