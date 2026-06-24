@@ -2109,6 +2109,18 @@
     for (let i = 0; i < dano; i++) quitarVida(quienRecibe, critico);
     if (typeof mostrarPerdidaVida === 'function') mostrarPerdidaVida(quienRecibe, dano);
     log(`${getCardById(atacanteId)?.nombre || 'Atacante'} inflige ${dano} de daño al líder ${quienRecibe === 'jugador' ? 'propio' : 'rival'}.`);
+    // Bug fix: sincronizar daño al líder en modo online.
+    // Si el que recibe el daño es el rival (desde mi perspectiva), enviarle el mensaje de dano-lider.
+    // Si el que recibe el daño soy yo (desde la perspectiva del rival), el rival ya me enviaría el mensaje,
+    // pero por si acaso también lo sincronizamos via snapshot.
+    if (estadoPartida?.modo === 'online' && typeof enviarEfectoRival === 'function') {
+      // Si yo soy el atacante y el rival recibe el daño
+      if (quienRecibe === 'rival') {
+        if (window._socketOnline) {
+          window._socketOnline.emit('accion-juego', { tipo: 'dano-lider', dano: dano, critico: !!critico });
+        }
+      }
+    }
     if (typeof renderizarPartida === 'function') renderizarPartida();
   }
 
@@ -3012,13 +3024,7 @@
         }
       }
     },
-    // Evo: mismo botón a través de activablesLider cuando esEvo
-    alJugarRivalGratis(rival) {
-      if (!liderCarta('jugador').esEvo) return;
-      if (habilidadUsada(claveTurno('rival', 'bl2_tax'))) return;
-      elegirDescarteObligatorio(rival, 'Hugopima evo: descarta 1');
-      marcarHabilidadUsada(claveTurno('rival', 'bl2_tax'));
-    }
+    // Habilidad "Wither" (alJugarRivalGratis) eliminada — ya no está en el JSON.
   });
 
   R('green_lider_01', {
@@ -3516,7 +3522,12 @@
         // Usar 'batalla' para que se resetee al final del turno
         addBuff(zona, 'batalla', 10000);
         log('Carlospro gritando gana +10000 este turno.');
+        // Bug fix: sincronizar el buff con el rival en modo online.
+        if (estadoPartida?.modo === 'online' && typeof enviarEfectoRival === 'function') {
+          enviarEfectoRival({ tipo: 'buff-batalla', cardId: zona?.id, cantidad: 10000, nombre: 'Carlospro gritando' });
+        }
         if (typeof renderizarPartida === 'function') renderizarPartida();
+        syncOnline('grito');
       }
     }
   });
@@ -3602,11 +3613,30 @@
         opcionesUnidades(quien).map(o => ({ ...o, cardId: zonaJugador(quien).batalla[o.value]?.id }))
       );
       const v = await elegirConModal('Five Nights at Patatas María: elige una carta para +5000', opts);
-      if (v === 'lider') { addBuff(zonaJugador(quien).liderZona, 'batalla', 5000); log('FNAMP da +5000 al Líder este turno.'); }
-      else if (v != null) { addBuff(zonaJugador(quien).batalla[v], 'batalla', 5000); log('FNAMP da +5000 a una unidad este turno.'); }
+      if (v === 'lider') {
+        addBuff(zonaJugador(quien).liderZona, 'batalla', 5000);
+        log('FNAMP da +5000 al Líder este turno.');
+        // Bug fix: sincronizar buff al líder con el rival
+        if (estadoPartida?.modo === 'online' && typeof enviarEfectoRival === 'function') {
+          enviarEfectoRival({ tipo: 'buff-batalla-lider', cantidad: 5000, nombre: 'FNAMP' });
+        }
+      } else if (v != null) {
+        const u = zonaJugador(quien).batalla[v];
+        addBuff(u, 'batalla', 5000);
+        log('FNAMP da +5000 a una unidad este turno.');
+        // Bug fix: sincronizar buff a la unidad con el rival
+        if (estadoPartida?.modo === 'online' && typeof enviarEfectoRival === 'function' && u?.id) {
+          enviarEfectoRival({ tipo: 'buff-batalla', cardId: u.id, cantidad: 5000, nombre: 'FNAMP' });
+        }
+      }
       enderezarMana(quien, 'azul', 1);
       log('FNAMP endereza 1 maná azul.');
+      // Bug fix: sincronizar maná enderezado con el rival
+      if (estadoPartida?.modo === 'online' && typeof enviarEfectoRival === 'function') {
+        enviarEfectoRival({ tipo: 'enderezar-mana-azul', cantidad: 1, nombre: 'FNAMP' });
+      }
       if (typeof renderizarPartida === 'function') renderizarPartida();
+      syncOnline('fnaf');
     }
   });
 
@@ -4885,6 +4915,12 @@
         zonaJugador(quien).mano.push(zonaJugador(quien).vida.pop());
         const u = zonaJugador(quien).batalla[zonaJugador(quien).batalla.length - 1];
         addFlag(u, 'dobleGolpe', true);
+        // Bug fix: sincronizar el flag de dobleGolpe con el rival en modo online.
+        if (estadoPartida?.modo === 'online' && typeof enviarEfectoRival === 'function' && u?.id) {
+          enviarEfectoRival({ tipo: 'buff-doble-golpe', cardId: u.id, nombre: 'Gato ganador' });
+        }
+        if (typeof renderizarPartida === 'function') renderizarPartida();
+        syncOnline('gato');
       }
     }
   });
@@ -6342,7 +6378,12 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ code, redirect_uri: DISCORD_REDIRECT_URI })
                 });
-                if (!res.ok) throw new Error('Error en auth');
+                if (!res.ok) {
+                    const errText = await res.text();
+                    console.error('Error en auth Discord:', res.status, errText);
+                    alert('Error al iniciar sesión con Discord (' + res.status + '): ' + errText + '\n\nVerifica que las variables DISCORD_CLIENT_ID y DISCORD_CLIENT_SECRET estén configuradas en Render, y que el redirect URI en Discord sea: ' + DISCORD_REDIRECT_URI);
+                    return;
+                }
                 const data = await res.json();
                 if (data.user) {
                     localStorage.setItem('gc_tcg_discord_user', JSON.stringify(data.user));
@@ -6351,10 +6392,11 @@
                         guardarInventario();
                     }
                     actualizarBotonDiscord();
+                    alert('¡Sesión iniciada como ' + data.user.username + '!');
                 }
             } catch (e) {
                 console.error('Error en Discord callback:', e);
-                alert('Error al iniciar sesión con Discord. Revisa la consola.');
+                alert('Error de conexión al iniciar sesión con Discord: ' + e.message + '\n\nVerifica que el servidor esté funcionando y que las variables de entorno estén configuradas.');
             }
             // Limpiar la URL
             window.history.replaceState({}, document.title, window.location.pathname);
@@ -6517,11 +6559,11 @@
             _statsJugador.partidasJugadas++;
             if (resultado === 'victoria') {
                 if (modo === 'online') {
-                    _statsJugador.victoriasOnline += 75; // monedas
+                    _statsJugador.victoriasOnline++;
                     if (_inventario) { _inventario.coins += 75; guardarInventario(); actualizarBarraMonedas(); }
                 } else {
                     _statsJugador.victoriasIA++;
-                    if (_inventario) { _inventario.coins += 30; guardarInventario(); actualizarBarraMonedas(); }
+                    if (_inventario) { _inventario.coins += 75; guardarInventario(); actualizarBarraMonedas(); }
                 }
                 _statsJugador.rachaActual++;
                 if (_statsJugador.rachaActual > _statsJugador.mejorRacha) _statsJugador.mejorRacha = _statsJugador.rachaActual;
@@ -6533,7 +6575,10 @@
             } else if (resultado === 'derrota') {
                 _statsJugador.derrotas++;
                 _statsJugador.rachaActual = 0;
-                if (_inventario) { _inventario.coins += 25; guardarInventario(); actualizarBarraMonedas(); }
+                // Solo dar monedas de consolación en online (no en IA)
+                if (modo === 'online' && _inventario) {
+                    _inventario.coins += 25; guardarInventario(); actualizarBarraMonedas();
+                }
             }
             // Actualizar progreso de misiones
             actualizarMisiones('juega', 1);
@@ -7551,10 +7596,14 @@
                         setTimeout(() => mostrarDado(data.d2), 1300);
                     }
                 } else if (data.tipo === 'intercambio-lider') {
-                    // El rival me envía su liderId
+                    // El rival me envía su liderId y su nombre
                     if (estadoPartida) {
                         estadoPartida.rival.liderId = data.liderId;
                         estadoPartida.rival.liderZona = { id: data.liderId, rested: false, ataquesRestantes: 0, buffs: { poder: 0, combo: 0, batalla: 0 } };
+                        // Bug fix: guardar el nombre del rival para mostrarlo en batalla
+                        if (data.nombreJugador) {
+                            estadoPartida.rivalNombre = data.nombreJugador;
+                        }
                         if (typeof renderizarPartida === 'function') renderizarPartida();
                     }
                 } else if (data.tipo === 'notificacion-ataque') {
@@ -8027,11 +8076,12 @@
             estadoPartida.soyHost = empiezaJugadorLocal;
             estadoPartida.turnoDelJugadorLocal = empiezaJugadorLocal;
 
-            // Enviar mi liderId al rival inmediatamente para que lo conozca
+            // Enviar mi liderId y mi nombre al rival inmediatamente para que lo conozca
             if (_socketOnline) {
                 _socketOnline.emit('accion-juego', {
                     tipo: 'intercambio-lider',
-                    liderId: estadoPartida.jugador.liderId
+                    liderId: estadoPartida.jugador.liderId,
+                    nombreJugador: getNombreJugador()
                 });
             }
 
@@ -8779,9 +8829,23 @@
                 _socketOnline.emit('partida-terminada');
                 _onlineRoomId = null;
             }
+            // Calcular monedas ganadas ANTES de registrar (para mostrarlas)
+            const modo = estadoPartida.modo;
+            let monedasGanadas = 0;
+            let bonusPrimeraVictoria = 0;
+            if (resultado === 'victoria') {
+                monedasGanadas = 75; // Tanto IA como online
+                // Primera victoria del día (+100 bonus)
+                if (_statsJugador && !_statsJugador.primeraVictoriaHoy) {
+                    bonusPrimeraVictoria = 100;
+                }
+            } else if (resultado === 'derrota') {
+                monedasGanadas = (modo === 'online') ? 25 : 0;
+            }
+            const totalMonedas = monedasGanadas + bonusPrimeraVictoria;
             // Registrar stats y dar recompensas
             if (typeof registrarFinPartida === 'function') {
-                registrarFinPartida(resultado, estadoPartida.modo);
+                registrarFinPartida(resultado, modo);
             }
             const overlay = document.getElementById('game-end-overlay');
             const panel = document.getElementById('game-end-panel');
@@ -8791,16 +8855,28 @@
             if (!overlay || !panel || !title || !sub || !icon) return;
 
             panel.className = `game-end-panel ${resultado}`;
+            // Texto de recompensas
+            let recompensaTxt = '';
+            if (totalMonedas > 0) {
+                recompensaTxt = `<div style="margin-top:14px;padding:10px 18px;background:rgba(255,215,0,.12);border:1.5px solid var(--gold);border-radius:10px;display:inline-block;">
+                    <span style="color:var(--gold-light);font-weight:900;font-size:16px;">🪙 +${totalMonedas} GamingCoins</span>`;
+                if (bonusPrimeraVictoria > 0) {
+                    recompensaTxt += `<br><span style="color:#4ee06a;font-size:11px;font-weight:900;">(Incluye +${bonusPrimeraVictoria} bonus 1ª victoria del día)</span>`;
+                }
+                recompensaTxt += `</div>`;
+            } else {
+                recompensaTxt = `<div style="margin-top:14px;color:#888;font-size:13px;">Sin recompensas</div>`;
+            }
             if (resultado === 'victoria') {
                 icon.textContent = '🏆';
                 icon.style.color = '#24e4ff';
                 title.textContent = 'Victoria';
-                sub.textContent = 'Has derrotado al rival. Tu lider sigue en pie.';
+                sub.innerHTML = 'Has derrotado al rival. Tu lider sigue en pie.' + recompensaTxt;
             } else {
                 icon.textContent = '💀';
                 icon.style.color = '#ff735e';
                 title.textContent = 'Derrota';
-                sub.textContent = 'Te has quedado sin vidas. Tu lider ha caido en combate.';
+                sub.innerHTML = 'Te has quedado sin vidas. Tu lider ha caido en combate.' + recompensaTxt;
             }
             overlay.classList.remove('hidden');
         }
@@ -9017,6 +9093,9 @@
             });
             estadoPartida.jugador.liderZona = { id: estadoPartida.jugador.liderId, rested: false, ataquesRestantes: 1, buffs: { poder: 0, combo: 0, batalla: 0 } };
             estadoPartida.jugador.manaActivo = estadoPartida.jugador.mana.length;
+            // Bug fix: resetear manaUsadoEsteTurno y roboDeTurnoHecho del jugador al iniciar su turno.
+            estadoPartida.jugador.manaUsadoEsteTurno = false;
+            estadoPartida.jugador.roboDeTurnoHecho = true;
             robarDe(estadoPartida.jugador);
             mostrarFase('Carga');
             renderizarPartida();
@@ -10005,6 +10084,11 @@
 
             estadoPartida.jugador.combo.forEach(c => estadoPartida.jugador.descarte.push(c.id || c));
             estadoPartida.jugador.combo = [];
+            // Bug fix: limpiar también el combo del rival (las cartas que el rival usó para atacar/combar)
+            // para que no se queden en pantalla tras terminar el combate.
+            if (estadoPartida.rival && estadoPartida.rival.combo && estadoPartida.rival.combo.length) {
+                estadoPartida.rival.combo = [];
+            }
             mostrarChoque(resultado.pa, resultado.pd, resultado.ganaAtacante ? 'Atacante' : 'Defensor', resultado.ganaAtacante);
             estadoPartida.atacanteSeleccionado = null;
             estadoPartida.ataqueActual = null;
