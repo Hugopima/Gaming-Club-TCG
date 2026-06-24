@@ -607,7 +607,7 @@
       "costeColor": 3,
       "poder": 20000,
       "combo": "1+10000",
-      "lore": "Devastador grito, se dice que por Órgiva varias casas fueron destruidas a causa de este acontecimiento.",
+      "lore": "Devastador grito, se dice que por Aitorrgiva varias casas fueron destruidas a causa de este acontecimiento.",
       "habilidades": [
         {"tag": "Automático", "css": "tag-auto", "desc": "Cuando esta carta ataca, puedes elegir 1 carta de tus propias vidas y añadirla a tu mano. Si lo haces, esta carta gana +10000 de poder durante este turno."},
         {"tag": "Doble Golpe", "css": "tag-doble", "desc": "Si esta carta inflige daño, inflige 2 puntos de daño en lugar de 1"}
@@ -732,7 +732,7 @@
       "costeColor": 3,
       "poder": 20000,
       "combo": "1+10000",
-      "lore": "¡Vigila tu puerta! O no… Porque con tener las luces apagadas te sirve para que no te ataque.",
+      "lore": "¡Vigila tu puerta! O no… Porque con tener las luces encendidas te sirve para que no te ataque.",
       "habilidades": [
         {"tag": "Automático", "css": "tag-auto", "desc": "¡Vigila tu puerta! O no… Porque con tener las luces encendidas te sirve para que no te ataque."}
       ]
