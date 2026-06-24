@@ -2478,8 +2478,11 @@
         const idx = await elegirConModal('Toñi la infectada: elige unidad rival activa para descansar', opts.concat([{ label: 'Ninguna', value: -1 }]));
         if (idx != null && idx >= 0) {
           const u = zonaJugador(riv).batalla[idx];
+          // Bug Verde fix: La unidad objetivo se pone en descanso.
           u.rested = true;
           if (!u.flags) u.flags = {};
+          // El flag enderezarCoste durará hasta que el rival decida en su siguiente fase de carga.
+          // Si paga 1 maná → se endereza. Si no paga → se queda descansada (no se endereza gratis).
           u.flags.enderezarCoste = 1;
           log('Toñi la infectada descansa a ' + (getCardById(u.id)?.nombre || u.id) + '. El rival debe pagar 1 maná para enderezarla.');
           marcarHabilidadUsada(claveTurno(quien, 'gl1_evo'));
@@ -4994,12 +4997,10 @@
     if (estadoPartida?._unidadesTemporales?.length) {
       estadoPartida._unidadesTemporales = estadoPartida._unidadesTemporales.filter(t => t.quien !== quien);
     }
-    // Limpiar flag enderezarCoste de Toñi evo (el efecto dura solo 1 turno)
-    zonaJugador(quien).batalla.forEach(u => {
-      if (u.flags?.enderezarCoste) {
-        u.flags.enderezarCoste = false;
-      }
-    });
+    // Bug Verde fix: NO limpiar enderezarCoste de Toñi evo aquí.
+    // El flag debe durar hasta que el RIVAL decida en su fase de carga si paga 1 maná
+    // o no. La limpieza la hace el propio jugador defensor tras la decisión.
+    // Limpiarlo aquí causaría que el rival nunca vea el efecto en su turno.
     zonaJugador(quien).batalla.forEach(u => {
       if (u.silenciado > 0) u.silenciado--;
       if (u.flags?.destruirFinTurno) {
@@ -5851,12 +5852,13 @@
                         const carta = getCardById(cardId);
                         if (carta && claseNormalizada(carta) === 'unidad') {
                             estadoPartida._counterPlayPendiente = { cardId: cardId, nombre: carta.nombre };
-                            // Mostrar notificación visual si tiene counter plays.
+                            // Bug Rojo fix: NO mostrar botón automático. Solo notificación sutil.
+                            // El jugador debe arrastrar su carta de Counter Play al campo para usarla.
                             const counterPlays = estadoPartida.jugador.mano
                                 .map((id, i) => ({ id, i, c: getCardById(id) }))
                                 .filter(x => tieneTag(x.c, 'counter play'));
-                            if (counterPlays.length && typeof mostrarBotonCounterPlay === 'function') {
-                                mostrarBotonCounterPlay(counterPlays, carta);
+                            if (counterPlays.length && typeof mostrarNotificacionCounterPlay === 'function') {
+                                mostrarNotificacionCounterPlay(carta);
                             }
                         }
                     }
@@ -6650,14 +6652,20 @@
         function recibirFinTurnoRival(data) {
             if (!estadoPartida || estadoPartida.modo !== 'online') return;
             const snap = data.snapshot;
+            // Bug Rojo fix: limpiar counter play pendiente al iniciar mi turno.
+            // Si el rival jugó una unidad y yo no respondí con counter play, ya no puedo hacerlo.
+            estadoPartida._counterPlayPendiente = null;
+            const hint = document.getElementById('counter-play-hint');
+            if (hint) hint.remove();
             // Preservar flags locales de las cartas del rival (arañaBloqueada, silenciado, skibidiDebuff, etc.)
             // porque el snapshot del rival no los incluye.
             const flagsPreservados = {};
-            // Bug 2 fix: NO preservar enderezarCoste de Toñi la infectada.
-            // Ese flag debe durar solo hasta el turno del rival (que decide si paga 1 maná).
-            // Si lo preservamos, el efecto duraría demasiados turnos en la vista del jugador.
+            // Bug Verde fix: PRESERVAR enderezarCoste de Toñi la infectada.
+            // Este flag debe durar hasta el turno del rival (que decide si paga 1 maná
+            // en su fase de carga). Si lo eliminamos aquí, el rival nunca verá la unidad
+            // afectada y no se le preguntará si quiere pagar.
             (estadoPartida.rival.batalla || []).forEach(u => {
-                if (u && u.flags && (u.flags.arañaBloqueada || u.flags.silenciadoBalloon || u.flags.silenciadoTwitter || u.flags.skibidiDebuff || u.flags.nexusBloqueada)) {
+                if (u && u.flags && (u.flags.arañaBloqueada || u.flags.silenciadoBalloon || u.flags.silenciadoTwitter || u.flags.skibidiDebuff || u.flags.nexusBloqueada || u.flags.enderezarCoste)) {
                     flagsPreservados[u.id] = { flags: JSON.parse(JSON.stringify(u.flags)), silenciado: u.silenciado, noAtacar: u.noAtacar, noCombo: u.noCombo, buffs: u.buffs ? JSON.parse(JSON.stringify(u.buffs)) : null };
                 }
             });
@@ -6789,10 +6797,10 @@
                 estadoPartida.rival.mana = snap.miEstado.mana || [];
                 // Preservar flags locales de las cartas del rival (arañaBloqueada, silenciado, skibidiDebuff, etc.)
                 const flagsPreservados = {};
-                // Bug 2 fix: NO preservar enderezarCoste de Toñi la infectada.
-                // Ese flag debe durar solo hasta el turno del rival (que decide si paga 1 maná).
+                // Bug Verde fix: PRESERVAR enderezarCoste de Toñi la infectada.
+                // El flag debe durar hasta el turno del rival (que decide si paga 1 maná).
                 (estadoPartida.rival.batalla || []).forEach(u => {
-                    if (u && u.flags && (u.flags.arañaBloqueada || u.flags.silenciadoBalloon || u.flags.silenciadoTwitter || u.flags.skibidiDebuff || u.flags.nexusBloqueada)) {
+                    if (u && u.flags && (u.flags.arañaBloqueada || u.flags.silenciadoBalloon || u.flags.silenciadoTwitter || u.flags.skibidiDebuff || u.flags.nexusBloqueada || u.flags.enderezarCoste)) {
                         flagsPreservados[u.id] = { flags: JSON.parse(JSON.stringify(u.flags)), silenciado: u.silenciado, noAtacar: u.noAtacar, noCombo: u.noCombo, buffs: u.buffs ? JSON.parse(JSON.stringify(u.buffs)) : null };
                     }
                 });
@@ -6832,8 +6840,9 @@
         function recibirJugarCartaRival(data) {
             // Por ahora solo actualizar con snapshot
             aplicarSnapshotRival(data);
-            // Si la carta jugada por el rival es una unidad, ofrecer Counter Play al jugador local.
-            // El jugador local puede tener cartas de Counter Play en mano (tag 'counter play').
+            // Bug Rojo fix: Si la carta jugada por el rival es una unidad, marcar el counter play
+            // como pendiente (para que al arrastrar la carta al campo se ejecute).
+            // NO mostrar botón automático — el jugador debe arrastrar la carta como las demás.
             if (data.snapshot && data._cartaJugadaRival) {
                 const cardId = data._cartaJugadaRival;
                 const carta = getCardById(cardId);
@@ -6843,63 +6852,39 @@
                         .map((id, i) => ({ id, i, c: getCardById(id) }))
                         .filter(x => tieneTag(x.c, 'counter play'));
                     if (counterPlays.length) {
-                        // Setear pendiente y mostrar botón de counter play.
+                        // Setear pendiente. El jugador arrastra la carta al campo para activar.
                         estadoPartida._counterPlayPendiente = { cardId: cardId, nombre: carta.nombre };
-                        mostrarBotonCounterPlay(counterPlays, carta);
+                        // Mostrar notificación visual sutil para que el jugador sepa que puede responder.
+                        if (typeof mostrarNotificacionCounterPlay === 'function') {
+                            mostrarNotificacionCounterPlay(carta);
+                        } else {
+                            estadoPartida.log = `El rival juega ${carta.nombre}. Si tienes un Counter Play, arrástralo al campo.`;
+                            renderizarPartida();
+                        }
                     }
                 }
             }
         }
 
-        function mostrarBotonCounterPlay(counterPlays, cartaRival) {
-            // Mostrar un overlay con un botón directo "Usar Counter Play" para esta carta.
-            // Solo mostrar counter plays que puedan negar la carta rival Y que tengas maná para pagar.
-            const old = document.getElementById('counter-play-prompt');
+        // Bug Rojo fix: Notificación visual sutil para avisar de counter play pendiente.
+        function mostrarNotificacionCounterPlay(cartaRival) {
+            const old = document.getElementById('counter-play-hint');
             if (old) old.remove();
-            // Filtrar counter plays que puedan negar la carta rival
-            const counterPlaysValidos = counterPlays.filter(cp => {
-                const reg = window.MotorEfectos ? MotorEfectos.REGISTRO_EFECTOS[cp.id] : null;
-                return reg && reg.alCounterPlay && reg.alCounterPlay('jugador', cartaRival);
-            });
-            if (!counterPlaysValidos.length) return; // No hay counter plays válidos
-            const ov = document.createElement('div');
-            ov.id = 'counter-play-prompt';
-            ov.style.cssText = 'position:fixed;top:80px;right:20px;z-index:3300;background:rgba(20,10,30,.98);border:2px solid #ff735e;border-radius:12px;padding:16px;max-width:300px;box-shadow:0 0 25px rgba(255,115,94,.6);color:white;';
-            // Mostrar un botón por cada counter play válido, con su coste de maná
-            let botonesHtml = '';
-            counterPlaysValidos.forEach((cp, i) => {
-                const coste = window.MotorEfectos ? MotorEfectos.costeEfectivo(cp.c, estadoPartida.jugador, cp.i) : Number(cp.c.costeTotal || 0);
-                const puedePagar = coste <= estadoPartida.jugador.manaActivo;
-                const estilo = puedePagar
-                    ? 'background:linear-gradient(145deg,#5e1f17,#a93226);'
-                    : 'background:#555;opacity:0.6;cursor:not-allowed;';
-                const txtMana = coste > 0 ? ` (${coste} maná)` : '';
-                botonesHtml += `<button class="plate-btn cp-pick-btn" data-idx="${i}" ${puedePagar ? '' : 'disabled'} style="width:100%;margin-bottom:6px;${estilo}">Usar ${escapeHtml(cp.c.nombre || 'Counter Play')}${txtMana}${puedePagar ? '' : ' (sin maná)'}</button>`;
-            });
-            ov.innerHTML = `<div style="font-weight:900;font-size:14px;margin-bottom:8px;">¿Counter Play?</div>
-                <div style="font-size:12px;margin-bottom:12px;color:#ddd;">El rival juega <b>${escapeHtml(cartaRival.nombre || '')}</b>. Usa un Counter Play para negarlo.</div>
-                ${botonesHtml}
-                <button class="plate-btn" id="cp-skip-btn" style="width:100%;background:#333;">Cerrar</button>`;
-            document.body.appendChild(ov);
-            // El timeout solo cierra el overlay visual, NO borra _counterPlayPendiente.
-            const timeout = setTimeout(() => { ov.remove(); }, 10000);
-            document.getElementById('cp-skip-btn').onclick = () => {
-                clearTimeout(timeout);
-                ov.remove();
-            };
-            ov.querySelectorAll('.cp-pick-btn').forEach(btn => {
-                btn.onclick = () => {
-                    if (btn.disabled) return;
-                    clearTimeout(timeout);
-                    ov.remove();
-                    const idx = Number(btn.dataset.idx);
-                    const cp = counterPlaysValidos[idx];
-                    if (!cp) return;
-                    // Ejecutar el counter play directamente (sin pasar por intentarJugarDesdeMano)
-                    usarCounterPlayDirecto(cp);
-                };
-            });
+            const notif = document.createElement('div');
+            notif.id = 'counter-play-hint';
+            notif.style.cssText = 'position:fixed;top:80px;left:50%;transform:translateX(-50%);z-index:3300;background:rgba(20,10,30,.96);border:2px solid #ff735e;border-radius:999px;padding:10px 22px;max-width:560px;box-shadow:0 0 18px rgba(255,115,94,.55);color:white;font-weight:800;font-size:13px;text-align:center;';
+            notif.innerHTML = `⚔️ El rival juega <b>${escapeHtml(cartaRival.nombre || '')}</b>. Arrastra tu <b>Counter Play</b> al campo para negarlo.`;
+            document.body.appendChild(notif);
+            setTimeout(() => {
+                notif.style.transition = 'opacity .5s';
+                notif.style.opacity = '0';
+            }, 4500);
+            setTimeout(() => notif.remove(), 5100);
         }
+
+        // Bug Rojo fix: mostrarBotonCounterPlay eliminado.
+        // Ahora el jugador arrastra su carta de Counter Play al campo como las demás.
+        // La lógica de validación y ejecución está en intentarJugarDesdeMano + usarCounterPlayDirecto.
 
         // Ejecutar un counter play directamente: paga maná, niega la carta rival, descarta el counter play.
         function usarCounterPlayDirecto(cp) {
@@ -6921,10 +6906,34 @@
                 alert(`No tienes maná suficiente. Necesitas ${coste} maná y tienes ${estadoPartida.jugador.manaActivo}.`);
                 return;
             }
-            // Pagar maná
-            let resto = coste;
-            estadoPartida.jugador.mana.forEach(m => { if (resto > 0 && !m.rested) { m.rested = true; resto--; } });
-            estadoPartida.jugador.manaActivo = estadoPartida.jugador.mana.filter(m => !m.rested).length;
+            // Bug Rojo fix: si el coste es > 0, abrir el modal de pago de maná (como las demás cartas).
+            // Si el coste es 0, ejecutar directamente.
+            if (coste > 0) {
+                abrirPagoMana({
+                    tipo: 'counter-play',
+                    handIndex: handIndex,
+                    cardId: id,
+                    coste: coste
+                });
+            } else {
+                ejecutarCounterPlay(handIndex);
+            }
+        }
+
+        // Bug Rojo fix: ejecutar el counter play una vez pagado el maná (o si coste era 0).
+        function ejecutarCounterPlay(handIndex) {
+            if (!estadoPartida || !estadoPartida._counterPlayPendiente) {
+                alert('Ya no hay una carta rival pendiente para negar.');
+                return;
+            }
+            // Re-verificar que la carta sigue en la mano
+            const id = estadoPartida.pagoPendiente?.cardId || estadoPartida.jugador.mano[handIndex];
+            const currentHandIndex = estadoPartida.jugador.mano.indexOf(id);
+            if (currentHandIndex < 0) {
+                alert('La carta de Counter Play ya no está en tu mano.');
+                return;
+            }
+            const carta = getCardById(id);
             // Negar la carta rival: enviarla al descarte del rival
             const cardIdNegada = estadoPartida._counterPlayPendiente.cardId;
             const cartaRival = getCardById(cardIdNegada);
@@ -6938,14 +6947,19 @@
             log(`¡Counter Play! La carta del rival "${cartaRival?.nombre || cardIdNegada}" es negada y va al descarte.`);
             // La carta de counter play va al descarte
             estadoPartida.jugador.descarte.push(id);
-            estadoPartida.jugador.mano.splice(handIndex, 1);
+            estadoPartida.jugador.mano.splice(currentHandIndex, 1);
             estadoPartida._counterPlayPendiente = null;
+            // Limpiar pagoPendiente si estaba seteado
+            estadoPartida.pagoPendiente = null;
             // Notificar al rival para que envíe su carta al descarte
             if (estadoPartida.modo === 'online' && _socketOnline) {
                 _socketOnline.emit('accion-juego', { tipo: 'counter-play-descarte', cardIdNegada: cardIdNegada, nombre: cartaRival?.nombre || '' });
                 // Enviar snapshot con el maná actualizado y la mano actualizada
                 sincronizarEstadoOnline('counter-play');
             }
+            // Limpiar la notificación visual si existe
+            const hint = document.getElementById('counter-play-hint');
+            if (hint) hint.remove();
             renderizarPartida();
         }
 
@@ -7214,13 +7228,14 @@
                         }
                       }
                     }
+                    // Bug Verde fix (solo mode): limpiar el flag del defensor tras su decisión.
+                    // En modo solo la IA no decide pagar (no tiene prompt), así que limpiamos
+                    // el flag de sus unidades al inicio del turno del jugador (atacante original).
                     if (c.flags) c.flags.enderezarCoste = false;
                   }
-                  // Bug 2 fix (solo mode): limpiar enderezarCoste de las unidades del RIVAL
-                  // (IA) al empezar el siguiente turno del jugador. El efecto de Toñi la infectada
-                  // dura solo 1 turno: cuando termina el turno del jugador que la activó, el efecto
-                  // debe desaparecer. En modo solo la IA no puede decidir pagar, así que simplemente
-                  // limpiamos el flag (la unidad se queda como esté — descansada si no se enderezó).
+                  // Limpiar enderezarCoste de las unidades del RIVAL (IA) en modo solo.
+                  // La IA no puede decidir pagar, así que su unidad se queda descansada este turno
+                  // (ya lo está) y el flag se limpia para no persistir.
                   (estadoPartida.rival.batalla || []).forEach(u => {
                     if (u && u.flags && u.flags.enderezarCoste) {
                       u.flags.enderezarCoste = false;
@@ -7597,6 +7612,15 @@
                 estadoPartida.jugador.manaActivo = estadoPartida.jugador.mana.filter(m => !m.rested).length;
                 if (window.MotorEfectos) MotorEfectos.ejecutarActivar(p.key, 'jugador', { handIndex: p.handIndex });
                 renderizarPartida();
+            }
+            else if (p.tipo === 'counter-play') {
+                // Bug Rojo fix: pagar maná y luego ejecutar el counter play.
+                p.seleccion.forEach(i => estadoPartida.jugador.mana[i].rested = true);
+                estadoPartida.jugador.manaActivo = estadoPartida.jugador.mana.filter(m => !m.rested).length;
+                // Cerrar el modal antes de ejecutar (ejecutarCounterPlay limpia pagoPendiente).
+                document.getElementById('mana-pay-modal').classList.add('hidden');
+                ejecutarCounterPlay(p.handIndex);
+                return;
             }
             else resolverJugarCarta(p.handIndex, p.seleccion);
             cerrarPagoMana();
