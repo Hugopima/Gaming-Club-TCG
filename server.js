@@ -6,6 +6,7 @@
  * 2. Matchmaking automático (busca rival aleatorio)
  * 3. Salas privadas con código (jugar con amigos)
  * 4. Sincroniza acciones entre jugadores
+ * 5. Login con Discord (OAuth2)
  */
 
 const express = require('express');
@@ -17,12 +18,87 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
+// Parse JSON bodies (para los endpoints de Discord OAuth)
+app.use(express.json());
+
 // Servir archivos estáticos desde la carpeta actual
 app.use(express.static(__dirname));
 
 // Ruta principal: servir el juego
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'juego.html'));
+});
+
+// Ruta de callback de Discord: sirve el juego, que detectara ?code= en la URL
+// y llamara a /auth/discord para intercambiar el code por el token.
+app.get('/auth/discord/callback', (req, res) => {
+    res.sendFile(path.join(__dirname, 'juego.html'));
+});
+
+// === DISCORD OAUTH2 ===
+// IMPORTANTE: Configura estas variables de entorno en Render:
+//   DISCORD_CLIENT_ID     = tu Client ID de Discord
+//   DISCORD_CLIENT_SECRET = tu Client Secret de Discord
+const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID || 'TU_CLIENT_ID_AQUI';
+const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET || 'TU_CLIENT_SECRET_AQUI';
+
+// fetch nativo (Node 18+). Si usas Node < 18, instala node-fetch: npm install node-fetch
+const fetch = global.fetch || require('node-fetch').default;
+
+// Endpoint: intercambiar el code de Discord por un token de acceso y los datos del usuario
+app.post('/auth/discord', async (req, res) => {
+    try {
+        const { code, redirect_uri } = req.body;
+        if (!code) return res.status(400).json({ error: 'Falta el codigo de Discord' });
+
+        // Verificar que las credenciales están configuradas
+        if (DISCORD_CLIENT_ID === 'TU_CLIENT_ID_AQUI' || DISCORD_CLIENT_SECRET === 'TU_CLIENT_SECRET_AQUI') {
+            return res.status(500).json({ error: 'Faltan las variables de entorno DISCORD_CLIENT_ID y/o DISCORD_CLIENT_SECRET en Render' });
+        }
+
+        // 1. Intercambiar code por access_token
+        const tokenRes = await fetch('https://discord.com/api/oauth2/token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({
+                client_id: DISCORD_CLIENT_ID,
+                client_secret: DISCORD_CLIENT_SECRET,
+                grant_type: 'authorization_code',
+                code: code,
+                redirect_uri: redirect_uri
+            })
+        });
+        if (!tokenRes.ok) {
+            const errText = await tokenRes.text();
+            console.error('Error token Discord:', errText);
+            return res.status(400).json({ error: 'Error al obtener token de Discord', details: errText });
+        }
+        const tokenData = await tokenRes.json();
+
+        // 2. Obtener los datos del usuario con el access_token
+        const userRes = await fetch('https://discord.com/api/users/@me', {
+            headers: { Authorization: tokenData.token_type + ' ' + tokenData.access_token }
+        });
+        if (!userRes.ok) {
+            return res.status(400).json({ error: 'Error al obtener datos del usuario' });
+        }
+        const userData = await userRes.json();
+
+        // 3. Devolver los datos al cliente
+        // Aqui podrias cargar el inventario asociado a este usuario desde una base de datos.
+        res.json({
+            user: {
+                id: userData.id,
+                username: userData.username,
+                avatar: userData.avatar,
+                email: userData.email
+            }
+            // inventario: cargarInventarioDeBD(userData.id)  // <- Implementar cuando haya BD
+        });
+    } catch (e) {
+        console.error('Error en /auth/discord:', e);
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
 });
 
 // === SISTEMA DE MATCHMAKING Y SALAS ===
