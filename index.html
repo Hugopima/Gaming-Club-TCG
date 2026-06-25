@@ -1567,7 +1567,7 @@
         <div class="menu-grid">
             <div class="main-btns">
                 <button class="plate-btn" onclick="irAJugar()">JUGAR</button>
-                <button class="plate-btn btn-blue">AMIGOS</button>
+                <button class="plate-btn btn-blue" onclick="abrirAmigos()">AMIGOS</button>
             </div>
             <div class="sub-btns">
                 <button class="plate-btn btn-nav" onclick="irAColeccion()">COLECCIÓN</button>
@@ -2109,6 +2109,39 @@
     </div>
 
     <script>
+        // === SCHEMA VERSION - WIPE ON MISMATCH ===
+        // Cuando se incrementa esta versión, TODOS los datos locales se borran
+        // para que los jugadores empiecen de cero (inventario, mazos, logros, etc.).
+        // La sesión de Discord se preserva para no tener que re-loguear.
+        const SCHEMA_VERSION = 2;
+        (function wipeIfSchemaChanged() {
+            try {
+                const stored = localStorage.getItem('gc_tcg_schema_version');
+                if (stored !== String(SCHEMA_VERSION)) {
+                    console.log('[Schema] Versión cambiada de', stored, 'a', SCHEMA_VERSION, '- borrando datos locales...');
+                    // Preservar solo la sesión de Discord y el nombre del jugador
+                    const preservedDiscord = localStorage.getItem('gc_tcg_discord_user');
+                    const preservedName = localStorage.getItem('gc_tcg_player_name');
+                    // Borrar todas las claves gc_tcg_* (excepto las preservadas)
+                    const keysToDelete = [];
+                    for (let i = 0; i < localStorage.length; i++) {
+                        const key = localStorage.key(i);
+                        if (key && key.startsWith('gc_tcg_') && key !== 'gc_tcg_discord_user' && key !== 'gc_tcg_player_name') {
+                            keysToDelete.push(key);
+                        }
+                    }
+                    keysToDelete.forEach(k => localStorage.removeItem(k));
+                    // Restaurar preservados
+                    if (preservedDiscord) localStorage.setItem('gc_tcg_discord_user', preservedDiscord);
+                    if (preservedName) localStorage.setItem('gc_tcg_player_name', preservedName);
+                    // Guardar nueva versión
+                    localStorage.setItem('gc_tcg_schema_version', String(SCHEMA_VERSION));
+                    console.log('[Schema] Datos borrados. Listo para empezar de cero.');
+                }
+            } catch (e) {
+                console.error('[Schema] Error en wipe:', e);
+            }
+        })();
 /**
  * Motor de efectos — Gaming Club TCG
  * Expone window.MotorEfectos e integra con globals de index.html
@@ -6235,8 +6268,10 @@
                 const id = getCardId(c);
                 const cantidad = getCantidadCarta(id);
                 const cantidadHtml = esToken(c) ? '' : `<span class="owned-count ${cantidad === 0 ? 'zero' : ''}">${cantidad}</span>`;
+                // Las cartas con 0 copias se muestran en blanco y negro (grayscale)
+                const bwStyle = (!esToken(c) && cantidad === 0) ? 'filter: grayscale(100%) brightness(0.6); opacity:0.7;' : '';
                 const cardHtml = `<div class="card" style="border-color: ${obtenerColorBorde(c.color)}" onclick="abrirPanel(${i})">
-                    ${c.img ? `<img src="${c.img}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">` : ''}
+                    ${c.img ? `<img src="${c.img}" style="${bwStyle}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">` : ''}
                     <div class="card-name-fallback" style="display:none; color: white; padding: 20px; text-align: center; font-weight: bold; height: 100%; align-items: center; justify-content: center; background: #111;">${escapeHtml(c.nombre)}</div>
                     ${cantidadHtml}
                 </div>`;
@@ -6257,13 +6292,16 @@
                 const copias = copiasEnMazo(id);
                 const poseidas = getCantidadCarta(id);
                 const lider = esLider(c);
-                const agotado = !lider && copias >= 4;
+                // Agotado si: no es líder, no tiene copias, o ya tiene 4 en mazo, o ya tiene todas las poseidas en mazo
+                const agotado = !lider && (copias >= 4 || poseidas <= 0 || copias >= poseidas);
                 const cantidadHtml = `<span class="owned-count ${poseidas === 0 ? 'zero' : ''}" style="bottom:auto;right:auto;top:4px;left:4px;">${poseidas}</span>`;
+                // Las cartas con 0 copias se muestran en blanco y negro (grayscale)
+                const bwStyle = (!lider && poseidas === 0) ? 'filter: grayscale(100%) brightness(0.6); opacity:0.7;' : '';
                 libContainer.innerHTML += `
                     <div class="deck-card" style="border-color: ${obtenerColorBorde(c.color)}">
                         <div class="deck-card-img" onclick="abrirDetalleMazo(${i})">
-                            ${c.img ? `<img src="${c.img}" alt="${escapeHtml(c.nombre)}">` : ''}
-                            <span class="copy-badge">${lider ? (miMazo.liderId === id ? 'L' : '-') : copias + '/4'}</span>
+                            ${c.img ? `<img src="${c.img}" alt="${escapeHtml(c.nombre)}" style="${bwStyle}">` : ''}
+                            <span class="copy-badge">${lider ? (miMazo.liderId === id ? 'L' : '-') : copias + '/' + Math.min(4, poseidas)}</span>
                             ${cantidadHtml}
                         </div>
                         <div class="deck-card-name">${escapeHtml(c.nombre)}</div>
@@ -6275,6 +6313,9 @@
         }
 
         function seleccionarLider(id) {
+            // No se puede elegir un líder que no se posee
+            const poseidas = getCantidadCarta(id);
+            if (poseidas <= 0) return alert('No tienes este líder. Ábrelo en sobres o fabrícalo.');
             miMazo.liderId = id;
             actualizarVistaMazo();
             renderizarEditor();
@@ -6285,6 +6326,11 @@
             if (!carta || esLider(carta) || esToken(carta)) return;
             if (totalCartasMazo() >= 60) return alert("Maximo 60 cartas en el mazo.");
             if (copiasEnMazo(id) >= 4) return alert("Solo puedes llevar hasta 4 copias de cada carta.");
+            // No se pueden añadir cartas que no se poseen
+            const poseidas = getCantidadCarta(id);
+            if (poseidas <= 0) return alert("No tienes esta carta. Ábrela en sobres o fabrícala.");
+            // No se pueden añadir más copias de las que se poseen
+            if (copiasEnMazo(id) >= poseidas) return alert("Solo tienes " + poseidas + " copia(s) de esta carta.");
             miMazo.cartas[id] = copiasEnMazo(id) + 1;
             actualizarVistaMazo();
             renderizarEditor();
@@ -6434,6 +6480,11 @@
             volverASelectorMazos();
         }
 
+
+        // ===== AMIGOS =====
+        function abrirAmigos() {
+            alert('Esta parte aún está en construcción! Vuelve pronto!');
+        }
 
         // ===== CRÉDITOS =====
         function abrirCreditos() {
@@ -6633,6 +6684,19 @@
             if (!user) {
                 console.log('[Supabase] No hay sesión de Discord, saltando carga');
                 return false;
+            }
+            // Si el schema acaba de cambiar (wipe local), forzar inventario vacío
+            // y guardarlo en Supabase para sobreescribir los datos antiguos.
+            const schemaJustWiped = !localStorage.getItem('gc_tcg_supabase_wiped_v' + SCHEMA_VERSION);
+            if (schemaJustWiped) {
+                console.log('[Schema] Wipe detectado. Forzando inventario vacío en Supabase...');
+                localStorage.setItem('gc_tcg_supabase_wiped_v' + SCHEMA_VERSION, '1');
+                // Asegurar inventario local vacío
+                _inventario = { coins: 0, energy: 0, cartas: {} };
+                guardarInventario();
+                // Forzar guardado en Supabase (sobreescribe datos antiguos)
+                await guardarInventarioSupabase();
+                return true;
             }
             console.log('[Supabase] Cargando inventario para discord_id:', user.id);
             try {
@@ -7415,22 +7479,18 @@
                 const data = localStorage.getItem('gc_tcg_inventario');
                 if (data) {
                     _inventario = JSON.parse(data);
+                    // Asegurar estructura mínima
+                    if (!_inventario.cartas) _inventario.cartas = {};
+                    if (_inventario.coins == null) _inventario.coins = 0;
+                    if (_inventario.energy == null) _inventario.energy = 0;
                 } else {
-                    _inventario = { coins: 5000, energy: 1000, cartas: {} };
-                    // Dar todas las cartas para testeo (comentar en producción)
-                    // Para testeo real: dar 4 copias de cada carta
-                    if (datosCartas && datosCartas.length) {
-                        datosCartas.forEach(c => {
-                            if (!c || esToken(c)) return;
-                            const id = getCardId(c);
-                            _inventario.cartas[id] = 4; // 4 copias para testeo
-                        });
-                    }
+                    // Empezar de cero: 0 cartas, 0 monedas, 0 energy
+                    _inventario = { coins: 0, energy: 0, cartas: {} };
                     guardarInventario();
                 }
             } catch (e) {
                 console.error('Error cargando inventario:', e);
-                _inventario = { coins: 5000, energy: 1000, cartas: {} };
+                _inventario = { coins: 0, energy: 0, cartas: {} };
             }
             actualizarBarraMonedas();
         }
