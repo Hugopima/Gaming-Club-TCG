@@ -6012,7 +6012,7 @@
     efectoCampoPermanente, REGISTRO_EFECTOS,
     zonaJugador, rivalDe, robar, barajar, log, tirarDado, registrar,
     crearUnidadCampo, infligirDanoLider, elegirConModal, enderezarMana, invocarToken,
-    intentarAbsorberDrag,
+    intentarAbsorberDrag, tieneBloqueador, unidadesEnCampo, opcionesUnidades,
     recibirPeticionRival, recibirRespuestaRival, _decisionParaRival,
     elegirConModalRival: elegirConModalRival,
     dispatch: dispatch,
@@ -6874,28 +6874,39 @@
             for (let i = 0; i < 8; i++) rival.vida.push('protegida');
             estadoPartida = {
                 turno: 1, faseIndex: 2, jugadorActivo: 'jugador', jugador, rival,
-                log: 'Tutorial 3 - El rival ataca', atacanteSeleccionado: null, pagoPendiente: null,
+                log: 'Tutorial 3 - El líder rival ataca', atacanteSeleccionado: null, pagoPendiente: null,
                 introActiva: false, finalizada: false, modo: 'tutorial', soyHost: true, turnoDelJugadorLocal: false
             };
             window.estadoPartida = estadoPartida;
             estadoPartida.jugador.liderZona = { id: 'blue_lider_02', rested: false, ataquesRestantes: 0, buffs: { poder: 0, combo: 0, batalla: 0 } };
-            estadoPartida.rival.liderZona = { id: 'red_lider_01', rested: false, ataquesRestantes: 1, buffs: { poder: 0, combo: 0, batalla: 0 } };
+            // El líder rival tiene 2 ataques para este tutorial (1 para el bloqueo + 1 para el combo)
+            estadoPartida.rival.liderZona = { id: 'red_lider_01', rested: false, ataquesRestantes: 2, buffs: { poder: 0, combo: 0, batalla: 0 } };
             ocultarPantallasPrincipales();
             document.getElementById('game-screen').classList.remove('hidden');
             mostrarFase('Combate');
             renderizarPartida();
 
+            const _lidRival = getCardById(estadoPartida.rival.liderId);
+            const _lidRivalNombre = _lidRival?.nombre || 'El líder rival';
+            const _lidJug = getCardById(estadoPartida.jugador.liderId);
+            const _lidJugImg = _lidJug?.img || '';
+
             // === Diálogo 1: introducción a la defensa ===
             await mostrarDialogoTutorial('Cuando te atacan, puedes defenderte. Al declarar ataque te permite utilizar cartas con bloqueador (como Megalberto Mewing) para redirigir el ataque. O cartas counter para negar el ataque. Redirige el ataque a Megalberto Mewing para que no le ataque a tu líder.', 'OK');
             if (_tutorialAbortado) return;
 
-            // === Ataque 1: Foxy ataca al líder del jugador ===
-            // Reutilizamos la misma lógica que la IA en partidas 1v1: aparecerá el modal de bloqueo.
+            // === Ataque 1: el líder rival ataca al jugador ===
+            // El jugador puede bloquear con Megalberto (que tiene Bloqueador).
+            // skipComboDefensora: true → el jugador NO puede comber en este ataque.
             await sleep(400);
-            estadoPartida.log = '¡Foxy te ataca! ¿Quieres bloquear?';
-            estadoPartida.rivalAtacanteId = 'foxy';
+            estadoPartida.rivalAtacanteId = estadoPartida.rival.liderId;
+            estadoPartida.log = '¡El líder rival te ataca! ¿Quieres bloquear?';
             renderizarPartida();
-            await ejecutarAtaqueIA(0, { tipo: 'lider' }, { skipComboDefensora: true });
+            // Mostrar animación de notificación de ataque
+            if (typeof mostrarNotificacionAtaque === 'function') {
+                mostrarNotificacionAtaque(_lidRivalNombre + ' ataca a tu líder!', { nombre: _lidJug?.nombre || 'tu líder', img: _lidJugImg });
+            }
+            await ejecutarAtaqueLiderIA({ tipo: 'lider' }, { skipComboDefensora: true });
             if (_tutorialAbortado) return;
             await sleep(400);
 
@@ -6903,29 +6914,22 @@
             await mostrarDialogoTutorial('Oh no. Tu bloqueador ha sido derrotado en batalla. Ahora el líder rival te ataca a ti. No comba, salta defensa.', 'OK');
             if (_tutorialAbortado) return;
 
-            // === Ataque 2: el líder rival ataca (el jugador NO combea, recibe daño) ===
-            await sleep(400);
-            estadoPartida.rival.liderZona.ataquesRestantes = 1;
-            estadoPartida.rival.liderZona.rested = false;
-            estadoPartida.log = '¡El líder rival te ataca!';
-            estadoPartida.rivalAtacanteId = estadoPartida.rival.liderId;
-            renderizarPartida();
-            await ejecutarAtaqueLiderIA({ tipo: 'lider' }, { skipComboDefensora: true });
-            if (_tutorialAbortado) return;
-            await sleep(400);
-
             // === Diálogo 3: ahora sí puede comber para defender ===
             await mostrarDialogoTutorial('El líder rival te está atacando. No puedes bloquear ni negar el ataque, pero te cuento un secreto. También puedes combar cuando el rival te ataca. Arrastra tus cartas de la mano al área de combo para superar su poder y ganar la batalla. No le infligirás daño, pero el a ti tampoco.', 'OK');
             if (_tutorialAbortado) return;
 
-            // === Ataque 3: el líder rival ataca de nuevo (el jugador puede comber) ===
+            // === Ataque 2: el líder rival ataca de nuevo, el jugador puede comber ===
+            // Resetear ataquesRestantes del líder para que pueda atacar otra vez.
             await sleep(400);
             estadoPartida.rival.liderZona.ataquesRestantes = 1;
             estadoPartida.rival.liderZona.rested = false;
-            estadoPartida.log = '¡El líder rival te ataca de nuevo! Puedes combar para defender.';
             estadoPartida.rivalAtacanteId = estadoPartida.rival.liderId;
+            estadoPartida.log = '¡El líder rival te ataca! Puedes combar para defender.';
             renderizarPartida();
-            await ejecutarAtaqueLiderIA({ tipo: 'lider' });
+            if (typeof mostrarNotificacionAtaque === 'function') {
+                mostrarNotificacionAtaque(_lidRivalNombre + ' ataca a tu líder!', { nombre: _lidJug?.nombre || 'tu líder', img: _lidJugImg });
+            }
+            await ejecutarAtaqueLiderIA({ tipo: 'lider' }); // No skipComboDefensora → el jugador puede combar
             if (_tutorialAbortado) return;
             await sleep(400);
 
