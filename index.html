@@ -1367,6 +1367,67 @@
         }
         .shop-info-btn:hover { transform: scale(1.1); }
 
+        /* ===== TUTORIALES ===== */
+        .tutorial-dialog-overlay {
+            position: fixed; inset: 0; z-index: 3800; display: none;
+            background: rgba(0,0,0,.3); align-items: flex-start; justify-content: center;
+            padding-top: 60px;
+        }
+        .tutorial-dialog-overlay.active { display: flex; }
+        .tutorial-dialog-box {
+            background: white; border: 4px solid #1a1030; border-radius: 16px;
+            padding: 18px 28px; max-width: 520px; width: 90vw;
+            box-shadow: 0 8px 30px rgba(0,0,0,.5); position: relative;
+            font-family: 'Segoe UI', sans-serif; color: #1a1030;
+        }
+        .tutorial-dialog-box::after {
+            content: ''; position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%);
+            width: 0; height: 0; border-left: 18px solid transparent; border-right: 18px solid transparent;
+            border-top: 18px solid #1a1030;
+        }
+        .tutorial-dialog-text {
+            font-size: 15px; line-height: 1.5; font-weight: 600; min-height: 60px;
+        }
+        .tutorial-dialog-btn {
+            display: block; margin: 14px auto 0; background: #1a1030; color: white;
+            border: none; border-radius: 999px; padding: 8px 28px; font-weight: 900;
+            font-size: 14px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px;
+        }
+        .tutorial-dialog-btn:hover { background: #2a2050; }
+        .tutorial-npc-portrait {
+            position: fixed; bottom: 20px; right: 20px; z-index: 3700;
+            width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--gold);
+            background: #1a1030; cursor: pointer; overflow: hidden;
+            box-shadow: 0 0 15px rgba(255,215,0,.4); display: none;
+        }
+        .tutorial-npc-portrait.active { display: block; }
+        .tutorial-npc-portrait img { width: 100%; height: 100%; object-fit: cover; }
+        .tutorial-npc-portrait:hover { transform: scale(1.1); }
+        .tutorial-select-overlay {
+            position: fixed; inset: 0; z-index: 2850; display: none;
+            background: rgba(0,0,0,.88); align-items: center; justify-content: center; padding: 24px;
+        }
+        .tutorial-select-overlay.active { display: flex; }
+        .tutorial-select-panel {
+            width: min(600px, 95vw); border: 2px solid var(--gold); border-radius: 18px;
+            background: var(--dark-panel); box-shadow: 0 0 50px rgba(255,215,0,.3);
+            padding: 40px; text-align: center;
+        }
+        .tutorial-select-panel h2 {
+            color: #fff07c; text-transform: uppercase; margin-top: 0; margin-bottom: 24px;
+            font-size: 28px; letter-spacing: 2px;
+        }
+        .tutorial-btn {
+            display: block; width: 100%; margin-bottom: 12px;
+            background: linear-gradient(145deg, #a040c0, #6020a0); border: 2px solid #d9a6ff;
+            border-radius: 12px; padding: 16px; color: white; font-weight: 900; font-size: 16px;
+            cursor: pointer; text-align: left; transition: all .15s;
+        }
+        .tutorial-btn:hover { background: linear-gradient(145deg, #c060e0, #8030c0); transform: translateX(4px); }
+        .tutorial-btn .tut-num { color: #d9a6ff; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+        .tutorial-btn .tut-title { display: block; margin-top: 4px; }
+        .tutorial-btn.completed { background: linear-gradient(145deg, #1a6d3c, #0d4a28); border-color: #49ef78; }
+
         /* ===== MODAL DE CRÉDITOS ===== */
         .credits-overlay {
             position: fixed; inset: 0; z-index: 3700; display: none;
@@ -1878,8 +1939,44 @@
                     🌐 JUGAR ONLINE<br><small style="font-size:12px;font-weight:400;">Contra otra persona</small>
                 </button>
             </div>
+            <button class="plate-btn" style="margin-top:16px;min-width:300px;padding:14px 30px;font-size:16px;background:linear-gradient(145deg,#a040c0,#6020a0);border:2px solid #d9a6ff;" onclick="cerrarPlayMode(); mostrarSeleccionTutorial()">
+                📚 TUTORIAL<br><small style="font-size:12px;font-weight:400;">Aprende a jugar</small>
+            </button>
             <button class="plate-btn btn-nav" style="margin-top:24px;" onclick="cerrarPlayMode()">Cancelar</button>
         </div>
+    </div>
+
+    <!-- Overlay de selección de tutorial -->
+    <div id="tutorial-select-overlay" class="tutorial-select-overlay">
+        <div class="tutorial-select-panel">
+            <h2>📚 Tutoriales</h2>
+            <button class="tutorial-btn" id="tut-btn-1" onclick="iniciarTutorial(1)">
+                <span class="tut-num">Tutorial 1</span>
+                <span class="tut-title">Fases del turno: maná, unidades y ataque</span>
+            </button>
+            <button class="tutorial-btn" id="tut-btn-2" onclick="iniciarTutorial(2)">
+                <span class="tut-num">Tutorial 2</span>
+                <span class="tut-title">Combo y Transformación</span>
+            </button>
+            <button class="tutorial-btn" id="tut-btn-3" onclick="iniciarTutorial(3)">
+                <span class="tut-num">Tutorial 3</span>
+                <span class="tut-title">Defensa y Bloqueos</span>
+            </button>
+            <button class="plate-btn btn-nav" style="margin-top:16px;" onclick="cerrarSeleccionTutorial()">Volver</button>
+        </div>
+    </div>
+
+    <!-- Overlay de diálogo del tutorial -->
+    <div id="tutorial-dialog-overlay" class="tutorial-dialog-overlay">
+        <div class="tutorial-dialog-box">
+            <div class="tutorial-dialog-text" id="tutorial-dialog-text"></div>
+            <button class="tutorial-dialog-btn" id="tutorial-dialog-btn" onclick="siguienteDialogoTutorial()">OK</button>
+        </div>
+    </div>
+
+    <!-- Portrait del NPC (esquina inferior derecha) -->
+    <div class="tutorial-npc-portrait" id="tutorial-npc-portrait" onclick="abrirUltimoDialogo()">
+        <img src="imagenes/npc.png" alt="NPC" onerror="this.style.display='none';this.parentElement.style.background='linear-gradient(135deg,#a040c0,#6020a0)';this.parentElement.innerHTML+='<div style=%22color:white;font-size:32px;text-align:center;line-height:80px%22>🧙</div>'">
     </div>
 
     <div id="online-lobby-overlay" class="hidden" style="position:fixed;inset:0;z-index:2850;background:radial-gradient(circle at center,rgba(20,40,80,.95),rgba(0,0,0,.96));display:flex;align-items:center;justify-content:center;padding:24px;">
@@ -6537,6 +6634,314 @@
         }
 
 
+        // ===== TUTORIALES =====
+        let _tutorialState = null;
+
+        // Mostrar selección de tutorial
+        function mostrarSeleccionTutorial() {
+            actualizarBotonesTutorial();
+            document.getElementById('tutorial-select-overlay').classList.add('active');
+        }
+        function cerrarSeleccionTutorial() {
+            document.getElementById('tutorial-select-overlay').classList.remove('active');
+        }
+        function actualizarBotonesTutorial() {
+            const completados = JSON.parse(localStorage.getItem('gc_tcg_tutoriales_completados') || '[]');
+            for (let i = 1; i <= 3; i++) {
+                const btn = document.getElementById('tut-btn-' + i);
+                if (btn) {
+                    if (completados.includes(i)) btn.classList.add('completed');
+                    else btn.classList.remove('completed');
+                }
+            }
+        }
+
+        // Mostrar diálogo del NPC
+        function mostrarDialogoTutorial(texto, btnTexto) {
+            return new Promise(resolve => {
+                const overlay = document.getElementById('tutorial-dialog-overlay');
+                const textEl = document.getElementById('tutorial-dialog-text');
+                const btnEl = document.getElementById('tutorial-dialog-btn');
+                textEl.innerHTML = texto;
+                btnEl.textContent = btnTexto || 'OK';
+                overlay.classList.add('active');
+                // Mostrar portrait del NPC
+                document.getElementById('tutorial-npc-portrait').classList.add('active');
+                // Guardar último mensaje
+                _tutorialState = _tutorialState || {};
+                _tutorialState.ultimoMensaje = texto;
+                _tutorialState.resolveDialogo = resolve;
+            });
+        }
+        function siguienteDialogoTutorial() {
+            document.getElementById('tutorial-dialog-overlay').classList.remove('active');
+            if (_tutorialState && _tutorialState.resolveDialogo) {
+                const r = _tutorialState.resolveDialogo;
+                _tutorialState.resolveDialogo = null;
+                r();
+            }
+        }
+        function abrirUltimoDialogo() {
+            if (_tutorialState && _tutorialState.ultimoMensaje) {
+                mostrarDialogoTutorial(_tutorialState.ultimoMensaje, 'OK');
+            }
+        }
+        function ocultarPortraitNPC() {
+            document.getElementById('tutorial-npc-portrait').classList.remove('active');
+        }
+
+        // Función auxiliar para crear una carta de campo
+        function crearUnidadTutorial(id, opts) {
+            opts = opts || {};
+            const u = window.MotorEfectos ? MotorEfectos.crearUnidadCampo(id, opts) : { id, rested: !!opts.rested, ataquesRestantes: opts.ataquesRestantes ?? 1, buffs: { poder: 0, combo: 0, batalla: 0 }, flags: {} };
+            if (opts.rested) u.rested = true;
+            return u;
+        }
+
+        // Iniciar tutorial
+        async function iniciarTutorial(num) {
+            cerrarSeleccionTutorial();
+            if (!datosCartas || !datosCartas.length) {
+                await cargarBaseDeDatos();
+            }
+            if (window.MotorEfectos) MotorEfectos.init();
+            if (num === 1) await tutorial1();
+            else if (num === 2) await tutorial2();
+            else if (num === 3) await tutorial3();
+        }
+
+        // ===== TUTORIAL 1: Fases del turno =====
+        async function tutorial1() {
+            // Configurar partida
+            const jugador = {
+                liderId: 'blue_lider_02', // Hugopima el maestro
+                mazo: [], mano: ['hugopima', 'agustin', 'alejandro', 'carlospro', 'cristian'], mana: [], batalla: [], combo: [], descarte: [], campo: [], manaActivo: 0,
+                manaUsadoEsteTurno: false, roboDeTurnoHecho: false, liderDespierto: false, vida: []
+            };
+            const rival = {
+                liderId: 'red_lider_01', // Adivina el Animatrónico
+                mazo: [], mano: [], mana: [{ id: 'freddy', rested: true }], batalla: [crearUnidadTutorial('freddy', { rested: true })], combo: [], descarte: [], campo: [], manaActivo: 0, liderDespierto: false, vida: []
+            };
+            for (let i = 0; i < 8; i++) jugador.vida.push('protegida');
+            for (let i = 0; i < 8; i++) rival.vida.push('protegida');
+            estadoPartida = {
+                turno: 1, faseIndex: 0, jugadorActivo: 'jugador', jugador, rival,
+                log: 'Tutorial 1', atacanteSeleccionado: null, pagoPendiente: null,
+                introActiva: false, finalizada: false, modo: 'tutorial', soyHost: true, turnoDelJugadorLocal: true
+            };
+            window.estadoPartida = estadoPartida;
+            estadoPartida.jugador.liderZona = { id: 'blue_lider_02', rested: false, ataquesRestantes: 1, buffs: { poder: 0, combo: 0, batalla: 0 } };
+            estadoPartida.rival.liderZona = { id: 'red_lider_01', rested: false, ataquesRestantes: 0, buffs: { poder: 0, combo: 0, batalla: 0 } };
+            ocultarPantallasPrincipales();
+            document.getElementById('game-screen').classList.remove('hidden');
+            mostrarFase('Carga');
+            renderizarPartida();
+
+            // Diálogos
+            await mostrarDialogoTutorial('¡Bienvenido a vuestro pequeño purgatorio de cartas! Soy Dymytry y te enseñaré como funciona todo.', 'OK');
+            await mostrarDialogoTutorial('Un turno de Gaming Club TCG tiene tres fases principales: Carga, Principal y Batalla.', 'OK');
+            mostrarFase('Carga');
+            await sleep(500);
+            await mostrarDialogoTutorial('Estamos en fase de carga. Para jugar cartas necesitas maná (el numerito de arriba a la izquierda de cada carta). Coge una carta de tu mano y conviértela en maná arrastrándola a la zona de maná. La carta que vas a poner es de color azul, por lo que dará maná azul. Cuando termines dale a Siguiente.', 'OK');
+
+            // Esperar a que el jugador ponga maná y pase a fase principal
+            await esperarAccionTutorial(() => estadoPartida.faseIndex === 1 && estadoPartida.jugador.mana.length > 0, 60000);
+
+            await mostrarDialogoTutorial('¡Muy bien! Ahora estamos en la fase Principal. En esta fase puedes jugar unidades, usar habilidades y preparar tu estrategia. Coge esa unidad de coste 1 de tu mano y arrástrala al campo. Luego dale a siguiente.', 'OK');
+
+            // Esperar a que juegue una unidad y pase a batalla
+            await esperarAccionTutorial(() => estadoPartida.faseIndex === 2 && estadoPartida.jugador.batalla.length > 0, 60000);
+
+            await mostrarDialogoTutorial('¡Ahora estás en la fase de batalla! Puedes pelear con unidades y con tu líder. Solo puedes atacar a cartas que estén en modo descanso (giradas) o al líder rival. Al atacar, tu carta se pone en modo descanso hasta tu siguiente turno. La carta con más poder gana la batalla y le inflige daño al líder o puede derrotar a una unidad. En caso de empate de poder, gana el atacante. ¡Pruébalo! Selecciona tu unidad para atacar y de objetivo a la unidad rival, y al líder para infligir daño al líder rival.', 'OK');
+
+            // Esperar a que ataque (la unidad atacante se pone en rested)
+            await esperarAccionTutorial(() => estadoPartida.jugador.batalla.some(u => u.rested) || estadoPartida.rival.batalla.length === 0, 60000);
+
+            await mostrarDialogoTutorial('¡Muy bien! Así es un turno. Ahora toca "Finalizar turno". Esto te acaba el tutorial.', 'OK');
+
+            // Esperar a que finalice el turno
+            const finTurnoBtn = document.querySelector('button[onclick="finalizarTurno()"]');
+            if (finTurnoBtn) {
+                await esperarAccionTutorial(() => estadoPartida.turno > 1, 60000);
+            }
+
+            // Completar tutorial
+            await completarTutorial(1);
+        }
+
+        // ===== TUTORIAL 2: Combo y Transformación =====
+        async function tutorial2() {
+            const jugador = {
+                liderId: 'blue_lider_02', // Hugopima
+                mazo: [], mano: ['grito', 'cristian', 'agustin', 'alejandro'], mana: [{ id: 'agustin', rested: false }, { id: 'alejandro', rested: false }], batalla: [crearUnidadTutorial('grito', { rested: false })], combo: [], descarte: [], campo: [], manaActivo: 2,
+                manaUsadoEsteTurno: true, roboDeTurnoHecho: true, liderDespierto: false, vida: []
+            };
+            const rival = {
+                liderId: 'red_lider_01', // Adivina
+                mazo: [], mano: [], mana: [{ id: 'freddy', rested: true }, { id: 'chica', rested: true }], batalla: [crearUnidadTutorial('freddy', { rested: true }), crearUnidadTutorial('chica', { rested: true })], combo: [], descarte: [], campo: [], manaActivo: 0, liderDespierto: false, vida: []
+            };
+            // 4 vidas
+            for (let i = 0; i < 4; i++) jugador.vida.push('protegida');
+            for (let i = 0; i < 8; i++) rival.vida.push('protegida');
+            estadoPartida = {
+                turno: 1, faseIndex: 2, jugadorActivo: 'jugador', jugador, rival,
+                log: 'Tutorial 2', atacanteSeleccionado: null, pagoPendiente: null,
+                introActiva: false, finalizada: false, modo: 'tutorial', soyHost: true, turnoDelJugadorLocal: true
+            };
+            window.estadoPartida = estadoPartida;
+            estadoPartida.jugador.liderZona = { id: 'blue_lider_02', rested: false, ataquesRestantes: 1, buffs: { poder: 0, combo: 0, batalla: 0 } };
+            estadoPartida.rival.liderZona = { id: 'red_lider_01', rested: false, ataquesRestantes: 0, buffs: { poder: 0, combo: 0, batalla: 0 } };
+            ocultarPantallasPrincipales();
+            document.getElementById('game-screen').classList.remove('hidden');
+            mostrarFase('Combate');
+            renderizarPartida();
+
+            await mostrarDialogoTutorial('Ahora te voy a enseñar a combar. En el lado izquierdo de cada carta hay un coste y poder de combo. Tras declarar un ataque, puedes darle poder de una carta a otra durante la batalla, aunque la pierdes. Puedes combar con cartas de la mano o con unidades del campo en modo activo (que no estén giradas). Arrastra una carta de tu mano al área de combo para darle poder después de declarar ataque.', 'OK');
+
+            // Esperar a que haga un combate combando (la unidad atacante se pone en rested)
+            await esperarAccionTutorial(() => estadoPartida.jugador.batalla.some(u => u.rested) || estadoPartida.rival.batalla.length < 2, 120000);
+
+            await mostrarDialogoTutorial('¡Muy bien! Cuando tu líder llegue a 0 vidas, perderás la partida. Pero cuando llegas a 4, puedes despertarte. Transforma al líder para volverlo más poderoso y ataca al líder.', 'OK');
+
+            // Esperar a que despierte el líder o acabe turno
+            await esperarAccionTutorial(() => estadoPartida.jugador.liderDespierto || estadoPartida.turno > 1, 120000);
+
+            await completarTutorial(2);
+        }
+
+        // ===== TUTORIAL 3: Defensa y Bloqueos =====
+        async function tutorial3() {
+            const jugador = {
+                liderId: 'blue_lider_02', // Hugopima
+                mazo: [], mano: ['cristian', 'agustin', 'alejandro', 'carlospro'], mana: [{ id: 'agustin', rested: false }, { id: 'alejandro', rested: false }, { id: 'carlospro', rested: false }, { id: 'cristian', rested: false }], batalla: [crearUnidadTutorial('megalberto', { rested: false })], combo: [], descarte: [], campo: [], manaActivo: 4,
+                manaUsadoEsteTurno: true, roboDeTurnoHecho: true, liderDespierto: false, vida: []
+            };
+            const rival = {
+                liderId: 'red_lider_01', // Adivina
+                mazo: [], mano: [], mana: [{ id: 'foxy', rested: false }, { id: 'freddy', rested: false }, { id: 'chica', rested: false }, { id: 'bonnie', rested: false }], batalla: [crearUnidadTutorial('foxy', { rested: false })], combo: [], descarte: [], campo: [], manaActivo: 4, liderDespierto: false, vida: []
+            };
+            for (let i = 0; i < 8; i++) jugador.vida.push('protegida');
+            for (let i = 0; i < 8; i++) rival.vida.push('protegida');
+            estadoPartida = {
+                turno: 1, faseIndex: 2, jugadorActivo: 'jugador', jugador, rival,
+                log: 'Tutorial 3 - El rival ataca', atacanteSeleccionado: null, pagoPendiente: null,
+                introActiva: false, finalizada: false, modo: 'tutorial', soyHost: true, turnoDelJugadorLocal: false
+            };
+            window.estadoPartida = estadoPartida;
+            estadoPartida.jugador.liderZona = { id: 'blue_lider_02', rested: false, ataquesRestantes: 0, buffs: { poder: 0, combo: 0, batalla: 0 } };
+            estadoPartida.rival.liderZona = { id: 'red_lider_01', rested: false, ataquesRestantes: 1, buffs: { poder: 0, combo: 0, batalla: 0 } };
+            ocultarPantallasPrincipales();
+            document.getElementById('game-screen').classList.remove('hidden');
+            mostrarFase('Combate');
+            renderizarPartida();
+
+            await mostrarDialogoTutorial('Cuando te atacan, puedes defenderte. Al declarar ataque te permite utilizar cartas con bloqueador (como Megalberto Mewing) para redirigir el ataque. O cartas counter para negar el ataque. Redirige el ataque a Megalberto Mewing para que no le ataque a tu líder.', 'OK');
+
+            // Simular ataque del rival (Foxy ataca al líder)
+            await sleep(500);
+            estadoPartida.log = '¡Foxy te ataca! ¿Quieres bloquear?';
+            renderizarPartida();
+            // El jugador debería ver el prompt de bloqueo automáticamente
+            // Esperar a que Megalberto sea destruido o el ataque se resuelva
+            await esperarAccionTutorial(() => estadoPartida.jugador.batalla.length === 0 || estadoPartida.rival.batalla.length === 0, 60000);
+
+            await mostrarDialogoTutorial('Oh no. Tu bloqueador ha sido derrotado en batalla. Ahora el líder rival te ataca a ti. No comba, salta defensa.', 'OK');
+
+            // Segundo ataque: el líder rival ataca al jugador
+            await sleep(500);
+            estadoPartida.log = '¡El líder rival te ataca!';
+            renderizarPartida();
+            await sleep(1000);
+
+            await mostrarDialogoTutorial('El líder rival te está atacando. No puedes bloquear ni negar el ataque, pero te cuento un secreto. También puedes combar cuando el rival te ataca. Arrastra tus cartas de la mano al área de combo para superar su poder y ganar la batalla. No le infligirás daño, pero el a ti tampoco.', 'OK');
+
+            // Esperar a que el jugador combe o se resuelva el ataque
+            await esperarAccionTutorial(() => estadoPartida.turno > 1 || estadoPartida.jugador.vida.length < 8, 120000);
+
+            await mostrarDialogoTutorial('¡Muy bien! Cuidado en tu turno para administrar tu maná para jugar y defenderte. Ya sabes todo lo que te puedo enseñar. Buena suerte con los otros jugadores. Te regalaré esta baraja, puedes encontrarla en "Mazos" con todas las cartas.', 'OK');
+
+            await completarTutorial(3);
+        }
+
+        // Esperar a que se cumpla una condición (con timeout)
+        function esperarAccionTutorial(condicion, timeoutMs) {
+            return new Promise(resolve => {
+                const inicio = Date.now();
+                const intervalo = setInterval(() => {
+                    if (condicion() || Date.now() - inicio > (timeoutMs || 60000)) {
+                        clearInterval(intervalo);
+                        resolve();
+                    }
+                }, 500);
+            });
+        }
+
+        // Completar tutorial
+        async function completarTutorial(num) {
+            // Marcar como completado
+            const completados = JSON.parse(localStorage.getItem('gc_tcg_tutoriales_completados') || '[]');
+            if (!completados.includes(num)) {
+                completados.push(num);
+                localStorage.setItem('gc_tcg_tutoriales_completados', JSON.stringify(completados));
+            }
+            // Si completa los 3, dar logro y mazo de regalo
+            if (completados.length >= 3) {
+                // Logro
+                if (_statsJugador && !_statsJugador.logrosReclamados.includes('tutorial_completado')) {
+                    _statsJugador.logrosReclamados.push('tutorial_completado');
+                    guardarStats();
+                }
+                // Mazo de regalo
+                darMazoRegalo();
+                // Recompensa de monedas
+                if (_inventario) {
+                    _inventario.coins += 500;
+                    guardarInventario();
+                    actualizarBarraMonedas();
+                }
+                await mostrarDialogoTutorial('¡Has completado todos los tutoriales! Has recibido 500 GamingCoins y el "Mazo de Regalo" en tu sección de Mazos.', '¡Genial!');
+            } else {
+                await mostrarDialogoTutorial('¡Tutorial ' + num + ' completado! ' + (3 - completados.length) + ' tutorial(es) restante(s).', 'Continuar');
+            }
+            // Volver al menú
+            ocultarPortraitNPC();
+            ocultarPantallasPrincipales();
+            document.getElementById('main-menu').classList.remove('hidden');
+            actualizarBotonesTutorial();
+        }
+
+        // Dar mazo de regalo
+        function darMazoRegalo() {
+            const mazoRegalo = {
+                id: 'mazo_regalo_tutorial',
+                nombre: 'Mazo de Regalo',
+                liderId: 'blue_lider_02', // Hugopima el Maestro
+                cartas: {
+                    'agustin': 4,
+                    'alejandro': 4,
+                    'brawlera': 4, // Andrea la Brawlera
+                    'carlospro': 4,
+                    'cristian': 4,
+                    'fnaf': 4, // FNAPM
+                    'hog': 4, // Hog128
+                    'hugopima': 4,
+                    'lucas': 4, // CTLucas
+                    'lumi': 2, // Lumi es Support
+                    'megalberto': 4, // Megalberto Mewing
+                    'nyx': 4,
+                    'sergio': 4 // Sergio saltarín
+                }
+            };
+            mazosGuardados = JSON.parse(localStorage.getItem('gc_tcg_mazos') || '[]');
+            // Verificar si ya existe
+            if (!mazosGuardados.some(m => m.id === mazoRegalo.id)) {
+                mazosGuardados.push(mazoRegalo);
+                localStorage.setItem('gc_tcg_mazos', JSON.stringify(mazosGuardados));
+                guardarListaMazos();
+            }
+        }
+
+
         // ===== LOGROS Y MISIONES =====
         // Definición de logros
         const LOGROS = [
@@ -6567,6 +6972,13 @@
             { id: 'reciclar', icon: '♻️', nombre: 'Reciclador', desc: 'Recicla 1 carta', reward: 50, check: s => s.cartasRecicladas >= 1, progress: s => `${Math.min(s.cartasRecicladas,1)}/1` },
             { id: 'counter_master', icon: '🛡️', nombre: 'Counter Master', desc: 'Usa 10 Counter Plays con éxito', reward: 200, check: s => s.counterPlays >= 10, progress: s => `${Math.min(s.counterPlays,10)}/10` },
             { id: 'bloqueador_experto', icon: '🚧', nombre: 'Bloqueador experto', desc: 'Usa 10 Bloqueadores con éxito', reward: 150, check: s => s.bloqueadores >= 10, progress: s => `${Math.min(s.bloqueadores,10)}/10` },
+            { id: 'tutorial_completado', icon: '🎓', nombre: 'Graduado', desc: 'Completa todos los tutoriales', reward: 500, check: s => {
+                const completados = JSON.parse(localStorage.getItem('gc_tcg_tutoriales_completados') || '[]');
+                return completados.length >= 3;
+            }, progress: s => {
+                const completados = JSON.parse(localStorage.getItem('gc_tcg_tutoriales_completados') || '[]');
+                return `${completados.length}/3`;
+            } },
         ];
 
         // Misiones diarias y semanales (se generan aleatoriamente)
