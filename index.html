@@ -9785,6 +9785,9 @@
             const j = estadoPartida.jugador;
             const atacante = r.batalla[unidadIndex];
             if (!atacante) return false;
+            // Marcar la unidad como atacante rival (para el glow y el render del combo)
+            estadoPartida.rivalAtacanteId = atacante.id;
+            estadoPartida.rivalComboActual = 0;
 
             // === 1. FASE DE COUNTER PLAY ===
             // El jugador puede tener cartas de Counter Play en mano para negar la unidad atacante.
@@ -9889,10 +9892,14 @@
                     }
                 }
             }
-            // Limpiar combo del defensor
+            // Limpiar combo del defensor y estado del ataque
             j.combo.forEach(c => j.descarte.push(c.id || c));
             j.combo = [];
-            mostrarChoque(poderAtacante, poderDefensorTotal, ganaAtacante ? 'Atacante' : 'Defensor', ganaAtacante);
+            estadoPartida.ataqueActual = null;
+            estadoPartida.rivalAtacanteId = null;
+            estadoPartida.rivalComboActual = 0;
+            estadoPartida.faseIndex = 2;
+            mostrarChoque(poderDefensorTotal, poderAtacante, ganaAtacante ? 'Atacante' : 'Defensor', !ganaAtacante);
             renderizarPartida();
             if (typeof verificarFinPartida === 'function') verificarFinPartida();
             return true;
@@ -10011,7 +10018,7 @@
             estadoPartida.rivalAtacanteId = null;
             estadoPartida.rivalComboActual = 0;
             estadoPartida.faseIndex = 2;
-            mostrarChoque(poderAtacante, poderDefensorTotal, ganaAtacante ? 'Atacante' : 'Defensor', !ganaAtacante);
+            mostrarChoque(poderDefensorTotal, poderAtacante, ganaAtacante ? 'Atacante' : 'Defensor', !ganaAtacante);
             renderizarPartida();
             if (typeof verificarFinPartida === 'function') verificarFinPartida();
             return true;
@@ -11451,7 +11458,8 @@
                 comboLider = estadoPartida.ataqueActual.atacanteCombo || 0;
             }
             // Si el líder es el defensor en fase de combo defensora, añadir el combo defensivo
-            if (estadoPartida.faseIndex === 4 && estadoPartida.ataqueActual?.objetivo?.tipo === 'lider' && estadoPartida.ataqueActual?.defensorCombo) {
+            // SOLO si el rival es el atacante (rivalAtacanteId set) → el objetivo es el líder del jugador
+            if (estadoPartida.faseIndex === 4 && estadoPartida.ataqueActual?.objetivo?.tipo === 'lider' && estadoPartida.ataqueActual?.defensorCombo && estadoPartida.rivalAtacanteId) {
                 comboLider += estadoPartida.ataqueActual.defensorCombo;
             }
             const liderPoderActual = liderPoderBase + (liderObj.buffs.poder || 0) + (liderObj.buffs.batalla || 0) + comboLider;
@@ -11495,8 +11503,9 @@
                 }
             }
             // Si el líder rival es el objetivo y hay combo defensora, añadirlo
+            // SOLO si el jugador es el atacante (rivalAtacanteId NO set) → el objetivo es el líder rival
             let rivalDefensaLider = 0;
-            if (estadoPartida.faseIndex === 4 && estadoPartida.ataqueActual?.objetivo?.tipo === 'lider' && estadoPartida.ataqueActual?.defensorCombo) {
+            if (estadoPartida.faseIndex === 4 && estadoPartida.ataqueActual?.objetivo?.tipo === 'lider' && estadoPartida.ataqueActual?.defensorCombo && !estadoPartida.rivalAtacanteId) {
                 rivalDefensaLider = estadoPartida.ataqueActual.defensorCombo;
             }
             const rivalLiderPoder = rivalLiderBase + (rivalLiderObj.buffs.poder || 0) + (rivalLiderObj.buffs.batalla || 0) + rivalComboLider + rivalDefensaLider;
