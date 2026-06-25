@@ -6292,11 +6292,11 @@
                 const copias = copiasEnMazo(id);
                 const poseidas = getCantidadCarta(id);
                 const lider = esLider(c);
-                // Agotado si: no es líder, no tiene copias, o ya tiene 4 en mazo, o ya tiene todas las poseidas en mazo
-                const agotado = !lider && (copias >= 4 || poseidas <= 0 || copias >= poseidas);
+                // Agotado si: no tiene copias, o ya tiene 4 en mazo, o ya tiene todas las poseidas en mazo
+                const agotado = (poseidas <= 0) || (!lider && (copias >= 4 || copias >= poseidas));
                 const cantidadHtml = `<span class="owned-count ${poseidas === 0 ? 'zero' : ''}" style="bottom:auto;right:auto;top:4px;left:4px;">${poseidas}</span>`;
-                // Las cartas con 0 copias se muestran en blanco y negro (grayscale)
-                const bwStyle = (!lider && poseidas === 0) ? 'filter: grayscale(100%) brightness(0.6); opacity:0.7;' : '';
+                // Las cartas con 0 copias se muestran en blanco y negro (grayscale), incluidos los líderes
+                const bwStyle = (poseidas === 0) ? 'filter: grayscale(100%) brightness(0.6); opacity:0.7;' : '';
                 libContainer.innerHTML += `
                     <div class="deck-card" style="border-color: ${obtenerColorBorde(c.color)}">
                         <div class="deck-card-img" onclick="abrirDetalleMazo(${i})">
@@ -8106,14 +8106,9 @@
 
         async function irAJugar() {
             await cargarBaseDeDatos();
-            const mazo = obtenerMazoAsignado();
-            if (!mazo) {
-                ocultarPantallasPrincipales();
-                document.getElementById('game-setup-screen').classList.remove('hidden');
-                renderizarPreparacionPartida(mazo);
-                return;
-            }
-            // Mostrar modal de selección de modo
+            // Mostrar siempre el modal de selección de modo (VS IA, Online, Tutorial).
+            // El check de mazo válido se hace al elegir VS IA o Online, NO al elegir Tutorial.
+            // Así los jugadores nuevos pueden hacer el tutorial sin tener un mazo todavía.
             document.getElementById('play-mode-overlay').classList.remove('hidden');
         }
 
@@ -8122,6 +8117,12 @@
         }
 
         function iniciarPartidaOnline() {
+            // Necesitas un mazo válido para jugar online
+            const mazo = obtenerMazoAsignado();
+            if (!mazo) {
+                alert('Necesitas un mazo válido para jugar online. Crea uno en la sección de Mazos o completa el Tutorial para recibir el Mazo de Regalo.');
+                return;
+            }
             cerrarPlayMode();
             document.getElementById('online-lobby-overlay').classList.remove('hidden');
             // Mostrar pantalla principal
@@ -8707,7 +8708,7 @@
 
         function iniciarPartida(modo) {
             const mazo = obtenerMazoAsignado();
-            if (!mazo) return alert('Necesitas un mazo valido para empezar la partida.');
+            if (!mazo) return alert('Necesitas un mazo válido para jugar contra la IA. Crea uno en la sección de Mazos o completa el Tutorial para recibir el Mazo de Regalo.');
             const jugador = {
                 liderId: mazo.liderId,
                 mazo: expandirCartasMazo(mazo),
