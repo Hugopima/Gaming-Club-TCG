@@ -325,7 +325,7 @@
       "lore": "Vive en el culo del mundo, en un pueblo que se llama Legua Completa… ¿Que es una legua?",
       "habilidades": [
         {"tag": "Automático", "css": "tag-auto", "desc": "Invoca una carta ficha \"Deku\" y juégala sin coste. (Deku es una carta sin habilidades que pega de 15000)."},
-        {"tag": "Permanente", "css": "tag-perm", "desc": "Si tienes 4 cartas o menos en tu mano, esta carta y todas tus fichas de Deku obtienen doble golpe."}
+        {"tag": "Permanente", "css": "tag-perm", "desc": "Si tienes 4 cartas o menos en tu mano, todas tus fichas de Deku obtienen doble golpe."}
       ]
     },
   {
