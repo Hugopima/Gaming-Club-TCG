@@ -76,8 +76,8 @@ if (SUPABASE_URL && SUPABASE_ANON_KEY) {
 // Inventario por defecto para nuevos usuarios
 function inventarioDefault(username) {
     return {
-        coins: 5000,
-        energy: 1000,
+        coins: 0,
+        energy: 0,
         cartas: {},
         stats: {
             partidasJugadas: 0, victoriasIA: 0, victoriasOnline: 0, derrotas: 0,
