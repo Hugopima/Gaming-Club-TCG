@@ -1376,17 +1376,24 @@
         .tutorial-dialog-overlay.active { display: flex; }
         .tutorial-dialog-box {
             background: white; border: 4px solid #1a1030; border-radius: 16px;
-            padding: 18px 28px; max-width: 520px; width: 90vw;
+            padding: 18px 28px; max-width: 560px; width: 90vw;
             box-shadow: 0 8px 30px rgba(0,0,0,.5); position: relative;
             font-family: 'Segoe UI', sans-serif; color: #1a1030;
+            display: flex; gap: 16px; align-items: flex-start;
         }
         .tutorial-dialog-box::after {
             content: ''; position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%);
             width: 0; height: 0; border-left: 18px solid transparent; border-right: 18px solid transparent;
             border-top: 18px solid #1a1030;
         }
+        .tutorial-dialog-npc {
+            width: 70px; height: 70px; border-radius: 50%; border: 3px solid #a040c0;
+            background: #1a1030; overflow: hidden; flex-shrink: 0;
+        }
+        .tutorial-dialog-npc img { width: 100%; height: 100%; object-fit: cover; }
+        .tutorial-dialog-content { flex: 1; }
         .tutorial-dialog-text {
-            font-size: 15px; line-height: 1.5; font-weight: 600; min-height: 60px;
+            font-size: 15px; line-height: 1.5; font-weight: 600; min-height: 50px;
         }
         .tutorial-dialog-btn {
             display: block; margin: 14px auto 0; background: #1a1030; color: white;
@@ -1939,9 +1946,11 @@
                     🌐 JUGAR ONLINE<br><small style="font-size:12px;font-weight:400;">Contra otra persona</small>
                 </button>
             </div>
-            <button class="plate-btn" style="margin-top:16px;min-width:300px;padding:14px 30px;font-size:16px;background:linear-gradient(145deg,#a040c0,#6020a0);border:2px solid #d9a6ff;" onclick="cerrarPlayMode(); mostrarSeleccionTutorial()">
-                📚 TUTORIAL<br><small style="font-size:12px;font-weight:400;">Aprende a jugar</small>
-            </button>
+            <div style="margin-top:16px;">
+                <button class="plate-btn" style="min-width:420px;padding:14px 30px;font-size:16px;background:linear-gradient(145deg,#a040c0,#6020a0);border:2px solid #d9a6ff;" onclick="cerrarPlayMode(); mostrarSeleccionTutorial()">
+                    📚 TUTORIAL<br><small style="font-size:12px;font-weight:400;">Aprende a jugar</small>
+                </button>
+            </div>
             <button class="plate-btn btn-nav" style="margin-top:24px;" onclick="cerrarPlayMode()">Cancelar</button>
         </div>
     </div>
@@ -1969,14 +1978,19 @@
     <!-- Overlay de diálogo del tutorial -->
     <div id="tutorial-dialog-overlay" class="tutorial-dialog-overlay">
         <div class="tutorial-dialog-box">
-            <div class="tutorial-dialog-text" id="tutorial-dialog-text"></div>
-            <button class="tutorial-dialog-btn" id="tutorial-dialog-btn" onclick="siguienteDialogoTutorial()">OK</button>
+            <div class="tutorial-dialog-npc">
+                <img src="imagenes/npc.png" alt="NPC" onerror="this.style.display='none';this.parentElement.style.background='linear-gradient(135deg,#a040c0,#6020a0)';this.parentElement.innerHTML='<div style=%22color:white;font-size:28px;text-align:center;line-height:70px%22>🧙</div>'">
+            </div>
+            <div class="tutorial-dialog-content">
+                <div class="tutorial-dialog-text" id="tutorial-dialog-text"></div>
+                <button class="tutorial-dialog-btn" id="tutorial-dialog-btn" onclick="siguienteDialogoTutorial()">OK</button>
+            </div>
         </div>
     </div>
 
-    <!-- Portrait del NPC (esquina inferior derecha) -->
+    <!-- Portrait del NPC (esquina inferior derecha) - solo para reabrir último mensaje -->
     <div class="tutorial-npc-portrait" id="tutorial-npc-portrait" onclick="abrirUltimoDialogo()">
-        <img src="imagenes/npc.png" alt="NPC" onerror="this.style.display='none';this.parentElement.style.background='linear-gradient(135deg,#a040c0,#6020a0)';this.parentElement.innerHTML+='<div style=%22color:white;font-size:32px;text-align:center;line-height:80px%22>🧙</div>'">
+        <img src="imagenes/npc.png" alt="NPC" onerror="this.style.display='none';this.parentElement.style.background='linear-gradient(135deg,#a040c0,#6020a0)';this.parentElement.innerHTML='<div style=%22color:white;font-size:32px;text-align:center;line-height:80px%22>🧙</div>'">
     </div>
 
     <div id="online-lobby-overlay" class="hidden" style="position:fixed;inset:0;z-index:2850;background:radial-gradient(circle at center,rgba(20,40,80,.95),rgba(0,0,0,.96));display:flex;align-items:center;justify-content:center;padding:24px;">
@@ -6701,9 +6715,23 @@
         // Iniciar tutorial
         async function iniciarTutorial(num) {
             cerrarSeleccionTutorial();
+            // Asegurar que los datos están cargados
             if (!datosCartas || !datosCartas.length) {
                 await cargarBaseDeDatos();
             }
+            // Esperar a que datosCartas esté disponible
+            let intentos = 0;
+            while ((!datosCartas || !datosCartas.length) && intentos < 20) {
+                await sleep(200);
+                intentos++;
+            }
+            if (!datosCartas || !datosCartas.length) {
+                alert('Error: no se pudieron cargar las cartas.');
+                return;
+            }
+            // Limpiar estado del tutorial anterior
+            _tutorialState = { ultimoMensaje: null, resolveDialogo: null };
+            // Inicializar motor de efectos
             if (window.MotorEfectos) MotorEfectos.init();
             if (num === 1) await tutorial1();
             else if (num === 2) await tutorial2();
@@ -6773,7 +6801,7 @@
         async function tutorial2() {
             const jugador = {
                 liderId: 'blue_lider_02', // Hugopima
-                mazo: [], mano: ['grito', 'cristian', 'agustin', 'alejandro'], mana: [{ id: 'agustin', rested: false }, { id: 'alejandro', rested: false }], batalla: [crearUnidadTutorial('grito', { rested: false })], combo: [], descarte: [], campo: [], manaActivo: 2,
+                mazo: [], mano: ['grito', 'cristian', 'agustin', 'alejandro'], mana: [{ id: 'agustin', rested: false }, { id: 'alejandro', rested: false }], batalla: [crearUnidadTutorial('carlospro', { rested: false })], combo: [], descarte: [], campo: [], manaActivo: 2,
                 manaUsadoEsteTurno: true, roboDeTurnoHecho: true, liderDespierto: false, vida: []
             };
             const rival = {
@@ -7357,11 +7385,10 @@
             if (!_inventario) return;
             const coinsEl = document.getElementById('coins-amount');
             const energyEl = document.getElementById('energy-amount');
-            if (coinsEl) coinsEl.textContent = _inventario.coins;
-            if (energyEl) energyEl.textContent = _inventario.energy;
-            // Actualizar también la tienda si está visible
+            if (coinsEl) coinsEl.textContent = _inventario.coins || 0;
+            if (energyEl) energyEl.textContent = _inventario.energy || 0;
             const shopCoins = document.getElementById('shop-coins');
-            if (shopCoins) shopCoins.textContent = _inventario.coins;
+            if (shopCoins) shopCoins.textContent = _inventario.coins || 0;
         }
 
         // Tabla de costes de tokens por rareza (fabricar y reciclar)
@@ -9266,6 +9293,8 @@
                 estadoPartida.atacanteSeleccionado = null;
                 estadoPartida.turnoDelJugadorLocal = true;
             }
+            // En modo tutorial, siempre se puede interactuar si es tu turno
+            if (estadoPartida.modo === 'tutorial') return estadoPartida.turnoDelJugadorLocal !== false;
             // En modo online, solo se puede interactuar si es tu turno
             if (estadoPartida.modo === 'online' && !estadoPartida.turnoDelJugadorLocal) return false;
             return true;
@@ -9489,7 +9518,12 @@
 
             if (window.MotorEfectos) MotorEfectos.alFinTurno('jugador');
 
-            if (estadoPartida.modo === 'online') {
+            if (estadoPartida.modo === 'tutorial') {
+                // En tutorial: solo incrementar el turno (el tutorial lo detecta)
+                estadoPartida.turno += 1;
+                estadoPartida.log = 'Turno ' + estadoPartida.turno;
+                renderizarPartida();
+            } else if (estadoPartida.modo === 'online') {
                 // En online: enviar snapshot con 'fin-turno' al rival
                 estadoPartida.turno += 1;
                 estadoPartida.faseIndex = 0;
@@ -10952,6 +10986,9 @@
             document.getElementById('game-end-overlay')?.classList.add('hidden');
             document.getElementById('leader-intro-overlay')?.classList.add('hidden');
             document.getElementById('surrender-dialog')?.classList.add('hidden');
+            // Ocultar NPC del tutorial si estaba visible
+            document.getElementById('tutorial-npc-portrait')?.classList.remove('active');
+            document.getElementById('tutorial-dialog-overlay')?.classList.remove('active');
             // Limpiar estado persistido
             try { localStorage.removeItem('gc_tcg_partida_online'); } catch (e) {}
             // Solo enviar 'rendirse' si la partida NO está finalizada.
