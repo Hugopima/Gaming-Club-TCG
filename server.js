@@ -100,7 +100,10 @@ function inventarioDefault(username) {
 
 // Cargar o crear inventario en Supabase
 async function cargarOCrearInventario(discordId, username) {
-    if (!supabase) return null;
+    if (!supabase) {
+        console.error('[Supabase] Cliente no inicializado');
+        return null;
+    }
     try {
         // Intentar cargar
         const { data, error } = await supabase
@@ -108,21 +111,25 @@ async function cargarOCrearInventario(discordId, username) {
             .select('*')
             .eq('discord_id', discordId)
             .single();
+        
+        // Si hay data, devolverla
         if (data) {
             // Actualizar username por si cambió
-            if (data.username !== username) {
+            if (username && data.username !== username) {
                 await supabase.from('inventarios').update({ username, updated_at: new Date() }).eq('discord_id', discordId);
                 data.username = username;
             }
             return data;
         }
-        // No existe: crear
-        const nuevoInv = inventarioDefault(username);
+        
+        // No existe: crear nuevo
+        console.log('[Supabase] Creando nuevo inventario para', discordId);
+        const nuevoInv = inventarioDefault(username || 'Jugador');
         const { data: nuevo, error: errInsert } = await supabase
             .from('inventarios')
             .insert({
                 discord_id: discordId,
-                username: username,
+                username: username || 'Jugador',
                 coins: nuevoInv.coins,
                 energy: nuevoInv.energy,
                 cartas: nuevoInv.cartas,
@@ -132,13 +139,15 @@ async function cargarOCrearInventario(discordId, username) {
             })
             .select()
             .single();
+        
         if (errInsert) {
-            console.error('Error creando inventario:', errInsert);
+            console.error('[Supabase] Error creando inventario:', JSON.stringify(errInsert));
             return null;
         }
+        console.log('[Supabase] Inventario creado correctamente:', nuevo.discord_id);
         return nuevo;
     } catch (e) {
-        console.error('Error en cargarOCrearInventario:', e);
+        console.error('[Supabase] Error en cargarOCrearInventario:', e.message);
         return null;
     }
 }
@@ -213,33 +222,63 @@ app.post('/api/guardar-inventario', async (req, res) => {
         if (!discord_id) return res.status(400).json({ error: 'Falta discord_id' });
         if (!supabase) return res.status(500).json({ error: 'Supabase no configurado' });
 
-        const { data, error } = await supabase
+        // Primero verificar si ya existe
+        const { data: existente } = await supabase
             .from('inventarios')
-            .upsert({
-                discord_id: discord_id,
-                coins: coins,
-                energy: energy,
-                cartas: cartas || {},
-                stats: stats || {},
-                misiones: misiones || {},
-                mazos: mazos || [],
-                updated_at: new Date()
-            })
-            .select()
+            .select('discord_id')
+            .eq('discord_id', discord_id)
             .single();
 
-        if (error) {
-            console.error('Error guardando inventario:', error);
-            return res.status(500).json({ error: 'Error al guardar inventario' });
+        let resultado;
+        if (existente) {
+            // Actualizar
+            const { data, error } = await supabase
+                .from('inventarios')
+                .update({
+                    coins: coins,
+                    energy: energy,
+                    cartas: cartas || {},
+                    stats: stats || {},
+                    misiones: misiones || {},
+                    mazos: mazos || [],
+                    updated_at: new Date()
+                })
+                .eq('discord_id', discord_id)
+                .select()
+                .single();
+            resultado = { data, error };
+        } else {
+            // Insertar nuevo
+            const { data, error } = await supabase
+                .from('inventarios')
+                .insert({
+                    discord_id: discord_id,
+                    username: 'Jugador',
+                    coins: coins,
+                    energy: energy,
+                    cartas: cartas || {},
+                    stats: stats || {},
+                    misiones: misiones || {},
+                    mazos: mazos || [],
+                    updated_at: new Date()
+                })
+                .select()
+                .single();
+            resultado = { data, error };
         }
-        res.json({ success: true, inventario: data });
+
+        if (resultado.error) {
+            console.error('[Supabase] Error guardando inventario:', JSON.stringify(resultado.error));
+            return res.status(500).json({ error: 'Error al guardar inventario', details: resultado.error.message });
+        }
+        res.json({ success: true, inventario: resultado.data });
     } catch (e) {
-        console.error('Error en /api/guardar-inventario:', e);
-        res.status(500).json({ error: 'Error interno del servidor' });
+        console.error('[Supabase] Error en /api/guardar-inventario:', e.message);
+        res.status(500).json({ error: 'Error interno del servidor', details: e.message });
     }
 });
 
-// Cargar inventario
+// Cargar inventario (siempre crea si no existe)
 app.post('/api/cargar-inventario', async (req, res) => {
     try {
         const { discord_id } = req.body;
@@ -247,11 +286,14 @@ app.post('/api/cargar-inventario', async (req, res) => {
         if (!supabase) return res.status(500).json({ error: 'Supabase no configurado' });
 
         const inventario = await cargarOCrearInventario(discord_id, '');
-        if (!inventario) return res.status(404).json({ error: 'Inventario no encontrado' });
+        if (!inventario) {
+            console.error('[Supabase] No se pudo cargar/crear inventario para', discord_id);
+            return res.status(500).json({ error: 'No se pudo cargar ni crear el inventario' });
+        }
         res.json({ inventario });
     } catch (e) {
-        console.error('Error en /api/cargar-inventario:', e);
-        res.status(500).json({ error: 'Error interno del servidor' });
+        console.error('[Supabase] Error en /api/cargar-inventario:', e.message);
+        res.status(500).json({ error: 'Error interno del servidor', details: e.message });
     }
 });
 
