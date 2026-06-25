@@ -5445,6 +5445,11 @@
     robar(quien, 2);
     z.liderDespierto = true;
     log(`${liderCarta(quien)?.nombre} se transforma (≤4 vidas). Robas 2 cartas.`);
+    // Incrementar stat de despertares (logro Despertar) — solo para el jugador local
+    if (quien === 'jugador' && typeof _statsJugador !== 'undefined' && _statsJugador) {
+      _statsJugador.despertares = (_statsJugador.despertares || 0) + 1;
+      if (typeof guardarStats === 'function') guardarStats();
+    }
     if (typeof renderizarPartida === 'function') renderizarPartida();
     return true;
   }
@@ -5899,6 +5904,11 @@
     const u = zonaJugador(defensorQuien).batalla[idx];
     u.rested = true;
     estadoPartida.bloqueadorUsado = true;
+    // Incrementar stat de bloqueadores usados (logro Bloqueador experto) — solo defensor local
+    if (defensorQuien === 'jugador' && typeof _statsJugador !== 'undefined' && _statsJugador) {
+      _statsJugador.bloqueadores = (_statsJugador.bloqueadores || 0) + 1;
+      if (typeof guardarStats === 'function') guardarStats();
+    }
     dispatch(u.id, 'alUsarBloqueador', [defensorQuien, u, ataqueCtx]);
     log(`${getCardById(u.id)?.nombre} bloquea el ataque.`);
     return { tipo: 'unidad', index: idx, bloqueador: true };
@@ -5953,6 +5963,11 @@
     dispatch(pick, 'alCounterAtaque', [quien, ataqueCtx]);
     const counterEnCampo = zonaJugador(quien).batalla.find(u => u.id === pick);
     if (counterEnCampo) { counterEnCampo.rested = true; counterEnCampo.ataquesRestantes = 0; }
+    // Incrementar stat de counter plays usados (logro Counter Master) — solo defensor local
+    if (quien === 'jugador' && typeof _statsJugador !== 'undefined' && _statsJugador) {
+      _statsJugador.counterPlays = (_statsJugador.counterPlays || 0) + 1;
+      if (typeof guardarStats === 'function') guardarStats();
+    }
     log(`${getCardById(pick)?.nombre} niega el ataque.`);
     // Notificación visual de counter
     mostrarNotificacionCounter(getCardById(pick)?.nombre || 'Counter');
@@ -7040,8 +7055,8 @@
             { id: 'coleccionista', icon: '📚', nombre: 'Coleccionista', desc: 'Consigue 50 cartas únicas', reward: 200, check: s => s.cartasUnicas >= 50, progress: s => `${Math.min(s.cartasUnicas,50)}/50` },
             { id: 'archivero', icon: '🗂️', nombre: 'Archivero', desc: 'Consigue 100 cartas únicas', reward: 400, check: s => s.cartasUnicas >= 100, progress: s => `${Math.min(s.cartasUnicas,100)}/100` },
             { id: 'completista', icon: '💎', nombre: 'Completista', desc: 'Consigue las 108 cartas', reward: 1000, check: s => s.cartasUnicas >= 108, progress: s => `${s.cartasUnicas}/108` },
-            { id: 'todas_comunes', icon: '⚪', nombre: 'Todas las comunes', desc: 'Consigue las 40 cartas comunes', reward: 100, check: s => s.comunesUnicas >= 40, progress: s => `${s.comunesUnicas}/40` },
-            { id: 'todas_infrecuentes', icon: '🟢', nombre: 'Todas las infrecuentes', desc: 'Consigue las 36 infrecuentes', reward: 200, check: s => s.infrecuentesUnicas >= 36, progress: s => `${s.infrecuentesUnicas}/36` },
+            { id: 'todas_comunes', icon: '⚪', nombre: 'Todas las comunes', desc: 'Consigue las 39 cartas comunes', reward: 100, check: s => s.comunesUnicas >= 39, progress: s => `${s.comunesUnicas}/39` },
+            { id: 'todas_infrecuentes', icon: '🟢', nombre: 'Todas las infrecuentes', desc: 'Consigue las 35 infrecuentes', reward: 200, check: s => s.infrecuentesUnicas >= 35, progress: s => `${s.infrecuentesUnicas}/35` },
             { id: 'todas_raras', icon: '🔵', nombre: 'Todas las raras', desc: 'Consigue las 26 raras', reward: 500, check: s => s.rarasUnicas >= 26, progress: s => `${s.rarasUnicas}/26` },
             { id: 'todas_super_raras', icon: '🟣', nombre: 'Todas las súper raras', desc: 'Consigue las 8 súper raras', reward: 1500, check: s => s.superRarasUnicas >= 8, progress: s => `${s.superRarasUnicas}/8` },
             { id: 'primer_sobre', icon: '🎁', nombre: 'Primer sobre', desc: 'Abre tu primer sobre', reward: 50, check: s => s.sobresAbiertos >= 1, progress: s => `${Math.min(s.sobresAbiertos,1)}/1` },
@@ -7051,7 +7066,7 @@
             { id: 'despertar', icon: '🌅', nombre: 'Despertar', desc: 'Despierta tu líder por primera vez', reward: 50, check: s => s.despertares >= 1, progress: s => `${Math.min(s.despertares,1)}/1` },
             { id: 'fabricar', icon: '🔨', nombre: 'Artesano', desc: 'Fabrica 1 carta', reward: 100, check: s => s.cartasFabricadas >= 1, progress: s => `${Math.min(s.cartasFabricadas,1)}/1` },
             { id: 'reciclar', icon: '♻️', nombre: 'Reciclador', desc: 'Recicla 1 carta', reward: 50, check: s => s.cartasRecicladas >= 1, progress: s => `${Math.min(s.cartasRecicladas,1)}/1` },
-            { id: 'counter_master', icon: '🛡️', nombre: 'Counter Master', desc: 'Usa 10 Counter Plays con éxito', reward: 200, check: s => s.counterPlays >= 10, progress: s => `${Math.min(s.counterPlays,10)}/10` },
+            { id: 'counter_master', icon: '🛡️', nombre: 'Counter Master', desc: 'Usa 10 Counter Ataques con éxito', reward: 200, check: s => s.counterPlays >= 10, progress: s => `${Math.min(s.counterPlays,10)}/10` },
             { id: 'bloqueador_experto', icon: '🚧', nombre: 'Bloqueador experto', desc: 'Usa 10 Bloqueadores con éxito', reward: 150, check: s => s.bloqueadores >= 10, progress: s => `${Math.min(s.bloqueadores,10)}/10` },
             { id: 'tutorial_completado', icon: '🎓', nombre: 'Graduado', desc: 'Completa todos los tutoriales', reward: 500, check: s => {
                 const completados = JSON.parse(localStorage.getItem('gc_tcg_tutoriales_completados') || '[]');
@@ -9778,22 +9793,22 @@
 
             // === 2. FASE DE BLOQUEO ===
             // El jugador puede tener unidades con Bloqueador para interceptar el ataque.
-            if (window.MotorEfectos) {
-                const bloqueadores = MotorEfectos.unidadesEnCampo ? MotorEfectos.unidadesEnCampo('jugador', u => MotorEfectos.tieneBloqueador(u) && !u.rested) : [];
-                if (bloqueadores.length > 0) {
+            if (window.MotorEfectos && MotorEfectos.opcionesUnidades) {
+                const optsBloqueo = MotorEfectos.opcionesUnidades('jugador', u => MotorEfectos.tieneBloqueador(u) && !u.rested, 'Bloquear con ');
+                if (optsBloqueo.length > 0) {
                     // El jugador decide si bloquear (modal)
                     estadoPartida.log = '¿Quieres bloquear el ataque?';
                     renderizarPartida();
-                    const opts = bloqueadores.map((bu, i) => {
-                        const idx = j.batalla.indexOf(bu);
-                        return { label: 'Bloquear con ' + (getCardById(bu.id)?.nombre || bu.id), value: idx };
-                    }).concat([{ label: 'No bloquear', value: -1 }]);
-                    const bloqueoIdx = await MotorEfectos.elegirConModal('¿Bloquear el ataque de ' + (getCardById(atacante.id)?.nombre || 'la IA') + '?', opts);
+                    const optsFinal = optsBloqueo.concat([{ label: 'No bloquear', value: -1 }]);
+                    const bloqueoIdx = await MotorEfectos.elegirConModal('¿Bloquear el ataque de ' + (getCardById(atacante.id)?.nombre || 'la IA') + '?', optsFinal, { noCancelable: true });
                     if (bloqueoIdx != null && bloqueoIdx >= 0) {
                         // El jugador bloquea: la unidad bloqueadora se vuelve el objetivo
                         const bu = j.batalla[bloqueoIdx];
                         bu.rested = true;
                         objetivo = { tipo: 'unidad', index: bloqueoIdx };
+                        estadoPartida.bloqueadorUsado = true;
+                        // Incrementar stat de bloqueadores usados (logro Bloqueador experto)
+                        if (typeof _statsJugador !== 'undefined' && _statsJugador) { _statsJugador.bloqueadores = (_statsJugador.bloqueadores || 0) + 1; if (typeof guardarStats === 'function') guardarStats(); }
                         estadoPartida.log = (getCardById(bu.id)?.nombre || 'Tu unidad') + ' bloquea el ataque.';
                         renderizarPartida();
                         await sleep(500);
@@ -9819,23 +9834,24 @@
                 : Number(getCardById(atacante.id)?.poder || 0);
 
             // Preguntar al jugador si quiere combar (solo si tiene cartas en mano y es una unidad defensora o líder)
+            // Fase de combo defensora: entrar directamente (sin modal previo).
             // En tutoriales se puede omitir esta fase con opts.skipComboDefensora = true.
             if (!opts.skipComboDefensora && (j.mano.length > 0 || j.batalla.some(c => !c.rested))) {
-                estadoPartida.log = '¿Quieres combar para defender? (Puedes arrastrar cartas al área de combo o saltar)';
+                // Setear ataqueActual con el objetivo y el atacante para que soltarEnCombo
+                // funcione y las cartas arrastradas sumen poder al defensorCombo.
+                estadoPartida.ataqueActual = {
+                    atacanteRef: { tipo: 'unidad', index: unidadIndex },
+                    atacanteId: atacante.id,
+                    atacanteZonaRef: atacante,
+                    atacanteBase: poderAtacante,
+                    atacanteCombo: 0,
+                    objetivo: objetivo,
+                    defensorCombo: 0
+                };
+                estadoPartida.log = 'Arrastra cartas al COMBO AREA para defender. Pulsa "Listo" cuando acabes.';
                 renderizarPartida();
-                // Dar tiempo al jugador para combar: mostrar un modal "¿Combar para defender?"
-                const quiereCombar = await MotorEfectos.elegirConModal('¿Quieres combar para defender? (Arrastra cartas al área de combo después)', [
-                    { label: 'Sí, voy a combar', value: true },
-                    { label: 'No, saltar', value: false }
-                ]);
-                if (quiereCombar) {
-                    // Esperar a que el jugador arrastre cartas al combo y pulse "Listo"
-                    estadoPartida.log = 'Arrastra cartas al COMBO AREA. Pulsa "Listo" cuando acabes.';
-                    renderizarPartida();
-                    await esperarComboDefensora();
-                    // Calcular combo del defensor
-                    defensorCombo = (estadoPartida.ataqueActual?.defensorCombo) || 0;
-                }
+                await esperarComboDefensora();
+                defensorCombo = (estadoPartida.ataqueActual?.defensorCombo) || 0;
             }
 
             // === 4. RESOLUCIÓN ===
@@ -9899,21 +9915,22 @@
             await sleep(500);
 
             // === 1. FASE DE BLOQUEO ===
-            if (window.MotorEfectos) {
-                const bloqueadores = MotorEfectos.unidadesEnCampo ? MotorEfectos.unidadesEnCampo('jugador', u => MotorEfectos.tieneBloqueador(u) && !u.rested) : [];
-                if (bloqueadores.length > 0) {
+            // Solo se ofrece bloquear si hay unidades con Bloqueador ACTIVAS (no giradas).
+            // En el 2º ataque del tutorial 3, Megalberto ya está muerto → no se muestra el modal.
+            if (window.MotorEfectos && MotorEfectos.opcionesUnidades) {
+                const optsBloqueo = MotorEfectos.opcionesUnidades('jugador', u => MotorEfectos.tieneBloqueador(u) && !u.rested, 'Bloquear con ');
+                if (optsBloqueo.length > 0) {
                     estadoPartida.log = '¿Quieres bloquear el ataque del líder rival?';
                     renderizarPartida();
-                    const opts = bloqueadores.map((bu) => {
-                        const idx = j.batalla.indexOf(bu);
-                        return { label: 'Bloquear con ' + (getCardById(bu.id)?.nombre || bu.id), value: idx };
-                    }).concat([{ label: 'No bloquear', value: -1 }]);
-                    const bloqueoIdx = await MotorEfectos.elegirConModal('¿Bloquear el ataque del líder rival?', opts);
+                    const optsFinal = optsBloqueo.concat([{ label: 'No bloquear', value: -1 }]);
+                    const bloqueoIdx = await MotorEfectos.elegirConModal('¿Bloquear el ataque del líder rival?', optsFinal, { noCancelable: true });
                     if (bloqueoIdx != null && bloqueoIdx >= 0) {
                         const bu = j.batalla[bloqueoIdx];
                         bu.rested = true;
                         objetivo = { tipo: 'unidad', index: bloqueoIdx };
                         estadoPartida.bloqueadorUsado = true;
+                        // Incrementar stat de bloqueadores usados (logro Bloqueador experto)
+                        if (typeof _statsJugador !== 'undefined' && _statsJugador) { _statsJugador.bloqueadores = (_statsJugador.bloqueadores || 0) + 1; if (typeof guardarStats === 'function') guardarStats(); }
                         estadoPartida.log = (getCardById(bu.id)?.nombre || 'Tu unidad') + ' bloquea el ataque del líder rival.';
                         renderizarPartida();
                         await sleep(500);
@@ -9936,18 +9953,22 @@
                 : (r.liderDespierto ? Number(getCardById(r.liderId)?.poderEvo || 0) : Number(getCardById(r.liderId)?.poder || 0));
 
             if (!opts.skipComboDefensora && (j.mano.length > 0 || j.batalla.some(c => !c.rested))) {
-                estadoPartida.log = '¿Quieres combar para defender? (Puedes arrastrar cartas al área de combo o saltar)';
+                // Entrar directamente en fase de combo defensora (sin modal previo).
+                // Setear ataqueActual con el objetivo y el atacante para que soltarEnCombo
+                // funcione y las cartas arrastradas sumen poder al defensorCombo.
+                estadoPartida.ataqueActual = {
+                    atacanteRef: { tipo: 'lider' },
+                    atacanteId: r.liderId,
+                    atacanteZonaRef: atacante,
+                    atacanteBase: poderAtacante,
+                    atacanteCombo: 0,
+                    objetivo: objetivo,
+                    defensorCombo: 0
+                };
+                estadoPartida.log = 'Arrastra cartas al COMBO AREA para defender. Pulsa "Listo" cuando acabes.';
                 renderizarPartida();
-                const quiereCombar = await MotorEfectos.elegirConModal('¿Quieres combar para defender? (Arrastra cartas al área de combo después)', [
-                    { label: 'Sí, voy a combar', value: true },
-                    { label: 'No, saltar', value: false }
-                ]);
-                if (quiereCombar) {
-                    estadoPartida.log = 'Arrastra cartas al COMBO AREA. Pulsa "Listo" cuando acabes.';
-                    renderizarPartida();
-                    await esperarComboDefensora();
-                    defensorCombo = (estadoPartida.ataqueActual?.defensorCombo) || 0;
-                }
+                await esperarComboDefensora();
+                defensorCombo = (estadoPartida.ataqueActual?.defensorCombo) || 0;
             }
 
             // === 3. RESOLUCIÓN ===
