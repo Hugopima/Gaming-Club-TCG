@@ -6439,20 +6439,46 @@
             if (inv.mazos && Array.isArray(inv.mazos)) {
                 try {
                     localStorage.setItem('gc_tcg_mazos', JSON.stringify(inv.mazos));
+                    mazosGuardados = inv.mazos;
                 } catch (e) {}
             }
+            // Guardar en localStorage para que persista
             guardarInventario();
             guardarStats();
             guardarMisiones();
             actualizarBarraMonedas();
+            // Forzar re-renderizado de las pantallas si están visibles
+            if (!document.getElementById('main-menu').classList.contains('hidden')) {
+                // Menú principal: actualizar barra de monedas
+                actualizarBarraMonedas();
+            }
+            if (!document.getElementById('shop-screen').classList.contains('hidden')) {
+                // Tienda visible: actualizar monedas
+                const shopCoins = document.getElementById('shop-coins');
+                if (shopCoins) shopCoins.textContent = _inventario.coins;
+            }
+            if (!document.getElementById('collection-wrapper').classList.contains('hidden')) {
+                // Colección visible: re-renderizar para actualizar contadores
+                renderizarBiblioteca();
+            }
+            if (!document.getElementById('deck-menu-screen').classList.contains('hidden')) {
+                // Mazos visible: recargar mazos
+                cargarMazosGuardados();
+                renderizarSelectorMazos();
+            }
+            console.log('[Supabase] Inventario aplicado:', _inventario.coins, 'monedas,', _inventario.energy, 'energy,', Object.keys(_inventario.cartas).length, 'cartas únicas');
         }
 
         // Guardar inventario en Supabase (si hay sesión de Discord)
         async function guardarInventarioSupabase() {
             const user = getDiscordUser();
-            if (!user || !_inventario) return;
+            if (!user || !_inventario) {
+                console.log('[Supabase] No hay sesión o inventario, saltando guardado');
+                return;
+            }
+            console.log('[Supabase] Guardando inventario para discord_id:', user.id, '- coins:', _inventario.coins, '- cartas:', Object.keys(_inventario.cartas).length);
             try {
-                await fetch(DISCORD_API_BASE + '/api/guardar-inventario', {
+                const res = await fetch(DISCORD_API_BASE + '/api/guardar-inventario', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -6465,31 +6491,49 @@
                         mazos: JSON.parse(localStorage.getItem('gc_tcg_mazos') || '[]')
                     })
                 });
+                if (!res.ok) {
+                    const errText = await res.text();
+                    console.error('[Supabase] Error guardando inventario:', res.status, errText);
+                } else {
+                    console.log('[Supabase] Inventario guardado correctamente');
+                }
             } catch (e) {
-                console.error('Error guardando en Supabase:', e);
+                console.error('[Supabase] Error guardando en Supabase:', e);
             }
         }
 
         // Cargar inventario de Supabase al iniciar la app si hay sesión
         async function cargarInventarioSupabaseSiLogueado() {
             const user = getDiscordUser();
-            if (!user) return false;
+            if (!user) {
+                console.log('[Supabase] No hay sesión de Discord, saltando carga');
+                return false;
+            }
+            console.log('[Supabase] Cargando inventario para discord_id:', user.id);
             try {
                 const res = await fetch(DISCORD_API_BASE + '/api/cargar-inventario', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ discord_id: user.id })
                 });
-                if (!res.ok) return false;
+                console.log('[Supabase] Respuesta cargar-inventario:', res.status, res.ok);
+                if (!res.ok) {
+                    const errText = await res.text();
+                    console.error('[Supabase] Error cargando inventario:', res.status, errText);
+                    return false;
+                }
                 const data = await res.json();
+                console.log('[Supabase] Datos recibidos:', data);
                 if (data.inventario) {
                     aplicarInventarioDeSupabase(data.inventario);
                     return true;
                 }
+                console.warn('[Supabase] No se recibió inventario en la respuesta');
+                return false;
             } catch (e) {
-                console.error('Error cargando de Supabase:', e);
+                console.error('[Supabase] Error cargando de Supabase:', e);
+                return false;
             }
-            return false;
         }
 
 
@@ -11089,12 +11133,17 @@
         // === PROTECCIÓN F5 Y RECONEXIÓN ===
         // Al cargar la página, comprobar si hay una partida online guardada
         window.addEventListener('load', async () => {
-            // Cargar inventario al inicio (para mostrar monedas en menú principal)
+            // Cargar base de datos de cartas
             await cargarBaseDeDatos();
             // Si hay sesión de Discord, cargar inventario de Supabase (nube)
-            const sesionDiscord = getDiscordUser();
-            if (sesionDiscord) {
-                await cargarInventarioSupabaseSiLogueado();
+            // Esto SOBREESCRIBE el inventario local con el de la nube.
+            const sesionDiscard = getDiscordUser();
+            if (sesionDiscard) {
+                const ok = await cargarInventarioSupabaseSiLogueado();
+                if (!ok) {
+                    // Si falla la carga de Supabase, usar localStorage como fallback
+                    cargarInventario();
+                }
             } else {
                 // Modo invitado: cargar de localStorage
                 cargarInventario();
