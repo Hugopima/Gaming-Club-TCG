@@ -1945,9 +1945,7 @@
                 <button class="plate-btn btn-blue" style="min-width:200px;padding:20px 30px;font-size:18px;" onclick="iniciarPartidaOnline()">
                     🌐 JUGAR ONLINE<br><small style="font-size:12px;font-weight:400;">Contra otra persona</small>
                 </button>
-            </div>
-            <div style="margin-top:16px;">
-                <button class="plate-btn" style="min-width:420px;padding:14px 30px;font-size:16px;background:linear-gradient(145deg,#a040c0,#6020a0);border:2px solid #d9a6ff;" onclick="cerrarPlayMode(); mostrarSeleccionTutorial()">
+                <button class="plate-btn" style="min-width:200px;padding:20px 30px;font-size:18px;background:linear-gradient(145deg,#a040c0,#6020a0);border:2px solid #d9a6ff;color:white;" onclick="cerrarPlayMode(); mostrarSeleccionTutorial()">
                     📚 TUTORIAL<br><small style="font-size:12px;font-weight:400;">Aprende a jugar</small>
                 </button>
             </div>
@@ -1983,6 +1981,7 @@
             </div>
             <div class="tutorial-dialog-content">
                 <div class="tutorial-dialog-text" id="tutorial-dialog-text"></div>
+                <img id="tutorial-dialog-img" src="" alt="" style="display:none;max-width:220px;max-height:160px;margin:10px auto 0;border-radius:8px;border:2px solid #a040c0;object-fit:contain;" onerror="this.style.display='none'">
                 <button class="tutorial-dialog-btn" id="tutorial-dialog-btn" onclick="siguienteDialogoTutorial()">OK</button>
             </div>
         </div>
@@ -6650,6 +6649,9 @@
 
         // ===== TUTORIALES =====
         let _tutorialState = null;
+        // Flag para abortar el flujo async del tutorial cuando el jugador sale
+        // (evita que los diálogos/NPC se queden visibles fuera del tutorial).
+        let _tutorialAbortado = false;
 
         // Mostrar selección de tutorial
         function mostrarSeleccionTutorial() {
@@ -6671,19 +6673,32 @@
         }
 
         // Mostrar diálogo del NPC
-        function mostrarDialogoTutorial(texto, btnTexto) {
+        // imagen (opcional): ruta de una imagen para mostrar junto al texto (ej. 'imagenes/combo.png').
+        function mostrarDialogoTutorial(texto, btnTexto, imagen) {
             return new Promise(resolve => {
+                // Si el tutorial fue abortado, resolver inmediatamente sin mostrar nada
+                if (_tutorialAbortado) { resolve(); return; }
                 const overlay = document.getElementById('tutorial-dialog-overlay');
                 const textEl = document.getElementById('tutorial-dialog-text');
                 const btnEl = document.getElementById('tutorial-dialog-btn');
+                const imgEl = document.getElementById('tutorial-dialog-img');
                 textEl.innerHTML = texto;
                 btnEl.textContent = btnTexto || 'OK';
+                // Mostrar imagen opcional junto al texto
+                if (imagen && imgEl) {
+                    imgEl.src = imagen;
+                    imgEl.style.display = 'block';
+                } else if (imgEl) {
+                    imgEl.style.display = 'none';
+                    imgEl.src = '';
+                }
                 overlay.classList.add('active');
                 // Mostrar portrait del NPC
                 document.getElementById('tutorial-npc-portrait').classList.add('active');
                 // Guardar último mensaje
                 _tutorialState = _tutorialState || {};
                 _tutorialState.ultimoMensaje = texto;
+                _tutorialState.ultimoMensajeImagen = imagen || null;
                 _tutorialState.resolveDialogo = resolve;
             });
         }
@@ -6696,8 +6711,11 @@
             }
         }
         function abrirUltimoDialogo() {
+            // Solo reabrir si estamos dentro de un tutorial activo
+            if (_tutorialAbortado) return;
+            if (!estadoPartida || estadoPartida.modo !== 'tutorial') return;
             if (_tutorialState && _tutorialState.ultimoMensaje) {
-                mostrarDialogoTutorial(_tutorialState.ultimoMensaje, 'OK');
+                mostrarDialogoTutorial(_tutorialState.ultimoMensaje, 'OK', _tutorialState.ultimoMensajeImagen);
             }
         }
         function ocultarPortraitNPC() {
@@ -6729,8 +6747,12 @@
                 alert('Error: no se pudieron cargar las cartas.');
                 return;
             }
-            // Limpiar estado del tutorial anterior
+            // Limpiar estado del tutorial anterior y resetear flag de aborto
+            _tutorialAbortado = false;
             _tutorialState = { ultimoMensaje: null, resolveDialogo: null };
+            // Limpiar cualquier diálogo/NPC residual de tutoriales anteriores
+            document.getElementById('tutorial-dialog-overlay')?.classList.remove('active');
+            document.getElementById('tutorial-npc-portrait')?.classList.remove('active');
             // Inicializar motor de efectos
             if (window.MotorEfectos) MotorEfectos.init();
             if (num === 1) await tutorial1();
@@ -6743,7 +6765,7 @@
             // Configurar partida
             const jugador = {
                 liderId: 'blue_lider_02', // Hugopima el maestro
-                mazo: [], mano: ['hugopima', 'agustin', 'alejandro', 'carlospro', 'cristian'], mana: [], batalla: [], combo: [], descarte: [], campo: [], manaActivo: 0,
+                mazo: [], mano: ['hugopima', 'agus', 'alejandro', 'carlospro', 'cristian'], mana: [], batalla: [], combo: [], descarte: [], campo: [], manaActivo: 0,
                 manaUsadoEsteTurno: false, roboDeTurnoHecho: false, liderDespierto: false, vida: []
             };
             const rival = {
@@ -6774,17 +6796,17 @@
 
             // Esperar a que el jugador ponga maná y pase a fase principal
             await esperarAccionTutorial(() => estadoPartida.faseIndex === 1 && estadoPartida.jugador.mana.length > 0, 60000);
-
+            if (_tutorialAbortado) return;
             await mostrarDialogoTutorial('¡Muy bien! Ahora estamos en la fase Principal. En esta fase puedes jugar unidades, usar habilidades y preparar tu estrategia. Coge esa unidad de coste 1 de tu mano y arrástrala al campo. Luego dale a siguiente.', 'OK');
 
             // Esperar a que juegue una unidad y pase a batalla
             await esperarAccionTutorial(() => estadoPartida.faseIndex === 2 && estadoPartida.jugador.batalla.length > 0, 60000);
-
+            if (_tutorialAbortado) return;
             await mostrarDialogoTutorial('¡Ahora estás en la fase de batalla! Puedes pelear con unidades y con tu líder. Solo puedes atacar a cartas que estén en modo descanso (giradas) o al líder rival. Al atacar, tu carta se pone en modo descanso hasta tu siguiente turno. La carta con más poder gana la batalla y le inflige daño al líder o puede derrotar a una unidad. En caso de empate de poder, gana el atacante. ¡Pruébalo! Selecciona tu unidad para atacar y de objetivo a la unidad rival, y al líder para infligir daño al líder rival.', 'OK');
 
             // Esperar a que ataque (la unidad atacante se pone en rested)
             await esperarAccionTutorial(() => estadoPartida.jugador.batalla.some(u => u.rested) || estadoPartida.rival.batalla.length === 0, 60000);
-
+            if (_tutorialAbortado) return;
             await mostrarDialogoTutorial('¡Muy bien! Así es un turno. Ahora toca "Finalizar turno". Esto te acaba el tutorial.', 'OK');
 
             // Esperar a que finalice el turno
@@ -6792,7 +6814,7 @@
             if (finTurnoBtn) {
                 await esperarAccionTutorial(() => estadoPartida.turno > 1, 60000);
             }
-
+            if (_tutorialAbortado) return;
             // Completar tutorial
             await completarTutorial(1);
         }
@@ -6801,7 +6823,7 @@
         async function tutorial2() {
             const jugador = {
                 liderId: 'blue_lider_02', // Hugopima
-                mazo: [], mano: ['grito', 'cristian', 'agustin', 'alejandro'], mana: [{ id: 'agustin', rested: false }, { id: 'alejandro', rested: false }], batalla: [crearUnidadTutorial('carlospro', { rested: false })], combo: [], descarte: [], campo: [], manaActivo: 2,
+                mazo: [], mano: ['grito', 'cristian', 'agus', 'alejandro'], mana: [{ id: 'agus', rested: false }, { id: 'alejandro', rested: false }], batalla: [crearUnidadTutorial('carlospro', { rested: false })], combo: [], descarte: [], campo: [], manaActivo: 2,
                 manaUsadoEsteTurno: true, roboDeTurnoHecho: true, liderDespierto: false, vida: []
             };
             const rival = {
@@ -6824,16 +6846,16 @@
             mostrarFase('Combate');
             renderizarPartida();
 
-            await mostrarDialogoTutorial('Ahora te voy a enseñar a combar. En el lado izquierdo de cada carta hay un coste y poder de combo. Tras declarar un ataque, puedes darle poder de una carta a otra durante la batalla, aunque la pierdes. Puedes combar con cartas de la mano o con unidades del campo en modo activo (que no estén giradas). Arrastra una carta de tu mano al área de combo para darle poder después de declarar ataque.', 'OK');
+            await mostrarDialogoTutorial('Ahora te voy a enseñar a combar. En el lado izquierdo de cada carta hay un coste y poder de combo. Tras declarar un ataque, puedes darle poder de una carta a otra durante la batalla, aunque la pierdas. Puedes combar con cartas de la mano o con unidades del campo en modo activo (que no estén giradas). Arrastra una carta de tu mano al área de combo para darle poder después de declarar ataque.', 'OK', 'imagenes/combo.png');
 
             // Esperar a que haga un combate combando (la unidad atacante se pone en rested)
             await esperarAccionTutorial(() => estadoPartida.jugador.batalla.some(u => u.rested) || estadoPartida.rival.batalla.length < 2, 120000);
-
+            if (_tutorialAbortado) return;
             await mostrarDialogoTutorial('¡Muy bien! Cuando tu líder llegue a 0 vidas, perderás la partida. Pero cuando llegas a 4, puedes despertarte. Transforma al líder para volverlo más poderoso y ataca al líder.', 'OK');
 
             // Esperar a que despierte el líder o acabe turno
             await esperarAccionTutorial(() => estadoPartida.jugador.liderDespierto || estadoPartida.turno > 1, 120000);
-
+            if (_tutorialAbortado) return;
             await completarTutorial(2);
         }
 
@@ -6841,7 +6863,7 @@
         async function tutorial3() {
             const jugador = {
                 liderId: 'blue_lider_02', // Hugopima
-                mazo: [], mano: ['cristian', 'agustin', 'alejandro', 'carlospro'], mana: [{ id: 'agustin', rested: false }, { id: 'alejandro', rested: false }, { id: 'carlospro', rested: false }, { id: 'cristian', rested: false }], batalla: [crearUnidadTutorial('megalberto', { rested: false })], combo: [], descarte: [], campo: [], manaActivo: 4,
+                mazo: [], mano: ['cristian', 'agus', 'alejandro', 'carlospro'], mana: [{ id: 'agus', rested: false }, { id: 'alejandro', rested: false }, { id: 'carlospro', rested: false }, { id: 'cristian', rested: false }], batalla: [crearUnidadTutorial('alberto', { rested: false })], combo: [], descarte: [], campo: [], manaActivo: 4,
                 manaUsadoEsteTurno: true, roboDeTurnoHecho: true, liderDespierto: false, vida: []
             };
             const rival = {
@@ -6863,29 +6885,51 @@
             mostrarFase('Combate');
             renderizarPartida();
 
+            // === Diálogo 1: introducción a la defensa ===
             await mostrarDialogoTutorial('Cuando te atacan, puedes defenderte. Al declarar ataque te permite utilizar cartas con bloqueador (como Megalberto Mewing) para redirigir el ataque. O cartas counter para negar el ataque. Redirige el ataque a Megalberto Mewing para que no le ataque a tu líder.', 'OK');
+            if (_tutorialAbortado) return;
 
-            // Simular ataque del rival (Foxy ataca al líder)
-            await sleep(500);
+            // === Ataque 1: Foxy ataca al líder del jugador ===
+            // Reutilizamos la misma lógica que la IA en partidas 1v1: aparecerá el modal de bloqueo.
+            await sleep(400);
             estadoPartida.log = '¡Foxy te ataca! ¿Quieres bloquear?';
+            estadoPartida.rivalAtacanteId = 'foxy';
             renderizarPartida();
-            // El jugador debería ver el prompt de bloqueo automáticamente
-            // Esperar a que Megalberto sea destruido o el ataque se resuelva
-            await esperarAccionTutorial(() => estadoPartida.jugador.batalla.length === 0 || estadoPartida.rival.batalla.length === 0, 60000);
+            await ejecutarAtaqueIA(0, { tipo: 'lider' }, { skipComboDefensora: true });
+            if (_tutorialAbortado) return;
+            await sleep(400);
 
+            // === Diálogo 2: el bloqueador fue derrotado ===
             await mostrarDialogoTutorial('Oh no. Tu bloqueador ha sido derrotado en batalla. Ahora el líder rival te ataca a ti. No comba, salta defensa.', 'OK');
+            if (_tutorialAbortado) return;
 
-            // Segundo ataque: el líder rival ataca al jugador
-            await sleep(500);
+            // === Ataque 2: el líder rival ataca (el jugador NO combea, recibe daño) ===
+            await sleep(400);
+            estadoPartida.rival.liderZona.ataquesRestantes = 1;
+            estadoPartida.rival.liderZona.rested = false;
             estadoPartida.log = '¡El líder rival te ataca!';
+            estadoPartida.rivalAtacanteId = estadoPartida.rival.liderId;
             renderizarPartida();
-            await sleep(1000);
+            await ejecutarAtaqueLiderIA({ tipo: 'lider' }, { skipComboDefensora: true });
+            if (_tutorialAbortado) return;
+            await sleep(400);
 
+            // === Diálogo 3: ahora sí puede comber para defender ===
             await mostrarDialogoTutorial('El líder rival te está atacando. No puedes bloquear ni negar el ataque, pero te cuento un secreto. También puedes combar cuando el rival te ataca. Arrastra tus cartas de la mano al área de combo para superar su poder y ganar la batalla. No le infligirás daño, pero el a ti tampoco.', 'OK');
+            if (_tutorialAbortado) return;
 
-            // Esperar a que el jugador combe o se resuelva el ataque
-            await esperarAccionTutorial(() => estadoPartida.turno > 1 || estadoPartida.jugador.vida.length < 8, 120000);
+            // === Ataque 3: el líder rival ataca de nuevo (el jugador puede comber) ===
+            await sleep(400);
+            estadoPartida.rival.liderZona.ataquesRestantes = 1;
+            estadoPartida.rival.liderZona.rested = false;
+            estadoPartida.log = '¡El líder rival te ataca de nuevo! Puedes combar para defender.';
+            estadoPartida.rivalAtacanteId = estadoPartida.rival.liderId;
+            renderizarPartida();
+            await ejecutarAtaqueLiderIA({ tipo: 'lider' });
+            if (_tutorialAbortado) return;
+            await sleep(400);
 
+            // === Diálogo final ===
             await mostrarDialogoTutorial('¡Muy bien! Cuidado en tu turno para administrar tu maná para jugar y defenderte. Ya sabes todo lo que te puedo enseñar. Buena suerte con los otros jugadores. Te regalaré esta baraja, puedes encontrarla en "Mazos" con todas las cartas.', 'OK');
 
             await completarTutorial(3);
@@ -6894,9 +6938,11 @@
         // Esperar a que se cumpla una condición (con timeout)
         function esperarAccionTutorial(condicion, timeoutMs) {
             return new Promise(resolve => {
+                // Si ya está abortado, resolver inmediatamente
+                if (_tutorialAbortado) { resolve(); return; }
                 const inicio = Date.now();
                 const intervalo = setInterval(() => {
-                    if (condicion() || Date.now() - inicio > (timeoutMs || 60000)) {
+                    if (_tutorialAbortado || condicion() || Date.now() - inicio > (timeoutMs || 60000)) {
                         clearInterval(intervalo);
                         resolve();
                     }
@@ -6932,7 +6978,10 @@
                 await mostrarDialogoTutorial('¡Tutorial ' + num + ' completado! ' + (3 - completados.length) + ' tutorial(es) restante(s).', 'Continuar');
             }
             // Volver al menú
+            _tutorialAbortado = true;
+            _tutorialState = { ultimoMensaje: null, resolveDialogo: null };
             ocultarPortraitNPC();
+            document.getElementById('tutorial-dialog-overlay')?.classList.remove('active');
             ocultarPantallasPrincipales();
             document.getElementById('main-menu').classList.remove('hidden');
             actualizarBotonesTutorial();
@@ -6945,7 +6994,7 @@
                 nombre: 'Mazo de Regalo',
                 liderId: 'blue_lider_02', // Hugopima el Maestro
                 cartas: {
-                    'agustin': 4,
+                    'agus': 4,
                     'alejandro': 4,
                     'brawlera': 4, // Andrea la Brawlera
                     'carlospro': 4,
@@ -6955,7 +7004,7 @@
                     'hugopima': 4,
                     'lucas': 4, // CTLucas
                     'lumi': 2, // Lumi es Support
-                    'megalberto': 4, // Megalberto Mewing
+                    'alberto': 4, // Megalberto Mewing
                     'nyx': 4,
                     'sergio': 4 // Sergio saltarín
                 }
@@ -7057,6 +7106,17 @@
             } catch (e) {
                 _statsJugador = { partidasJugadas: 0, victoriasIA: 0, victoriasOnline: 0, derrotas: 0, mejorRacha: 0, rachaActual: 0, sobresAbiertos: 0, despertares: 0, cartasFabricadas: 0, cartasRecicladas: 0, counterPlays: 0, bloqueadores: 0, cartasUnicas: 0, comunesUnicas: 0, infrecuentesUnicas: 0, rarasUnicas: 0, superRarasUnicas: 0, logrosReclamados: [], ultimoLogin: null, loginClaimedHoy: false, primeraVictoriaHoy: false };
             }
+            // Migración: asegurar que todos los campos numéricos existen (evita NaN en logros)
+            const _defaultsStats = { partidasJugadas: 0, victoriasIA: 0, victoriasOnline: 0, derrotas: 0, mejorRacha: 0, rachaActual: 0, sobresAbiertos: 0, despertares: 0, cartasFabricadas: 0, cartasRecicladas: 0, counterPlays: 0, bloqueadores: 0, cartasUnicas: 0, comunesUnicas: 0, infrecuentesUnicas: 0, rarasUnicas: 0, superRarasUnicas: 0 };
+            let _statsCambiados = false;
+            for (const k in _defaultsStats) {
+                if (_statsJugador[k] === undefined || _statsJugador[k] === null || (typeof _statsJugador[k] === 'number' && isNaN(_statsJugador[k]))) {
+                    _statsJugador[k] = _defaultsStats[k];
+                    _statsCambiados = true;
+                }
+            }
+            if (!Array.isArray(_statsJugador.logrosReclamados)) { _statsJugador.logrosReclamados = []; _statsCambiados = true; }
+            if (_statsCambiados) guardarStats();
             // Cargar misiones
             try {
                 const mdata = localStorage.getItem('gc_tcg_misiones');
@@ -9700,7 +9760,8 @@
         }
 
         // Ejecutar un ataque de la IA respetando: counter play → bloqueo → combo defensora → resolución
-        async function ejecutarAtaqueIA(unidadIndex, objetivo) {
+        async function ejecutarAtaqueIA(unidadIndex, objetivo, opts) {
+            opts = opts || {};
             const r = estadoPartida.rival;
             const j = estadoPartida.jugador;
             const atacante = r.batalla[unidadIndex];
@@ -9754,7 +9815,8 @@
                 : Number(getCardById(atacante.id)?.poder || 0);
 
             // Preguntar al jugador si quiere combar (solo si tiene cartas en mano y es una unidad defensora o líder)
-            if (j.mano.length > 0 || j.batalla.some(c => !c.rested)) {
+            // En tutoriales se puede omitir esta fase con opts.skipComboDefensora = true.
+            if (!opts.skipComboDefensora && (j.mano.length > 0 || j.batalla.some(c => !c.rested))) {
                 estadoPartida.log = '¿Quieres combar para defender? (Puedes arrastrar cartas al área de combo o saltar)';
                 renderizarPartida();
                 // Dar tiempo al jugador para combar: mostrar un modal "¿Combar para defender?"
@@ -9811,6 +9873,120 @@
             j.combo.forEach(c => j.descarte.push(c.id || c));
             j.combo = [];
             mostrarChoque(poderAtacante, poderDefensorTotal, ganaAtacante ? 'Atacante' : 'Defensor', ganaAtacante);
+            renderizarPartida();
+            if (typeof verificarFinPartida === 'function') verificarFinPartida();
+            return true;
+        }
+
+        // Ejecutar un ataque del LÍDER de la IA respetando: bloqueo → combo defensora → resolución
+        // Es análogo a ejecutarAtaqueIA pero usando r.liderZona como atacante (no se destruye al perder).
+        async function ejecutarAtaqueLiderIA(objetivoInicial, opts) {
+            opts = opts || {};
+            const r = estadoPartida.rival;
+            const j = estadoPartida.jugador;
+            const atacante = r.liderZona;
+            if (!atacante) return false;
+            let objetivo = objetivoInicial || { tipo: 'lider' };
+
+            estadoPartida.rivalAtacanteId = r.liderId;
+            estadoPartida.rivalComboActual = 0;
+            estadoPartida.log = 'El líder rival (' + (getCardById(r.liderId)?.nombre || '') + ') declara ataque.';
+            renderizarPartida();
+            await sleep(500);
+
+            // === 1. FASE DE BLOQUEO ===
+            if (window.MotorEfectos) {
+                const bloqueadores = MotorEfectos.unidadesEnCampo ? MotorEfectos.unidadesEnCampo('jugador', u => MotorEfectos.tieneBloqueador(u) && !u.rested) : [];
+                if (bloqueadores.length > 0) {
+                    estadoPartida.log = '¿Quieres bloquear el ataque del líder rival?';
+                    renderizarPartida();
+                    const opts = bloqueadores.map((bu) => {
+                        const idx = j.batalla.indexOf(bu);
+                        return { label: 'Bloquear con ' + (getCardById(bu.id)?.nombre || bu.id), value: idx };
+                    }).concat([{ label: 'No bloquear', value: -1 }]);
+                    const bloqueoIdx = await MotorEfectos.elegirConModal('¿Bloquear el ataque del líder rival?', opts);
+                    if (bloqueoIdx != null && bloqueoIdx >= 0) {
+                        const bu = j.batalla[bloqueoIdx];
+                        bu.rested = true;
+                        objetivo = { tipo: 'unidad', index: bloqueoIdx };
+                        estadoPartida.bloqueadorUsado = true;
+                        estadoPartida.log = (getCardById(bu.id)?.nombre || 'Tu unidad') + ' bloquea el ataque del líder rival.';
+                        renderizarPartida();
+                        await sleep(500);
+                    }
+                }
+            }
+
+            // === 2. FASE DE COMBO DEFENSORA ===
+            let defensorCombo = 0;
+            let poderDefensorBase = 0;
+            if (objetivo.tipo === 'lider') {
+                const lid = getCardById(j.liderId);
+                poderDefensorBase = j.liderDespierto ? Number(lid?.poderEvo || 0) : Number(lid?.poder || 0);
+            } else {
+                const def = j.batalla[objetivo.index];
+                if (def) poderDefensorBase = Number(getCardById(def.id)?.poder || 0);
+            }
+            const poderAtacante = window.MotorEfectos
+                ? MotorEfectos.poderCarta(r.liderId, atacante, { quien: 'rival', atacanteId: r.liderId, atacanteZona: atacante, objetivo: objetivo })
+                : (r.liderDespierto ? Number(getCardById(r.liderId)?.poderEvo || 0) : Number(getCardById(r.liderId)?.poder || 0));
+
+            if (!opts.skipComboDefensora && (j.mano.length > 0 || j.batalla.some(c => !c.rested))) {
+                estadoPartida.log = '¿Quieres combar para defender? (Puedes arrastrar cartas al área de combo o saltar)';
+                renderizarPartida();
+                const quiereCombar = await MotorEfectos.elegirConModal('¿Quieres combar para defender? (Arrastra cartas al área de combo después)', [
+                    { label: 'Sí, voy a combar', value: true },
+                    { label: 'No, saltar', value: false }
+                ]);
+                if (quiereCombar) {
+                    estadoPartida.log = 'Arrastra cartas al COMBO AREA. Pulsa "Listo" cuando acabes.';
+                    renderizarPartida();
+                    await esperarComboDefensora();
+                    defensorCombo = (estadoPartida.ataqueActual?.defensorCombo) || 0;
+                }
+            }
+
+            // === 3. RESOLUCIÓN ===
+            const poderDefensorTotal = poderDefensorBase + defensorCombo;
+            const ganaAtacante = poderAtacante >= poderDefensorTotal;
+
+            // Marcar atacante como descansado
+            atacante.ataquesRestantes = Math.max(0, (atacante.ataquesRestantes ?? 1) - 1);
+            atacante.rested = atacante.ataquesRestantes <= 0;
+
+            if (objetivo.tipo === 'lider') {
+                if (ganaAtacante) {
+                    const dano = danoDeCarta(r.liderId, {});
+                    for (let i = 0; i < dano; i++) {
+                        if (j.vida.length) j.vida.pop();
+                    }
+                    estadoPartida.log = 'El líder rival inflige ' + dano + ' daño a tu líder.';
+                    if (typeof mostrarPerdidaVida === 'function') mostrarPerdidaVida('jugador', dano);
+                } else {
+                    estadoPartida.log = 'Tu líder resiste el ataque del líder rival.';
+                }
+            } else {
+                const def = j.batalla[objetivo.index];
+                if (def) {
+                    if (ganaAtacante) {
+                        j.descarte.push(def.id);
+                        j.batalla.splice(objetivo.index, 1);
+                        if (window.MotorEfectos) MotorEfectos.dispatch(def.id, 'alDestruida', ['jugador']);
+                        estadoPartida.log = 'El líder rival destruye a ' + (getCardById(def.id)?.nombre || def.id) + '.';
+                    } else {
+                        // El líder atacante no se destruye al perder; el defensor sobrevive.
+                        estadoPartida.log = 'Tu ' + (getCardById(def.id)?.nombre || '') + ' resiste el ataque del líder rival.';
+                    }
+                }
+            }
+            // Limpiar combo del defensor y estado del ataque
+            j.combo.forEach(c => j.descarte.push(c.id || c));
+            j.combo = [];
+            estadoPartida.ataqueActual = null;
+            estadoPartida.rivalAtacanteId = null;
+            estadoPartida.rivalComboActual = 0;
+            estadoPartida.faseIndex = 2;
+            mostrarChoque(poderAtacante, poderDefensorTotal, ganaAtacante ? 'Atacante' : 'Defensor', !ganaAtacante);
             renderizarPartida();
             if (typeof verificarFinPartida === 'function') verificarFinPartida();
             return true;
@@ -10287,7 +10463,9 @@
         }
 
         function puedeAtacarAhora(cartaZona) {
-            if (!estadoPartida || estadoPartida.turno <= 1 || estadoPartida.faseIndex !== 2) return false;
+            if (!estadoPartida || estadoPartida.faseIndex !== 2) return false;
+            // En modo tutorial se puede atacar desde el turno 1 (para enseñar las mecánicas)
+            if (estadoPartida.modo !== 'tutorial' && estadoPartida.turno <= 1) return false;
             return cartaZona && !cartaZona.rested && (cartaZona.ataquesRestantes ?? 1) > 0;
         }
 
@@ -10986,6 +11164,17 @@
             document.getElementById('game-end-overlay')?.classList.add('hidden');
             document.getElementById('leader-intro-overlay')?.classList.add('hidden');
             document.getElementById('surrender-dialog')?.classList.add('hidden');
+            // Abortar el flujo async del tutorial si estábamos en uno
+            if (estadoPartida && estadoPartida.modo === 'tutorial') {
+                _tutorialAbortado = true;
+                // Resolver cualquier diálogo pendiente para no dejar colgado el await
+                if (_tutorialState && _tutorialState.resolveDialogo) {
+                    const r = _tutorialState.resolveDialogo;
+                    _tutorialState.resolveDialogo = null;
+                    try { r(); } catch (e) {}
+                }
+            }
+            _tutorialState = { ultimoMensaje: null, resolveDialogo: null };
             // Ocultar NPC del tutorial si estaba visible
             document.getElementById('tutorial-npc-portrait')?.classList.remove('active');
             document.getElementById('tutorial-dialog-overlay')?.classList.remove('active');
