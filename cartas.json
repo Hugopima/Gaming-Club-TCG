@@ -548,7 +548,7 @@
       "costeColor": 3,
       "poder": 15000,
       "combo": "0+5000",
-      "lore": "Al pasar los años y seguir atendiendo a entrevistas del Burger King sin éxito se dio por vencido y ahora vive por las calles de Cartagena.",
+      "lore": "Al pasar los años y seguir atendiendo a entrevistas del Burger King sin éxito se dio por vencido y ahora vive por las calles de Cartago City.",
       "habilidades": [
         {"tag": "Permanente", "css": "tag-perm", "desc": "Esta carta no puede ser destruida por habilidades de cartas de tu oponente."},
         {"tag": "Automático", "css": "tag-auto", "desc": "Cuando esta carta es atacada por una unidad con más poder que ella, puedes devolver este vagabundo a tu mano en lugar de ir a la pila de descartes."}
