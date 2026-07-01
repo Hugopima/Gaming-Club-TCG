@@ -768,6 +768,43 @@
         .clash-burst { margin: 0 30px; color: #fff07c; font-size: 70px; font-weight: 900; text-shadow: 0 0 25px #fff; animation: pulseVs .7s infinite alternate; }
         .clash-result { position: absolute; bottom: 18%; left: 50%; transform: translateX(-50%); color: white; font-size: 34px; font-weight: 900; text-shadow: 0 4px 10px #000; }
         @keyframes clashIn { to { transform: scale(1); } } @keyframes pulseVs { to { transform: scale(1.16); } }
+        /* Panel de información de combate (izquierda, desplegable) */
+        .combat-info-panel {
+            position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+            z-index: 60; width: 200px; background: rgba(10, 10, 20, 0.92);
+            border: 2px solid var(--gold); border-radius: 10px;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3); font-family: 'Segoe UI', sans-serif;
+            backdrop-filter: blur(8px); overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .combat-info-panel.collapsed .combat-info-body { display: none; }
+        .combat-info-panel.collapsed { width: auto; }
+        .combat-info-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 8px 12px; cursor: pointer; background: rgba(255, 215, 0, 0.15);
+            color: var(--gold-light); font-weight: 900; font-size: 13px;
+            text-transform: uppercase; letter-spacing: 1px; user-select: none;
+        }
+        .combat-info-header:hover { background: rgba(255, 215, 0, 0.25); }
+        .combat-info-body { padding: 10px; }
+        .combat-info-content { font-size: 12px; color: #e0d8f0; }
+        .combat-info-empty { text-align: center; color: #888; font-style: italic; padding: 8px 0; }
+        .combat-info-row { display: flex; align-items: center; gap: 6px; margin: 6px 0; padding: 4px 6px; border-radius: 6px; }
+        .combat-info-row.attacker { background: rgba(255, 115, 94, 0.15); border-left: 3px solid #ff735e; }
+        .combat-info-row.defender { background: rgba(94, 231, 255, 0.15); border-left: 3px solid #5ee7ff; }
+        .combat-info-row img { width: 28px; height: 40px; border-radius: 4px; object-fit: cover; border: 1px solid rgba(255,255,255,0.3); }
+        .combat-info-row .ci-name { font-weight: 900; font-size: 11px; line-height: 1.2; }
+        .combat-info-row .ci-power { font-weight: 900; font-size: 16px; color: var(--gold-light); margin-left: auto; }
+        .combat-info-row .ci-label { font-size: 9px; text-transform: uppercase; color: #aaa; letter-spacing: 1px; }
+        .combat-info-vs { text-align: center; font-weight: 900; color: var(--gold); font-size: 14px; margin: 2px 0; }
+        .combat-info-result { text-align: center; margin-top: 8px; padding: 6px; border-radius: 6px; font-weight: 900; font-size: 12px; }
+        .combat-info-result.win { background: rgba(73, 239, 120, 0.2); color: #49ef78; }
+        .combat-info-result.lose { background: rgba(255, 115, 94, 0.2); color: #ff735e; }
+        @media (max-width: 768px) {
+            .combat-info-panel { width: 160px; left: 4px; }
+            .combat-info-row img { width: 22px; height: 32px; }
+            .combat-info-row .ci-power { font-size: 13px; }
+        }
         .attack-arrow { position: fixed; inset: 0; z-index: 1500; pointer-events: none; display: none; }
         .attack-arrow line { stroke: #fff07c; stroke-width: 5; filter: drop-shadow(0 0 8px #ffea4d); }
         .attack-arrow.show { display: block; }
@@ -2030,8 +2067,21 @@
             <div class="table-message" id="table-message"></div>
             <svg class="attack-arrow" id="attack-arrow" viewBox="0 0 100 100" preserveAspectRatio="none">
                 <defs><marker id="arrow-head" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#fff07c"/></marker></defs>
-                <line id="attack-line" x1="0" y1="0" x2="100" y2="100" marker-end="url(#arrow-head)"/>
+                <line id="attack-line" x1="0" y1="0" x2="100" y1="100" marker-end="url(#arrow-head)"/>
             </svg>
+
+            <!-- Panel de información de combate (izquierda, desplegable) -->
+            <div id="combat-info-panel" class="combat-info-panel">
+                <div class="combat-info-header" onclick="toggleCombatInfo()">
+                    <span>⚔️ Combate</span>
+                    <span id="combat-info-toggle">▼</span>
+                </div>
+                <div class="combat-info-body" id="combat-info-body">
+                    <div id="combat-info-content" class="combat-info-content">
+                        <div class="combat-info-empty">Sin combate en curso</div>
+                    </div>
+                </div>
+            </div>
 
             <section class="hud hud-top">
                 <div class="phase-chip" id="phase-chip">Carga</div>
@@ -2631,15 +2681,17 @@
   }
 
   function danoAtacante(id, c) {
-    c = c || ctx;
+    c = c || {};
     const carta = getCardById(id);
     const zona = c.atacanteZona;
+    const esLiderAtacante = carta && claseNormalizada(carta) === 'lider';
     // Si la unidad está silenciada, no aplica doble/triple golpe.
     if ((zona?.silenciado || 0) <= 0) {
       if (zona?.flags?.tripleGolpe || tieneTagLocal(carta, 'triple golpe')) return 3;
       if (zona?.flags?.dobleGolpe || tieneTagLocal(carta, 'doble golpe')) return 2;
     }
-    if (c.liderDobleGolpe) return 2;
+    // Solo aplicar liderDobleGolpe si el atacante ES un líder y el flag está set
+    if (esLiderAtacante && c.liderDobleGolpe) return 2;
     return 1;
   }
 
@@ -10014,6 +10066,16 @@
                 }
             }
 
+            // === DESPERTAR AUTOMÁTICO DEL LÍDER DE LA IA ===
+            // La IA transforma a su líder automáticamente al llegar a 4 vidas o menos.
+            if (!r.liderDespierto && r.vida.length <= 4 && r.vida.length > 0) {
+                if (window.MotorEfectos) MotorEfectos.transformarLider('rival');
+                else { r.liderDespierto = true; }
+                estadoPartida.log = 'El líder rival se transforma (≤4 vidas).';
+                renderizarPartida();
+                await sleep(800);
+            }
+
             // === FASE DE COMBATE ===
             estadoPartida.faseIndex = 2;
             estadoPartida.log = 'La IA ataca...';
@@ -10163,7 +10225,9 @@
             // Resolver
             if (objetivo.tipo === 'lider') {
                 if (ganaAtacante) {
-                    const dano = danoDeCarta(atacante.id, {});
+                    // Calcular daño con el contexto correcto (atacanteZona) para que
+                    // se detecten correctamente doble/triple golpe. El daño base es 1.
+                    const dano = danoDeCarta(atacante.id, { atacanteZona: atacante, quien: 'rival' });
                     for (let i = 0; i < dano; i++) {
                         if (j.vida.length) j.vida.pop();
                     }
@@ -10283,7 +10347,9 @@
 
             if (objetivo.tipo === 'lider') {
                 if (ganaAtacante) {
-                    const dano = danoDeCarta(r.liderId, {});
+                    // Calcular daño con el contexto correcto. El líder rival hace 1 de daño
+                    // por defecto (o 2 si tiene doble golpe activado).
+                    const dano = danoDeCarta(r.liderId, { atacanteZona: atacante, quien: 'rival' });
                     for (let i = 0; i < dano; i++) {
                         if (j.vida.length) j.vida.pop();
                     }
@@ -10884,6 +10950,130 @@
                 });
             }
             renderizarPartida();
+        }
+
+        // === Panel de información de combate (desplegable) ===
+        function toggleCombatInfo() {
+            const panel = document.getElementById('combat-info-panel');
+            const toggle = document.getElementById('combat-info-toggle');
+            if (panel.classList.contains('collapsed')) {
+                panel.classList.remove('collapsed');
+                toggle.textContent = '▼';
+            } else {
+                panel.classList.add('collapsed');
+                toggle.textContent = '▶';
+            }
+        }
+
+        // Actualiza el panel de información de combate con el atacante y defensor actuales
+        function actualizarCombatInfoPanel() {
+            const content = document.getElementById('combat-info-content');
+            if (!content || !estadoPartida) return;
+            const ataque = estadoPartida.ataqueActual;
+            const enFaseCombo = estadoPartida.faseIndex === 3 || estadoPartida.faseIndex === 4;
+            // Si no hay ataque en curso, mostrar mensaje
+            if (!enFaseCombo || (!ataque && !estadoPartida.rivalAtacanteId && !estadoPartida.atacanteSeleccionado)) {
+                content.innerHTML = '<div class="combat-info-empty">Sin combate en curso</div>';
+                return;
+            }
+            // Determinar atacante y defensor
+            let atacanteNombre = '', atacanteImg = '', atacantePoder = 0;
+            let defensorNombre = '', defensorImg = '', defensorPoder = 0;
+            let atacanteEsLider = false, defensorEsLider = false;
+            // ¿El jugador es el atacante o el defensor?
+            const jugadorAtaca = estadoPartida.atacanteSeleccionado !== null && estadoPartida.atacanteSeleccionado !== undefined;
+            if (jugadorAtaca) {
+                // Atacante = jugador
+                if (estadoPartida.atacanteSeleccionado?.tipo === 'lider') {
+                    const lid = getCardById(estadoPartida.jugador.liderId);
+                    atacanteNombre = lid?.nombre || 'Tu líder';
+                    atacanteImg = (estadoPartida.jugador.liderDespierto && lid?.imgEvo) ? lid.imgEvo : lid?.img || '';
+                    atacanteEsLider = true;
+                } else if (estadoPartida.atacanteSeleccionado?.tipo === 'unidad') {
+                    const u = estadoPartida.jugador.batalla[estadoPartida.atacanteSeleccionado.index];
+                    if (u) {
+                        const c = getCardById(u.id);
+                        atacanteNombre = c?.nombre || 'Unidad';
+                        atacanteImg = c?.img || '';
+                    }
+                }
+                atacantePoder = ataque ? (ataque.atacanteBase + (ataque.atacanteCombo || 0)) : 0;
+                // Defensor = rival
+                if (ataque?.objetivo?.tipo === 'lider') {
+                    const lid = getCardById(estadoPartida.rival.liderId);
+                    defensorNombre = lid?.nombre || 'Líder rival';
+                    defensorImg = (estadoPartida.rival.liderDespierto && lid?.imgEvo) ? lid.imgEvo : lid?.img || '';
+                    defensorEsLider = true;
+                } else if (ataque?.objetivo?.tipo === 'unidad') {
+                    const u = estadoPartida.rival.batalla[ataque.objetivo.index];
+                    if (u) {
+                        const c = getCardById(u.id);
+                        defensorNombre = c?.nombre || 'Unidad';
+                        defensorImg = c?.img || '';
+                    }
+                }
+                defensorPoder = ataque ? (ataque.defensorPoderBase || 0) + (ataque.defensorCombo || 0) : 0;
+                if (defensorPoder === 0 && defensorEsLider) {
+                    const lid = getCardById(estadoPartida.rival.liderId);
+                    defensorPoder = estadoPartida.rival.liderDespierto ? Number(lid?.poderEvo || 0) : Number(lid?.poder || 0);
+                }
+            } else {
+                // Atacante = rival (IA u online)
+                if (estadoPartida.rivalAtacanteId === estadoPartida.rival.liderId) {
+                    const lid = getCardById(estadoPartida.rival.liderId);
+                    atacanteNombre = lid?.nombre || 'Líder rival';
+                    atacanteImg = (estadoPartida.rival.liderDespierto && lid?.imgEvo) ? lid.imgEvo : lid?.img || '';
+                    atacanteEsLider = true;
+                    atacantePoder = estadoPartida.rival.liderDespierto ? Number(lid?.poderEvo || 0) : Number(lid?.poder || 0);
+                    atacantePoder += (estadoPartida.rivalComboActual || 0);
+                } else if (estadoPartida.rivalAtacanteId) {
+                    const u = estadoPartida.rival.batalla.find(x => x.id === estadoPartida.rivalAtacanteId);
+                    if (u) {
+                        const c = getCardById(u.id);
+                        atacanteNombre = c?.nombre || 'Unidad rival';
+                        atacanteImg = c?.img || '';
+                        atacantePoder = Number(c?.poder || 0) + (estadoPartida.rivalComboActual || 0);
+                    }
+                }
+                // Defensor = jugador
+                if (ataque?.objetivo?.tipo === 'lider') {
+                    const lid = getCardById(estadoPartida.jugador.liderId);
+                    defensorNombre = lid?.nombre || 'Tu líder';
+                    defensorImg = (estadoPartida.jugador.liderDespierto && lid?.imgEvo) ? lid.imgEvo : lid?.img || '';
+                    defensorEsLider = true;
+                    defensorPoder = estadoPartida.jugador.liderDespierto ? Number(lid?.poderEvo || 0) : Number(lid?.poder || 0);
+                } else if (ataque?.objetivo?.tipo === 'unidad') {
+                    const u = estadoPartida.jugador.batalla[ataque.objetivo.index];
+                    if (u) {
+                        const c = getCardById(u.id);
+                        defensorNombre = c?.nombre || 'Tu unidad';
+                        defensorImg = c?.img || '';
+                        defensorPoder = Number(c?.poder || 0);
+                    }
+                }
+                defensorPoder += (ataque?.defensorCombo || 0);
+            }
+            // Construir HTML
+            let html = '';
+            if (atacanteNombre) {
+                html += `<div class="combat-info-row attacker">
+                    ${atacanteImg ? `<img src="${atacanteImg}" alt="">` : ''}
+                    <div><div class="ci-label">${atacanteEsLider ? 'Líder atacante' : 'Atacante'}</div><div class="ci-name">${escapeHtml(atacanteNombre)}</div></div>
+                    <div class="ci-power">${atacantePoder}</div>
+                </div>`;
+            }
+            if (defensorNombre) {
+                html += `<div class="combat-info-vs">VS</div>`;
+                html += `<div class="combat-info-row defender">
+                    ${defensorImg ? `<img src="${defensorImg}" alt="">` : ''}
+                    <div><div class="ci-label">${defensorEsLider ? 'Líder defensor' : 'Defensor'}</div><div class="ci-name">${escapeHtml(defensorNombre)}</div></div>
+                    <div class="ci-power">${defensorPoder}</div>
+                </div>`;
+            }
+            if (!atacanteNombre && !defensorNombre) {
+                html = '<div class="combat-info-empty">Sin combate en curso</div>';
+            }
+            content.innerHTML = html;
         }
 
         function mostrarNotificacionAtaque(texto, objetivoInfo) {
@@ -11957,6 +12147,8 @@
                 return miniCarta(id, '', { handIndex: index, onClick: `abrirDetalleJuego('${id}')`, fanStyle: `--fan-rot:${rot}deg; --fan-y:${y}px;` });
             }).join(''));
 
+            // Actualizar panel de información de combate
+            actualizarCombatInfoPanel();
             // === SINCRONIZACIÓN ONLINE ===
             // NO mostrar overlay de esperando rival - el jugador debe ver las acciones en tiempo real
             // Solo bloquear interacción cuando no es su turno (partidaInteractiva ya lo maneja)
