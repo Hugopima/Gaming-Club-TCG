@@ -1838,7 +1838,7 @@
             <ul>
 		<li>Bandai Namco Entertainment Inc.</li>
 		<li>Microsoft Corporation</li>
-               				 <li>Nintendo Co., Ltd.</li>
+               	<li>Nintendo Co., Ltd.</li>
 		<li>Sony Group Corporation</li>
 		<li>Supercell</li>
 		<li>InnerSloth LLC</li>
@@ -7770,6 +7770,43 @@
             programarGuardadoSupabase();
         }
 
+        // === FUNCIÓN DE DESARROLLO (oculta) ===
+        // Restaura el inventario de testeo: 4 copias de cada carta + 5000 coins + 1000 energy.
+        // Solo para uso del desarrollador. Ejecutar desde la consola (F12): devRestoreInventory()
+        // NO afecta a jugadores normales — ellos siguen empezando con 0.
+        function devRestoreInventory() {
+            if (!datosCartas || !datosCartas.length) {
+                console.error('Las cartas aún no se han cargado. Abre la Colección primero.');
+                return;
+            }
+            if (!_inventario) _inventario = { coins: 0, energy: 0, cartas: {} };
+            _inventario.coins = 5000;
+            _inventario.energy = 1000;
+            _inventario.cartas = {};
+            datosCartas.forEach(c => {
+                if (!c || esToken(c)) return;
+                const id = getCardId(c);
+                _inventario.cartas[id] = 4;
+            });
+            guardarInventario();
+            actualizarBarraMonedas();
+            // Forzar guardado inmediato en Supabase (sin debounce)
+            if (getDiscordUser()) {
+                guardarInventarioSupabase().then(ok => {
+                    if (ok) console.log('[Dev] Inventario restaurado y guardado en Supabase.');
+                    else console.warn('[Dev] Inventario restaurado en local, pero el guardado en Supabase falló. Reintenta en unos segundos.');
+                });
+            } else {
+                console.log('[Dev] Inventario restaurado en local (sin sesión de Discord).');
+            }
+            console.log('[Dev] Inventario restaurado: ' + Object.keys(_inventario.cartas).length + ' cartas únicas, 5000 coins, 1000 energy.');
+            if (typeof renderizarBiblioteca === 'function' && !document.getElementById('collection-wrapper').classList.contains('hidden')) {
+                renderizarBiblioteca();
+            }
+            alert('Inventario de testeo restaurado: 4 copias de cada carta + 5000 coins + 1000 energy.');
+        }
+        window.devRestoreInventory = devRestoreInventory;
+
 
         // Debounce para no saturar Supabase con guardados constantes
         let _timeoutGuardadoSupabase = null;
@@ -11305,17 +11342,14 @@
                     // IMPORTANTE: el daño al líder se aplica SIEMPRE aquí, en cuanto termina la batalla,
                     // para que la vida del rival se actualice en pantalla de inmediato (no en la siguiente fase).
                     if (estadoPartida.modo === 'online' && _socketOnline) {
-                        // Modo online: aplicar localmente Y avisar al rival para que se lo quite en su pantalla.
-                        // Antes solo se emitía el mensaje y la vida del rival no bajaba en la pantalla del
-                        // atacante hasta que el rival mandaba un snapshot (lo que daba la sensación de que
-                        // el daño se aplicaba "en la siguiente fase").
+                        // Modo online: MotorEfectos.infligirDanoLider aplica el daño localmente
+                        // Y envía el socket event 'dano-lider' al rival automáticamente.
+                        // NO enviar otro emit aquí o el daño se duplicaría en el receptor.
                         if (window.MotorEfectos) {
                             MotorEfectos.infligirDanoLider('rival', dano, atacante.id);
                         } else {
                             for (let i = 0; i < dano; i++) if (estadoPartida.rival.vida.length) estadoPartida.rival.vida.pop();
                         }
-                        const _esCritico = tieneTag(getCardById(atacante.id), 'critico') || (window.MotorEfectos?.ctx?.liderCritico);
-                        _socketOnline.emit('accion-juego', { tipo: 'dano-lider', dano: dano, critico: !!_esCritico });
                         estadoPartida.log = `El ataque impacta al lider rival: pierde ${dano} vida${dano > 1 ? 's' : ''}.`;
                     } else {
                         // Modo solo: quitar vida normalmente
