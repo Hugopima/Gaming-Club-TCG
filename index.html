@@ -1800,24 +1800,21 @@
             <h3>Titulares de Propiedad Intelectual</h3>
             <ul>
                 <li>Bandai Namco Entertainment Inc.</li>
-                <li>Microsoft Corporation</li>
-                <li>Nintendo Co., Ltd.</li>
-                <li>Sony Group Corporation</li>
+                <li>Microsoft Corporation / Mojang Studios</li>
                 <li>Supercell</li>
                 <li>InnerSloth LLC</li>
                 <li>Omocat, LLC</li>
-                <li>Scottgames, LLC</li>
+                <li>Scott Games / Clickteam</li>
                 <li>DaFuq!?Boom!</li>
                 <li>tinyBuild</li>
                 <li>8-4, Ltd.</li>
                 <li>Re-Logic</li>
                 <li>Roblox Corporation</li>
                 <li>Netflix, Inc.</li>
-                <li>Epic Games, Inc.</li>
+                <li>Psyonix LLC</li>
                 <li>Editorial Susaeta</li>
                 <li>Mob Entertainment</li>
                 <li>Snail Games</li>
-                <li>Johnson's Baby</li>
             </ul>
             <h3>Figuras Públicas</h3>
             <p>Las representaciones de personalidades reales se utilizan bajo el derecho a la sátira y el homenaje creativo.</p>
@@ -2320,7 +2317,7 @@
         // Cuando se incrementa esta versión, TODOS los datos locales se borran
         // para que los jugadores empiecen de cero (inventario, mazos, logros, etc.).
         // La sesión de Discord se preserva para no tener que re-loguear.
-        const SCHEMA_VERSION = 2;
+        const SCHEMA_VERSION = 3;
         (function wipeIfSchemaChanged() {
             try {
                 const stored = localStorage.getItem('gc_tcg_schema_version');
@@ -6857,7 +6854,7 @@
             const user = getDiscordUser();
             if (!user || !_inventario) {
                 console.log('[Supabase] No hay sesión o inventario, saltando guardado');
-                return;
+                return false;
             }
             console.log('[Supabase] Guardando inventario para discord_id:', user.id, '- coins:', _inventario.coins, '- cartas:', Object.keys(_inventario.cartas).length);
             try {
@@ -6877,11 +6874,14 @@
                 if (!res.ok) {
                     const errText = await res.text();
                     console.error('[Supabase] Error guardando inventario:', res.status, errText);
+                    return false;
                 } else {
                     console.log('[Supabase] Inventario guardado correctamente');
+                    return true;
                 }
             } catch (e) {
                 console.error('[Supabase] Error guardando en Supabase:', e);
+                return false;
             }
         }
 
@@ -6894,15 +6894,22 @@
             }
             // Si el schema acaba de cambiar (wipe local), forzar inventario vacío
             // y guardarlo en Supabase para sobreescribir los datos antiguos.
+            // El flag solo se pone DESPUÉS de confirmar que el guardado funcionó.
             const schemaJustWiped = !localStorage.getItem('gc_tcg_supabase_wiped_v' + SCHEMA_VERSION);
             if (schemaJustWiped) {
                 console.log('[Schema] Wipe detectado. Forzando inventario vacío en Supabase...');
-                localStorage.setItem('gc_tcg_supabase_wiped_v' + SCHEMA_VERSION, '1');
                 // Asegurar inventario local vacío
                 _inventario = { coins: 0, energy: 0, cartas: {} };
                 guardarInventario();
                 // Forzar guardado en Supabase (sobreescribe datos antiguos)
-                await guardarInventarioSupabase();
+                const saveOk = await guardarInventarioSupabase();
+                if (saveOk) {
+                    // Solo marcar como wipeado si el guardado fue exitoso
+                    localStorage.setItem('gc_tcg_supabase_wiped_v' + SCHEMA_VERSION, '1');
+                    console.log('[Schema] Wipe de Supabase confirmado.');
+                } else {
+                    console.warn('[Schema] El guardado falló. Se reintentará en la próxima carga.');
+                }
                 return true;
             }
             console.log('[Supabase] Cargando inventario para discord_id:', user.id);
@@ -6921,6 +6928,23 @@
                 const data = await res.json();
                 console.log('[Supabase] Datos recibidos:', data);
                 if (data.inventario) {
+                    // Heurística: detectar datos de test antiguos (5000 coins = viejo default,
+                    // o > 50 cartas únicas = inventario de testeo con todas las cartas).
+                    // Si se detecta, forzar wipe y sobreescribir con inventario vacío.
+                    const inv = data.inventario;
+                    const numCartas = inv.cartas ? Object.keys(inv.cartas).length : 0;
+                    const esTestDataAntiguo = (inv.coins === 5000) || (numCartas > 50);
+                    if (esTestDataAntiguo) {
+                        console.warn('[Schema] Detectado inventario de test antiguo en Supabase (coins=' + inv.coins + ', cartas=' + numCartas + '). Forzando wipe...');
+                        _inventario = { coins: 0, energy: 0, cartas: {} };
+                        guardarInventario();
+                        const saveOk = await guardarInventarioSupabase();
+                        if (saveOk) {
+                            localStorage.setItem('gc_tcg_supabase_wiped_v' + SCHEMA_VERSION, '1');
+                            console.log('[Schema] Wipe de datos antiguos confirmado.');
+                        }
+                        return true;
+                    }
                     aplicarInventarioDeSupabase(data.inventario);
                     return true;
                 }
