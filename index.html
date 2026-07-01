@@ -6188,8 +6188,8 @@
     if (!riv.length) return ataqueCtx.objetivo;
     // Si el defensor es la IA (en 1v1), decide automáticamente si bloquear
     if (defensorQuien === 'rival' && estadoPartida.modo !== 'online' && estadoPartida.modo !== 'tutorial') {
-        // La IA bloquea si el atacante tiene más poder que el bloqueador (50% probabilidad)
-        if (Math.random() < 0.5) {
+        // La IA bloquea si el atacante tiene más poder que el bloqueador (70% probabilidad)
+        if (Math.random() < 0.7) {
             const atacante = estadoPartida.ataqueActual?.atacanteZonaRef || estadoPartida.jugador.batalla[estadoPartida.atacanteSeleccionado?.index];
             const poderAtacante = atacante ? poderCarta(atacante.id, atacante, { quien: 'jugador', atacanteId: atacante.id, atacanteZona: atacante }) : 0;
             // Elegir el bloqueador de menor poder que pueda sobrevivir o el de mayor poder
@@ -9946,6 +9946,8 @@
 
         function pasarFase() {
             if (!partidaInteractiva()) return;
+            // Prevenir pulsar "Siguiente" durante la resolución de un ataque de IA
+            if (_resolviendoAtaqueIA) return;
             if (estadoPartida.faseIndex === 3) return iniciarComboDefensora();
             if (estadoPartida.faseIndex === 4) {
                 // En modo online, usar terminarComboDefensora (socket sync).
@@ -10201,9 +10203,10 @@
             const j = estadoPartida.jugador;
             const atacante = r.batalla[unidadIndex];
             if (!atacante) return false;
-            // Marcar la unidad como atacante rival (para el glow y el render del combo)
+            // Marcar la unidad como atacante rival (para el glow, el render del combo y el panel de combate)
             estadoPartida.rivalAtacanteId = atacante.id;
             estadoPartida.rivalComboActual = 0;
+            renderizarPartida(); // Actualizar panel de combate
 
             // === 1. FASE DE COUNTER PLAY ===
             // El jugador puede tener cartas de Counter Play en mano para negar la unidad atacante.
@@ -10317,6 +10320,7 @@
             estadoPartida.rivalAtacanteId = null;
             estadoPartida.rivalComboActual = 0;
             estadoPartida.faseIndex = 2;
+            _resolviendoAtaqueIA = false; // Limpiar flag
             mostrarChoque(poderDefensorTotal, poderAtacante, ganaAtacante ? 'Atacante' : 'Defensor', !ganaAtacante);
             renderizarPartida();
             if (typeof verificarFinPartida === 'function') verificarFinPartida();
@@ -10435,6 +10439,7 @@
             estadoPartida.rivalAtacanteId = null;
             estadoPartida.rivalComboActual = 0;
             estadoPartida.faseIndex = 2;
+            _resolviendoAtaqueIA = false; // Limpiar flag
             mostrarChoque(poderDefensorTotal, poderAtacante, ganaAtacante ? 'Atacante' : 'Defensor', !ganaAtacante);
             renderizarPartida();
             if (typeof verificarFinPartida === 'function') verificarFinPartida();
@@ -10444,6 +10449,7 @@
         // Esperar a que el jugador pulse "Listo" en la fase de combo defensora contra la IA
         // Variable global para resolver esperarComboDefensora desde pasarFase()
         let _comboDefensoraResolver = null;
+        let _resolviendoAtaqueIA = false; // Prevenir doble "Siguiente" durante resolución de ataque de IA
 
         function esperarComboDefensora() {
             return new Promise(resolve => {
@@ -10465,6 +10471,8 @@
             if (_comboDefensoraResolver) {
                 const r = _comboDefensoraResolver;
                 _comboDefensoraResolver = null;
+                // Marcar que se está resolviendo el ataque (prevenir doble "Siguiente")
+                _resolviendoAtaqueIA = true;
                 // Volver a fase 2 (combate)
                 estadoPartida.faseIndex = 2;
                 r();
@@ -11042,8 +11050,9 @@
             if (!content || !estadoPartida) return;
             const ataque = estadoPartida.ataqueActual;
             const enFaseCombo = estadoPartida.faseIndex === 3 || estadoPartida.faseIndex === 4;
-            // Si no hay ataque en curso, mostrar mensaje
-            if (!enFaseCombo || (!ataque && !estadoPartida.rivalAtacanteId && !estadoPartida.atacanteSeleccionado)) {
+            // Mostrar info si hay ataque en curso (fase combo, ataque actual, atacante seleccionado, o IA atacando)
+            const hayCombate = enFaseCombo || ataque || estadoPartida.rivalAtacanteId || estadoPartida.atacanteSeleccionado;
+            if (!hayCombate) {
                 content.innerHTML = '<div class="combat-info-empty">Sin combate en curso</div>';
                 return;
             }
@@ -11334,8 +11343,8 @@
                         if (def) poderDefensorBaseIA = Number(getCardById(def.id)?.poder || 0);
                     }
                     const poderAtacanteJug = ataque.atacanteBase + (ataque.atacanteCombo || 0);
-                    // La IA combea si el atacante tiene más poder (50% probabilidad)
-                    if (poderAtacanteJug > poderDefensorBaseIA && Math.random() < 0.5) {
+                    // La IA combea si el atacante tiene más poder (70% probabilidad)
+                    if (poderAtacanteJug > poderDefensorBaseIA && Math.random() < 0.7) {
                         const necesita = poderAtacanteJug - poderDefensorBaseIA + 1;
                         let comboAcum = 0;
                         const usadas = [];
