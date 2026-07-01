@@ -1836,25 +1836,24 @@
             <p>Este juego es un proyecto independiente desarrollado sin ánimo de lucro exclusivamente para fines recreativos. No tenemos ninguna afiliación oficial con las marcas mencionadas a continuación. Todos los personajes y elementos pertenecen a sus respectivos titulares de derechos.</p>
             <h3>Titulares de Propiedad Intelectual</h3>
             <ul>
-		<li>Bandai Namco Entertainment Inc.</li>
-		<li>Microsoft Corporation</li>
-               	<li>Nintendo Co., Ltd.</li>
-		<li>Sony Group Corporation</li>
-		<li>Supercell</li>
-		<li>InnerSloth LLC</li>
-		<li>Omocat, LLC</li>
-		<li>Scott Games / Clickteam</li>
-		<li>DaFuq!?Boom!</li>
-		<li>tinyBuild</li>
-		<li>8-4, Ltd.</li>
-		<li>Re-Logic</li>
-		<li>Roblox Corporation</li>
-		<li>Netflix, Inc.</li>
-		<li>Epic Games, Inc.</li>
-		<li>Editorial Susaeta</li>
-		<li>Mob Entertainment</li>
-		<li>Snail Games</li>
-		<li>Johnson's Baby</li>
+                <li>Bandai Namco Entertainment Inc.</li>
+                <li>Microsoft Corporation / Mojang Studios</li>
+                <li>Supercell</li>
+                <li>InnerSloth LLC</li>
+                <li>Omocat, LLC</li>
+                <li>Scott Games / Clickteam</li>
+                <li>DaFuq!?Boom!</li>
+                <li>tinyBuild</li>
+                <li>8-4, Ltd.</li>
+                <li>Re-Logic</li>
+                <li>Roblox Corporation</li>
+                <li>Netflix, Inc.</li>
+                <li>Nintendo Co., Ltd.</li>
+                <li>Sony Group Corporation</li>
+                <li>Epic Games</li>
+                <li>Editorial Susaeta</li>
+                <li>Mob Entertainment</li>
+                <li>Snail Games</li>
             </ul>
             <h3>Figuras Públicas</h3>
             <p>Las representaciones de personalidades reales se utilizan bajo el derecho a la sátira y el homenaje creativo.</p>
@@ -2508,21 +2507,16 @@
     opts = opts || {};
     const critico = opts.critico || tieneCritico(atacanteId);
     const dano = cantidad || 1;
+    // IMPORTANTE: En modo online, emitir el socket event ANTES de aplicar el daño.
+    // Si el daño mata al rival, verificarFinPartida → mostrarFinPartida emitirá
+    // 'partida-terminada' que limpia dataRoomId en el servidor. Si emitimos después,
+    // el servidor ya no podrá reenviar el 'dano-lider' al rival.
+    if (estadoPartida?.modo === 'online' && quienRecibe === 'rival' && window._socketOnline) {
+      window._socketOnline.emit('accion-juego', { tipo: 'dano-lider', dano: dano, critico: !!critico });
+    }
     for (let i = 0; i < dano; i++) quitarVida(quienRecibe, critico);
     if (typeof mostrarPerdidaVida === 'function') mostrarPerdidaVida(quienRecibe, dano);
     log(`${getCardById(atacanteId)?.nombre || 'Atacante'} inflige ${dano} de daño al líder ${quienRecibe === 'jugador' ? 'propio' : 'rival'}.`);
-    // Bug fix: sincronizar daño al líder en modo online.
-    // Si el que recibe el daño es el rival (desde mi perspectiva), enviarle el mensaje de dano-lider.
-    // Si el que recibe el daño soy yo (desde la perspectiva del rival), el rival ya me enviaría el mensaje,
-    // pero por si acaso también lo sincronizamos via snapshot.
-    if (estadoPartida?.modo === 'online' && typeof enviarEfectoRival === 'function') {
-      // Si yo soy el atacante y el rival recibe el daño
-      if (quienRecibe === 'rival') {
-        if (window._socketOnline) {
-          window._socketOnline.emit('accion-juego', { tipo: 'dano-lider', dano: dano, critico: !!critico });
-        }
-      }
-    }
     if (typeof renderizarPartida === 'function') renderizarPartida();
   }
 
@@ -9935,7 +9929,12 @@
         function pasarFase() {
             if (!partidaInteractiva()) return;
             if (estadoPartida.faseIndex === 3) return iniciarComboDefensora();
-            if (estadoPartida.faseIndex === 4) return terminarComboDefensora();
+            if (estadoPartida.faseIndex === 4) {
+                // En modo online, usar terminarComboDefensora (socket sync).
+                // En 1v1/tutorial, usar terminarComboDefensoraIA (resolver local).
+                if (estadoPartida.modo === 'online') return terminarComboDefensora();
+                return terminarComboDefensoraIA();
+            }
             if (estadoPartida.faseIndex >= fasesPartida.length - 1) {
                 estadoPartida.log = 'Ya estas en la ultima fase. Usa Fin turno cuando acabes.';
                 renderizarPartida();
@@ -10130,6 +10129,25 @@
                 ataqueIdx++;
             }
 
+            // === ATAQUE CON EL LÍDER DE LA IA ===
+            // Después de atacar con las unidades, el líder ataca si puede
+            // (no en el turno 1, y si no está rested y tiene ataques restantes).
+            if (estadoPartida.turno > 1 && r.liderZona && !r.liderZona.rested && (r.liderZona.ataquesRestantes ?? 0) > 0) {
+                estadoPartida.log = 'La IA ataca con su líder...';
+                renderizarPartida();
+                await sleep(500);
+                // Decidir objetivo: si hay unidades rivales descansadas, atacar la de menor poder
+                let objLider = { tipo: 'lider' };
+                const descansadasLid = j.batalla.map((c, idx) => ({ c, idx })).filter(x => x.c && x.c.rested);
+                if (descansadasLid.length) {
+                    descansadasLid.sort((a, b) => Number(getCardById(a.c.id)?.poder || 0) - Number(getCardById(b.c.id)?.poder || 0));
+                    objLider = { tipo: 'unidad', index: descansadasLid[0].idx };
+                }
+                await ejecutarAtaqueLiderIA(objLider);
+                await sleep(800);
+                if (estadoPartida.finalizada) return;
+            }
+
             // === FIN DE TURNO DE LA IA ===
             if (window.MotorEfectos) MotorEfectos.alFinTurno('rival');
             estadoPartida.turno += 1;
@@ -10263,10 +10281,9 @@
                         if (window.MotorEfectos) MotorEfectos.dispatch(def.id, 'alDestruida', ['jugador']);
                         estadoPartida.log = 'La IA destruye a ' + (getCardById(def.id)?.nombre || def.id) + '.';
                     } else {
-                        r.descarte.push(atacante.id);
-                        r.batalla.splice(unidadIndex, 1);
-                        if (window.MotorEfectos) MotorEfectos.dispatch(atacante.id, 'alDestruida', ['rival']);
-                        estadoPartida.log = 'Tu ' + (getCardById(def.id)?.nombre || '') + ' destruye al atacante de la IA.';
+                        // El atacante de la IA pierde pero NO se destruye.
+                        // Regla del juego: las unidades solo mueren en defensa, no en ataque.
+                        estadoPartida.log = 'Tu ' + (getCardById(def.id)?.nombre || '') + ' gana el combate. El atacante de la IA sobrevive.';
                     }
                 }
             }
@@ -10405,26 +10422,37 @@
         }
 
         // Esperar a que el jugador pulse "Listo" en la fase de combo defensora contra la IA
+        // Variable global para resolver esperarComboDefensora desde pasarFase()
+        let _comboDefensoraResolver = null;
+
         function esperarComboDefensora() {
             return new Promise(resolve => {
                 // Setear fase 4 para que el combo se acumule en defensorCombo
                 estadoPartida.faseIndex = 4;
                 estadoPartida.ataqueActual = estadoPartida.ataqueActual || {};
                 estadoPartida.ataqueActual.defensorCombo = 0;
-                // Crear overlay con botón "Listo"
+                // Guardar el resolver para que pasarFase() lo llame al pulsar "Siguiente"
+                _comboDefensoraResolver = resolve;
+                // Mostrar mensaje instruccional (sin botón — se usa "Siguiente")
                 const ov = document.createElement('div');
                 ov.id = 'combo-defensora-ia-overlay';
                 ov.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:3400;background:rgba(20,10,30,.95);border:2px solid var(--gold);border-radius:12px;padding:14px 24px;display:flex;gap:12px;align-items:center;box-shadow:0 0 25px rgba(255,215,0,.4);';
-                ov.innerHTML = `<div style="color:var(--gold-light);font-weight:900;font-size:14px;">🛡️ Combea para defender (arrastra cartas al COMBO AREA)</div>
-                    <button id="combo-defensora-listo-btn" style="background:linear-gradient(145deg,var(--gold),#b8860b);color:#1a0a30;border:none;border-radius:8px;padding:8px 20px;font-weight:900;cursor:pointer;">Listo</button>`;
+                ov.innerHTML = `<div style="color:var(--gold-light);font-weight:900;font-size:14px;">🛡️ Combea para defender (arrastra cartas al COMBO AREA) — pulsa Siguiente para acabar</div>`;
                 document.body.appendChild(ov);
-                document.getElementById('combo-defensora-listo-btn').onclick = () => {
-                    ov.remove();
-                    // Volver a fase 2 (combate)
-                    estadoPartida.faseIndex = 2;
-                    resolve();
-                };
             });
+        }
+
+        // Resuelve esperarComboDefensora (llamado desde pasarFage cuando faseIndex === 4 en modo no-online)
+        function terminarComboDefensoraIA() {
+            const ov = document.getElementById('combo-defensora-ia-overlay');
+            if (ov) ov.remove();
+            if (_comboDefensoraResolver) {
+                const r = _comboDefensoraResolver;
+                _comboDefensoraResolver = null;
+                // Volver a fase 2 (combate)
+                estadoPartida.faseIndex = 2;
+                r();
+            }
         }
 
         function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
@@ -10533,7 +10561,15 @@
         function permitirDrop(event) { event.preventDefault(); }
         function arrastrarCartaMano(event, index) { event.dataTransfer.setData('hand-index', String(index)); }
         function arrastrarCartaCampo(event, index) { event.dataTransfer.setData('battle-index', String(index)); }
-        function soltarEnMana(event) { event.preventDefault(); const index = Number(event.dataTransfer.getData('hand-index')); if (!Number.isNaN(index)) ponerManaDesdeMano(index); }
+        function soltarEnMana(event) {
+            event.preventDefault();
+            const handData = event.dataTransfer.getData('hand-index');
+            // Solo aceptar cartas de la mano (no del campo ni del líder)
+            if (handData === '' || handData == null) return;
+            const index = Number(handData);
+            if (Number.isNaN(index)) return;
+            ponerManaDesdeMano(index);
+        }
         function soltarEnBatalla(event) {
             event.preventDefault();
             const index = Number(event.dataTransfer.getData('hand-index'));
@@ -11373,22 +11409,9 @@
                     if (window.MotorEfectos) MotorEfectos.dispatch(defensor.id, 'alDestruida', ['rival']);
                 }
             } else if (!resultado.ganaAtacante && !resultado.leoInmortal) {
-                // El atacante pierde: destruirlo
-                if (ataque.atacanteRef?.tipo === 'unidad') {
-                    const atkIdx = ataque.atacanteRef.index;
-                    const atk = estadoPartida.jugador.batalla[atkIdx];
-                    if (atk) {
-                        // Mari trigger: si el atacante destruido es OMORI, setear flag
-                        if (atk.id && String(getCardById(atk.id)?.origen || '').toLowerCase().includes('omori')) {
-                            estadoPartida._omoriAtacadaTurnoRival = true;
-                        }
-                        estadoPartida.jugador.descarte.push(atk.id);
-                        estadoPartida.jugador.batalla.splice(atkIdx, 1);
-                        // Llamar alDestruida del atacante
-                        if (window.MotorEfectos) MotorEfectos.dispatch(atk.id, 'alDestruida', ['jugador']);
-                    }
-                }
-                estadoPartida.log = 'La carta rival gana el combate. Tu atacante es destruido.';
+                // El atacante pierde la batalla pero NO se destruye.
+                // Regla del juego: las unidades solo mueren en defensa, no en ataque.
+                estadoPartida.log = 'La carta rival gana el combate. Tu atacante sobrevive.';
             }
 
             estadoPartida.jugador.combo.forEach(c => estadoPartida.jugador.descarte.push(c.id || c));
