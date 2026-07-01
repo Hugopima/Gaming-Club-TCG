@@ -6186,6 +6186,24 @@
     }
     const riv = unidadesEnCampo(defensorQuien, u => tieneBloqueador(u) && !u.rested);
     if (!riv.length) return ataqueCtx.objetivo;
+    // Si el defensor es la IA (en 1v1), decide automáticamente si bloquear
+    if (defensorQuien === 'rival' && estadoPartida.modo !== 'online' && estadoPartida.modo !== 'tutorial') {
+        // La IA bloquea si el atacante tiene más poder que el bloqueador (50% probabilidad)
+        if (Math.random() < 0.5) {
+            const atacante = estadoPartida.ataqueActual?.atacanteZonaRef || estadoPartida.jugador.batalla[estadoPartida.atacanteSeleccionado?.index];
+            const poderAtacante = atacante ? poderCarta(atacante.id, atacante, { quien: 'jugador', atacanteId: atacante.id, atacanteZona: atacante }) : 0;
+            // Elegir el bloqueador de menor poder que pueda sobrevivir o el de mayor poder
+            riv.sort((a, b) => Number(getCardById(b.u.id)?.poder || 0) - Number(getCardById(a.u.id)?.poder || 0));
+            const bu = riv[0].u;
+            const idx = riv[0].i;
+            bu.rested = true;
+            estadoPartida.bloqueadorUsado = true;
+            dispatch(bu.id, 'alUsarBloqueador', [defensorQuien, bu, ataqueCtx]);
+            log(`${getCardById(bu.id)?.nombre} (IA) bloquea el ataque.`);
+            return { tipo: 'unidad', index: idx, bloqueador: true };
+        }
+        return ataqueCtx.objetivo; // No bloquea
+    }
     const opts = opcionesUnidades(defensorQuien, u => tieneBloqueador(u) && !u.rested, 'Bloquear con ');
     const idx = await elegirConModal('¿Usar Bloqueador?', opts.concat([{ label: 'No bloquear', value: -1 }]), { noCancelable: true });
     if (idx == null || idx < 0) return ataqueCtx.objetivo;
@@ -10172,6 +10190,10 @@
             renderizarPartida();
         }
 
+        // === LÓGICA DE COMBO DEFENSIVO DE LA IA (en terminarAtaque) ===
+        // Cuando el jugador ataca a la IA, esta puede combar para defender.
+        // Implementada directamente en terminarAtaque() para 1v1 y tutorial.
+
         // Ejecutar un ataque de la IA respetando: counter play → bloqueo → combo defensora → resolución
         async function ejecutarAtaqueIA(unidadIndex, objetivo, opts) {
             opts = opts || {};
@@ -10233,22 +10255,23 @@
             // Preguntar al jugador si quiere combar (solo si tiene cartas en mano y es una unidad defensora o líder)
             // Fase de combo defensora: entrar directamente (sin modal previo).
             // En tutoriales se puede omitir esta fase con opts.skipComboDefensora = true.
-            if (!opts.skipComboDefensora && (j.mano.length > 0 || j.batalla.some(c => !c.rested))) {
-                // Setear ataqueActual con el objetivo y el atacante para que soltarEnCombo
-                // funcione y las cartas arrastradas sumen poder al defensorCombo.
-                estadoPartida.ataqueActual = {
-                    atacanteRef: { tipo: 'unidad', index: unidadIndex },
-                    atacanteId: atacante.id,
-                    atacanteZonaRef: atacante,
-                    atacanteBase: poderAtacante,
-                    atacanteCombo: 0,
-                    objetivo: objetivo,
-                    defensorCombo: 0
-                };
-                estadoPartida.log = 'Arrastra cartas al COMBO AREA para defender. Pulsa "Listo" cuando acabes.';
-                renderizarPartida();
-                await esperarComboDefensora();
-                defensorCombo = (estadoPartida.ataqueActual?.defensorCombo) || 0;
+            if (!opts.skipComboDefensora) {
+                // La IA decide si combar para defenderse (automático, sin intervención del jugador).
+                // Pero esto es para cuando la IA ES la defensora. En 1v1, la IA es la ATACANTE,
+                // así que aquí el defensor es el jugador y esperamos a que el jugador combe.
+                if (j.mano.length > 0 || j.batalla.some(c => !c.rested)) {
+                    estadoPartida.ataqueActual = {
+                        atacanteRef: { tipo: 'unidad', index: unidadIndex },
+                        atacanteId: atacante.id,
+                        atacanteZonaRef: atacante,
+                        atacanteBase: poderAtacante,
+                        atacanteCombo: 0,
+                        objetivo: objetivo,
+                        defensorCombo: 0
+                    };
+                    await esperarComboDefensora();
+                    defensorCombo = (estadoPartida.ataqueActual?.defensorCombo) || 0;
+                }
             }
 
             // === 4. RESOLUCIÓN ===
@@ -10354,23 +10377,20 @@
                 ? MotorEfectos.poderCarta(r.liderId, atacante, { quien: 'rival', atacanteId: r.liderId, atacanteZona: atacante, objetivo: objetivo })
                 : (r.liderDespierto ? Number(getCardById(r.liderId)?.poderEvo || 0) : Number(getCardById(r.liderId)?.poder || 0));
 
-            if (!opts.skipComboDefensora && (j.mano.length > 0 || j.batalla.some(c => !c.rested))) {
-                // Entrar directamente en fase de combo defensora (sin modal previo).
-                // Setear ataqueActual con el objetivo y el atacante para que soltarEnCombo
-                // funcione y las cartas arrastradas sumen poder al defensorCombo.
-                estadoPartida.ataqueActual = {
-                    atacanteRef: { tipo: 'lider' },
-                    atacanteId: r.liderId,
-                    atacanteZonaRef: atacante,
-                    atacanteBase: poderAtacante,
-                    atacanteCombo: 0,
-                    objetivo: objetivo,
-                    defensorCombo: 0
-                };
-                estadoPartida.log = 'Arrastra cartas al COMBO AREA para defender. Pulsa "Listo" cuando acabes.';
-                renderizarPartida();
-                await esperarComboDefensora();
-                defensorCombo = (estadoPartida.ataqueActual?.defensorCombo) || 0;
+            if (!opts.skipComboDefensora) {
+                if (j.mano.length > 0 || j.batalla.some(c => !c.rested)) {
+                    estadoPartida.ataqueActual = {
+                        atacanteRef: { tipo: 'lider' },
+                        atacanteId: r.liderId,
+                        atacanteZonaRef: atacante,
+                        atacanteBase: poderAtacante,
+                        atacanteCombo: 0,
+                        objetivo: objetivo,
+                        defensorCombo: 0
+                    };
+                    await esperarComboDefensora();
+                    defensorCombo = (estadoPartida.ataqueActual?.defensorCombo) || 0;
+                }
             }
 
             // === 3. RESOLUCIÓN ===
@@ -10433,12 +10453,8 @@
                 estadoPartida.ataqueActual.defensorCombo = 0;
                 // Guardar el resolver para que pasarFase() lo llame al pulsar "Siguiente"
                 _comboDefensoraResolver = resolve;
-                // Mostrar mensaje instruccional (sin botón — se usa "Siguiente")
-                const ov = document.createElement('div');
-                ov.id = 'combo-defensora-ia-overlay';
-                ov.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:3400;background:rgba(20,10,30,.95);border:2px solid var(--gold);border-radius:12px;padding:14px 24px;display:flex;gap:12px;align-items:center;box-shadow:0 0 25px rgba(255,215,0,.4);';
-                ov.innerHTML = `<div style="color:var(--gold-light);font-weight:900;font-size:14px;">🛡️ Combea para defender (arrastra cartas al COMBO AREA) — pulsa Siguiente para acabar</div>`;
-                document.body.appendChild(ov);
+                // No mostrar overlay — el jugador ya sabe que puede combar
+                // porque está en la fase de combo (lo dice el log y el botón Siguiente).
             });
         }
 
@@ -11067,10 +11083,18 @@
                         defensorImg = c?.img || '';
                     }
                 }
-                defensorPoder = ataque ? (ataque.defensorPoderBase || 0) + (ataque.defensorCombo || 0) : 0;
-                if (defensorPoder === 0 && defensorEsLider) {
+                // Calcular poder del defensor (rival) correctamente
+                if (defensorEsLider) {
                     const lid = getCardById(estadoPartida.rival.liderId);
                     defensorPoder = estadoPartida.rival.liderDespierto ? Number(lid?.poderEvo || 0) : Number(lid?.poder || 0);
+                    defensorPoder += (ataque?.defensorCombo || 0);
+                } else if (ataque?.objetivo?.tipo === 'unidad') {
+                    const defU = estadoPartida.rival.batalla[ataque.objetivo.index];
+                    if (defU) {
+                        const defC = getCardById(defU.id);
+                        defensorPoder = Number(defC?.poder || 0);
+                        defensorPoder += (ataque?.defensorCombo || 0);
+                    }
                 }
             } else {
                 // Atacante = rival (IA u online)
@@ -11295,6 +11319,52 @@
 
         async function terminarAtaque() {
             const ataque = estadoPartida.ataqueActual;
+            // === IA COMBO DEFENSIVO (1v1 y tutorial) ===
+            // Si el jugador ataca y el rival es la IA, la IA puede combar para defender.
+            if (estadoPartida.modo !== 'online' && ataque && !ataque._iaComboAplicado) {
+                ataque._iaComboAplicado = true; // Evitar aplicar 2 veces
+                const r = estadoPartida.rival;
+                if (r.mano.length > 0) {
+                    let poderDefensorBaseIA = 0;
+                    if (ataque.objetivo?.tipo === 'lider') {
+                        const lid = getCardById(r.liderId);
+                        poderDefensorBaseIA = r.liderDespierto ? Number(lid?.poderEvo || 0) : Number(lid?.poder || 0);
+                    } else if (ataque.objetivo?.tipo === 'unidad') {
+                        const def = r.batalla[ataque.objetivo.index];
+                        if (def) poderDefensorBaseIA = Number(getCardById(def.id)?.poder || 0);
+                    }
+                    const poderAtacanteJug = ataque.atacanteBase + (ataque.atacanteCombo || 0);
+                    // La IA combea si el atacante tiene más poder (50% probabilidad)
+                    if (poderAtacanteJug > poderDefensorBaseIA && Math.random() < 0.5) {
+                        const necesita = poderAtacanteJug - poderDefensorBaseIA + 1;
+                        let comboAcum = 0;
+                        const usadas = [];
+                        for (let i = 0; i < r.mano.length && comboAcum < necesita; i++) {
+                            const id = r.mano[i];
+                            const c = getCardById(id);
+                            if (!c || esLider(c) || esToken(c)) continue;
+                            if (String(c.clase || c.tipo || '').toLowerCase().includes('extra')) continue;
+                            const poder = poderCombo(c);
+                            if (poder > 0) {
+                                comboAcum += poder;
+                                usadas.push({ id, index: i });
+                            }
+                        }
+                        if (comboAcum >= necesita) {
+                            usadas.sort((a, b) => b.index - a.index);
+                            usadas.forEach(({ id, index }) => {
+                                r.mano.splice(index, 1);
+                                r.combo.push({ id, comboMode: true });
+                                r.descarte.push(id);
+                            });
+                            ataque.defensorCombo = (ataque.defensorCombo || 0) + comboAcum;
+                            estadoPartida.log = 'La IA combea para defender (+' + comboAcum + ' poder).';
+                            renderizarPartida();
+                            await sleep(600);
+                        }
+                    }
+                }
+            }
             if (!ataque) {
                 // Safety: si no hay ataque, resetear fase igual para evitar softlock
                 estadoPartida.atacanteSeleccionado = null;
