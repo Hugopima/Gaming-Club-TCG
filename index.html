@@ -1836,25 +1836,25 @@
             <p>Este juego es un proyecto independiente desarrollado sin ánimo de lucro exclusivamente para fines recreativos. No tenemos ninguna afiliación oficial con las marcas mencionadas a continuación. Todos los personajes y elementos pertenecen a sus respectivos titulares de derechos.</p>
             <h3>Titulares de Propiedad Intelectual</h3>
             <ul>
-                <li>Bandai Namco Entertainment Inc.</li>
-                <li>Microsoft Corporation</li>
-                <li>Nintendo Co., Ltd.</li>
-                <li>Sony Group Corporation</li>
-                <li>Supercell</li>
-                <li>InnerSloth LLC</li>
-                <li>Omocat, LLC</li>
-                <li>Scott Games / Clickteam</li>
-                <li>DaFuq!?Boom!</li>
-                <li>tinyBuild</li>
-                <li>8-4, Ltd.</li>
-                <li>Re-Logic</li>
-                <li>Roblox Corporation</li>
-                <li>Netflix, Inc.</li>
-                <li>Epic Games, Inc.</li>
-                <li>Editorial Susaeta</li>
-                <li>Mob Entertainment</li>
-                <li>Snail Games</li>
-                <li>Johnson's Baby</li>
+		<li>Bandai Namco Entertainment Inc.</li>
+		<li>Microsoft Corporation</li>
+               				 <li>Nintendo Co., Ltd.</li>
+		<li>Sony Group Corporation</li>
+		<li>Supercell</li>
+		<li>InnerSloth LLC</li>
+		<li>Omocat, LLC</li>
+		<li>Scott Games / Clickteam</li>
+		<li>DaFuq!?Boom!</li>
+		<li>tinyBuild</li>
+		<li>8-4, Ltd.</li>
+		<li>Re-Logic</li>
+		<li>Roblox Corporation</li>
+		<li>Netflix, Inc.</li>
+		<li>Epic Games, Inc.</li>
+		<li>Editorial Susaeta</li>
+		<li>Mob Entertainment</li>
+		<li>Snail Games</li>
+		<li>Johnson's Baby</li>
             </ul>
             <h3>Figuras Públicas</h3>
             <p>Las representaciones de personalidades reales se utilizan bajo el derecho a la sátira y el homenaje creativo.</p>
@@ -2393,6 +2393,8 @@
                     if (preservedName) localStorage.setItem('gc_tcg_player_name', preservedName);
                     // Guardar nueva versión
                     localStorage.setItem('gc_tcg_schema_version', String(SCHEMA_VERSION));
+                    // Marcar que el schema acaba de cambiar (para que el wipe de Supabase se ejecute una sola vez)
+                    window._schemaJustChanged = true;
                     console.log('[Schema] Datos borrados. Listo para empezar de cero.');
                 }
             } catch (e) {
@@ -6949,22 +6951,18 @@
             }
             // Si el schema acaba de cambiar (wipe local), forzar inventario vacío
             // y guardarlo en Supabase para sobreescribir los datos antiguos.
-            // El flag solo se pone DESPUÉS de confirmar que el guardado funcionó.
-            const schemaJustWiped = !localStorage.getItem('gc_tcg_supabase_wiped_v' + SCHEMA_VERSION);
-            if (schemaJustWiped) {
-                console.log('[Schema] Wipe detectado. Forzando inventario vacío en Supabase...');
+            // Esto SOLO ocurre cuando SCHEMA_VERSION cambia (window._schemaJustChanged),
+            // NO en cada carga. Así las actualizaciones normales no borran nada.
+            if (window._schemaJustChanged) {
+                console.log('[Schema] Wipe detectado (schema cambió). Forzando inventario vacío en Supabase...');
+                window._schemaJustChanged = false; // Limpiar el flag para no repetir
                 // Asegurar inventario local vacío
                 _inventario = { coins: 0, energy: 0, cartas: {} };
                 guardarInventario();
-                // Forzar guardado en Supabase (sobreescribe datos antiguos)
-                const saveOk = await guardarInventarioSupabase();
-                if (saveOk) {
-                    // Solo marcar como wipeado si el guardado fue exitoso
-                    localStorage.setItem('gc_tcg_supabase_wiped_v' + SCHEMA_VERSION, '1');
-                    console.log('[Schema] Wipe de Supabase confirmado.');
-                } else {
-                    console.warn('[Schema] El guardado falló. Se reintentará en la próxima carga.');
-                }
+                // Intentar guardado en Supabase (sobreescribe datos antiguos)
+                // Si falla, no importa: el inventario local ya está vacío y se guardará
+                // en la próxima operación de guardado normal.
+                await guardarInventarioSupabase();
                 return true;
             }
             console.log('[Supabase] Cargando inventario para discord_id:', user.id);
@@ -6983,23 +6981,6 @@
                 const data = await res.json();
                 console.log('[Supabase] Datos recibidos:', data);
                 if (data.inventario) {
-                    // Heurística: detectar datos de test antiguos (5000 coins = viejo default,
-                    // o > 50 cartas únicas = inventario de testeo con todas las cartas).
-                    // Si se detecta, forzar wipe y sobreescribir con inventario vacío.
-                    const inv = data.inventario;
-                    const numCartas = inv.cartas ? Object.keys(inv.cartas).length : 0;
-                    const esTestDataAntiguo = (inv.coins === 5000) || (numCartas > 50);
-                    if (esTestDataAntiguo) {
-                        console.warn('[Schema] Detectado inventario de test antiguo en Supabase (coins=' + inv.coins + ', cartas=' + numCartas + '). Forzando wipe...');
-                        _inventario = { coins: 0, energy: 0, cartas: {} };
-                        guardarInventario();
-                        const saveOk = await guardarInventarioSupabase();
-                        if (saveOk) {
-                            localStorage.setItem('gc_tcg_supabase_wiped_v' + SCHEMA_VERSION, '1');
-                            console.log('[Schema] Wipe de datos antiguos confirmado.');
-                        }
-                        return true;
-                    }
                     aplicarInventarioDeSupabase(data.inventario);
                     return true;
                 }
@@ -7788,6 +7769,7 @@
             // Sync Supabase (debounced)
             programarGuardadoSupabase();
         }
+
 
         // Debounce para no saturar Supabase con guardados constantes
         let _timeoutGuardadoSupabase = null;
