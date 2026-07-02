@@ -9812,6 +9812,9 @@
                 estadoPartida.atacanteSeleccionado = null;
                 estadoPartida.turnoDelJugadorLocal = true;
             }
+            // IMPORTANTE: En fase 4 (combo defensora), el jugador SIEMPRE puede interactuar
+            // (incluso si no es su turno) porque está defendiendo de un ataque de la IA/rival.
+            if (estadoPartida.faseIndex === 4) return true;
             // En modo tutorial, siempre se puede interactuar si es tu turno
             if (estadoPartida.modo === 'tutorial') return estadoPartida.turnoDelJugadorLocal !== false;
             // En modo online, solo se puede interactuar si es tu turno
@@ -10584,8 +10587,13 @@
                 estadoPartida.ataqueActual.defensorCombo = 0;
                 // Guardar el resolver para que pasarFase() lo llame al pulsar "Siguiente"
                 _comboDefensoraResolver = resolve;
-                // No mostrar overlay — el jugador ya sabe que puede combar
-                // porque está en la fase de combo (lo dice el log y el botón Siguiente).
+                // Mostrar overlay informativo sutil (sin botón, se elimina al terminar)
+                const ov = document.createElement('div');
+                ov.id = 'combo-defensora-ia-overlay';
+                ov.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:3400;background:rgba(20,10,30,.95);border:2px solid var(--gold);border-radius:12px;padding:14px 24px;display:flex;gap:12px;align-items:center;box-shadow:0 0 25px rgba(255,215,0,.4);';
+                ov.innerHTML = `<div style="color:var(--gold-light);font-weight:900;font-size:14px;">🛡️ Puedes comber para defender (arrastra cartas al COMBO AREA) — pulsa Siguiente para acabar</div>`;
+                document.body.appendChild(ov);
+                renderizarPartida();
             });
         }
 
@@ -11938,6 +11946,10 @@
             // Ocultar NPC del tutorial si estaba visible
             document.getElementById('tutorial-npc-portrait')?.classList.remove('active');
             document.getElementById('tutorial-dialog-overlay')?.classList.remove('active');
+            // Eliminar overlay de combo defensora si estaba visible
+            document.getElementById('combo-defensora-ia-overlay')?.remove();
+            // Limpiar flag de resolución de ataque IA
+            _resolviendoAtaqueIA = false;
             // Limpiar estado persistido
             try { localStorage.removeItem('gc_tcg_partida_online'); } catch (e) {}
             // Solo enviar 'rendirse' si la partida NO está finalizada.
