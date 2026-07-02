@@ -809,7 +809,7 @@
         .attack-arrow line { stroke: #fff07c; stroke-width: 5; filter: drop-shadow(0 0 8px #ffea4d); }
         .attack-arrow.show { display: block; }
         .attackable { outline: 3px solid #fff07c; box-shadow: 0 0 24px rgba(255,240,124,.8); }
-        .awaken-btn { position: absolute; left: -12px; right: -12px; bottom: -38px; z-index: 10; border: 1px solid #fff07c; border-radius: 999px; background: rgba(255,80,24,.92); color: white; font-weight: 900; padding: 6px 8px; cursor: pointer; box-shadow: 0 0 16px rgba(255,80,24,.7); }
+        .awaken-btn { position: relative; z-index: 10; margin-top: 4px; position: absolute; left: -12px; right: -12px; bottom: -38px; z-index: 10; border: 1px solid #fff07c; border-radius: 999px; background: rgba(255,80,24,.92); color: white; font-weight: 900; padding: 6px 8px; cursor: pointer; box-shadow: 0 0 16px rgba(255,80,24,.7); }
 
         /* --- AJUSTES MOTOR V4 --- */
         .next-phase-tab { right: 18px; position: absolute; top: 82px; border-radius: 14px; overflow: hidden; }
@@ -2831,14 +2831,21 @@
   function elegirConModal(titulo, opciones, opcionesExtra) {
     // === IA AUTO-DECISIÓN (1v1 y tutorial) ===
     // Si la decisión es para el rival (IA) y no es online, decidir automáticamente.
-    const ep = window.estadoPartida || (typeof estadoPartida !== 'undefined' ? estadoPartida : null);
-    if (ep && ep.modo !== 'online' && ep.turnoDelJugadorLocal === false) {
-      // La IA decide: elegir la primera opción que no sea 'No' o null
+    // Detección: si el jugador NO puede interactuar (turnoDelJugadorLocal === false)
+    // O si hay un flag explícito de decisión para la IA.
+    // NO aplicar auto-decisión si el jugador debe decidir explícitamente
+    // (ej: tutorial 3 donde el jugador debe bloquear con Megalberto).
+    const ep = window.estadoPartida || (typeof estadoPartida !== "undefined" ? estadoPartida : null);
+    const esTurnoRival = ep && (ep.turnoDelJugadorLocal === false || ep._decisionParaIA === true);
+    const esModoIA = ep && ep.modo !== "online";
+    const jugadorDebeDecidir = ep && ep._jugadorDebeDecidir === true;
+    if (esModoIA && esTurnoRival && !jugadorDebeDecidir) {
+      // La IA decide: elegir la primera opción que no sea "No" o null
       const opts = opciones || [];
-      // Buscar una opción afirmativa (no 'No', no null, no -1)
+      // Buscar una opción afirmativa (no "No", no null, no -1)
       let pick = opts.find(o => {
         const label = String(o.label || o).toLowerCase();
-        return !label.includes('no ') && !label.startsWith('no') && o.value !== null && o.value !== -1 && o.value !== false;
+        return !label.includes("no ") && !label.startsWith("no") && o.value !== null && o.value !== -1 && o.value !== false;
       });
       // Si no hay afirmativa, 50% probabilidad de usar la primera opción
       if (!pick && opts.length > 0 && Math.random() < 0.5) pick = opts[0];
@@ -7314,6 +7321,8 @@
             // === Diálogo 1: introducción a la defensa ===
             await mostrarDialogoTutorial('Cuando te atacan, puedes defenderte. Al declarar ataque te permite utilizar cartas con bloqueador (como Megalberto Mewing) para redirigir el ataque. O cartas counter para negar el ataque. Redirige el ataque a Megalberto Mewing para que no le ataque a tu líder.', 'OK');
             if (_tutorialAbortado) return;
+            // Marcar que el jugador debe decidir (para que la IA auto-decisión NO intercepte)
+            estadoPartida._jugadorDebeDecidir = true;
 
             // === Ataque 1: el líder rival ataca al jugador ===
             // El jugador puede bloquear con Megalberto (que tiene Bloqueador).
@@ -7356,6 +7365,7 @@
             // === Diálogo final ===
             await mostrarDialogoTutorial('¡Muy bien! Cuidado en tu turno para administrar tu maná para jugar y defenderte. Ya sabes todo lo que te puedo enseñar. Buena suerte con los otros jugadores. Te regalaré esta baraja, puedes encontrarla en "Mazos" con todas las cartas.', 'OK');
 
+            estadoPartida._jugadorDebeDecidir = false;
             await completarTutorial(3);
         }
 
@@ -10595,12 +10605,8 @@
                 estadoPartida.ataqueActual.defensorCombo = 0;
                 // Guardar el resolver para que pasarFase() lo llame al pulsar "Siguiente"
                 _comboDefensoraResolver = resolve;
-                // Mostrar overlay informativo sutil (sin botón, se elimina al terminar)
-                const ov = document.createElement('div');
-                ov.id = 'combo-defensora-ia-overlay';
-                ov.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:3400;background:rgba(20,10,30,.95);border:2px solid var(--gold);border-radius:12px;padding:14px 24px;display:flex;gap:12px;align-items:center;box-shadow:0 0 25px rgba(255,215,0,.4);';
-                ov.innerHTML = `<div style="color:var(--gold-light);font-weight:900;font-size:14px;">🛡️ Puedes comber para defender (arrastra cartas al COMBO AREA) — pulsa Siguiente para acabar</div>`;
-                document.body.appendChild(ov);
+                // Sin overlay — el jugador ve que está en fase de combo por el log
+                // y el botón "Siguiente" está disponible para terminar.
                 renderizarPartida();
             });
         }
@@ -11783,7 +11789,8 @@
 
         function despertarLider() {
             if (!estadoPartida) return;
-            if (estadoPartida.modo === 'online' && !estadoPartida.turnoDelJugadorLocal) {
+            // No se puede despertar al líder en el turno del rival (en cualquier modo)
+            if (estadoPartida.turnoDelJugadorLocal === false) {
                 return alert('Solo puedes despertar a tu líder en tu turno.');
             }
             if (estadoPartida.jugador.vida.length > 4) return;
@@ -12231,7 +12238,7 @@
                 <img src="${liderImgActual || ''}" alt="${escapeHtml(liderCartaData?.nombre || '')}">
                 <span class="card-power-badge">${liderPoderActual}</span>
             </div>${liderActivables}`;
-            renderZona('player-leader-zone', ocultarLideres ? '' : `<div style="position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;">${liderHtml}${j.vida.length <= 4 && !j.liderDespierto ? '<button class="awaken-btn" onclick="despertarLider()">Despertar</button>' : ''}</div>`);
+            renderZona('player-leader-zone', ocultarLideres ? '' : `<div style="position:relative;display:flex;flex-direction:column;align-items:center;gap:8px;">${liderHtml}${j.vida.length <= 4 && !j.liderDespierto ? '<button class="awaken-btn" onclick="despertarLider()" style="margin-top:4px;">Despertar</button>' : ''}</div>`);
             // Líder rival: si está evolucionado, mostrar su imagen evo. Click = atacar, dblclick = ver info
             const rivalLiderData = getCardById(r.liderId);
             const rivalLiderImg = r.liderDespierto && rivalLiderData?.imgEvo ? rivalLiderData.imgEvo : rivalLiderData?.img;
@@ -12649,6 +12656,7 @@
     </script>
 </body>
 </html>
+
 
 
 
