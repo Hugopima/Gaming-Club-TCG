@@ -809,7 +809,10 @@
         .attack-arrow line { stroke: #fff07c; stroke-width: 5; filter: drop-shadow(0 0 8px #ffea4d); }
         .attack-arrow.show { display: block; }
         .attackable { outline: 3px solid #fff07c; box-shadow: 0 0 24px rgba(255,240,124,.8); }
-        .awaken-btn { position: relative; z-index: 10; margin-top: 4px; position: absolute; left: -12px; right: -12px; bottom: -38px; z-index: 10; border: 1px solid #fff07c; border-radius: 999px; background: rgba(255,80,24,.92); color: white; font-weight: 900; padding: 6px 8px; cursor: pointer; box-shadow: 0 0 16px rgba(255,80,24,.7); }
+        /* Botón Despertar: mismo tamaño/estilo que .activable-btn-overlay, colocado DEBAJO de él.
+           El botón activable está a bottom:-36px (altura ~24px), así que despertar va a bottom:-66px. */
+        .awaken-btn { position: absolute; left: 50%; bottom: -66px; transform: translateX(-50%); z-index: 11; white-space: nowrap; border: 2px solid #fff07c; border-radius: 999px; background: rgba(255,80,24,.94); color: white; font-weight: 900; padding: 5px 10px; font-size: 11px; cursor: pointer; box-shadow: 0 0 14px rgba(255,80,24,.7); text-shadow: 0 1px 2px #000; max-width: 130px; overflow: hidden; text-overflow: ellipsis; }
+        .awaken-btn:hover { background: rgba(255,140,40,1); transform: translateX(-50%) scale(1.06); }
 
         /* --- AJUSTES MOTOR V4 --- */
         .next-phase-tab { right: 18px; position: absolute; top: 82px; border-radius: 14px; overflow: hidden; }
@@ -2821,6 +2824,117 @@
   }
 
   let _selectorResolverActual = null;
+
+  // === IA AUTO-DECISIÓN (1v1 y tutorial) ===
+  // La IA decide una elección genérica cuando el efecto la fuerza a elegir.
+  // Criterio: preferir opciones afirmativas (no "No", null, -1, false).
+  // Si las opciones son cartas (tienen cardId), elegir la menos útil para descartar.
+  function iaDecidirEleccion(titulo, opciones, opcionesExtra) {
+    const opts = opciones || [];
+    if (opts.length === 0) return null;
+    // Para descartes: elegir la carta menos útil (extra, mayor coste, no counter)
+    if (opts[0]?.cardId) {
+      const scored = opts.map(o => {
+        const c = (typeof getCardById === 'function') ? getCardById(o.cardId) : null;
+        let score = 0;
+        if (c) {
+          if (typeof claseNormalizada === 'function' && claseNormalizada(c) === 'extra') score -= 100;
+          score -= Number(c.costeTotal || 0);
+          if (typeof tieneTag === 'function' && (tieneTag(c, 'counter play') || tieneTag(c, 'counter ataque'))) score += 50;
+        }
+        return { opt: o, score };
+      });
+      scored.sort((a, b) => a.score - b.score); // menor score = menos útil
+      const pick = scored[0].opt;
+      return pick.value !== undefined ? pick.value : pick;
+    }
+    // Para decisiones sí/no: buscar opción afirmativa
+    let pick = opts.find(o => {
+      const label = String(o.label || o).toLowerCase();
+      return !label.includes('no ') && !label.startsWith('no') && o.value !== null && o.value !== -1 && o.value !== false;
+    });
+    if (!pick && opts.length > 0 && Math.random() < 0.5) pick = opts[0];
+    return pick ? (pick.value !== undefined ? pick.value : pick) : null;
+  }
+
+  // IA elige qué carta descartar de su mano.
+  // Devuelve el índice en la mano, o -1 si la mano está vacía.
+  function iaElegirDescarte(mano) {
+    if (!mano || !mano.length) return -1;
+    const scored = mano.map((id, i) => {
+      const c = (typeof getCardById === 'function') ? getCardById(id) : null;
+      let score = 0;
+      if (c) {
+        if (typeof claseNormalizada === 'function' && claseNormalizada(c) === 'extra') score -= 100;
+        score -= Number(c.costeTotal || 0);
+        if (typeof tieneTag === 'function' && (tieneTag(c, 'counter play') || tieneTag(c, 'counter ataque'))) score += 50;
+      }
+      return { i, score };
+    });
+    scored.sort((a, b) => a.score - b.score);
+    return scored[0].i;
+  }
+
+  // === IA: USA COUNTER PLAY CONTRA UNIDAD DEL JUGADOR ===
+  // Llamado ANTES de que la unidad del jugador entre al campo de batalla.
+  // Devuelve true si la IA usó un counter play y la unidad fue negada (va al descarte).
+  // Devuelve false si la IA no tiene counter play, no puede pagar, o decide no usarlo.
+  function iaIntentarCounterPlay(cartaJugador, cardIdJugador) {
+    if (!estadoPartida || estadoPartida.modo === 'online' || estadoPartida.modo === 'tutorial') return false;
+    if (!window.MotorEfectos || !cartaJugador) return false;
+    // Solo aplica a unidades
+    if (typeof claseNormalizada === 'function' && claseNormalizada(cartaJugador) !== 'unidad') return false;
+    const r = estadoPartida.rival;
+    if (!r || !r.mano || !r.mano.length) return false;
+    // Buscar cartas de counter play en mano de la IA
+    const counterPlays = r.mano
+      .map((id, i) => ({ id, i, c: getCardById(id) }))
+      .filter(x => x.c && typeof tieneTag === 'function' && tieneTag(x.c, 'counter play'));
+    if (!counterPlays.length) return false;
+    // Para cada counter play, comprobar si puede negar la carta del jugador
+    for (const cp of counterPlays) {
+      const reg = MotorEfectos.REGISTRO_EFECTOS[cp.id];
+      if (!reg || !reg.alCounterPlay) continue;
+      // alCounterPlay devuelve true si puede negar la carta
+      const puedeNegar = reg.alCounterPlay('rival', cartaJugador);
+      if (!puedeNegar) continue;
+      // Comprobar si la IA puede pagar el coste (maná activo suficiente)
+      const coste = Number(cp.c.costeTotal || 0);
+      const manaActivo = r.mana.filter(m => !m.rested).length;
+      if (coste > manaActivo) continue;
+      // Decidir si la IA usa el counter play.
+      // Más probable contra unidades caras (coste 3-4), menos contra baratas (1-2).
+      const costeJugador = Number(cartaJugador.costeTotal || 0);
+      let probabilidad = 0.45;
+      if (costeJugador >= 4) probabilidad = 0.85;
+      else if (costeJugador >= 3) probabilidad = 0.65;
+      else if (costeJugador >= 2) probabilidad = 0.40;
+      else probabilidad = 0.20;
+      if (Math.random() > probabilidad) continue;
+      // === USAR EL COUNTER PLAY ===
+      // 1. Pagar maná: girar `coste` cartas de maná activo.
+      let resto = coste;
+      r.mana.forEach(m => { if (resto > 0 && !m.rested) { m.rested = true; resto--; } });
+      r.manaActivo = r.mana.filter(m => !m.rested).length;
+      // 2. Mover la carta de counter play al descarte de la IA.
+      r.mano.splice(cp.i, 1);
+      r.descarte.push(cp.id);
+      // 3. La carta del jugador va al descarte (no al campo de batalla).
+      //    El maná ya se gastó.
+      if (typeof log === 'function') {
+        log('¡Counter Play de la IA! ' + (cp.c.nombre || 'Counter') + ' niega a ' + (cartaJugador.nombre || cardIdJugador) + ' y va al descarte.');
+      }
+      // 4. Notificación visual (reutiliza la notificación de counter)
+      if (typeof mostrarNotificacionCounter === 'function') {
+        mostrarNotificacionCounter(cp.c.nombre || 'Counter de la IA');
+      }
+      return true;
+    }
+    return false;
+  }
+
+
+
   // === SISTEMA DE DECISIONES ONLINE ===
   // Cuando _decisionParaRival está activo, la próxima llamada a elegirConModal
   // se envía al rival por socket en lugar de mostrarse localmente
@@ -2940,6 +3054,12 @@
   async function elegirConModalRival(titulo, opciones, opcionesExtra) {
     if (estadoPartida && estadoPartida.modo === 'online' && window._socketOnline) {
       return await enviarDecisionAlRival(titulo, opciones, opcionesExtra);
+    }
+    // En modo IA (1v1, tutorial), el rival es la IA: decidir automáticamente.
+    // Esto evita que se muestre al jugador un modal pidiéndole decidir por la IA
+    // (ej. cartas como Nyx que hacen que "ambos jugadores descarten").
+    if (estadoPartida && estadoPartida.modo !== 'online') {
+      return iaDecidirEleccion(titulo, opciones, opcionesExtra);
     }
     return elegirConModal(titulo, opciones, opcionesExtra);
   }
@@ -3222,10 +3342,29 @@
     }
     const z = zonaJugador(jugador);
     if (!z.mano.length) return null;
-    const opts = z.mano.map((id, i) => ({ label: getCardById(id)?.nombre || id, value: i, cardId: id }));
-    let idx = await elegirConModal(titulo || 'Elige una carta para descartar (obligatorio)', opts, { noCancelable: true });
-    if (idx == null || idx < 0) idx = Math.floor(Math.random() * z.mano.length);
-    return descartarCartaMano(jugador, idx);
+    // === IA AUTO-DECISIÓN EN MODO SOLO ===
+    // Si el descarte es para el rival (IA) en modo no-online, decidir automáticamente.
+    // El jugador NUNCA debe ver la mano de la IA ni decidir por ella.
+    if (jugador === 'rival' && ep && ep.modo !== 'online') {
+      const idxIA = iaElegirDescarte(z.mano);
+      if (idxIA < 0) return null;
+      const cartaDesc = getCardById(z.mano[idxIA]);
+      if (typeof log === 'function') log('La IA descarta ' + (cartaDesc?.nombre || 'una carta') + '.');
+      return descartarCartaMano('rival', idxIA);
+    }
+    // === JUGADOR: si es el turno de la IA, forzar que el jugador decida ===
+    // (no dejar que la IA auto-decida por el jugador). Esto pasa por ejemplo cuando
+    // la IA juega Nyx, que fuerza a AMBOS jugadores a descartar.
+    const needOverride = ep && ep.modo !== 'online' && ep.turnoDelJugadorLocal === false;
+    if (needOverride) ep._jugadorDebeDecidir = true;
+    try {
+      const opts = z.mano.map((id, i) => ({ label: getCardById(id)?.nombre || id, value: i, cardId: id }));
+      let idx = await elegirConModal(titulo || 'Elige una carta para descartar (obligatorio)', opts, { noCancelable: true });
+      if (idx == null || idx < 0) idx = Math.floor(Math.random() * z.mano.length);
+      return descartarCartaMano(jugador, idx);
+    } finally {
+      if (needOverride) ep._jugadorDebeDecidir = false;
+    }
   }
 
   async function ambosDescartan(titulo) {
@@ -3385,7 +3524,7 @@
         if (pick) {
           // Jugar la carta gratis.
           z.batalla.push(crearUnidadCampo(pick, { rested: false }));
-          if (window.MotorEfectos) MotorEfectos.alJugar(quien, pick, z.batalla[z.batalla.length - 1]);
+          if (window.MotorEfectos) await MotorEfectos.alJugar(quien, pick, z.batalla[z.batalla.length - 1]);
           // Las otras 2 van al fondo del mazo en cualquier orden.
           const restantes = tops.filter(id => id !== pick);
           // Ponerlas al fondo en el orden inverso (para mantener el orden original).
@@ -5917,9 +6056,14 @@
     return undefined;
   }
 
-  function alJugar(quien, cardId, zonaRef) {
+  async function alJugar(quien, cardId, zonaRef) {
     // NO transformar líder automáticamente: solo mediante el botón "Despertar"
-    dispatch(cardId, 'alJugar', [quien, cardId, zonaRef]);
+    // Await async hooks (ej. Nyx -> ambosDescartan) para que la IA espere a que
+    // el jugador tome su decisión antes de seguir jugando.
+    const r = dispatch(cardId, 'alJugar', [quien, cardId, zonaRef]);
+    if (r && typeof r.then === 'function') {
+      try { await r; } catch (e) { console.error('Error en alJugar de', cardId, e); }
+    }
     if (typeof renderizarPartida === 'function') renderizarPartida();
   }
 
@@ -6195,10 +6339,16 @@
       }
     });
     if (fase === 'Principal' || fase === 'Combate') {
-      const lid = liderCarta(quien);
-      const regL = REGISTRO_EFECTOS[z.liderId];
-      if (regL?.activablesLider) {
-        regL.activablesLider(quien).forEach(a => list.push(Object.assign({ quien, cardId: z.liderId, esLider: true }, a)));
+      // Solo mostrar activables del líder si es tu turno (en cualquier modo).
+      // Esto evita que en 1v1 contra IA puedas usar "Activar: Principal" del líder
+      // durante el turno del rival (ej. Hugopima/Withers, El Maestro, etc.).
+      const esMiTurno = estadoPartida && estadoPartida.turnoDelJugadorLocal !== false;
+      if (esMiTurno) {
+        const lid = liderCarta(quien);
+        const regL = REGISTRO_EFECTOS[z.liderId];
+        if (regL?.activablesLider) {
+          regL.activablesLider(quien).forEach(a => list.push(Object.assign({ quien, cardId: z.liderId, esLider: true }, a)));
+        }
       }
     }
     return list;
@@ -6328,6 +6478,50 @@
     const counters = z.mano.filter(id => tieneTag(getCardById(id), 'counter ataque'));
     if (!counters.length) return false;
     if (ataqueCtx.noCounter) return false;
+    // === IA AUTO-DECISIÓN EN MODO SOLO ===
+    // Si el que contraataca es el rival (IA) en modo no-online, decidir automáticamente.
+    // La IA decide según el contexto:
+    //  - Si atacan al líder y la IA tiene <=4 vidas: siempre counter (defensa crítica).
+    //  - Si atacan al líder en general: 85% counter (casi siempre worth it).
+    //  - Si atacan a una unidad: 60% counter (depende del valor de la unidad).
+    //  - Si la IA tiene muchos counters en mano (>2): sube la probabilidad.
+    if (quien === 'rival' && estadoPartida && estadoPartida.modo !== 'online') {
+      let probabilidad = 0.6;
+      const esAtaqueAlLider = ataqueCtx?.objetivo?.tipo === 'lider';
+      const vidasIA = zonaJugador('rival').vida?.length || 0;
+      if (esAtaqueAlLider) {
+        probabilidad = 0.85;
+        if (vidasIA <= 4) probabilidad = 1.0; // Defensa crítica: siempre counter.
+      } else {
+        // Ataque a unidad: depende del poder de la unidad defensora.
+        const objIdx = ataqueCtx?.objetivo?.index;
+        const defU = objIdx != null ? zonaJugador('rival').batalla[objIdx] : null;
+        if (defU) {
+          const poderDef = Number(getCardById(defU.id)?.poder || 0);
+          // Si la unidad es cara (poder >= 15000), más vale la pena counter.
+          if (poderDef >= 15000) probabilidad = 0.75;
+          else if (poderDef >= 10000) probabilidad = 0.55;
+          else probabilidad = 0.35;
+        }
+      }
+      // Si la IA tiene muchos counters, sube la probabilidad (no necesita conservarlos).
+      if (counters.length > 2) probabilidad = Math.min(1.0, probabilidad + 0.15);
+      if (Math.random() < probabilidad) {
+        const pick = counters[0];
+        const hi = z.mano.indexOf(pick);
+        if (hi < 0) return false;
+        if (!await pagarImpuestoCounter(quien, pick)) return false;
+        descartarCartaMano(quien, hi);
+        dispatch(pick, 'alCounterAtaque', [quien, ataqueCtx]);
+        const counterEnCampo = zonaJugador(quien).batalla.find(u => u.id === pick);
+        if (counterEnCampo) { counterEnCampo.rested = true; counterEnCampo.ataquesRestantes = 0; }
+        log(getCardById(pick)?.nombre + ' niega el ataque (Counter de la IA).');
+        if (typeof mostrarNotificacionCounter === 'function') mostrarNotificacionCounter(getCardById(pick)?.nombre || 'Counter');
+        if (typeof renderizarPartida === 'function') renderizarPartida();
+        return true;
+      }
+      return false;
+    }
     const opts = counters.map(id => ({ label: getCardById(id)?.nombre, value: id, cardId: id }));
     const pick = await elegirConModal('¿Usar Counter Ataque? Elige una carta para negar el ataque', opts.concat([{ label: 'No', value: null }]), { noCancelable: true });
     if (!pick) return false;
@@ -6357,25 +6551,47 @@
 
   async function pagarImpuestoCounter(quien, counterId) {
     const riv = rivalDe(quien);
+    // Si la IA es la que paga el impuesto (en modo no-online), decidir automáticamente.
+    const esIADecidiendo = quien === 'rival' && estadoPartida && estadoPartida.modo !== 'online';
     if (unidadesEnCampo(riv, u => getCardById(u.id)?.id === 'kirk').length) {
-      const pago = await elegirConModal('Charlie Kirk: paga 1 maná extra o el Counter se niega', [
-        { label: 'Pagar 1 maná', value: true }, { label: 'Negar Counter', value: false }
-      ]);
-      if (!pago) return false;
-      descansarMana(quien, null, 1);
+      if (esIADecidiendo) {
+        // IA: pagar si tiene maná activo, sino negar el counter.
+        const manaActivo = zonaJugador(quien).mana.filter(m => !m.rested).length;
+        if (manaActivo >= 1) {
+          descansarMana(quien, null, 1);
+        } else {
+          return false;
+        }
+      } else {
+        const pago = await elegirConModal('Charlie Kirk: paga 1 maná extra o el Counter se niega', [
+          { label: 'Pagar 1 maná', value: true }, { label: 'Negar Counter', value: false }
+        ]);
+        if (!pago) return false;
+        descansarMana(quien, null, 1);
+      }
     }
     if (zonaJugador(riv).liderDespierto && String(liderNombre(riv)).toLowerCase().includes('capitalismo')) {
-      // El jugador debe elegir: pagar el impuesto (top del mazo al descarte) o negar el Counter
-      const pagar = await elegirConModal('Capitalismo Salvaje: paga 1 carta del mazo como impuesto o el Counter se niega', [
-        { label: 'Pagar impuesto (top del mazo)', value: true },
-        { label: 'Negar Counter', value: false }
-      ]);
-      if (!pagar) return false;
-      const top = zonaJugador(quien).mazo.pop();
-      if (top) {
-        zonaJugador(quien).descarte.push(top);
-        log('Impuesto Capitalismo: descartas la carta superior de tu mazo.');
-      } else return false;
+      if (esIADecidiendo) {
+        // IA: pagar si tiene cartas en mazo, sino negar.
+        if (zonaJugador(quien).mazo.length > 0) {
+          const top = zonaJugador(quien).mazo.pop();
+          zonaJugador(quien).descarte.push(top);
+        } else {
+          return false;
+        }
+      } else {
+        // El jugador debe elegir: pagar el impuesto (top del mazo al descarte) o negar el Counter
+        const pagar = await elegirConModal('Capitalismo Salvaje: paga 1 carta del mazo como impuesto o el Counter se niega', [
+          { label: 'Pagar impuesto (top del mazo)', value: true },
+          { label: 'Negar Counter', value: false }
+        ]);
+        if (!pagar) return false;
+        const top = zonaJugador(quien).mazo.pop();
+        if (top) {
+          zonaJugador(quien).descarte.push(top);
+          log('Impuesto Capitalismo: descartas la carta superior de tu mazo.');
+        } else return false;
+      }
     }
     return true;
   }
@@ -10119,12 +10335,17 @@
             // 1. Poner EXACTAMENTE 1 maná por turno (regla del juego)
             // Solo si no ha puesto maná este turno y tiene cartas en mano
             if (!r.manaUsadoEsteTurno && r.mano.length > 0) {
-                // Elegir la carta menos útil para maná: extras primero, luego la de mayor coste
+                // Elegir la carta menos útil para maná: extras primero (PERO NO counter ataque
+                // ni counter play, que la IA debe guardar en mano para contrarrestar),
+                // luego la de mayor coste.
                 let idxMana = -1;
                 let mejorScore = -1;
                 for (let i = 0; i < r.mano.length; i++) {
                     const c = getCardById(r.mano[i]);
                     if (!c) continue;
+                    // NUNCA poner como maná las cartas de counter ataque o counter play:
+                    // la IA las necesita en mano para contrarrestar al jugador.
+                    if (typeof tieneTag === 'function' && (tieneTag(c, 'counter ataque') || tieneTag(c, 'counter play'))) continue;
                     let score = 0;
                     if (claseNormalizada(c) === 'extra') score += 100;
                     score += Number(c.costeTotal || 0);
@@ -10171,7 +10392,7 @@
                     r.mano.splice(idxJugar, 1);
                     const u = window.MotorEfectos ? MotorEfectos.crearUnidadCampo(idJugar, { rested: false }) : { id: idJugar, rested: false, ataquesRestantes: ataquesPorTurno(idJugar) };
                     r.batalla.push(u);
-                    if (window.MotorEfectos) MotorEfectos.alJugar('rival', idJugar, u);
+                    if (window.MotorEfectos) await MotorEfectos.alJugar('rival', idJugar, u);
                     estadoPartida.log = 'La IA juega ' + (carta.nombre || idJugar) + '.';
                     renderizarPartida();
                     await sleep(700);
@@ -10889,7 +11110,7 @@
             return null;
         }
 
-        function intentarJugarDesdeMano(index) {
+        async function intentarJugarDesdeMano(index) {
             // Permitir counter play en turno rival
             const id = estadoPartida.jugador.mano[index];
             const carta = getCardById(id);
@@ -10936,7 +11157,7 @@
                 estadoPartida.jugador.mano.splice(index, 1);
                 const u = window.MotorEfectos ? MotorEfectos.crearUnidadCampo(id, { rested: false }) : { id, rested: false, ataquesRestantes: 1, buffs:{poder:0,combo:0,batalla:0}, flags:{} };
                 estadoPartida.jugador.batalla.push(u);
-                if (window.MotorEfectos) MotorEfectos.alJugar('jugador', id, u);
+                if (window.MotorEfectos) await MotorEfectos.alJugar('jugador', id, u);
                 estadoPartida.log = carta.nombre + ' evoluciona al campo.';
                 renderizarPartida(); return;
             }
@@ -11046,6 +11267,7 @@
             }
             estadoPartida.jugador.mano.splice(index, 1);
             let zonaRef = null;
+            let cartaNegadaPorIA = false;
             if (claseNormalizada(carta) === 'extra') {
                 const esCampo = (carta.habilidades || []).some(h => String(h.tag || '').toLowerCase().includes('campo')) || String(carta.tipo || '').toLowerCase().includes('campo');
                 if (esCampo) {
@@ -11056,15 +11278,27 @@
                     estadoPartida.log = `${carta.nombre} se usa y va al descarte.`;
                 }
             } else {
-                const unidad = window.MotorEfectos
-                    ? MotorEfectos.crearUnidadCampo(jugada, { rested: false })
-                    : { id: jugada, rested: false, ataquesRestantes: ataquesPorTurno(jugada) };
-                estadoPartida.jugador.batalla.push(unidad);
-                zonaRef = unidad;
-                estadoPartida.log = `Juegas ${carta.nombre} en el area de batalla.`;
+                // === IA: intenta usar counter play contra esta unidad ===
+                // Si tiene éxito, la carta va al descarte (el maná ya se gastó).
+                if (typeof iaIntentarCounterPlay === 'function' && iaIntentarCounterPlay(carta, jugada)) {
+                    estadoPartida.jugador.descarte.push(jugada);
+                    cartaNegadaPorIA = true;
+                } else {
+                    const unidad = window.MotorEfectos
+                        ? MotorEfectos.crearUnidadCampo(jugada, { rested: false })
+                        : { id: jugada, rested: false, ataquesRestantes: ataquesPorTurno(jugada) };
+                    estadoPartida.jugador.batalla.push(unidad);
+                    zonaRef = unidad;
+                    estadoPartida.log = `Juegas ${carta.nombre} en el area de batalla.`;
+                }
             }
-            if (window.MotorEfectos) MotorEfectos.alJugar('jugador', jugada, zonaRef);
-            else renderizarPartida();
+            // Si la carta fue negada por la IA, no disparar alJugar (nunca entró al campo).
+            if (!cartaNegadaPorIA) {
+                if (window.MotorEfectos) await MotorEfectos.alJugar('jugador', jugada, zonaRef);
+                else renderizarPartida();
+            } else {
+                if (typeof renderizarPartida === 'function') renderizarPartida();
+            }
             // En modo online, sincronizar después de jugar carta.
             // Si es una unidad, incluir el cardId para que el rival pueda hacer Counter Play.
             if (estadoPartida.modo === 'online') {
@@ -12238,7 +12472,7 @@
                 <img src="${liderImgActual || ''}" alt="${escapeHtml(liderCartaData?.nombre || '')}">
                 <span class="card-power-badge">${liderPoderActual}</span>
             </div>${liderActivables}`;
-            renderZona('player-leader-zone', ocultarLideres ? '' : `<div style="position:relative;display:flex;flex-direction:column;align-items:center;gap:8px;">${liderHtml}${j.vida.length <= 4 && !j.liderDespierto ? '<button class="awaken-btn" onclick="despertarLider()" style="margin-top:4px;">Despertar</button>' : ''}</div>`);
+            renderZona('player-leader-zone', ocultarLideres ? '' : `<div style="position:relative;display:flex;flex-direction:column;align-items:center;gap:8px;">${liderHtml}${j.vida.length <= 4 && !j.liderDespierto ? '<button class="awaken-btn" onclick="despertarLider()">Despertar</button>' : ''}</div>`);
             // Líder rival: si está evolucionado, mostrar su imagen evo. Click = atacar, dblclick = ver info
             const rivalLiderData = getCardById(r.liderId);
             const rivalLiderImg = r.liderDespierto && rivalLiderData?.imgEvo ? rivalLiderData.imgEvo : rivalLiderData?.img;
