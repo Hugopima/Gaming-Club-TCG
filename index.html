@@ -10411,13 +10411,22 @@
             }
 
             // === FASE DE COMBATE ===
+            // Bug fix: NADIE puede atacar en su primer turno. En 1v1 el jugador va primero
+            // (turno=1) y la IA va segunda (turno=2). La IA no puede atacar en turno <= 2.
+            // (Misma regla que online: el primer turno de cada jugador es sin ataques.)
+            if (estadoPartida.turno <= 2) {
+                estadoPartida.faseIndex = 2;
+                estadoPartida.log = 'La IA no puede atacar en su primer turno.';
+                renderizarPartida();
+                await sleep(500);
+            } else {
             estadoPartida.faseIndex = 2;
             estadoPartida.log = 'La IA ataca...';
             renderizarPartida();
             await sleep(500);
 
             // La IA ataca con todas las unidades activas que puedan atacar
-            // Cada ataque respeta el flujo: counter play → bloqueo → combo defensora → resolución
+            // Cada ataque respeta el flujo: counter ataque → bloqueo → combo defensora → resolución
             const j = estadoPartida.jugador;
             let ataqueIdx = 0;
             while (ataqueIdx < r.batalla.length) {
@@ -10463,7 +10472,7 @@
             // === ATAQUE CON EL LÍDER DE LA IA ===
             // Después de atacar con las unidades, el líder ataca si puede
             // (no en el turno 1, y si no está rested y tiene ataques restantes).
-            if (estadoPartida.turno > 1 && r.liderZona && !r.liderZona.rested && (r.liderZona.ataquesRestantes ?? 0) > 0) {
+            if (estadoPartida.turno > 2 && r.liderZona && !r.liderZona.rested && (r.liderZona.ataquesRestantes ?? 0) > 0) {
                 estadoPartida.log = 'La IA ataca con su líder...';
                 renderizarPartida();
                 await sleep(500);
@@ -10490,6 +10499,7 @@
                 await sleep(800);
                 if (estadoPartida.finalizada) return;
             }
+            } // fin else (la IA puede atacar, turno > 2)
 
             // === FIN DE TURNO DE LA IA ===
             if (window.MotorEfectos) MotorEfectos.alFinTurno('rival');
@@ -10545,13 +10555,35 @@
             };
             renderizarPartida(); // Actualizar panel de combate
 
-            // === 1. FASE DE COUNTER PLAY ===
-            // El jugador puede tener cartas de Counter Play en mano para negar la unidad atacante.
-            // En modo solo, no hay counter play del jugador contra ataques (es contra jugadas de unidad, no ataques).
-            // Así que saltamos esta fase para ataques.
+            // === 1. FASE DE COUNTER ATAQUE (del jugador) ===
+            // El jugador puede tener cartas de Counter Ataque en mano para negar el ataque.
+            // Esto va ANTES del bloqueo y del combo.
+            // Marcar _jugadorDebeDecidir=true para que elegirConModal muestre el modal al jugador
+            // en vez de auto-decidir por la IA (porque estamos en el turno de la IA).
+            if (window.MotorEfectos && MotorEfectos.intentarCounterAtaque) {
+                estadoPartida._jugadorDebeDecidir = true;
+                try {
+                    const countered = await MotorEfectos.intentarCounterAtaque('jugador', { objetivo: objetivo, noCounter: !!MotorEfectos.ctx?.noCounter });
+                    if (countered) {
+                        // El ataque fue negado por un counter ataque del jugador.
+                        atacante.ataquesRestantes = Math.max(0, (atacante.ataquesRestantes ?? 1) - 1);
+                        atacante.rested = atacante.ataquesRestantes <= 0;
+                        estadoPartida.ataqueActual = null;
+                        estadoPartida.rivalAtacanteId = null;
+                        estadoPartida.rivalComboActual = 0;
+                        estadoPartida.faseIndex = 2;
+                        estadoPartida.log = '¡Tu Counter Ataque niega el ataque de la IA!';
+                        renderizarPartida();
+                        return false;
+                    }
+                } finally {
+                    estadoPartida._jugadorDebeDecidir = false;
+                }
+            }
 
             // === 2. FASE DE BLOQUEO ===
             // El jugador puede tener unidades con Bloqueador para interceptar el ataque.
+            // _jugadorDebeDecidir debe estar activo para que el modal se muestre al jugador.
             if (window.MotorEfectos && MotorEfectos.opcionesUnidades) {
                 const optsBloqueo = MotorEfectos.opcionesUnidades('jugador', u => MotorEfectos.tieneBloqueador(u) && !u.rested, 'Bloquear con ');
                 if (optsBloqueo.length > 0) {
@@ -10559,7 +10591,13 @@
                     estadoPartida.log = '¿Quieres bloquear el ataque?';
                     renderizarPartida();
                     const optsFinal = optsBloqueo.concat([{ label: 'No bloquear', value: -1 }]);
-                    const bloqueoIdx = await MotorEfectos.elegirConModal('¿Bloquear el ataque de ' + (getCardById(atacante.id)?.nombre || 'la IA') + '?', optsFinal, { noCancelable: true });
+                    estadoPartida._jugadorDebeDecidir = true;
+                    let bloqueoIdx;
+                    try {
+                        bloqueoIdx = await MotorEfectos.elegirConModal('¿Bloquear el ataque de ' + (getCardById(atacante.id)?.nombre || 'la IA') + '?', optsFinal, { noCancelable: true });
+                    } finally {
+                        estadoPartida._jugadorDebeDecidir = false;
+                    }
                     if (bloqueoIdx != null && bloqueoIdx >= 0) {
                         // El jugador bloquea: la unidad bloqueadora se vuelve el objetivo
                         const bu = j.batalla[bloqueoIdx];
@@ -10702,7 +10740,31 @@
             renderizarPartida();
             await sleep(500);
 
-            // === 1. FASE DE BLOQUEO ===
+            // === 1. FASE DE COUNTER ATAQUE (del jugador) ===
+            // El jugador puede tener cartas de Counter Ataque en mano para negar el ataque.
+            // Esto va ANTES del bloqueo y del combo.
+            if (window.MotorEfectos && MotorEfectos.intentarCounterAtaque) {
+                estadoPartida._jugadorDebeDecidir = true;
+                try {
+                    const countered = await MotorEfectos.intentarCounterAtaque('jugador', { objetivo: objetivo, noCounter: !!MotorEfectos.ctx?.noCounter });
+                    if (countered) {
+                        // El ataque fue negado por un counter ataque del jugador.
+                        atacante.ataquesRestantes = Math.max(0, (atacante.ataquesRestantes ?? 1) - 1);
+                        atacante.rested = atacante.ataquesRestantes <= 0;
+                        estadoPartida.ataqueActual = null;
+                        estadoPartida.rivalAtacanteId = null;
+                        estadoPartida.rivalComboActual = 0;
+                        estadoPartida.faseIndex = 2;
+                        estadoPartida.log = '¡Tu Counter Ataque niega el ataque del líder rival!';
+                        renderizarPartida();
+                        return false;
+                    }
+                } finally {
+                    estadoPartida._jugadorDebeDecidir = false;
+                }
+            }
+
+            // === 2. FASE DE BLOQUEO ===
             // Solo se ofrece bloquear si hay unidades con Bloqueador ACTIVAS (no giradas).
             // En el 2º ataque del tutorial 3, Megalberto ya está muerto → no se muestra el modal.
             if (window.MotorEfectos && MotorEfectos.opcionesUnidades) {
@@ -10711,7 +10773,13 @@
                     estadoPartida.log = '¿Quieres bloquear el ataque del líder rival?';
                     renderizarPartida();
                     const optsFinal = optsBloqueo.concat([{ label: 'No bloquear', value: -1 }]);
-                    const bloqueoIdx = await MotorEfectos.elegirConModal('¿Bloquear el ataque del líder rival?', optsFinal, { noCancelable: true });
+                    estadoPartida._jugadorDebeDecidir = true;
+                    let bloqueoIdx;
+                    try {
+                        bloqueoIdx = await MotorEfectos.elegirConModal('¿Bloquear el ataque del líder rival?', optsFinal, { noCancelable: true });
+                    } finally {
+                        estadoPartida._jugadorDebeDecidir = false;
+                    }
                     if (bloqueoIdx != null && bloqueoIdx >= 0) {
                         const bu = j.batalla[bloqueoIdx];
                         bu.rested = true;
@@ -12890,6 +12958,7 @@
     </script>
 </body>
 </html>
+
 
 
 
