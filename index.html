@@ -10299,11 +10299,15 @@
             estadoPartida.rivalAtacanteId = atacante.id;
             estadoPartida.rivalComboActual = 0;
             // Setear ataqueActual con el objetivo para que el panel de combate muestre el defensor
+            // Calcular poder del atacante AHORA (no usar poderAtacante que se declara más abajo)
+            const _poderAtacanteInicial = window.MotorEfectos
+                ? MotorEfectos.poderCarta(atacante.id, atacante, { quien: 'rival', atacanteId: atacante.id, atacanteZona: atacante })
+                : Number(getCardById(atacante.id)?.poder || 0);
             estadoPartida.ataqueActual = {
                 atacanteRef: { tipo: 'unidad', index: unidadIndex },
                 atacanteId: atacante.id,
                 atacanteZonaRef: atacante,
-                atacanteBase: poderAtacante || Number(getCardById(atacante.id)?.poder || 0),
+                atacanteBase: _poderAtacanteInicial,
                 atacanteCombo: 0,
                 objetivo: objetivo,
                 defensorCombo: 0
@@ -10450,11 +10454,15 @@
             estadoPartida.rivalAtacanteId = r.liderId;
             estadoPartida.rivalComboActual = 0;
             // Setear ataqueActual con el objetivo para que el panel de combate muestre el defensor
+            // Calcular poder del atacante AHORA (no usar poderAtacante que se declara más abajo)
+            const _poderAtacanteInicial = window.MotorEfectos
+                ? MotorEfectos.poderCarta(r.liderId, atacante, { quien: 'rival', atacanteId: r.liderId, atacanteZona: atacante })
+                : (r.liderDespierto ? Number(getCardById(r.liderId)?.poderEvo || 0) : Number(getCardById(r.liderId)?.poder || 0));
             estadoPartida.ataqueActual = {
                 atacanteRef: { tipo: 'lider' },
                 atacanteId: r.liderId,
                 atacanteZonaRef: atacante,
-                atacanteBase: poderAtacante || Number(getCardById(r.liderId)?.poder || 0),
+                atacanteBase: _poderAtacanteInicial,
                 atacanteCombo: 0,
                 objetivo: objetivo,
                 defensorCombo: 0
