@@ -2532,6 +2532,50 @@
     return n;
   }
 
+  // Versión interactiva de enderezarMana: el jugador elige qué maná enderezar.
+  // Solo se usa cuando el jugador debe elegir (no en IA, no en online).
+  async function enderezarManaInteractivo(jugador, color, max) {
+    const z = zonaJugador(jugador);
+    const ep = window.estadoPartida || (typeof estadoPartida !== 'undefined' ? estadoPartida : null);
+    // Si es la IA o está en online, usar la versión automática
+    if (jugador === 'rival' || (ep && ep.modo === 'online' && ep.turnoDelJugadorLocal === false)) {
+      return enderezarMana(jugador, color, max);
+    }
+    // Buscar manás descansados del color especificado (o cualquiera si no hay color)
+    const restedMana = z.mana
+      .map((m, i) => ({ m, i, c: getCardById(m.id) }))
+      .filter(x => x.m.rested && (!color || colorNormalizadoCarta(x.c) === color));
+    if (!restedMana.length) return 0;
+    const maxN = max != null ? max : restedMana.length;
+    if (restedMana.length <= maxN) {
+      // Enderezar todos (no hay elección)
+      restedMana.forEach(x => { x.m.rested = false; });
+      z.manaActivo = z.mana.filter(m => !m.rested).length;
+      return restedMana.length;
+    }
+    // Mostrar modal para elegir qué manás enderezar
+    const opts = restedMana.map(x => ({
+      label: (x.c?.nombre || 'Maná') + ' (' + (x.c?.color || '?') + ')',
+      value: x.i,
+      cardId: x.m.id
+    }));
+    let n = 0;
+    for (let k = 0; k < maxN; k++) {
+      const pick = await elegirConModal('Elige un maná para enderezar (' + (k+1) + '/' + maxN + ')', opts, { noCancelable: true });
+      if (pick == null) break;
+      const manaIdx = pick;
+      if (z.mana[manaIdx] && z.mana[manaIdx].rested) {
+        z.mana[manaIdx].rested = false;
+        n++;
+        // Quitar la opción elegida de la lista
+        const optIdx = opts.findIndex(o => o.value === manaIdx);
+        if (optIdx >= 0) opts.splice(optIdx, 1);
+      }
+    }
+    z.manaActivo = z.mana.filter(m => !m.rested).length;
+    return n;
+  }
+
   function descansarMana(jugador, color, max) {
     const z = zonaJugador(jugador);
     let n = 0;
@@ -2785,6 +2829,22 @@
   let _decisionTokenCounter = 0;
 
   function elegirConModal(titulo, opciones, opcionesExtra) {
+    // === IA AUTO-DECISIÓN (1v1 y tutorial) ===
+    // Si la decisión es para el rival (IA) y no es online, decidir automáticamente.
+    const ep = window.estadoPartida || (typeof estadoPartida !== 'undefined' ? estadoPartida : null);
+    if (ep && ep.modo !== 'online' && ep.turnoDelJugadorLocal === false) {
+      // La IA decide: elegir la primera opción que no sea 'No' o null
+      const opts = opciones || [];
+      // Buscar una opción afirmativa (no 'No', no null, no -1)
+      let pick = opts.find(o => {
+        const label = String(o.label || o).toLowerCase();
+        return !label.includes('no ') && !label.startsWith('no') && o.value !== null && o.value !== -1 && o.value !== false;
+      });
+      // Si no hay afirmativa, 50% probabilidad de usar la primera opción
+      if (!pick && opts.length > 0 && Math.random() < 0.5) pick = opts[0];
+      const result = pick ? (pick.value !== undefined ? pick.value : pick) : null;
+      return Promise.resolve(result);
+    }
     // Si estamos en modo online Y la decisión es para el rival, enviar por socket
     if (_decisionParaRival && estadoPartida && estadoPartida.modo === 'online' && window._socketOnline) {
       _decisionParaRival = false; // Resetear flag
@@ -3389,7 +3449,9 @@
         return [{ key: 'recycle', label: 'Recupera Grupo/Minecraft del descarte' }];
       }
       // Base (Hugopima, el maestro): descarta 1, roba 1, +5000 líder
+      // Solo se puede usar si hay cartas en mano (necesita descartar 1)
       if (habilidadUsada(claveTurno(quien, 'bl2_act'))) return [];
+      if (!z.mano || z.mano.length === 0) return [];
       return [{ key: 'descRoba', label: 'Descarta 1: roba 1 y +5000 líder' }];
     },
     async ejecutarActivar(key, quien) {
@@ -6333,7 +6395,7 @@
     efectoCampoPermanente, REGISTRO_EFECTOS,
     zonaJugador, rivalDe, robar, barajar, log, tirarDado, registrar,
     crearUnidadCampo, infligirDanoLider, elegirConModal, enderezarMana, invocarToken,
-    intentarAbsorberDrag, tieneBloqueador, unidadesEnCampo, opcionesUnidades,
+    intentarAbsorberDrag, tieneBloqueador, unidadesEnCampo, opcionesUnidades, quitarVida,
     recibirPeticionRival, recibirRespuestaRival, _decisionParaRival,
     elegirConModalRival: elegirConModalRival,
     dispatch: dispatch,
@@ -10130,12 +10192,27 @@
                     ataqueIdx++;
                     continue;
                 }
-                // Decidir objetivo: si hay unidades rivales descansadas, atacar la de menor poder
+                // Decidir objetivo: priorizar unidades con mismo poder, luego líder, luego unidades con menos poder
                 let objetivo = { tipo: 'lider' };
                 const descansadas = j.batalla.map((c, idx) => ({ c, idx })).filter(x => x.c && x.c.rested);
                 if (descansadas.length) {
-                    descansadas.sort((a, b) => Number(getCardById(a.c.id)?.poder || 0) - Number(getCardById(b.c.id)?.poder || 0));
-                    objetivo = { tipo: 'unidad', index: descansadas[0].idx };
+                    const poderAtacante = Number(getCardById(u.id)?.poder || 0);
+                    // Buscar unidad con mismo poder
+                    const mismoPoder = descansadas.filter(x => Number(getCardById(x.c.id)?.poder || 0) === poderAtacante);
+                    if (mismoPoder.length) {
+                        objetivo = { tipo: 'unidad', index: mismoPoder[0].idx };
+                    } else {
+                        // Buscar unidad con menos poder (que la IA pueda derrotar)
+                        const masDebiles = descansadas.filter(x => Number(getCardById(x.c.id)?.poder || 0) < poderAtacante);
+                        if (masDebiles.length) {
+                            // Atacar la más fuerte de las débiles (mejor trade)
+                            masDebiles.sort((a, b) => Number(getCardById(b.c.id)?.poder || 0) - Number(getCardById(a.c.id)?.poder || 0));
+                            objetivo = { tipo: 'unidad', index: masDebiles[0].idx };
+                        } else {
+                            // Todas son más fuertes: no atacar a unidades, ir a por el líder
+                            objetivo = { tipo: 'lider' };
+                        }
+                    }
                 }
                 estadoPartida.log = 'La IA ataca con ' + (getCardById(u.id)?.nombre || u.id) + '.';
                 renderizarPartida();
@@ -10156,12 +10233,24 @@
                 estadoPartida.log = 'La IA ataca con su líder...';
                 renderizarPartida();
                 await sleep(500);
-                // Decidir objetivo: si hay unidades rivales descansadas, atacar la de menor poder
+                // Decidir objetivo del líder: priorizar unidades con mismo poder, luego líder
                 let objLider = { tipo: 'lider' };
                 const descansadasLid = j.batalla.map((c, idx) => ({ c, idx })).filter(x => x.c && x.c.rested);
                 if (descansadasLid.length) {
-                    descansadasLid.sort((a, b) => Number(getCardById(a.c.id)?.poder || 0) - Number(getCardById(b.c.id)?.poder || 0));
-                    objLider = { tipo: 'unidad', index: descansadasLid[0].idx };
+                    const lid = getCardById(r.liderId);
+                    const poderLid = r.liderDespierto ? Number(lid?.poderEvo || 0) : Number(lid?.poder || 0);
+                    const mismoPoder = descansadasLid.filter(x => Number(getCardById(x.c.id)?.poder || 0) === poderLid);
+                    if (mismoPoder.length) {
+                        objLider = { tipo: 'unidad', index: mismoPoder[0].idx };
+                    } else {
+                        const masDebiles = descansadasLid.filter(x => Number(getCardById(x.c.id)?.poder || 0) < poderLid);
+                        if (masDebiles.length) {
+                            masDebiles.sort((a, b) => Number(getCardById(b.c.id)?.poder || 0) - Number(getCardById(a.c.id)?.poder || 0));
+                            objLider = { tipo: 'unidad', index: masDebiles[0].idx };
+                        } else {
+                            objLider = { tipo: 'lider' };
+                        }
+                    }
                 }
                 await ejecutarAtaqueLiderIA(objLider);
                 await sleep(800);
@@ -10206,6 +10295,16 @@
             // Marcar la unidad como atacante rival (para el glow, el render del combo y el panel de combate)
             estadoPartida.rivalAtacanteId = atacante.id;
             estadoPartida.rivalComboActual = 0;
+            // Setear ataqueActual con el objetivo para que el panel de combate muestre el defensor
+            estadoPartida.ataqueActual = {
+                atacanteRef: { tipo: 'unidad', index: unidadIndex },
+                atacanteId: atacante.id,
+                atacanteZonaRef: atacante,
+                atacanteBase: poderAtacante || Number(getCardById(atacante.id)?.poder || 0),
+                atacanteCombo: 0,
+                objetivo: objetivo,
+                defensorCombo: 0
+            };
             renderizarPartida(); // Actualizar panel de combate
 
             // === 1. FASE DE COUNTER PLAY ===
@@ -10291,8 +10390,16 @@
                     // Calcular daño con el contexto correcto (atacanteZona) para que
                     // se detecten correctamente doble/triple golpe. El daño base es 1.
                     const dano = danoDeCarta(atacante.id, { atacanteZona: atacante, quien: 'rival' });
-                    for (let i = 0; i < dano; i++) {
-                        if (j.vida.length) j.vida.pop();
+                    // Usar quitarVida para que la carta de vida vaya a la mano (no solo pop)
+                    if (window.MotorEfectos && MotorEfectos.quitarVida) {
+                        for (let i = 0; i < dano; i++) MotorEfectos.quitarVida('jugador', false);
+                    } else {
+                        for (let i = 0; i < dano; i++) {
+                            if (j.vida.length) {
+                                const cv = j.vida.pop();
+                                if (cv && cv !== 'desconocida' && cv !== 'protegida') j.mano.push(cv);
+                            }
+                        }
                     }
                     estadoPartida.log = 'La IA inflige ' + dano + ' daño a tu líder.';
                 } else {
@@ -10339,6 +10446,16 @@
 
             estadoPartida.rivalAtacanteId = r.liderId;
             estadoPartida.rivalComboActual = 0;
+            // Setear ataqueActual con el objetivo para que el panel de combate muestre el defensor
+            estadoPartida.ataqueActual = {
+                atacanteRef: { tipo: 'lider' },
+                atacanteId: r.liderId,
+                atacanteZonaRef: atacante,
+                atacanteBase: poderAtacante || Number(getCardById(r.liderId)?.poder || 0),
+                atacanteCombo: 0,
+                objetivo: objetivo,
+                defensorCombo: 0
+            };
             estadoPartida.log = 'El líder rival (' + (getCardById(r.liderId)?.nombre || '') + ') declara ataque.';
             renderizarPartida();
             await sleep(500);
@@ -10410,8 +10527,16 @@
                     // Calcular daño con el contexto correcto. El líder rival hace 1 de daño
                     // por defecto (o 2 si tiene doble golpe activado).
                     const dano = danoDeCarta(r.liderId, { atacanteZona: atacante, quien: 'rival' });
-                    for (let i = 0; i < dano; i++) {
-                        if (j.vida.length) j.vida.pop();
+                    // Usar quitarVida para que la carta de vida vaya a la mano (no solo pop)
+                    if (window.MotorEfectos && MotorEfectos.quitarVida) {
+                        for (let i = 0; i < dano; i++) MotorEfectos.quitarVida('jugador', false);
+                    } else {
+                        for (let i = 0; i < dano; i++) {
+                            if (j.vida.length) {
+                                const cv = j.vida.pop();
+                                if (cv && cv !== 'desconocida' && cv !== 'protegida') j.mano.push(cv);
+                            }
+                        }
                     }
                     estadoPartida.log = 'El líder rival inflige ' + dano + ' daño a tu líder.';
                     if (typeof mostrarPerdidaVida === 'function') mostrarPerdidaVida('jugador', dano);
@@ -12086,7 +12211,7 @@
                 <img src="${liderImgActual || ''}" alt="${escapeHtml(liderCartaData?.nombre || '')}">
                 <span class="card-power-badge">${liderPoderActual}</span>
             </div>${liderActivables}`;
-            renderZona('player-leader-zone', ocultarLideres ? '' : `<div style="position:relative">${liderHtml}${j.vida.length <= 4 && !j.liderDespierto ? '<button class="awaken-btn" onclick="despertarLider()">Despertar</button>' : ''}</div>`);
+            renderZona('player-leader-zone', ocultarLideres ? '' : `<div style="position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;">${liderHtml}${j.vida.length <= 4 && !j.liderDespierto ? '<button class="awaken-btn" onclick="despertarLider()">Despertar</button>' : ''}</div>`);
             // Líder rival: si está evolucionado, mostrar su imagen evo. Click = atacar, dblclick = ver info
             const rivalLiderData = getCardById(r.liderId);
             const rivalLiderImg = r.liderDespierto && rivalLiderData?.imgEvo ? rivalLiderData.imgEvo : rivalLiderData?.img;
