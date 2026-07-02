@@ -809,7 +809,7 @@
         .attack-arrow line { stroke: #fff07c; stroke-width: 5; filter: drop-shadow(0 0 8px #ffea4d); }
         .attack-arrow.show { display: block; }
         .attackable { outline: 3px solid #fff07c; box-shadow: 0 0 24px rgba(255,240,124,.8); }
-        .awaken-btn { position: relative; z-index: 10; margin-top: 6px; border: 1px solid #fff07c; border-radius: 999px; background: rgba(255,80,24,.92); color: white; font-weight: 900; padding: 5px 10px; font-size: 11px; cursor: pointer; box-shadow: 0 0 16px rgba(255,80,24,.7); text-shadow: 0 1px 2px #000; max-width: 130px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .awaken-btn { position: relative; z-index: 10; margin-top: 4px; position: absolute; left: -12px; right: -12px; bottom: -38px; z-index: 10; border: 1px solid #fff07c; border-radius: 999px; background: rgba(255,80,24,.92); color: white; font-weight: 900; padding: 6px 8px; cursor: pointer; box-shadow: 0 0 16px rgba(255,80,24,.7); }
 
         /* --- AJUSTES MOTOR V4 --- */
         .next-phase-tab { right: 18px; position: absolute; top: 82px; border-radius: 14px; overflow: hidden; }
@@ -3222,26 +3222,8 @@
     }
     const z = zonaJugador(jugador);
     if (!z.mano.length) return null;
-    // Si es el rival (IA) en modo non-online, la IA decide automáticamente
-    const ep = window.estadoPartida || (typeof estadoPartida !== 'undefined' ? estadoPartida : null);
-    if (jugador === 'rival' && ep && ep.modo !== 'online') {
-      // La IA descarta la carta menos útil (la de mayor coste o la primera)
-      let bestIdx = 0;
-      let bestScore = -1;
-      for (let i = 0; i < z.mano.length; i++) {
-        const c = getCardById(z.mano[i]);
-        let score = Number(c?.costeTotal || 0);
-        if (String(c?.clase || '').toLowerCase().includes('extra')) score += 100;
-        if (score > bestScore) { bestScore = score; bestIdx = i; }
-      }
-      log(`La IA descarta ${(getCardById(z.mano[bestIdx])?.nombre || 'una carta')}.`);
-      return descartarCartaMano(jugador, bestIdx);
-    }
-    // Si es el jugador, marcar que debe decidir (para que la IA auto-decisión NO intercepte)
-    if (jugador === 'jugador' && ep) ep._jugadorDebeDecidir = true;
     const opts = z.mano.map((id, i) => ({ label: getCardById(id)?.nombre || id, value: i, cardId: id }));
     let idx = await elegirConModal(titulo || 'Elige una carta para descartar (obligatorio)', opts, { noCancelable: true });
-    if (jugador === 'jugador' && ep) ep._jugadorDebeDecidir = false;
     if (idx == null || idx < 0) idx = Math.floor(Math.random() * z.mano.length);
     return descartarCartaMano(jugador, idx);
   }
@@ -6194,8 +6176,8 @@
 
   function obtenerActivables(quien) {
     const list = [];
-    // Solo mostrar activables del jugador si es su turno (en cualquier modo)
-    if (quien === 'jugador' && estadoPartida && estadoPartida.turnoDelJugadorLocal === false) {
+    // En modo online, solo mostrar activables si es tu turno
+    if (estadoPartida && estadoPartida.modo === 'online' && !estadoPartida.turnoDelJugadorLocal) {
       return list;
     }
     const z = zonaJugador(quien);
@@ -10343,47 +10325,9 @@
             renderizarPartida(); // Actualizar panel de combate
 
             // === 1. FASE DE COUNTER PLAY ===
-            // El jugador puede tener cartas de Counter Ataque en mano para negar el ataque.
-            if (window.MotorEfectos && MotorEfectos.tieneBloqueador) {
-                const z = estadoPartida.jugador;
-                const counters = z.mano.filter(id => MotorEfectos.tieneTag ? MotorEfectos.tieneTag(getCardById(id), 'counter ataque') : false);
-                // Check tieneTag via getCardById
-                const countersReal = z.mano.filter(id => {
-                    const c = getCardById(id);
-                    if (!c || !c.habilidades) return false;
-                    return c.habilidades.some(h => String(h.tag || '').toLowerCase().includes('counter'));
-                });
-                if (countersReal.length > 0 && !estadoPartida._jugadorDebeDecidir) {
-                    estadoPartida._jugadorDebeDecidir = true; // El jugador debe decidir
-                    const opts = countersReal.map(id => ({ label: getCardById(id)?.nombre || id, value: id, cardId: id }))
-                        .concat([{ label: 'No contrarrestar', value: null }]);
-                    const pick = await MotorEfectos.elegirConModal('¿Usar Counter Ataque? Elige una carta para negar el ataque', opts, { noCancelable: true });
-                    estadoPartida._jugadorDebeDecidir = false;
-                    if (pick) {
-                        // Descartar la carta de counter y negar el ataque
-                        const hi = z.mano.indexOf(pick);
-                        if (hi >= 0) {
-                            z.mano.splice(hi, 1);
-                            z.descarte.push(pick);
-                            // Incrementar stat de counterPlays (logro Counter Master)
-                            if (typeof _statsJugador !== 'undefined' && _statsJugador) { _statsJugador.counterPlays = (_statsJugador.counterPlays || 0) + 1; if (typeof guardarStats === 'function') guardarStats(); }
-                            estadoPartida.log = '¡' + (getCardById(pick)?.nombre || 'Counter') + ' niega el ataque de la IA!';
-                            // Mostrar notificación de counter
-                            if (typeof mostrarNotificacionCounter === 'function') mostrarNotificacionCounter(getCardById(pick)?.nombre || 'Counter');
-                            // El ataque se cancela
-                            renderizarPartida();
-                            await sleep(500);
-                            // Limpiar estado del ataque
-                            estadoPartida.ataqueActual = null;
-                            estadoPartida.rivalAtacanteId = null;
-                            estadoPartida.rivalComboActual = 0;
-                            estadoPartida.faseIndex = 2;
-                            _resolviendoAtaqueIA = false;
-                            return true;
-                        }
-                    }
-                }
-            }
+            // El jugador puede tener cartas de Counter Play en mano para negar la unidad atacante.
+            // En modo solo, no hay counter play del jugador contra ataques (es contra jugadas de unidad, no ataques).
+            // Así que saltamos esta fase para ataques.
 
             // === 2. FASE DE BLOQUEO ===
             // El jugador puede tener unidades con Bloqueador para interceptar el ataque.
@@ -10533,41 +10477,6 @@
                 objetivo: objetivo,
                 defensorCombo: 0
             };
-            // === FASE DE COUNTER PLAY ===
-            // El jugador puede tener cartas de Counter Ataque en mano para negar el ataque.
-            if (window.MotorEfectos) {
-                const z = estadoPartida.jugador;
-                const countersReal = z.mano.filter(id => {
-                    const c = getCardById(id);
-                    if (!c || !c.habilidades) return false;
-                    return c.habilidades.some(h => String(h.tag || '').toLowerCase().includes('counter'));
-                });
-                if (countersReal.length > 0 && !estadoPartida._jugadorDebeDecidir) {
-                    estadoPartida._jugadorDebeDecidir = true;
-                    const opts = countersReal.map(id => ({ label: getCardById(id)?.nombre || id, value: id, cardId: id }))
-                        .concat([{ label: 'No contrarrestar', value: null }]);
-                    const pick = await MotorEfectos.elegirConModal('¿Usar Counter Ataque? Elige una carta para negar el ataque del líder rival', opts, { noCancelable: true });
-                    estadoPartida._jugadorDebeDecidir = false;
-                    if (pick) {
-                        const hi = z.mano.indexOf(pick);
-                        if (hi >= 0) {
-                            z.mano.splice(hi, 1);
-                            z.descarte.push(pick);
-                            if (typeof _statsJugador !== 'undefined' && _statsJugador) { _statsJugador.counterPlays = (_statsJugador.counterPlays || 0) + 1; if (typeof guardarStats === 'function') guardarStats(); }
-                            estadoPartida.log = '¡' + (getCardById(pick)?.nombre || 'Counter') + ' niega el ataque del líder rival!';
-                            if (typeof mostrarNotificacionCounter === 'function') mostrarNotificacionCounter(getCardById(pick)?.nombre || 'Counter');
-                            renderizarPartida();
-                            await sleep(500);
-                            estadoPartida.ataqueActual = null;
-                            estadoPartida.rivalAtacanteId = null;
-                            estadoPartida.rivalComboActual = 0;
-                            estadoPartida.faseIndex = 2;
-                            _resolviendoAtaqueIA = false;
-                            return true;
-                        }
-                    }
-                }
-            }
             estadoPartida.log = 'El líder rival (' + (getCardById(r.liderId)?.nombre || '') + ') declara ataque.';
             renderizarPartida();
             await sleep(500);
@@ -12329,7 +12238,7 @@
                 <img src="${liderImgActual || ''}" alt="${escapeHtml(liderCartaData?.nombre || '')}">
                 <span class="card-power-badge">${liderPoderActual}</span>
             </div>${liderActivables}`;
-            renderZona('player-leader-zone', ocultarLideres ? '' : `<div style="position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding-bottom:40px;">${liderHtml}${j.vida.length <= 4 && !j.liderDespierto ? '<button class="awaken-btn" onclick="despertarLider()">Despertar</button>' : ''}</div>`);
+            renderZona('player-leader-zone', ocultarLideres ? '' : `<div style="position:relative;display:flex;flex-direction:column;align-items:center;gap:8px;">${liderHtml}${j.vida.length <= 4 && !j.liderDespierto ? '<button class="awaken-btn" onclick="despertarLider()" style="margin-top:4px;">Despertar</button>' : ''}</div>`);
             // Líder rival: si está evolucionado, mostrar su imagen evo. Click = atacar, dblclick = ver info
             const rivalLiderData = getCardById(r.liderId);
             const rivalLiderImg = r.liderDespierto && rivalLiderData?.imgEvo ? rivalLiderData.imgEvo : rivalLiderData?.img;
