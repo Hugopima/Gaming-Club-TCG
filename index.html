@@ -3559,8 +3559,13 @@
       const opts = opcionesUnidades(quien, (u, i, c) => colorNormalizadoCarta(c) === 'rojo');
       const idx = await elegirConModal('Mr Greedy & Trump: elige unidad roja para +5000', opts);
       if (idx != null) {
-        addBuff(zonaJugador(quien).batalla[idx], 'batalla', 5000);
+        const unidadBuffed = zonaJugador(quien).batalla[idx];
+        addBuff(unidadBuffed, 'batalla', 5000);
         log('Mr Greedy & Trump da +5000 a unidad roja este turno.');
+        // En modo online, enviar el buff al rival para que lo vea en su vista.
+        if (estadoPartida?.modo === 'online' && unidadBuffed?.id && typeof window.enviarEfectoRival === 'function') {
+          window.enviarEfectoRival({ tipo: 'buff-batalla', cardId: unidadBuffed.id, cantidad: 5000, nombre: 'Mr Greedy & Trump' });
+        }
       }
       marcarHabilidadUsada(claveTurno(quien, 'rl2_act'));
       if (typeof renderizarPartida === 'function') renderizarPartida();
@@ -3608,6 +3613,9 @@
         marcarHabilidadUsada(claveTurno(quien, 'bl2_act'));
       } else if (key === 'recycle') {
         // Evo: elige carta Grupo/Minecraft del descarte → fondo del mazo → endereza 1 maná azul
+        // Una vez por turno: marcar como usada INMEDIATAMENTE al activar (antes del modal),
+        // para que no se pueda cancelar y reactivar infinitas veces.
+        marcarHabilidadUsada(claveTurno(quien, 'bl2_evo'));
         const z = zonaJugador(quien);
         const opts = z.descarte.map((id, i) => ({ id, i, c: getCardById(id) }))
           .filter(x => String(x.c?.origen || '').toLowerCase().includes('grupo') || String(x.c?.origen || '').toLowerCase().includes('minecraft'))
@@ -3625,7 +3633,6 @@
             z.manaActivo = z.mana.filter(m => !m.rested).length;
             log('Hugopima evo: 1 maná azul enderezado.');
           }
-          marcarHabilidadUsada(claveTurno(quien, 'bl2_evo'));
           if (typeof renderizarPartida === 'function') renderizarPartida();
         }
       }
@@ -9581,6 +9588,17 @@
                         }
                         break;
                     }
+                    case 'buff-batalla': {
+                        // El rival buffeó una de SUS unidades (ej. Mr Greedy & Trump).
+                        // Reflejar el buff en mi vista del rival.
+                        const u = estadoPartida.rival.batalla.find(u => u && u.id === efecto.cardId);
+                        if (u) {
+                            if (!u.buffs) u.buffs = { poder: 0, combo: 0, batalla: 0 };
+                            u.buffs.batalla = (u.buffs.batalla || 0) + (efecto.cantidad || 0);
+                        }
+                        if (typeof renderizarPartida === 'function') renderizarPartida();
+                        break;
+                    }
                     case 'buff-joe': {
                         const u = estadoPartida.rival.batalla.find(u => u && u.id === efecto.cardId);
                         if (u) {
@@ -9681,7 +9699,13 @@
                     ataqueComboActual: estadoPartida.ataqueActual?.atacanteCombo || 0,
                     atacanteId: estadoPartida.ataqueActual?.atacanteId || null,
                     defensorCombo: estadoPartida.ataqueActual?.defensorCombo || 0,
-                    defensorCombo: estadoPartida.ataqueActual?.defensorCombo || 0
+                    defensorCombo: estadoPartida.ataqueActual?.defensorCombo || 0,
+                    // Incluir objetivo y poder base del atacante para que el defensor
+                    // pueda ver el panel de combate (atacante + defensor) desde que se
+                    // declara el ataque, sin esperar a su fase de combo.
+                    ataqueObjetivo: estadoPartida.ataqueActual?.objetivo || null,
+                    atacanteBase: estadoPartida.ataqueActual?.atacanteBase || 0,
+                    atacanteRef: estadoPartida.ataqueActual?.atacanteRef || null
                 }
             };
             _socketOnline.emit('accion-juego', { tipo: tipo || 'snapshot', snapshot });
@@ -9872,6 +9896,29 @@
                 // Guardar info del combo del rival para mostrarlo visualmente
                 estadoPartida.rivalComboActual = snap.miEstado.ataqueComboActual || 0;
                 estadoPartida.rivalAtacanteId = snap.miEstado.atacanteId || null;
+                // === Fix panel de combate del defensor ===
+                // Si el rival está atacando, setear ataqueActual con el objetivo y poder base
+                // para que el panel de combate muestre atacante + defensor desde el inicio.
+                if (snap.miEstado.atacanteId && snap.miEstado.ataqueObjetivo) {
+                    if (!estadoPartida.ataqueActual) {
+                        estadoPartida.ataqueActual = {
+                            atacanteRef: snap.miEstado.atacanteRef || { tipo: snap.miEstado.atacanteId === estadoPartida.rival.liderId ? 'lider' : 'unidad' },
+                            atacanteId: snap.miEstado.atacanteId,
+                            atacanteZonaRef: null,
+                            atacanteBase: snap.miEstado.atacanteBase || 0,
+                            atacanteCombo: snap.miEstado.ataqueComboActual || 0,
+                            objetivo: snap.miEstado.ataqueObjetivo,
+                            defensorCombo: snap.miEstado.defensorCombo || 0
+                        };
+                    } else {
+                        estadoPartida.ataqueActual.atacanteCombo = snap.miEstado.ataqueComboActual || 0;
+                        estadoPartida.ataqueActual.defensorCombo = snap.miEstado.defensorCombo || 0;
+                        if (snap.miEstado.ataqueObjetivo) estadoPartida.ataqueActual.objetivo = snap.miEstado.ataqueObjetivo;
+                        if (snap.miEstado.atacanteBase) estadoPartida.ataqueActual.atacanteBase = snap.miEstado.atacanteBase;
+                    }
+                } else if (!snap.miEstado.atacanteId) {
+                    estadoPartida.ataqueActual = null;
+                }
             }
             estadoPartida.turno = snap.turno;
             estadoPartida.faseIndex = snap.faseIndex;
