@@ -97,6 +97,7 @@ function inventarioDefault(username) {
         mazos: [],
         amigos: [],
         cartaFavorita: null,
+        tituloActivo: null,
         perfil: { bio: '' }
     };
 }
@@ -221,7 +222,7 @@ app.post('/auth/discord', async (req, res) => {
 // Guardar inventario completo
 app.post('/api/guardar-inventario', async (req, res) => {
     try {
-        const { discord_id, coins, energy, cartas, stats, misiones, mazos, amigos, cartaFavorita, perfil } = req.body;
+        const { discord_id, coins, energy, cartas, stats, misiones, mazos, amigos, cartaFavorita, tituloActivo, perfil } = req.body;
         if (!discord_id) return res.status(400).json({ error: 'Falta discord_id' });
         if (!supabase) return res.status(500).json({ error: 'Supabase no configurado' });
 
@@ -246,6 +247,7 @@ app.post('/api/guardar-inventario', async (req, res) => {
                     mazos: mazos || [],
                     amigos: amigos || [],
                     cartaFavorita: cartaFavorita || null,
+                    tituloActivo: tituloActivo || null,
                     perfil: perfil || { bio: '' },
                     updated_at: new Date()
                 })
@@ -268,6 +270,7 @@ app.post('/api/guardar-inventario', async (req, res) => {
                     mazos: mazos || [],
                     amigos: amigos || [],
                     cartaFavorita: cartaFavorita || null,
+                    tituloActivo: tituloActivo || null,
                     perfil: perfil || { bio: '' },
                     updated_at: new Date()
                 })
@@ -723,6 +726,10 @@ io.on('connection', (socket) => {
         // Reconectar el socket a la sala
         socket.join(roomId);
         socket.dataRoomId = roomId;
+        // Bug fix: actualizar las referencias de socket en la partida
+        // para que los futuros forwardings funcionen correctamente.
+        if (partida.jugador1 && partida.jugador1.connected === false) partida.jugador1 = socket;
+        else if (partida.jugador2 && partida.jugador2.connected === false) partida.jugador2 = socket;
         // Notificar al rival que volvió
         socket.to(roomId).emit('rival-reconectado');
         console.log(`✅ ${socket.id} se reconectó a ${roomId}`);
