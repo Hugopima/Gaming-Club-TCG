@@ -1584,6 +1584,250 @@
         }
         .shop-info-btn:hover { transform: scale(1.1); }
 
+        /* ===== FILTRO DE ORDENACIÓN EN COLECCIÓN Y MAZOS ===== */
+        .sort-filter-bar {
+            display: flex; align-items: center; gap: 10px; justify-content: center;
+            margin: 10px 0 18px; flex-wrap: wrap;
+        }
+        .sort-filter-bar label {
+            color: var(--gold-light); font-weight: 900; font-size: 12px;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .sort-filter-select {
+            background: rgba(10,10,10,.9); color: var(--gold-light);
+            border: 1.5px solid var(--gold); border-radius: 8px;
+            padding: 6px 14px; font-weight: 900; font-size: 13px;
+            cursor: pointer; outline: none;
+        }
+        .sort-filter-select:hover { border-color: var(--gold-light); }
+        .sort-filter-select option { background: #1a0a30; color: var(--gold-light); }
+
+        /* ===== CONTADOR DE CARTAS EN COLECCIÓN ===== */
+        .collection-counter {
+            display: inline-block; margin-left: 14px;
+            background: rgba(0,0,0,.5); border: 1px solid var(--gold);
+            border-radius: 999px; padding: 4px 16px;
+            color: var(--gold-light); font-weight: 900; font-size: 13px;
+            vertical-align: middle;
+        }
+
+        /* ===== BOTÓN AUTO-RECICLAR ===== */
+        .auto-recycle-btn {
+            background: linear-gradient(145deg, #8a3a1a, #5a2010);
+            border: 2px solid #ff735e; color: white;
+            border-radius: 10px; padding: 8px 18px;
+            font-weight: 900; font-size: 12px; cursor: pointer;
+            text-transform: uppercase; letter-spacing: 1px;
+            transition: all .15s; margin-left: 10px;
+        }
+        .auto-recycle-btn:hover { background: linear-gradient(145deg, #aa4a2a, #7a3020); transform: translateY(-1px); }
+
+        /* ===== SKIP PACK BUTTON ===== */
+        .pack-skip-btn {
+            position: absolute; bottom: 5%; right: 5%;
+            background: linear-gradient(145deg, #555, #333); color: white;
+            border: 2px solid #aaa; border-radius: 999px; padding: 10px 24px;
+            font-weight: 900; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;
+            cursor: pointer; box-shadow: 0 0 15px rgba(255,255,255,.2);
+            transition: all .15s; z-index: 50;
+        }
+        .pack-skip-btn:hover { background: linear-gradient(145deg, #777, #555); transform: scale(1.05); }
+
+        /* ===== CONTADOR DE CARTAS RESTANTES (izquierda) ===== */
+        .pack-remaining-counter {
+            position: absolute; top: 20px; left: 20px; z-index: 50;
+            width: 56px; height: 56px; border-radius: 14px;
+            background: rgba(0,0,0,.7); border: 2px solid var(--gold);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 900; font-size: 28px; color: var(--gold-light);
+            text-shadow: 0 0 8px rgba(255,215,0,.5);
+            transition: all .3s ease;
+        }
+        .pack-remaining-counter.super-rara-glow {
+            border-color: #ff60ff; color: #ff60ff;
+            box-shadow: 0 0 25px rgba(255,96,255,.8), 0 0 50px rgba(255,96,255,.4);
+            animation: superRaraGlowPulse .8s ease infinite;
+        }
+        @keyframes superRaraGlowPulse {
+            0%,100% { box-shadow: 0 0 25px rgba(255,96,255,.8), 0 0 50px rgba(255,96,255,.4); }
+            50% { box-shadow: 0 0 35px rgba(255,96,255,1), 0 0 70px rgba(255,96,255,.6); }
+        }
+
+        /* ===== MEGA RESUMEN (10 sobres) ===== */
+        .mega-summary-overlay {
+            position: fixed; inset: 0; z-index: 3600;
+            background: radial-gradient(circle at center, #2a1040, #050008);
+            display: none; flex-direction: column; align-items: center;
+            overflow-y: auto; padding: 30px 20px;
+        }
+        .mega-summary-overlay.active { display: flex; }
+        .mega-summary-title {
+            color: var(--gold-light); font-size: 28px; font-weight: 900;
+            text-transform: uppercase; letter-spacing: 3px;
+            text-shadow: 0 0 20px rgba(255,240,124,.5);
+            margin-bottom: 24px; text-align: center;
+        }
+        .mega-summary-pack {
+            width: min(800px, 95vw); margin-bottom: 24px;
+            background: rgba(20,10,40,.8); border: 1.5px solid var(--gold);
+            border-radius: 14px; padding: 16px;
+        }
+        .mega-summary-pack h3 {
+            color: var(--gold-light); font-size: 16px; margin: 0 0 12px;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .mega-summary-grid {
+            display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px;
+        }
+        .mega-summary-card {
+            position: relative; border-radius: 8px; overflow: hidden;
+        }
+        .mega-summary-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; display: block; }
+        .mega-summary-card .ms-rarity {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            padding: 2px 4px; font-size: 8px; font-weight: 900;
+            text-align: center; background: rgba(0,0,0,.85); color: white;
+            text-transform: uppercase;
+        }
+        .mega-summary-card.rara { box-shadow: 0 0 8px rgba(90,160,255,.5); }
+        .mega-summary-card.super-rara { box-shadow: 0 0 12px rgba(255,96,255,.7); }
+        .mega-summary-close-btn {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: linear-gradient(145deg, var(--gold), #b8860b); color: #1a0a30;
+            border: 2px solid #fff07c; border-radius: 999px; padding: 14px 36px;
+            font-weight: 900; font-size: 16px; text-transform: uppercase; letter-spacing: 2px;
+            cursor: pointer; box-shadow: 0 0 25px rgba(255,215,0,.5); z-index: 3700;
+        }
+
+        /* ===== MODAL DE PERFIL ===== */
+        .profile-overlay {
+            position: fixed; inset: 0; z-index: 3700; display: none;
+            background: rgba(0,0,0,.85); align-items: center; justify-content: center;
+            padding: 20px;
+        }
+        .profile-overlay.active { display: flex; }
+        .profile-modal {
+            background: linear-gradient(180deg, #1a1030, #0a0518);
+            border: 2px solid var(--gold); border-radius: 18px;
+            padding: 30px; max-width: 700px; width: 95vw; max-height: 90vh;
+            overflow-y: auto; position: relative;
+            box-shadow: 0 0 50px rgba(255,215,0,.3);
+        }
+        .profile-close {
+            position: absolute; top: 14px; right: 18px;
+            background: rgba(255,0,0,.3); border: 1px solid #ff735e;
+            border-radius: 50%; width: 36px; height: 36px;
+            color: white; font-size: 20px; font-weight: 900; cursor: pointer;
+        }
+        .profile-title {
+            color: var(--gold-light); font-size: 24px; font-weight: 900;
+            text-align: center; text-transform: uppercase; letter-spacing: 2px;
+            margin-bottom: 20px;
+        }
+        .profile-body { display: flex; gap: 24px; flex-wrap: wrap; }
+        .profile-left { flex: 0 0 200px; text-align: center; }
+        .profile-fav-card {
+            width: 180px; height: 252px; border-radius: 12px; overflow: hidden;
+            border: 2px solid var(--gold); margin: 0 auto 12px;
+            cursor: pointer; position: relative;
+        }
+        .profile-fav-card img { width: 100%; height: 100%; object-fit: cover; }
+        .profile-fav-card-empty {
+            display: flex; align-items: center; justify-content: center;
+            color: var(--gold-light); font-size: 12px; text-align: center;
+            background: rgba(0,0,0,.4);
+        }
+        .profile-fav-label {
+            color: var(--gold-light); font-size: 12px; font-weight: 900;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .profile-right { flex: 1; min-width: 250px; }
+        .profile-name {
+            color: white; font-size: 20px; font-weight: 900; margin-bottom: 14px;
+            text-align: center;
+        }
+        .profile-stats {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+        }
+        .profile-stat {
+            background: rgba(0,0,0,.4); border: 1px solid rgba(255,215,0,.3);
+            border-radius: 8px; padding: 8px 12px;
+        }
+        .profile-stat-label {
+            color: #aaa; font-size: 10px; font-weight: 900;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .profile-stat-value {
+            color: var(--gold-light); font-size: 18px; font-weight: 900;
+        }
+
+        /* ===== MODAL DE AMIGOS ===== */
+        .friends-overlay {
+            position: fixed; inset: 0; z-index: 3700; display: none;
+            background: rgba(0,0,0,.85); align-items: center; justify-content: center;
+            padding: 20px;
+        }
+        .friends-overlay.active { display: flex; }
+        .friends-modal {
+            background: linear-gradient(180deg, #1a1030, #0a0518);
+            border: 2px solid var(--gold); border-radius: 18px;
+            padding: 30px; max-width: 600px; width: 95vw; max-height: 85vh;
+            overflow-y: auto; position: relative;
+            box-shadow: 0 0 50px rgba(255,215,0,.3);
+        }
+        .friends-title {
+            color: var(--gold-light); font-size: 24px; font-weight: 900;
+            text-align: center; text-transform: uppercase; letter-spacing: 2px;
+            margin-bottom: 20px;
+        }
+        .friends-add-bar {
+            display: flex; gap: 8px; margin-bottom: 20px;
+        }
+        .friends-add-input {
+            flex: 1; background: rgba(0,0,0,.5); border: 1.5px solid var(--gold);
+            border-radius: 8px; padding: 8px 14px; color: white; font-size: 14px;
+            outline: none;
+        }
+        .friends-add-btn {
+            background: linear-gradient(145deg, #1a6d3c, #0d4a28);
+            border: 2px solid #49ef78; color: white;
+            border-radius: 8px; padding: 8px 18px; font-weight: 900;
+            cursor: pointer; font-size: 13px; text-transform: uppercase;
+        }
+        .friends-list { display: flex; flex-direction: column; gap: 8px; }
+        .friend-item {
+            display: flex; align-items: center; gap: 12px;
+            background: rgba(0,0,0,.4); border: 1px solid rgba(255,215,0,.2);
+            border-radius: 10px; padding: 10px 14px; cursor: pointer;
+            transition: all .15s;
+        }
+        .friend-item:hover { border-color: var(--gold); background: rgba(255,215,0,.05); }
+        .friend-status-dot {
+            width: 14px; height: 14px; border-radius: 50%;
+            background: #555; flex-shrink: 0;
+        }
+        .friend-status-dot.online {
+            background: #49ef78; box-shadow: 0 0 8px rgba(73,239,120,.6);
+        }
+        .friend-name { flex: 1; color: white; font-weight: 900; font-size: 14px; }
+        .friend-remove-btn {
+            background: rgba(255,0,0,.2); border: 1px solid #ff735e;
+            border-radius: 6px; padding: 4px 10px; color: #ff9a7e;
+            font-size: 11px; font-weight: 900; cursor: pointer;
+        }
+        .friends-search-results {
+            margin-top: 10px; display: flex; flex-direction: column; gap: 6px;
+        }
+        .friend-search-result {
+            display: flex; align-items: center; justify-content: space-between;
+            background: rgba(0,0,0,.3); border: 1px solid rgba(255,215,0,.15);
+            border-radius: 8px; padding: 8px 12px;
+        }
+        .friend-search-result span { color: white; font-weight: 900; font-size: 13px; }
+        .friends-empty {
+            color: #888; text-align: center; padding: 20px; font-size: 14px;
+        }
+
         /* ===== TUTORIALES ===== */
         .tutorial-dialog-overlay {
             position: fixed; inset: 0; z-index: 3800; display: none;
@@ -1818,11 +2062,13 @@
                     <div class="sub-btns">
                         <button class="plate-btn btn-nav" onclick="abrirLogros()">🏆 LOGROS</button>
                         <button class="plate-btn btn-nav" onclick="abrirCreditos()">CRÉDITOS</button>
+                        <button class="plate-btn btn-nav" onclick="abrirPerfil()">👤 PERFIL</button>
+                        <button class="plate-btn btn-nav" onclick="abrirNoticias()">📰 NOTICIAS</button>
                     </div>
                 </div>
 
                 <div class="nameplate">
-                    <label for="player-name-input" class="nameplate-label">Tu nombre de invocador</label>
+                    <label for="player-name-input" class="nameplate-label">Tu nombre de jugador</label>
                     <input id="player-name-input" type="text" maxlength="20" placeholder="Jugador" oninput="guardarNombreJugador()">
                 </div>
             </div>
@@ -1891,7 +2137,19 @@
         </header>
         <main id="collection-screen">
             <div class="grid-wrapper">
-                <h1 class="main-title">Biblioteca de Cartas</h1>
+                <h1 class="main-title">Biblioteca de Cartas <span class="collection-counter" id="collection-counter">0/0</span></h1>
+                <div class="sort-filter-bar">
+                    <label>Ordenar por:</label>
+                    <select class="sort-filter-select" id="collection-sort" onchange="renderizarBiblioteca()">
+                        <option value="color">Color (predeterminado)</option>
+                        <option value="coste">Coste</option>
+                        <option value="poder">Poder</option>
+                        <option value="personaje">Personaje</option>
+                        <option value="tipo">Tipo</option>
+                        <option value="origen">Origen</option>
+                    </select>
+                    <button class="auto-recycle-btn" onclick="reciclarSobraAutomatico()">♻️ Auto-reciclar sobras</button>
+                </div>
                 <h2 class="section-title">Líderes</h2>
                 <div id="grid-lideres" class="grid-cartas"></div>
                 <h2 class="section-title">Unidades</h2>
@@ -1979,6 +2237,17 @@
             </div>
             <section class="deck-library-section">
                 <h2 class="section-title">Biblioteca</h2>
+                <div class="sort-filter-bar">
+                    <label>Ordenar por:</label>
+                    <select class="sort-filter-select" id="deck-sort" onchange="renderizarEditor()">
+                        <option value="color">Color (predeterminado)</option>
+                        <option value="coste">Coste</option>
+                        <option value="poder">Poder</option>
+                        <option value="personaje">Personaje</option>
+                        <option value="tipo">Tipo</option>
+                        <option value="origen">Origen</option>
+                    </select>
+                </div>
                 <div id="library-cards" class="deck-library-grid"></div>
             </section>
         </main>
@@ -2042,10 +2311,76 @@
     <!-- ===== OVERLAY DE APERTURA DE SOBRE ===== -->
     <div id="pack-opening-overlay">
         <div class="pack-counter" id="pack-counter" style="display:none"></div>
+        <div class="pack-remaining-counter" id="pack-remaining-counter" style="display:none">5</div>
         <div class="pack-stage" id="pack-stage">
             <!-- Aquí se inyecta el sobre 3D o las cartas reveladas -->
         </div>
         <button class="pack-nav-btn" id="pack-nav-btn" onclick="accionNavPack()">Siguiente</button>
+        <button class="pack-skip-btn" id="pack-skip-btn" style="display:none" onclick="saltarAlResumen()">⏭️ Saltar al resumen</button>
+    </div>
+
+    <!-- ===== MEGA RESUMEN (10 sobres) ===== -->
+    <div class="mega-summary-overlay" id="mega-summary-overlay">
+        <div class="mega-summary-title">🎉 ¡Mega Resumen de 10 Sobres! 🎉</div>
+        <div id="mega-summary-content"></div>
+        <button class="mega-summary-close-btn" onclick="cerrarMegaResumen()">Volver a la tienda</button>
+    </div>
+
+    <!-- ===== MODAL DE PERFIL ===== -->
+    <div class="profile-overlay" id="profile-overlay">
+        <div class="profile-modal">
+            <button class="profile-close" onclick="cerrarPerfil()">×</button>
+            <div class="profile-title">👤 Mi Perfil</div>
+            <div class="profile-body">
+                <div class="profile-left">
+                    <div class="profile-fav-card" id="profile-fav-card" onclick="elegirCartaFavorita()">
+                        <div class="profile-fav-card-empty">Click para elegir<br>tu carta favorita</div>
+                    </div>
+                    <div class="profile-fav-label">Carta Favorita</div>
+                </div>
+                <div class="profile-right">
+                    <div class="profile-name" id="profile-name">Jugador</div>
+                    <div class="profile-stats" id="profile-stats"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODAL DE AMIGOS ===== -->
+    <div class="friends-overlay" id="friends-overlay">
+        <div class="friends-modal">
+            <button class="profile-close" onclick="cerrarAmigos()">×</button>
+            <div class="friends-title">👥 Amigos</div>
+            <div class="friends-add-bar">
+                <input type="text" class="friends-add-input" id="friend-search-input" placeholder="Buscar por nombre de jugador..." onkeypress="if(event.key==='Enter') buscarUsuarioAmigo()">
+                <button class="friends-add-btn" onclick="buscarUsuarioAmigo()">Buscar</button>
+            </div>
+            <div class="friends-search-results" id="friend-search-results"></div>
+            <h3 style="color:var(--gold-light);margin:16px 0 10px;font-size:14px;text-transform:uppercase;letter-spacing:1px;">Tu lista de amigos</h3>
+            <div class="friends-list" id="friends-list">
+                <div class="friends-empty">Cargando lista de amigos...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODAL DE PERFIL DE AMIGO ===== -->
+    <div class="profile-overlay" id="friend-profile-overlay">
+        <div class="profile-modal">
+            <button class="profile-close" onclick="cerrarPerfilAmigo()">×</button>
+            <div class="profile-title" id="friend-profile-title">👤 Perfil de amigo</div>
+            <div class="profile-body">
+                <div class="profile-left">
+                    <div class="profile-fav-card" id="friend-profile-fav-card">
+                        <div class="profile-fav-card-empty">Sin carta favorita</div>
+                    </div>
+                    <div class="profile-fav-label">Carta Favorita</div>
+                </div>
+                <div class="profile-right">
+                    <div class="profile-name" id="friend-profile-name">Amigo</div>
+                    <div class="profile-stats" id="friend-profile-stats"></div>
+                </div>
+            </div>
+        </div>
     </div>
 
 
@@ -3629,6 +3964,12 @@
         robar(quien, 1);
         addBuff(zonaJugador(quien).liderZona, 'batalla', 5000);
         marcarHabilidadUsada(claveTurno(quien, 'bl2_act'));
+        // Bug fix: enviar el buff al rival en modo online para que lo vea
+        // inmediatamente, no solo cuando acabe el combate.
+        if (estadoPartida?.modo === 'online' && typeof enviarEfectoRival === 'function') {
+          enviarEfectoRival({ tipo: 'buff-batalla-lider', cantidad: 5000, nombre: 'Hugopima el maestro' });
+        }
+        if (typeof renderizarPartida === 'function') renderizarPartida();
       } else if (key === 'recycle') {
         // Evo: elige carta Grupo/Minecraft del descarte → fondo del mazo → endereza 1 maná azul
         // Una vez por turno: marcar como usada INMEDIATAMENTE al activar (antes del modal),
@@ -5916,18 +6257,30 @@
   R('sprout', {
     async alDestruida(quien) {
       robar(quien, 1);
-      // Bug fix: si el líder es Mari, permitir al jugador ELEGIR qué carta
-      // del descarte pone al fondo del mazo (antes era automático con pop()).
+      // Bug fix: solo el dueño de la carta debe ver el modal de elección.
+      // Si la carta destruida es del rival (IA u online), NO mostrar el modal
+      // al jugador local.
       if (liderNombre(quien).toLowerCase().includes('mari') && zonaJugador(quien).descarte.length) {
         const z = zonaJugador(quien);
-        const opts = z.descarte.map((id, i) => ({ label: getCardById(id)?.nombre || id, value: i, cardId: id }));
-        opts.push({ label: 'Cancelar (no poner nada)', value: -1 });
-        const idx = await elegirConModal('Sprout Mole: elige una carta de tu descarte para poner al fondo del mazo', opts);
-        if (idx != null && idx >= 0 && z.descarte[idx]) {
-          const id = z.descarte.splice(idx, 1)[0];
-          z.mazo.unshift(id);
-          log('Sprout Mole pone ' + (getCardById(id)?.nombre || id) + ' al fondo del mazo.');
+        if (quien === 'jugador') {
+          // Mi Sprout Mole: yo elijo qué carta poner al fondo del mazo.
+          const opts = z.descarte.map((id, i) => ({ label: getCardById(id)?.nombre || id, value: i, cardId: id }));
+          opts.push({ label: 'Cancelar (no poner nada)', value: -1 });
+          const idx = await elegirConModal('Sprout Mole: elige una carta de tu descarte para poner al fondo del mazo', opts);
+          if (idx != null && idx >= 0 && z.descarte[idx]) {
+            const id = z.descarte.splice(idx, 1)[0];
+            z.mazo.unshift(id);
+            log('Sprout Mole pone ' + (getCardById(id)?.nombre || id) + ' al fondo del mazo.');
+          }
+        } else if (estadoPartida && estadoPartida.modo !== 'online') {
+          // Sprout Mole de la IA: decidir automáticamente (última carta del descarte).
+          const id = z.descarte.pop();
+          if (id) {
+            z.mazo.unshift(id);
+            log('Sprout Mole rival pone una carta al fondo del mazo.');
+          }
         }
+        // En online: no hacer nada localmente, el rival maneja su propia decisión.
       }
       barajar(quien);
     }
@@ -6858,6 +7211,34 @@
             renderizarSelectorMazos();
         }
 
+        // Función auxiliar: ordenar array de cartas según el criterio seleccionado
+        function ordenarCartas(arr, criterio) {
+            const sorted = [...arr];
+            switch (criterio) {
+                case 'coste':
+                    sorted.sort((a, b) => (Number(a.costeTotal || 0)) - (Number(b.costeTotal || 0)) || (a.nombre || '').localeCompare(b.nombre || ''));
+                    break;
+                case 'poder':
+                    sorted.sort((a, b) => (Number(b.poder || 0)) - (Number(a.poder || 0)) || (a.nombre || '').localeCompare(b.nombre || ''));
+                    break;
+                case 'personaje':
+                    sorted.sort((a, b) => (a.personaje || '').localeCompare(b.personaje || '') || (a.nombre || '').localeCompare(b.nombre || ''));
+                    break;
+                case 'tipo':
+                    sorted.sort((a, b) => (a.tipo || '').localeCompare(b.tipo || '') || (a.nombre || '').localeCompare(b.nombre || ''));
+                    break;
+                case 'origen':
+                    sorted.sort((a, b) => (a.origen || '').localeCompare(b.origen || '') || (a.nombre || '').localeCompare(b.nombre || ''));
+                    break;
+                case 'color':
+                default:
+                    // Color predeterminado: agrupar por color, luego por nombre
+                    sorted.sort((a, b) => (a.color || '').localeCompare(b.color || '') || (a.nombre || '').localeCompare(b.nombre || ''));
+                    break;
+            }
+            return sorted;
+        }
+
         function renderizarBiblioteca() {
             const gl = document.getElementById('grid-lideres');
             const gu = document.getElementById('grid-unidades');
@@ -6866,38 +7247,73 @@
             if (!gl || !gu || !ge || !gt) return;
             gl.innerHTML = ""; gu.innerHTML = ""; ge.innerHTML = ""; gt.innerHTML = "";
 
-            datosCartas.forEach((c, i) => {
+            // Extra: contador de cartas en colección (sin tokens)
+            let cartasUnicasPoseidas = 0;
+            let totalCartasDisponibles = 0;
+            datosCartas.forEach(c => {
+                if (esToken(c)) return;
+                totalCartasDisponibles++;
+                if (getCantidadCarta(getCardId(c)) > 0) cartasUnicasPoseidas++;
+            });
+            const counterEl = document.getElementById('collection-counter');
+            if (counterEl) counterEl.textContent = cartasUnicasPoseidas + '/' + totalCartasDisponibles;
+
+            // Leer el criterio de ordenación
+            const sortSelect = document.getElementById('collection-sort');
+            const criterio = sortSelect ? sortSelect.value : 'color';
+
+            // Separar por categoría y ordenar dentro de cada una
+            const lideres = datosCartas.filter(c => claseNormalizada(c) === 'lider');
+            const unidades = datosCartas.filter(c => !esToken(c) && claseNormalizada(c) === 'unidad');
+            const extras = datosCartas.filter(c => !esToken(c) && claseNormalizada(c) === 'extra');
+            const tokens = datosCartas.filter(c => esToken(c));
+
+            const sortedLideres = ordenarCartas(lideres, criterio);
+            const sortedUnidades = ordenarCartas(unidades, criterio);
+            const sortedExtras = ordenarCartas(extras, criterio);
+            const sortedTokens = ordenarCartas(tokens, criterio);
+
+            const renderCard = (c) => {
+                const i = datosCartas.indexOf(c);
                 const id = getCardId(c);
                 const cantidad = getCantidadCarta(id);
                 const cantidadHtml = esToken(c) ? '' : `<span class="owned-count ${cantidad === 0 ? 'zero' : ''}">${cantidad}</span>`;
-                // Las cartas con 0 copias se muestran en blanco y negro (grayscale)
                 const bwStyle = (!esToken(c) && cantidad === 0) ? 'filter: grayscale(100%) brightness(0.6); opacity:0.7;' : '';
-                const cardHtml = `<div class="card" style="border-color: ${obtenerColorBorde(c.color)}" onclick="abrirPanel(${i})">
+                return `<div class="card" style="border-color: ${obtenerColorBorde(c.color)}" onclick="abrirPanel(${i})">
                     ${c.img ? `<img src="${c.img}" style="${bwStyle}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">` : ''}
                     <div class="card-name-fallback" style="display:none; color: white; padding: 20px; text-align: center; font-weight: bold; height: 100%; align-items: center; justify-content: center; background: #111;">${escapeHtml(c.nombre)}</div>
                     ${cantidadHtml}
                 </div>`;
-                const claseCarta = claseNormalizada(c);
-                if (claseCarta === "lider") gl.innerHTML += cardHtml;
-                else if (esToken(c)) gt.innerHTML += cardHtml;
-                else if (claseCarta === "unidad") gu.innerHTML += cardHtml;
-                else if (claseCarta === "extra") ge.innerHTML += cardHtml;
-            });
+            };
+
+            sortedLideres.forEach(c => gl.innerHTML += renderCard(c));
+            sortedUnidades.forEach(c => gu.innerHTML += renderCard(c));
+            sortedExtras.forEach(c => ge.innerHTML += renderCard(c));
+            sortedTokens.forEach(c => gt.innerHTML += renderCard(c));
         }
 
         function renderizarEditor() {
             const libContainer = document.getElementById('library-cards');
             libContainer.innerHTML = "";
-            datosCartas.forEach((c, i) => {
-                if (esToken(c)) return;
+            // Leer criterio de ordenación
+            const sortSelect = document.getElementById('deck-sort');
+            const criterio = sortSelect ? sortSelect.value : 'color';
+            // Separar líderes (siempre primero) del resto
+            const lideres = datosCartas.filter(c => !esToken(c) && esLider(c));
+            const noLideres = datosCartas.filter(c => !esToken(c) && !esLider(c));
+            // Ordenar ambos grupos
+            const sortedLideres = ordenarCartas(lideres, criterio);
+            const sortedNoLideres = ordenarCartas(noLideres, criterio);
+            // Combinar: líderes primero, luego el resto
+            const sortedCartas = [...sortedLideres, ...sortedNoLideres];
+            sortedCartas.forEach(c => {
+                const i = datosCartas.indexOf(c);
                 const id = getCardId(c);
                 const copias = copiasEnMazo(id);
                 const poseidas = getCantidadCarta(id);
                 const lider = esLider(c);
-                // Agotado si: no tiene copias, o ya tiene 4 en mazo, o ya tiene todas las poseidas en mazo
                 const agotado = (poseidas <= 0) || (!lider && (copias >= 4 || copias >= poseidas));
                 const cantidadHtml = `<span class="owned-count ${poseidas === 0 ? 'zero' : ''}" style="bottom:auto;right:auto;top:4px;left:4px;">${poseidas}</span>`;
-                // Las cartas con 0 copias se muestran en blanco y negro (grayscale), incluidos los líderes
                 const bwStyle = (poseidas === 0) ? 'filter: grayscale(100%) brightness(0.6); opacity:0.7;' : '';
                 libContainer.innerHTML += `
                     <div class="deck-card" style="border-color: ${obtenerColorBorde(c.color)}">
@@ -7085,7 +7501,55 @@
 
         // ===== AMIGOS =====
         function abrirAmigos() {
-            alert('Esta parte aún está en construcción! Vuelve pronto!');
+            document.getElementById('friends-overlay').classList.add('active');
+            renderizarListaAmigos();
+        }
+        function cerrarAmigos() {
+            document.getElementById('friends-overlay').classList.remove('active');
+        }
+
+        // ===== AUTO-RECICLAR SOBRAS =====
+        function reciclarSobraAutomatico() {
+            if (!_inventario || !_inventario.cartas) return alert('No hay inventario.');
+            // Calcular qué cartas se reciclarían y cuánta energy se obtendría
+            const aReciclar = [];
+            let energyTotal = 0;
+            datosCartas.forEach(c => {
+                if (esToken(c)) return;
+                const id = getCardId(c);
+                const cantidad = _inventario.cartas[id] || 0;
+                const esLiderCarta = esLider(c);
+                const maxCopias = esLiderCarta ? 1 : 4;
+                if (cantidad > maxCopias) {
+                    const sobran = cantidad - maxCopias;
+                    const coste = getCosteTokens(c.rareza);
+                    const energy = coste.reciclar * sobran;
+                    aReciclar.push({ id, nombre: c.nombre, sobran, energy, rareza: c.rareza });
+                    energyTotal += energy;
+                }
+            });
+            if (!aReciclar.length) return alert('No tienes cartas de sobra para reciclar. ¡Todo está en orden!');
+            // Mostrar resumen y confirmar
+            let resumen = 'Se reciclarán las siguientes cartas de sobra:\n\n';
+            aReciclar.forEach(r => {
+                resumen += '• ' + r.nombre + ' (' + r.rareza + '): ' + r.sobran + ' carta(s) → +' + r.energy + ' Energy\n';
+            });
+            resumen += '\nTotal Club Energy a recibir: ' + energyTotal;
+            if (!confirm(resumen + '\n\n¿Confirmas el reciclaje automático?')) return;
+            // Ejecutar reciclaje
+            aReciclar.forEach(r => {
+                _inventario.cartas[r.id] -= r.sobran;
+                if (_inventario.cartas[r.id] <= 0) delete _inventario.cartas[r.id];
+            });
+            _inventario.energy = (_inventario.energy || 0) + energyTotal;
+            if (_statsJugador) {
+                _statsJugador.cartasRecicladas = (_statsJugador.cartasRecicladas || 0) + aReciclar.reduce((s, r) => s + r.sobran, 0);
+                guardarStats();
+            }
+            guardarInventario();
+            actualizarBarraMonedas();
+            renderizarBiblioteca();
+            alert(`¡Reciclaje completado! +${energyTotal} Club Energy.`);
         }
 
         // ===== CRÉDITOS =====
@@ -7094,6 +7558,223 @@
         }
         function cerrarCreditos() {
             document.getElementById('credits-overlay').classList.remove('active');
+        }
+
+        // ===== NOTICIAS =====
+        function abrirNoticias() {
+            window.open('https://gamingclubtcg.blogspot.com/', '_blank', 'noopener,noreferrer');
+        }
+
+        // ===== PERFIL =====
+        let _cartaFavoritaSeleccion = false;
+        function abrirPerfil() {
+            document.getElementById('profile-overlay').classList.add('active');
+            renderizarPerfilPropio();
+        }
+        function cerrarPerfil() {
+            document.getElementById('profile-overlay').classList.remove('active');
+            _cartaFavoritaSeleccion = false;
+        }
+        function renderizarPerfilPropio() {
+            if (!_statsJugador) cargarStats();
+            const nombre = getNombreJugador();
+            document.getElementById('profile-name').textContent = nombre;
+            // Carta favorita
+            const favCard = _inventario?.cartaFavorita;
+            const favEl = document.getElementById('profile-fav-card');
+            if (favCard) {
+                const c = getCardById(favCard);
+                if (c) {
+                    favEl.innerHTML = `<img src="${c.img || ''}" alt="${escapeHtml(c.nombre || '')}" onerror="this.style.display='none'">`;
+                } else {
+                    favEl.innerHTML = '<div class="profile-fav-card-empty">Click para elegir<br>tu carta favorita</div>';
+                }
+            } else {
+                favEl.innerHTML = '<div class="profile-fav-card-empty">Click para elegir<br>tu carta favorita</div>';
+            }
+            // Stats
+            const s = _statsJugador || {};
+            const totalCartas = _inventario ? Object.values(_inventario.cartas || {}).reduce((sum, n) => sum + n, 0) : 0;
+            const cartasUnicas = _inventario ? Object.keys(_inventario.cartas || {}).filter(id => (_inventario.cartas[id] || 0) > 0).length : 0;
+            const statsHtml = `
+                <div class="profile-stat"><div class="profile-stat-label">Partidas jugadas</div><div class="profile-stat-value">${s.partidasJugadas || 0}</div></div>
+                <div class="profile-stat"><div class="profile-stat-label">Victorias vs IA</div><div class="profile-stat-value">${s.victoriasIA || 0}</div></div>
+                <div class="profile-stat"><div class="profile-stat-label">Victorias online</div><div class="profile-stat-value">${s.victoriasOnline || 0}</div></div>
+                <div class="profile-stat"><div class="profile-stat-label">Derrotas</div><div class="profile-stat-value">${s.derrotas || 0}</div></div>
+                <div class="profile-stat"><div class="profile-stat-label">Mejor racha</div><div class="profile-stat-value">${s.mejorRacha || 0}</div></div>
+                <div class="profile-stat"><div class="profile-stat-label">Racha actual</div><div class="profile-stat-value">${s.rachaActual || 0}</div></div>
+                <div class="profile-stat"><div class="profile-stat-label">Sobres abiertos</div><div class="profile-stat-value">${s.sobresAbiertos || 0}</div></div>
+                <div class="profile-stat"><div class="profile-stat-label">Despertares</div><div class="profile-stat-value">${s.despertares || 0}</div></div>
+                <div class="profile-stat"><div class="profile-stat-label">Cartas fabricadas</div><div class="profile-stat-value">${s.cartasFabricadas || 0}</div></div>
+                <div class="profile-stat"><div class="profile-stat-label">Cartas recicladas</div><div class="profile-stat-value">${s.cartasRecicladas || 0}</div></div>
+                <div class="profile-stat"><div class="profile-stat-label">Counter plays</div><div class="profile-stat-value">${s.counterPlays || 0}</div></div>
+                <div class="profile-stat"><div class="profile-stat-label">Bloqueadores</div><div class="profile-stat-value">${s.bloqueadores || 0}</div></div>
+                <div class="profile-stat" style="grid-column: span 2;"><div class="profile-stat-label">Cartas coleccionadas</div><div class="profile-stat-value">${cartasUnicas} únicas (${totalCartas} total)</div></div>
+            `;
+            document.getElementById('profile-stats').innerHTML = statsHtml;
+        }
+        function elegirCartaFavorita() {
+            // Abrir la colección para que el jugador elija
+            if (!confirm('¿Quieres elegir tu carta favorita desde la colección? Se abrirá la biblioteca y podrás hacer click en una carta para marcarla como favorita.')) return;
+            cerrarPerfil();
+            irAColeccion();
+            _cartaFavoritaSeleccion = true;
+            // Mostrar aviso
+            const aviso = document.createElement('div');
+            aviso.style.cssText = 'position:fixed;top:80px;left:50%;transform:translateX(-50%);z-index:4000;background:linear-gradient(145deg,#d4a017,#8a6010);color:#1a0a30;padding:12px 28px;border-radius:999px;font-weight:900;font-size:14px;box-shadow:0 0 25px rgba(255,215,0,.6);border:2px solid #fff07c;';
+            aviso.textContent = '⭐ Haz click en una carta para marcarla como favorita';
+            aviso.id = 'fav-card-aviso';
+            document.body.appendChild(aviso);
+            setTimeout(() => { if (aviso.parentNode) aviso.remove(); }, 8000);
+        }
+
+        // ===== AMIGOS =====
+        let _amigosRefreshInterval = null;
+        function renderizarListaAmigos() {
+            const listEl = document.getElementById('friends-list');
+            const searchResults = document.getElementById('friend-search-results');
+            if (searchResults) searchResults.innerHTML = '';
+            const user = getDiscordUser();
+            if (!user) {
+                listEl.innerHTML = '<div class="friends-empty">Inicia sesión con Discord para usar el sistema de amigos.</div>';
+                return;
+            }
+            // Cargar lista de amigos desde Supabase
+            cargarInventarioSupabaseSiLogueado().then(() => {
+                const amigos = (_inventario?.amigos) || [];
+                if (!amigos.length) {
+                    listEl.innerHTML = '<div class="friends-empty">No tienes amigos todavía. ¡Busca por nombre para añadir!</div>';
+                    return;
+                }
+                listEl.innerHTML = '<div class="friends-empty">Cargando amigos...</div>';
+                // Consultar estado online de cada amigo
+                if (_socketOnline) {
+                    _socketOnline.emit('consultar-amigos-online', { amigos });
+                    _socketOnline.once('amigos-online-resultado', (onlineMap) => {
+                        renderizarListaAmigosHTML(amigos, onlineMap || {});
+                    });
+                } else {
+                    renderizarListaAmigosHTML(amigos, {});
+                }
+            });
+        }
+        function renderizarListaAmigosHTML(amigos, onlineMap) {
+            const listEl = document.getElementById('friends-list');
+            if (!amigos.length) {
+                listEl.innerHTML = '<div class="friends-empty">No tienes amigos todavía. ¡Busca por nombre para añadir!</div>';
+                return;
+            }
+            listEl.innerHTML = amigos.map(id => {
+                const online = onlineMap[id] || false;
+                return `<div class="friend-item" onclick="verPerfilAmigo('${id}')">
+                    <div class="friend-status-dot ${online ? 'online' : ''}"></div>
+                    <span class="friend-name">${escapeHtml(id.substring(0, 8))}...</span>
+                    <button class="friend-remove-btn" onclick="event.stopPropagation(); eliminarAmigo('${id}')">✕</button>
+                </div>`;
+            }).join('');
+        }
+        async function buscarUsuarioAmigo() {
+            const input = document.getElementById('friend-search-input');
+            const resultsEl = document.getElementById('friend-search-results');
+            const username = input.value.trim();
+            if (!username) return;
+            resultsEl.innerHTML = '<div class="friends-empty">Buscando...</div>';
+            try {
+                const res = await fetch(DISCORD_API_BASE + '/api/buscar-usuario', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username })
+                });
+                if (!res.ok) { resultsEl.innerHTML = '<div class="friends-empty">Error al buscar.</div>'; return; }
+                const data = await res.json();
+                const resultados = data.resultados || [];
+                if (!resultados.length) {
+                    resultsEl.innerHTML = '<div class="friends-empty">No se encontraron jugadores.</div>';
+                    return;
+                }
+                const user = getDiscordUser();
+                const amigosActuales = (_inventario?.amigos) || [];
+                resultsEl.innerHTML = resultados.map(r => {
+                    const yaAmigo = amigosActuales.includes(r.discord_id);
+                    const esYo = user && r.discord_id === user.id;
+                    return `<div class="friend-search-result">
+                        <span>${escapeHtml(r.username)} ${r.online ? '🟢' : '⚫'}</span>
+                        ${esYo ? '<span style="color:#888;font-size:11px;">(Tú)</span>' :
+                          yaAmigo ? '<span style="color:#888;font-size:11px;">Ya es amigo</span>' :
+                          `<button class="friends-add-btn" onclick="anadirAmigo('${r.discord_id}', '${escapeHtml(r.username)}')">+ Añadir</button>`}
+                    </div>`;
+                }).join('');
+            } catch (e) {
+                resultsEl.innerHTML = '<div class="friends-empty">Error de conexión.</div>';
+            }
+        }
+        async function anadirAmigo(discordId, username) {
+            if (!_inventario) return;
+            if (!_inventario.amigos) _inventario.amigos = [];
+            if (_inventario.amigos.includes(discordId)) return alert('Ya es tu amigo.');
+            _inventario.amigos.push(discordId);
+            guardarInventario();
+            // Limpiar búsqueda y refrescar
+            document.getElementById('friend-search-input').value = '';
+            document.getElementById('friend-search-results').innerHTML = '';
+            renderizarListaAmigos();
+            alert('¡Amigo añadido: ' + username + '!');
+        }
+        async function eliminarAmigo(discordId) {
+            if (!_inventario) return;
+            if (!confirm('¿Eliminar este amigo?')) return;
+            _inventario.amigos = (_inventario.amigos || []).filter(id => id !== discordId);
+            guardarInventario();
+            renderizarListaAmigos();
+        }
+        async function verPerfilAmigo(discordId) {
+            try {
+                const res = await fetch(DISCORD_API_BASE + '/api/perfil', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ discord_id: discordId })
+                });
+                if (!res.ok) { alert('No se pudo cargar el perfil.'); return; }
+                const data = await res.json();
+                const p = data.perfil;
+                if (!p) return;
+                document.getElementById('friend-profile-title').textContent = '👤 ' + p.username;
+                document.getElementById('friend-profile-name').textContent = p.username + (p.online ? ' 🟢' : ' ⚫');
+                // Carta favorita
+                const favEl = document.getElementById('friend-profile-fav-card');
+                if (p.cartaFavorita) {
+                    const c = getCardById(p.cartaFavorita);
+                    if (c) {
+                        favEl.innerHTML = `<img src="${c.img || ''}" alt="${escapeHtml(c.nombre || '')}" onerror="this.style.display='none'">`;
+                    } else {
+                        favEl.innerHTML = '<div class="profile-fav-card-empty">Sin carta favorita</div>';
+                    }
+                } else {
+                    favEl.innerHTML = '<div class="profile-fav-card-empty">Sin carta favorita</div>';
+                }
+                // Stats
+                const s = p.stats || {};
+                const statsHtml = `
+                    <div class="profile-stat"><div class="profile-stat-label">Partidas jugadas</div><div class="profile-stat-value">${s.partidasJugadas || 0}</div></div>
+                    <div class="profile-stat"><div class="profile-stat-label">Victorias vs IA</div><div class="profile-stat-value">${s.victoriasIA || 0}</div></div>
+                    <div class="profile-stat"><div class="profile-stat-label">Victorias online</div><div class="profile-stat-value">${s.victoriasOnline || 0}</div></div>
+                    <div class="profile-stat"><div class="profile-stat-label">Derrotas</div><div class="profile-stat-value">${s.derrotas || 0}</div></div>
+                    <div class="profile-stat"><div class="profile-stat-label">Mejor racha</div><div class="profile-stat-value">${s.mejorRacha || 0}</div></div>
+                    <div class="profile-stat"><div class="profile-stat-label">Racha actual</div><div class="profile-stat-value">${s.rachaActual || 0}</div></div>
+                    <div class="profile-stat"><div class="profile-stat-label">Sobres abiertos</div><div class="profile-stat-value">${s.sobresAbiertos || 0}</div></div>
+                    <div class="profile-stat"><div class="profile-stat-label">Despertares</div><div class="profile-stat-value">${s.despertares || 0}</div></div>
+                    <div class="profile-stat"><div class="profile-stat-label">Cartas fabricadas</div><div class="profile-stat-value">${s.cartasFabricadas || 0}</div></div>
+                    <div class="profile-stat"><div class="profile-stat-label">Cartas recicladas</div><div class="profile-stat-value">${s.cartasRecicladas || 0}</div></div>
+                    <div class="profile-stat" style="grid-column: span 2;"><div class="profile-stat-label">Cartas coleccionadas</div><div class="profile-stat-value">${p.cartasUnicas || 0} únicas (${p.totalCartas || 0} total)</div></div>
+                `;
+                document.getElementById('friend-profile-stats').innerHTML = statsHtml;
+                document.getElementById('friend-profile-overlay').classList.add('active');
+            } catch (e) {
+                alert('Error: ' + e.message);
+            }
+        }
+        function cerrarPerfilAmigo() {
+            document.getElementById('friend-profile-overlay').classList.remove('active');
         }
 
         // ===== DISCORD LOGIN =====
@@ -7205,7 +7886,10 @@
             _inventario = {
                 coins: Math.max(coinsLocal, coinsSupa),
                 energy: Math.max(energyLocal, energySupa),
-                cartas: inv.cartas || _inventario?.cartas || {}
+                cartas: inv.cartas || _inventario?.cartas || {},
+                amigos: inv.amigos || _inventario?.amigos || [],
+                cartaFavorita: inv.cartaFavorita || _inventario?.cartaFavorita || null,
+                perfil: inv.perfil || _inventario?.perfil || { bio: '' }
             };
             // Cargar stats: MERGE en vez de sobrescribir
             // Bug fix: tomar el MÁXIMO de cada stat para no perder progreso local.
@@ -7303,7 +7987,10 @@
                         cartas: _inventario.cartas,
                         stats: _statsJugador,
                         misiones: _misionesState,
-                        mazos: JSON.parse(localStorage.getItem('gc_tcg_mazos') || '[]')
+                        mazos: JSON.parse(localStorage.getItem('gc_tcg_mazos') || '[]'),
+                        amigos: _inventario.amigos || [],
+                        cartaFavorita: _inventario.cartaFavorita || null,
+                        perfil: _inventario.perfil || { bio: '' }
                     })
                 });
                 if (!res.ok) {
@@ -8131,9 +8818,12 @@
                     if (!_inventario.cartas) _inventario.cartas = {};
                     if (_inventario.coins == null) _inventario.coins = 0;
                     if (_inventario.energy == null) _inventario.energy = 0;
+                    if (!_inventario.amigos) _inventario.amigos = [];
+                    if (_inventario.cartaFavorita === undefined) _inventario.cartaFavorita = null;
+                    if (!_inventario.perfil) _inventario.perfil = { bio: '' };
                 } else {
                     // Empezar de cero: 0 cartas, 0 monedas, 0 energy
-                    _inventario = { coins: 0, energy: 0, cartas: {} };
+                    _inventario = { coins: 0, energy: 0, cartas: {}, amigos: [], cartaFavorita: null, perfil: { bio: '' } };
                     guardarInventario();
                 }
             } catch (e) {
@@ -8471,7 +9161,8 @@
                 cartas: sobres[0],      // cartas del sobre actual
                 indice: 0,              // índice de la carta actual
                 fase: 'pack',           // 'pack' | 'revelando' | 'resumen' | 'cambiar-sobre'
-                totalSobres: sobres.length
+                totalSobres: sobres.length,
+                todosLosSobres: JSON.parse(JSON.stringify(sobres))  // copia para mega resumen
             };
             const overlay = document.getElementById('pack-opening-overlay');
             overlay.classList.add('active');
@@ -8489,7 +9180,11 @@
         function mostrarSobre3D() {
             const stage = document.getElementById('pack-stage');
             const navBtn = document.getElementById('pack-nav-btn');
+            const skipBtn = document.getElementById('pack-skip-btn');
+            const remCounter = document.getElementById('pack-remaining-counter');
             navBtn.classList.remove('show');
+            if (skipBtn) skipBtn.style.display = 'none';
+            if (remCounter) remCounter.style.display = 'none';
             _packState.fase = 'pack';
             stage.innerHTML = `
                 <div class="pack-3d" id="pack-3d" onclick="iniciarRevelado()">
@@ -8520,8 +9215,14 @@
         function mostrarPilaCartas() {
             const stage = document.getElementById('pack-stage');
             const navBtn = document.getElementById('pack-nav-btn');
+            const skipBtn = document.getElementById('pack-skip-btn');
+            const remCounter = document.getElementById('pack-remaining-counter');
             const cartas = _packState.cartas;
             navBtn.classList.remove('show');
+            // Extra #4: mostrar botón de saltar al resumen
+            if (skipBtn) skipBtn.style.display = 'block';
+            // Extra #5: mostrar contador de cartas restantes
+            actualizarContadorRestantes();
 
             // Construir la pila: cada carta desplazada ligeramente
             // (sin transición inicial para evitar movimiento fantasma; se añade después)
@@ -8566,6 +9267,36 @@
             if (rareza === 'rara') return '¡RARA!';
             if (rareza === 'infrecuente') return 'Infrecuente';
             return 'Común';
+        }
+
+        // Extra #5: actualizar el contador de cartas restantes + brillo si la próxima es super rara
+        function actualizarContadorRestantes() {
+            const remCounter = document.getElementById('pack-remaining-counter');
+            if (!remCounter || !_packState) return;
+            const restantes = _packState.cartas.length - _packState.indice;
+            if (_packState.fase !== 'revelando') {
+                remCounter.style.display = 'none';
+                return;
+            }
+            remCounter.style.display = 'flex';
+            remCounter.textContent = restantes;
+            // Comprobar si la PRÓXIMA carta (la que va a salir) es super rara
+            // La carta actual es _packState.indice, la próxima es _packState.indice + 1
+            // Pero el contador muestra las que quedan INCLUDING la actual.
+            // El brillo debe activarse cuando la PROXIMA a revelar es super rara.
+            const proximaIdx = _packState.indice;
+            const proxima = _packState.cartas[proximaIdx];
+            if (proxima && proxima.rareza === 'super rara') {
+                remCounter.classList.add('super-rara-glow');
+            } else {
+                remCounter.classList.remove('super-rara-glow');
+            }
+        }
+
+        // Extra #4: saltar al resumen del sobre actual
+        function saltarAlResumen() {
+            if (!_packState) return;
+            mostrarResumenSobre();
         }
 
         // Click en una carta de la pila
@@ -8649,6 +9380,8 @@
             const stage = document.getElementById('pack-stage');
             const cartas = _packState.cartas;
             const idx = _packState.indice;
+            // Extra #5: actualizar contador de restantes
+            actualizarContadorRestantes();
             // Re-renderizar la pila sin las cartas ya salidas (índices < idx)
             // (sin transición inicial para evitar movimiento fantasma; se añade después)
             let html = '<div class="card-stack" id="card-stack">';
@@ -8713,6 +9446,11 @@
 
         function mostrarResumenSobre() {
             _packState.fase = 'resumen';
+            // Ocultar skip y contador
+            const skipBtn = document.getElementById('pack-skip-btn');
+            const remCounter = document.getElementById('pack-remaining-counter');
+            if (skipBtn) skipBtn.style.display = 'none';
+            if (remCounter) remCounter.style.display = 'none';
             // Añadir las cartas del sobre al inventario (al mostrar el resumen)
             if (_inventario) {
                 _packState.cartas.forEach(item => {
@@ -8761,12 +9499,50 @@
         }
 
         function cerrarAperturaSobre() {
+            // Extra #6: si eran 10 sobres, mostrar mega resumen antes de cerrar
+            const fueMegaResumen = _packState && _packState.totalSobres >= 10 && _packState.todosLosSobres;
+            const todosLosSobres = fueMegaResumen ? _packState.todosLosSobres : null;
             _packState = null;
             document.getElementById('pack-opening-overlay').classList.remove('active');
             document.getElementById('pack-stage').innerHTML = '';
             document.getElementById('pack-nav-btn').classList.remove('show');
             document.getElementById('pack-counter').style.display = 'none';
+            document.getElementById('pack-skip-btn').style.display = 'none';
+            document.getElementById('pack-remaining-counter').style.display = 'none';
             document.getElementById('pack-info-modal').classList.remove('active');
+            if (fueMegaResumen) {
+                mostrarMegaResumen(todosLosSobres);
+            }
+        }
+
+        // Extra #6: mostrar mega resumen de todos los sobres
+        function mostrarMegaResumen(todosLosSobres) {
+            const overlay = document.getElementById('mega-summary-overlay');
+            const content = document.getElementById('mega-summary-content');
+            if (!overlay || !content) return;
+            let html = '';
+            todosLosSobres.forEach((sobre, idx) => {
+                const gridHtml = sobre.map(item => {
+                    const r = item.rareza;
+                    const clase = r === 'super rara' ? 'super-rara' : r;
+                    const texto = r === 'super rara' ? 'SR' : (r === 'rara' ? 'R' : (r === 'infrecuente' ? 'I' : 'C'));
+                    return `<div class="mega-summary-card ${clase}">
+                        <img src="${item.carta.img || ''}" alt="${escapeHtml(item.carta.nombre || '')}" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22150%22><rect width=%22100%22 height=%22150%22 fill=%22%23333%22/></svg>'">
+                        <div class="ms-rarity">${texto}</div>
+                    </div>`;
+                }).join('');
+                html += `<div class="mega-summary-pack">
+                    <h3>Sobre ${idx + 1}</h3>
+                    <div class="mega-summary-grid">${gridHtml}</div>
+                </div>`;
+            });
+            content.innerHTML = html;
+            overlay.classList.add('active');
+        }
+
+        function cerrarMegaResumen() {
+            document.getElementById('mega-summary-overlay').classList.remove('active');
+            document.getElementById('mega-summary-content').innerHTML = '';
         }
 
 
@@ -8878,6 +9654,11 @@
             _socketOnline.on('connect', () => {
                 statusEl.innerHTML = '✅ Conectado al servidor';
                 statusEl.style.color = '#49ef78';
+                // Registrar discord_id para sistema de amigos online
+                const user = getDiscordUser();
+                if (user && user.id) {
+                    _socketOnline.emit('registrar-usuario', { discord_id: user.id });
+                }
             });
             _socketOnline.on('connect_error', () => {
                 statusEl.innerHTML = '❌ No se pudo conectar. ¿Está el servidor activo en Render?';
@@ -9164,7 +9945,7 @@
                 }
             });
             _socketOnline.on('rival-reconectado', () => {
-                // El rival volvió: ocultar timer
+                // Bug fix: ocultar overlay de reclamar victoria cuando el rival reconecta.
                 ocultarReconnectOverlay();
             });
             _socketOnline.on('rival-rendido', () => {
@@ -9674,6 +10455,18 @@
                             if (!u.buffs) u.buffs = { poder: 0, combo: 0, batalla: 0 };
                             u.buffs.batalla = (u.buffs.batalla || 0) + (efecto.cantidad || 0);
                         }
+                        if (typeof renderizarPartida === 'function') renderizarPartida();
+                        break;
+                    }
+                    case 'buff-batalla-lider': {
+                        // Bug fix: el rival buffeó a su líder (ej. Hugopima, FNAMP).
+                        // Reflejar el buff en mi vista del líder rival inmediatamente.
+                        const lid = estadoPartida.rival.liderZona;
+                        if (lid) {
+                            if (!lid.buffs) lid.buffs = { poder: 0, combo: 0, batalla: 0 };
+                            lid.buffs.batalla = (lid.buffs.batalla || 0) + (efecto.cantidad || 0);
+                        }
+                        estadoPartida.log = (efecto.nombre || 'El rival') + ' buffa a su líder (+' + (efecto.cantidad || 0) + ' este turno).';
                         if (typeof renderizarPartida === 'function') renderizarPartida();
                         break;
                     }
@@ -12899,6 +13692,21 @@
         }
 
         function abrirPanel(i) {
+            // Extra: si estamos en modo selección de carta favorita
+            if (_cartaFavoritaSeleccion) {
+                _cartaFavoritaSeleccion = false;
+                const c = datosCartas[i];
+                const id = getCardId(c);
+                if (_inventario) {
+                    _inventario.cartaFavorita = id;
+                    guardarInventario();
+                }
+                // Quitar aviso
+                document.getElementById('fav-card-aviso')?.remove();
+                alert('¡Carta favorita actualizada: ' + (c.nombre || id) + '!');
+                irAlMenu();
+                return;
+            }
             indexActual = i;
             const c = datosCartas[i];
             c.esEvo = false;
@@ -13069,7 +13877,10 @@
                         _socketOnline.on('rival-desconectado', () => {
                             if (estadoPartida && !estadoPartida.finalizada) mostrarReconnectOverlay();
                         });
-                        _socketOnline.on('rival-reconectado', () => ocultarReconnectOverlay());
+                        _socketOnline.on('rival-reconectado', () => {
+                            // Bug fix: ocultar overlay de reclamar victoria cuando el rival reconecta.
+                            ocultarReconnectOverlay();
+                        });
                         _socketOnline.on('rival-rendido', () => {
                             if (estadoPartida) { estadoPartida.finalizada = true; mostrarFinPartida('victoria'); }
                         });
