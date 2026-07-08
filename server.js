@@ -94,7 +94,10 @@ function inventarioDefault(username) {
             fechaDiarias: null,
             fechaSemanales: null
         },
-        mazos: []
+        mazos: [],
+        amigos: [],
+        cartaFavorita: null,
+        perfil: { bio: '' }
     };
 }
 
@@ -218,7 +221,7 @@ app.post('/auth/discord', async (req, res) => {
 // Guardar inventario completo
 app.post('/api/guardar-inventario', async (req, res) => {
     try {
-        const { discord_id, coins, energy, cartas, stats, misiones, mazos } = req.body;
+        const { discord_id, coins, energy, cartas, stats, misiones, mazos, amigos, cartaFavorita, perfil } = req.body;
         if (!discord_id) return res.status(400).json({ error: 'Falta discord_id' });
         if (!supabase) return res.status(500).json({ error: 'Supabase no configurado' });
 
@@ -241,6 +244,9 @@ app.post('/api/guardar-inventario', async (req, res) => {
                     stats: stats || {},
                     misiones: misiones || {},
                     mazos: mazos || [],
+                    amigos: amigos || [],
+                    cartaFavorita: cartaFavorita || null,
+                    perfil: perfil || { bio: '' },
                     updated_at: new Date()
                 })
                 .eq('discord_id', discord_id)
@@ -260,6 +266,9 @@ app.post('/api/guardar-inventario', async (req, res) => {
                     stats: stats || {},
                     misiones: misiones || {},
                     mazos: mazos || [],
+                    amigos: amigos || [],
+                    cartaFavorita: cartaFavorita || null,
+                    perfil: perfil || { bio: '' },
                     updated_at: new Date()
                 })
                 .select()
@@ -303,6 +312,104 @@ const colaEspera = [];          // Jugadores buscando partida aleatoria
 const salasPrivadas = new Map(); // codigo -> { host, invitado, roomId }
 const partidasActivas = new Map(); // roomId -> { jugador1, jugador2 }
 
+// === SISTEMA DE AMIGOS Y PERFIL ===
+// Mapa de discord_id -> Set(socket.id) para saber quién está online
+const usuariosConectados = new Map();
+
+// Registrar un usuario cuando se conecta (asocia discord_id al socket)
+function registrarUsuarioConectado(discordId, socket) {
+    if (!discordId) return;
+    if (!usuariosConectados.has(discordId)) {
+        usuariosConectados.set(discordId, new Set());
+    }
+    usuariosConectados.get(discordId).add(socket.id);
+}
+
+// Desregistrar un socket al desconectarse
+function desregistrarSocket(socket) {
+    for (const [discordId, sockets] of usuariosConectados.entries()) {
+        sockets.delete(socket.id);
+        if (sockets.size === 0) {
+            usuariosConectados.delete(discordId);
+        }
+    }
+}
+
+// Comprobar si un discord_id está online
+function estaOnline(discordId) {
+    return usuariosConectados.has(discordId);
+}
+
+// Endpoint: buscar usuario por username (para añadir amigos)
+app.post('/api/buscar-usuario', async (req, res) => {
+    try {
+        const { username } = req.body;
+        if (!username || !supabase) return res.status(400).json({ error: 'Falta username o Supabase no configurado' });
+        // Buscar en Supabase por username (coincidencia exacta o parcial)
+        const { data, error } = await supabase
+            .from('inventarios')
+            .select('discord_id, username, cartaFavorita, perfil, stats')
+            .ilike('username', '%' + username + '%')
+            .limit(10);
+        if (error) return res.status(500).json({ error: error.message });
+        // Devolver lista de resultados (sin datos sensibles)
+        res.json({ resultados: (data || []).map(u => ({
+            discord_id: u.discord_id,
+            username: u.username,
+            online: estaOnline(u.discord_id)
+        })) });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Endpoint: obtener perfil público de un usuario (por discord_id)
+app.post('/api/perfil', async (req, res) => {
+    try {
+        const { discord_id } = req.body;
+        if (!discord_id || !supabase) return res.status(400).json({ error: 'Falta discord_id' });
+        const { data, error } = await supabase
+            .from('inventarios')
+            .select('discord_id, username, cartaFavorita, perfil, stats, cartas')
+            .eq('discord_id', discord_id)
+            .single();
+        if (error || !data) return res.status(404).json({ error: 'Usuario no encontrado' });
+        // Perfil público: username, carta favorita, stats, total cartas
+        const totalCartas = Object.values(data.cartas || {}).reduce((s, n) => s + n, 0);
+        const cartasUnicas = Object.keys(data.cartas || {}).filter(id => {
+            const c = data.cartas[id];
+            return c > 0;
+        }).length;
+        res.json({
+            perfil: {
+                discord_id: data.discord_id,
+                username: data.username,
+                cartaFavorita: data.cartaFavorita || null,
+                bio: (data.perfil && data.perfil.bio) || '',
+                online: estaOnline(data.discord_id),
+                stats: {
+                    partidasJugadas: (data.stats && data.stats.partidasJugadas) || 0,
+                    victoriasIA: (data.stats && data.stats.victoriasIA) || 0,
+                    victoriasOnline: (data.stats && data.stats.victoriasOnline) || 0,
+                    derrotas: (data.stats && data.stats.derrotas) || 0,
+                    mejorRacha: (data.stats && data.stats.mejorRacha) || 0,
+                    rachaActual: (data.stats && data.stats.rachaActual) || 0,
+                    sobresAbiertos: (data.stats && data.stats.sobresAbiertos) || 0,
+                    despertares: (data.stats && data.stats.despertares) || 0,
+                    cartasFabricadas: (data.stats && data.stats.cartasFabricadas) || 0,
+                    cartasRecicladas: (data.stats && data.stats.cartasRecicladas) || 0,
+                    counterPlays: (data.stats && data.stats.counterPlays) || 0,
+                    bloqueadores: (data.stats && data.stats.bloqueadores) || 0
+                },
+                totalCartas: totalCartas,
+                cartasUnicas: cartasUnicas
+            }
+        });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 // Generar código de 6 caracteres para sala privada
 function generarCodigoSala() {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Sin caracteres ambiguos (I, O, 0, 1)
@@ -318,6 +425,23 @@ function generarCodigoSala() {
 
 io.on('connection', (socket) => {
     console.log(`✅ Jugador conectado: ${socket.id}`);
+
+    // === REGISTRAR USUARIO (para sistema de amigos online) ===
+    socket.on('registrar-usuario', (data) => {
+        if (data && data.discord_id) {
+            socket.discordId = data.discord_id;
+            registrarUsuarioConectado(data.discord_id, socket);
+            console.log(`👤 ${socket.id} registrado como ${data.discord_id}`);
+        }
+    });
+
+    // === CONSULTAR AMIGOS ONLINE ===
+    socket.on('consultar-amigos-online', (data) => {
+        const amigos = (data && data.amigos) || [];
+        const onlineMap = {};
+        amigos.forEach(id => { onlineMap[id] = estaOnline(id); });
+        socket.emit('amigos-online-resultado', onlineMap);
+    });
 
     // === BUSCAR PARTIDA ALEATORIA (matchmaking) ===
     socket.on('buscar-partida', () => {
@@ -547,6 +671,8 @@ io.on('connection', (socket) => {
     // === DESCONECTAR ===
     socket.on('disconnect', () => {
         console.log(`❌ Jugador desconectado: ${socket.id}`);
+        // Desregistrar del sistema de amigos online
+        desregistrarSocket(socket);
         // Quitar de cola de espera
         const idx = colaEspera.indexOf(socket);
         if (idx >= 0) colaEspera.splice(idx, 1);
