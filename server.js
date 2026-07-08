@@ -373,7 +373,7 @@ app.post('/api/perfil', async (req, res) => {
         if (!discord_id || !supabase) return res.status(400).json({ error: 'Falta discord_id' });
         const { data, error } = await supabase
             .from('inventarios')
-            .select('discord_id, username, cartaFavorita, perfil, stats, cartas')
+            .select('discord_id, username, cartaFavorita, tituloActivo, perfil, stats, cartas')
             .eq('discord_id', discord_id)
             .single();
         if (error || !data) return res.status(404).json({ error: 'Usuario no encontrado' });
@@ -388,11 +388,13 @@ app.post('/api/perfil', async (req, res) => {
                 discord_id: data.discord_id,
                 username: data.username,
                 cartaFavorita: data.cartaFavorita || null,
+                tituloActivo: data.tituloActivo || null,
                 bio: (data.perfil && data.perfil.bio) || '',
                 online: estaOnline(data.discord_id),
                 stats: {
                     partidasJugadas: (data.stats && data.stats.partidasJugadas) || 0,
                     victoriasIA: (data.stats && data.stats.victoriasIA) || 0,
+                    victoriasIADificil: (data.stats && data.stats.victoriasIADificil) || 0,
                     victoriasOnline: (data.stats && data.stats.victoriasOnline) || 0,
                     derrotas: (data.stats && data.stats.derrotas) || 0,
                     mejorRacha: (data.stats && data.stats.mejorRacha) || 0,
@@ -402,7 +404,8 @@ app.post('/api/perfil', async (req, res) => {
                     cartasFabricadas: (data.stats && data.stats.cartasFabricadas) || 0,
                     cartasRecicladas: (data.stats && data.stats.cartasRecicladas) || 0,
                     counterPlays: (data.stats && data.stats.counterPlays) || 0,
-                    bloqueadores: (data.stats && data.stats.bloqueadores) || 0
+                    bloqueadores: (data.stats && data.stats.bloqueadores) || 0,
+                    cartasUnicas: (data.stats && data.stats.cartasUnicas) || 0
                 },
                 totalCartas: totalCartas,
                 cartasUnicas: cartasUnicas
