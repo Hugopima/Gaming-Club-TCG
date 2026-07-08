@@ -917,17 +917,29 @@
         }
         .intro-leader-card .intro-title {
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            padding: 6px 6px;
-            background: linear-gradient(rgba(0,0,0,0.92), transparent);
-            font-size: 10px;
+            top: -22px;
+            left: -8px;
+            right: -8px;
+            padding: 6px 10px;
+            background: linear-gradient(145deg, rgba(0,0,0,0.95), rgba(40,10,60,0.95));
+            border: 2px solid currentColor;
+            border-radius: 8px;
+            font-size: 11px;
             font-weight: 900;
             text-align: center;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            z-index: 2;
+            letter-spacing: 2px;
+            z-index: 5;
+            box-shadow: 0 0 18px currentColor, 0 4px 12px rgba(0,0,0,.6);
+            animation: introTitleGlow 1.2s ease-in-out infinite alternate;
+            text-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 2px 4px #000;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        @keyframes introTitleGlow {
+            0% { box-shadow: 0 0 18px currentColor, 0 4px 12px rgba(0,0,0,.6); transform: scale(1); }
+            100% { box-shadow: 0 0 28px currentColor, 0 0 50px currentColor, 0 4px 12px rgba(0,0,0,.6); transform: scale(1.06); }
         }
 
         /* --- FIN DE PARTIDA --- */
@@ -7253,12 +7265,16 @@
         function ordenarCartas(arr, criterio) {
             const sorted = [...arr];
             // Función auxiliar: mapear rareza a número para ordenar
+            // Bug fix: usar normalizarRareza() que maneja acentos ("Súper Rara" → "super rara")
+            // y variantes ("Raro" → "rara"). Antes "Súper Rara" se trataba como "rara" (3)
+            // porque includes('super') no encontraba el accent, y "Raro" se trataba como
+            // común (0) porque includes('rara') no encontraba la 'o' final.
             const rarezaNum = (r) => {
-                const s = String(r || '').toLowerCase();
-                if (s.includes('comun')) return 1;
-                if (s.includes('infrecuente')) return 2;
-                if (s.includes('rara') && !s.includes('super')) return 3;
-                if (s.includes('super')) return 4;
+                const s = normalizarRareza(r);
+                if (s === 'comun') return 1;
+                if (s === 'infrecuente') return 2;
+                if (s === 'rara') return 3;
+                if (s === 'super rara') return 4;
                 return 0;
             };
             // Función auxiliar: obtener copias poseídas
@@ -7682,6 +7698,7 @@
                 ${tituloSelectorHtml}
                 <div class="profile-stat"><div class="profile-stat-label">Partidas jugadas</div><div class="profile-stat-value">${s.partidasJugadas || 0}</div></div>
                 <div class="profile-stat"><div class="profile-stat-label">Victorias vs IA</div><div class="profile-stat-value">${s.victoriasIA || 0}</div></div>
+                <div class="profile-stat"><div class="profile-stat-label">Victorias IA Difícil</div><div class="profile-stat-value" style="color:#ff5050;">${s.victoriasIADificil || 0}</div></div>
                 <div class="profile-stat"><div class="profile-stat-label">Victorias online</div><div class="profile-stat-value">${s.victoriasOnline || 0}</div></div>
                 <div class="profile-stat"><div class="profile-stat-label">Derrotas</div><div class="profile-stat-value">${s.derrotas || 0}</div></div>
                 <div class="profile-stat"><div class="profile-stat-label">Mejor racha</div><div class="profile-stat-value">${s.mejorRacha || 0}</div></div>
@@ -8577,6 +8594,12 @@
             { id: 'ia_dificil_10', icon: '🗡️', nombre: 'Maestro Difícil', desc: 'Gana 10 partidas contra la IA en modo Difícil', reward: 400, check: s => (s.victoriasIADificil || 0) >= 10, progress: s => `${Math.min(s.victoriasIADificil || 0,10)}/10` },
             { id: 'ia_dificil_15', icon: '💀', nombre: 'Dominador Difícil', desc: 'Gana 15 partidas contra la IA en modo Difícil', reward: 600, check: s => (s.victoriasIADificil || 0) >= 15, progress: s => `${Math.min(s.victoriasIADificil || 0,15)}/15` },
             { id: 'ia_dificil_20', icon: '🏆', nombre: 'Leyenda Difícil', desc: 'Gana 20 partidas contra la IA en modo Difícil', reward: 1000, check: s => (s.victoriasIADificil || 0) >= 20, progress: s => `${Math.min(s.victoriasIADificil || 0,20)}/20` },
+            // === LOGROS DE TÍTULOS ===
+            // Estos logros desbloquean títulos que se muestran en el perfil y en el choque de líderes.
+            { id: 'titulo_coleccionista', icon: '🏷️', nombre: 'Título: Coleccionista', desc: 'Consigue 1/3 de las cartas (36) para desbloquear el título "Coleccionista"', reward: 0, esTitulo: true, tituloId: 'coleccionista_tercio', check: s => (s.cartasUnicas || 0) >= 36, progress: s => `${Math.min(s.cartasUnicas || 0,36)}/36` },
+            { id: 'titulo_gran_coleccionista', icon: '🏷️', nombre: 'Título: Gran Coleccionista', desc: 'Consigue la mitad de las cartas (54) para desbloquear el título "Gran Coleccionista"', reward: 0, esTitulo: true, tituloId: 'coleccionista_mitad', check: s => (s.cartasUnicas || 0) >= 54, progress: s => `${Math.min(s.cartasUnicas || 0,54)}/54` },
+            { id: 'titulo_coleccionista_total', icon: '🏷️', nombre: 'Título: Coleccionista Total', desc: 'Consigue todas las cartas (108) para desbloquear el título "Coleccionista Total"', reward: 0, esTitulo: true, tituloId: 'coleccionista_total', check: s => (s.cartasUnicas || 0) >= 108, progress: s => `${s.cartasUnicas || 0}/108` },
+            { id: 'titulo_dominador', icon: '🏷️', nombre: 'Título: Dominador', desc: 'Vence a la IA en modo Difícil 20 veces para desbloquear el título "Dominador"', reward: 0, esTitulo: true, tituloId: 'dominador_dificil', check: s => (s.victoriasIADificil || 0) >= 20, progress: s => `${Math.min(s.victoriasIADificil || 0,20)}/20` },
             { id: 'primera_sangre', icon: '🩸', nombre: 'Primera sangre online', desc: 'Gana 1 partida online', reward: 100, check: s => s.victoriasOnline >= 1, progress: s => `${Math.min(s.victoriasOnline,1)}/1` },
             { id: 'duelista', icon: '🗡️', nombre: 'Duelista online', desc: 'Gana 10 partidas online', reward: 300, check: s => s.victoriasOnline >= 10, progress: s => `${Math.min(s.victoriasOnline,10)}/10` },
             { id: 'campeon', icon: '🏆', nombre: 'Campeón online', desc: 'Gana 50 partidas online', reward: 800, check: s => s.victoriasOnline >= 50, progress: s => `${Math.min(s.victoriasOnline,50)}/50` },
@@ -8858,14 +8881,19 @@
                     const accion = reclamado
                         ? '<span class="ach-claimed-mark">✓</span>'
                         : (completado ? `<button class="ach-claim-btn" onclick="reclamarLogro('${l.id}')">Reclamar</button>` : '');
-                    html += `<div class="ach-item ${clase}">
+                    // Logros de título: mostrar insignia de título en vez de monedas
+                    const rewardHtml = l.esTitulo
+                        ? '<span style="color:#ff60ff;font-weight:900;font-size:12px;text-transform:uppercase;letter-spacing:1px;">🏷️ TÍTULO</span>'
+                        : `<img src="imagenes/moneda.png" style="width:14px;height:14px" onerror="display:none"> ${l.reward}`;
+                    const tituloStyle = l.esTitulo ? 'border-color: #ff60ff; background: rgba(255,96,255,.05);' : '';
+                    html += `<div class="ach-item ${clase}" style="${tituloStyle}">
                         <div class="ach-icon">${l.icon}</div>
                         <div class="ach-info">
                             <div class="ach-name">${escapeHtml(l.nombre)}</div>
                             <div class="ach-desc">${escapeHtml(l.desc)}</div>
                             <div class="ach-progress">${l.progress(_statsJugador)}</div>
                         </div>
-                        <div class="ach-reward"><img src="imagenes/moneda.png" style="width:14px;height:14px" onerror="display:none"> ${l.reward}</div>
+                        <div class="ach-reward">${rewardHtml}</div>
                         ${accion}
                     </div>`;
                 });
@@ -8914,9 +8942,14 @@
             const l = LOGROS.find(x => x.id === id);
             if (!l || !l.check(_statsJugador) || _statsJugador.logrosReclamados.includes(id)) return;
             _statsJugador.logrosReclamados.push(id);
-            if (_inventario) { _inventario.coins += l.reward; guardarInventario(); actualizarBarraMonedas(); }
+            // Si es un logro de título, no dar monedas (reward=0), solo desbloquear el título.
+            if (l.esTitulo) {
+                mostrarNotificacionReward('¡Título desbloqueado: ' + l.nombre.replace('Título: ', '') + '!', 0, '🏷️');
+            } else {
+                if (_inventario) { _inventario.coins += l.reward; guardarInventario(); actualizarBarraMonedas(); }
+                mostrarNotificacionReward('Logro: ' + l.nombre, l.reward, '🪙');
+            }
             guardarStats();
-            mostrarNotificacionReward('Logro: ' + l.nombre, l.reward, '🪙');
             renderizarTabLogros();
         }
 
@@ -11874,17 +11907,15 @@
                     // Calcular daño con el contexto correcto (atacanteZona) para que
                     // se detecten correctamente doble/triple golpe. El daño base es 1.
                     const dano = danoDeCarta(atacante.id, { atacanteZona: atacante, quien: 'rival' });
-                    // Usar quitarVida para que la carta de vida vaya a la mano (no solo pop)
-                    if (window.MotorEfectos && MotorEfectos.quitarVida) {
-                        for (let i = 0; i < dano; i++) MotorEfectos.quitarVida('jugador', false);
-                    } else {
-                        for (let i = 0; i < dano; i++) {
-                            if (j.vida.length) {
-                                const cv = j.vida.pop();
-                                if (cv && cv !== 'desconocida' && cv !== 'protegida') j.mano.push(cv);
-                            }
+                    // Bug fix: quitar vidas directamente y mostrar -dano una sola vez
+                    // (antes quitarVida se llamaba en bucle y mostraba -1 cada vez).
+                    for (let i = 0; i < dano; i++) {
+                        if (j.vida.length) {
+                            const cv = j.vida.pop();
+                            if (cv && cv !== 'desconocida' && cv !== 'protegida') j.mano.push(cv);
                         }
                     }
+                    if (typeof mostrarPerdidaVida === 'function') mostrarPerdidaVida('jugador', dano);
                     estadoPartida.log = 'La IA inflige ' + dano + ' daño a tu líder.';
                 } else {
                     estadoPartida.log = 'Tu líder resiste el ataque de la IA.';
@@ -12052,19 +12083,17 @@
                     // Calcular daño con el contexto correcto. El líder rival hace 1 de daño
                     // por defecto (o 2 si tiene doble golpe activado).
                     const dano = danoDeCarta(r.liderId, { atacanteZona: atacante, quien: 'rival' });
-                    // Usar quitarVida para que la carta de vida vaya a la mano (no solo pop)
-                    if (window.MotorEfectos && MotorEfectos.quitarVida) {
-                        for (let i = 0; i < dano; i++) MotorEfectos.quitarVida('jugador', false);
-                    } else {
-                        for (let i = 0; i < dano; i++) {
-                            if (j.vida.length) {
-                                const cv = j.vida.pop();
-                                if (cv && cv !== 'desconocida' && cv !== 'protegida') j.mano.push(cv);
-                            }
+                    // Bug fix: quitar vidas directamente y mostrar -dano una sola vez
+                    // (antes quitarVida se llamaba en bucle y mostraba -1 cada vez,
+                    // y además se llamaba mostrarPerdidaVida de nuevo, creando 3 indicadores).
+                    for (let i = 0; i < dano; i++) {
+                        if (j.vida.length) {
+                            const cv = j.vida.pop();
+                            if (cv && cv !== 'desconocida' && cv !== 'protegida') j.mano.push(cv);
                         }
                     }
-                    estadoPartida.log = 'El líder rival inflige ' + dano + ' daño a tu líder.';
                     if (typeof mostrarPerdidaVida === 'function') mostrarPerdidaVida('jugador', dano);
+                    estadoPartida.log = 'El líder rival inflige ' + dano + ' daño a tu líder.';
                 } else {
                     estadoPartida.log = 'Tu líder resiste el ataque del líder rival.';
                 }
@@ -12767,15 +12796,20 @@
                     }
                 }
                 // Calcular poder del defensor (rival) correctamente
+                // Bug fix: usar poderCarta para incluir buffs (ej. +5000 modo difícil)
                 if (defensorEsLider) {
                     const lid = getCardById(estadoPartida.rival.liderId);
-                    defensorPoder = estadoPartida.rival.liderDespierto ? Number(lid?.poderEvo || 0) : Number(lid?.poder || 0);
+                    const rivalLiderZona = estadoPartida.rival.liderZona || { id: estadoPartida.rival.liderId, rested: false, buffs: { poder: 0, combo: 0, batalla: 0 } };
+                    defensorPoder = (window.MotorEfectos
+                        ? MotorEfectos.poderCarta(estadoPartida.rival.liderId, rivalLiderZona, { quien: 'rival', defensorId: estadoPartida.rival.liderId })
+                        : (estadoPartida.rival.liderDespierto ? Number(lid?.poderEvo || 0) : Number(lid?.poder || 0)) + (rivalLiderZona.buffs?.poder || 0) + (rivalLiderZona.buffs?.batalla || 0));
                     defensorPoder += (ataque?.defensorCombo || 0);
                 } else if (ataque?.objetivo?.tipo === 'unidad') {
                     const defU = estadoPartida.rival.batalla[ataque.objetivo.index];
                     if (defU) {
-                        const defC = getCardById(defU.id);
-                        defensorPoder = Number(defC?.poder || 0);
+                        defensorPoder = (window.MotorEfectos
+                            ? MotorEfectos.poderCarta(defU.id, defU, { quien: 'rival', defensorZona: defU, defensorId: defU.id })
+                            : Number(getCardById(defU.id)?.poder || 0) + (defU.buffs?.poder || 0) + (defU.buffs?.batalla || 0));
                         defensorPoder += (ataque?.defensorCombo || 0);
                     }
                 }
@@ -12786,7 +12820,11 @@
                     atacanteNombre = lid?.nombre || 'Líder rival';
                     atacanteImg = (estadoPartida.rival.liderDespierto && lid?.imgEvo) ? lid.imgEvo : lid?.img || '';
                     atacanteEsLider = true;
-                    atacantePoder = estadoPartida.rival.liderDespierto ? Number(lid?.poderEvo || 0) : Number(lid?.poder || 0);
+                    // Bug fix: usar poderCarta para incluir buffs (ej. +5000 modo difícil)
+                    const rivalLiderZona = estadoPartida.rival.liderZona || { id: estadoPartida.rival.liderId, rested: false, buffs: { poder: 0, combo: 0, batalla: 0 } };
+                    atacantePoder = (window.MotorEfectos
+                        ? MotorEfectos.poderCarta(estadoPartida.rival.liderId, rivalLiderZona, { quien: 'rival', atacanteId: estadoPartida.rival.liderId, atacanteZona: rivalLiderZona })
+                        : (estadoPartida.rival.liderDespierto ? Number(lid?.poderEvo || 0) : Number(lid?.poder || 0)) + (rivalLiderZona.buffs?.poder || 0) + (rivalLiderZona.buffs?.batalla || 0));
                     atacantePoder += (estadoPartida.rivalComboActual || 0);
                 } else if (estadoPartida.rivalAtacanteId) {
                     const u = estadoPartida.rival.batalla.find(x => x.id === estadoPartida.rivalAtacanteId);
@@ -12794,7 +12832,10 @@
                         const c = getCardById(u.id);
                         atacanteNombre = c?.nombre || 'Unidad rival';
                         atacanteImg = c?.img || '';
-                        atacantePoder = Number(c?.poder || 0) + (estadoPartida.rivalComboActual || 0);
+                        // Bug fix: usar poderCarta para incluir buffs (ej. +5000 modo difícil)
+                        atacantePoder = (window.MotorEfectos
+                            ? MotorEfectos.poderCarta(u.id, u, { quien: 'rival', atacanteId: u.id, atacanteZona: u })
+                            : Number(c?.poder || 0) + (u.buffs?.poder || 0) + (u.buffs?.batalla || 0)) + (estadoPartida.rivalComboActual || 0);
                     }
                 }
                 // Defensor = jugador
@@ -14342,6 +14383,7 @@
     </script>
 </body>
 </html>
+
 
 
 
