@@ -7854,7 +7854,27 @@
                 const p = data.perfil;
                 if (!p) return;
                 document.getElementById('friend-profile-title').textContent = '👤 ' + p.username;
-                document.getElementById('friend-profile-name').textContent = p.username + (p.online ? ' 🟢' : ' ⚫');
+                // Bug fix: mostrar título del amigo bajo el nombre (igual que perfil propio).
+                // Calcular título a partir de tituloActivo y stats.
+                const nombreEl = document.getElementById('friend-profile-name');
+                let tituloHtml = '';
+                if (p.tituloActivo) {
+                    // Buscar el título por ID en TITULOS
+                    const titulo = (typeof TITULOS !== 'undefined' ? TITULOS : []).find(t => t.id === p.tituloActivo);
+                    if (titulo) {
+                        tituloHtml = '<br><span style="font-size:13px;color:' + titulo.color + ';text-shadow:0 0 8px ' + titulo.color + '66;text-transform:uppercase;letter-spacing:2px;">' + escapeHtml(titulo.nombre) + '</span>';
+                    }
+                } else {
+                    // Si no hay título activo, calcular automáticamente el último desbloqueado
+                    if (typeof TITULOS !== 'undefined') {
+                        const desbloqueados = TITULOS.filter(t => t.check(p.stats || {}));
+                        if (desbloqueados.length) {
+                            const titulo = desbloqueados[desbloqueados.length - 1];
+                            tituloHtml = '<br><span style="font-size:13px;color:' + titulo.color + ';text-shadow:0 0 8px ' + titulo.color + '66;text-transform:uppercase;letter-spacing:2px;">' + escapeHtml(titulo.nombre) + '</span>';
+                        }
+                    }
+                }
+                nombreEl.innerHTML = escapeHtml(p.username) + (p.online ? ' 🟢' : ' ⚫') + tituloHtml;
                 // Carta favorita
                 const favEl = document.getElementById('friend-profile-fav-card');
                 if (p.cartaFavorita) {
@@ -7867,11 +7887,14 @@
                 } else {
                     favEl.innerHTML = '<div class="profile-fav-card-empty">Sin carta favorita</div>';
                 }
-                // Stats
+                // Stats — IGUAL que el perfil propio (con todas las stats nuevas)
                 const s = p.stats || {};
+                const totalCartas = p.totalCartas || 0;
+                const cartasUnicas = p.cartasUnicas || 0;
                 const statsHtml = `
                     <div class="profile-stat"><div class="profile-stat-label">Partidas jugadas</div><div class="profile-stat-value">${s.partidasJugadas || 0}</div></div>
                     <div class="profile-stat"><div class="profile-stat-label">Victorias vs IA</div><div class="profile-stat-value">${s.victoriasIA || 0}</div></div>
+                    <div class="profile-stat"><div class="profile-stat-label">Victorias IA Difícil</div><div class="profile-stat-value" style="color:#ff5050;">${s.victoriasIADificil || 0}</div></div>
                     <div class="profile-stat"><div class="profile-stat-label">Victorias online</div><div class="profile-stat-value">${s.victoriasOnline || 0}</div></div>
                     <div class="profile-stat"><div class="profile-stat-label">Derrotas</div><div class="profile-stat-value">${s.derrotas || 0}</div></div>
                     <div class="profile-stat"><div class="profile-stat-label">Mejor racha</div><div class="profile-stat-value">${s.mejorRacha || 0}</div></div>
@@ -7880,7 +7903,9 @@
                     <div class="profile-stat"><div class="profile-stat-label">Despertares</div><div class="profile-stat-value">${s.despertares || 0}</div></div>
                     <div class="profile-stat"><div class="profile-stat-label">Cartas fabricadas</div><div class="profile-stat-value">${s.cartasFabricadas || 0}</div></div>
                     <div class="profile-stat"><div class="profile-stat-label">Cartas recicladas</div><div class="profile-stat-value">${s.cartasRecicladas || 0}</div></div>
-                    <div class="profile-stat" style="grid-column: span 2;"><div class="profile-stat-label">Cartas coleccionadas</div><div class="profile-stat-value">${p.cartasUnicas || 0} únicas (${p.totalCartas || 0} total)</div></div>
+                    <div class="profile-stat"><div class="profile-stat-label">Counter plays</div><div class="profile-stat-value">${s.counterPlays || 0}</div></div>
+                    <div class="profile-stat"><div class="profile-stat-label">Bloqueadores</div><div class="profile-stat-value">${s.bloqueadores || 0}</div></div>
+                    <div class="profile-stat" style="grid-column: span 2;"><div class="profile-stat-label">Cartas coleccionadas</div><div class="profile-stat-value">${cartasUnicas} únicas (${totalCartas} total)</div></div>
                 `;
                 document.getElementById('friend-profile-stats').innerHTML = statsHtml;
                 document.getElementById('friend-profile-overlay').classList.add('active');
