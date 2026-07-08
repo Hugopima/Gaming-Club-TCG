@@ -915,6 +915,20 @@
             text-align: center;
             text-transform: uppercase;
         }
+        .intro-leader-card .intro-title {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 6px 6px;
+            background: linear-gradient(rgba(0,0,0,0.92), transparent);
+            font-size: 10px;
+            font-weight: 900;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            z-index: 2;
+        }
 
         /* --- FIN DE PARTIDA --- */
         #game-end-overlay {
@@ -2147,6 +2161,10 @@
                         <option value="personaje">Personaje</option>
                         <option value="tipo">Tipo</option>
                         <option value="origen">Origen</option>
+                        <option value="copias_asc">Nº de copias (menor a mayor)</option>
+                        <option value="copias_desc">Nº de copias (mayor a menor)</option>
+                        <option value="rareza_asc">Rareza (menor a mayor)</option>
+                        <option value="rareza_desc">Rareza (mayor a menor)</option>
                     </select>
                     <button class="auto-recycle-btn" onclick="reciclarSobraAutomatico()">♻️ Auto-reciclar sobras</button>
                 </div>
@@ -2246,6 +2264,10 @@
                         <option value="personaje">Personaje</option>
                         <option value="tipo">Tipo</option>
                         <option value="origen">Origen</option>
+                        <option value="copias_asc">Nº de copias (menor a mayor)</option>
+                        <option value="copias_desc">Nº de copias (mayor a menor)</option>
+                        <option value="rareza_asc">Rareza (menor a mayor)</option>
+                        <option value="rareza_desc">Rareza (mayor a menor)</option>
                     </select>
                 </div>
                 <div id="library-cards" class="deck-library-grid"></div>
@@ -2533,7 +2555,7 @@
         <div style="width:min(600px,95vw);border:2px solid var(--gold);border-radius:18px;background:var(--dark-panel);box-shadow:0 0 50px rgba(255,215,0,.3);padding:40px;text-align:center;">
             <h2 style="color:#fff07c;text-transform:uppercase;margin-top:0;margin-bottom:30px;font-size:36px;">¿Cómo quieres jugar?</h2>
             <div style="display:flex;gap:20px;justify-content:center;flex-wrap:wrap;">
-                <button class="plate-btn" style="min-width:200px;padding:20px 30px;font-size:18px;" onclick="cerrarPlayMode(); iniciarPartida('solo')">
+                <button class="plate-btn" style="min-width:200px;padding:20px 30px;font-size:18px;" onclick="mostrarSelectorDificultadIA()">
                     🎮 JUGAR VS IA<br><small style="font-size:12px;font-weight:400;">Contra la Inteligencia Artificial</small>
                 </button>
                 <button class="plate-btn btn-blue" style="min-width:200px;padding:20px 30px;font-size:18px;" onclick="iniciarPartidaOnline()">
@@ -2544,6 +2566,22 @@
                 </button>
             </div>
             <button class="plate-btn btn-nav" style="margin-top:24px;" onclick="cerrarPlayMode()">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- Overlay de selección de dificultad IA -->
+    <div id="ia-difficulty-overlay" class="hidden" style="position:fixed;inset:0;z-index:2800;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;padding:24px;">
+        <div style="width:min(600px,95vw);border:2px solid var(--gold);border-radius:18px;background:var(--dark-panel);box-shadow:0 0 50px rgba(255,215,0,.3);padding:40px;text-align:center;">
+            <h2 style="color:#fff07c;text-transform:uppercase;margin-top:0;margin-bottom:30px;font-size:32px;">Dificultad de la IA</h2>
+            <div style="display:flex;gap:20px;justify-content:center;flex-wrap:wrap;">
+                <button class="plate-btn" style="min-width:220px;padding:20px 30px;font-size:18px;" onclick="cerrarSelectorDificultadIA(); iniciarPartida('solo', 'normal')">
+                    ⚔️ NORMAL<br><small style="font-size:12px;font-weight:400;">La experiencia estándar<br>75 GamingCoins al ganar</small>
+                </button>
+                <button class="plate-btn" style="min-width:220px;padding:20px 30px;font-size:18px;background:linear-gradient(145deg,#8a1a1a,#5a0808);border:2px solid #ff5050;color:white;" onclick="cerrarSelectorDificultadIA(); iniciarPartida('solo', 'dificil')">
+                    💀 DIFÍCIL<br><small style="font-size:12px;font-weight:400;">Todas las cartas IA tienen +5000 poder y Doble Golpe<br>150 GamingCoins al ganar</small>
+                </button>
+            </div>
+            <button class="plate-btn btn-nav" style="margin-top:24px;" onclick="cerrarSelectorDificultadIA()">Cancelar</button>
         </div>
     </div>
 
@@ -7214,6 +7252,20 @@
         // Función auxiliar: ordenar array de cartas según el criterio seleccionado
         function ordenarCartas(arr, criterio) {
             const sorted = [...arr];
+            // Función auxiliar: mapear rareza a número para ordenar
+            const rarezaNum = (r) => {
+                const s = String(r || '').toLowerCase();
+                if (s.includes('comun')) return 1;
+                if (s.includes('infrecuente')) return 2;
+                if (s.includes('rara') && !s.includes('super')) return 3;
+                if (s.includes('super')) return 4;
+                return 0;
+            };
+            // Función auxiliar: obtener copias poseídas
+            const copiasDe = (c) => {
+                const id = getCardId(c);
+                return (_inventario?.cartas?.[id]) || 0;
+            };
             switch (criterio) {
                 case 'coste':
                     sorted.sort((a, b) => (Number(a.costeTotal || 0)) - (Number(b.costeTotal || 0)) || (a.nombre || '').localeCompare(b.nombre || ''));
@@ -7230,9 +7282,20 @@
                 case 'origen':
                     sorted.sort((a, b) => (a.origen || '').localeCompare(b.origen || '') || (a.nombre || '').localeCompare(b.nombre || ''));
                     break;
+                case 'copias_asc':
+                    sorted.sort((a, b) => copiasDe(a) - copiasDe(b) || (a.nombre || '').localeCompare(b.nombre || ''));
+                    break;
+                case 'copias_desc':
+                    sorted.sort((a, b) => copiasDe(b) - copiasDe(a) || (a.nombre || '').localeCompare(b.nombre || ''));
+                    break;
+                case 'rareza_asc':
+                    sorted.sort((a, b) => rarezaNum(a.rareza) - rarezaNum(b.rareza) || (a.nombre || '').localeCompare(b.nombre || ''));
+                    break;
+                case 'rareza_desc':
+                    sorted.sort((a, b) => rarezaNum(b.rareza) - rarezaNum(a.rareza) || (a.nombre || '').localeCompare(b.nombre || ''));
+                    break;
                 case 'color':
                 default:
-                    // Color predeterminado: agrupar por color, luego por nombre
                     sorted.sort((a, b) => (a.color || '').localeCompare(b.color || '') || (a.nombre || '').localeCompare(b.nombre || ''));
                     break;
             }
@@ -7578,7 +7641,26 @@
         function renderizarPerfilPropio() {
             if (!_statsJugador) cargarStats();
             const nombre = getNombreJugador();
-            document.getElementById('profile-name').textContent = nombre;
+            // Mostrar título activo bajo el nombre
+            const titulo = obtenerTituloActivo();
+            const titulosDesbloqueados = obtenerTitulosDesbloqueados();
+            const nombreEl = document.getElementById('profile-name');
+            if (titulo) {
+                nombreEl.innerHTML = escapeHtml(nombre) + '<br><span style="font-size:13px;color:' + titulo.color + ';text-shadow:0 0 8px ' + titulo.color + '66;text-transform:uppercase;letter-spacing:2px;">' + escapeHtml(titulo.nombre) + '</span>';
+            } else {
+                nombreEl.textContent = nombre;
+            }
+            // Si hay múltiples títulos desbloqueados, mostrar selector
+            const statsEl = document.getElementById('profile-stats');
+            let tituloSelectorHtml = '';
+            if (titulosDesbloqueados.length > 1) {
+                tituloSelectorHtml = '<div class="profile-stat" style="grid-column: span 2;"><div class="profile-stat-label">Título activo</div><select class="sort-filter-select" style="margin-top:4px;width:100%;" onchange="cambiarTituloActivo(this.value)">';
+                tituloSelectorHtml += '<option value="">(Automático: último desbloqueado)</option>';
+                titulosDesbloqueados.forEach(t => {
+                    tituloSelectorHtml += '<option value="' + t.id + '"' + (_inventario?.tituloActivo === t.id ? ' selected' : '') + '>' + escapeHtml(t.nombre) + '</option>';
+                });
+                tituloSelectorHtml += '</select></div>';
+            }
             // Carta favorita
             const favCard = _inventario?.cartaFavorita;
             const favEl = document.getElementById('profile-fav-card');
@@ -7597,6 +7679,7 @@
             const totalCartas = _inventario ? Object.values(_inventario.cartas || {}).reduce((sum, n) => sum + n, 0) : 0;
             const cartasUnicas = _inventario ? Object.keys(_inventario.cartas || {}).filter(id => (_inventario.cartas[id] || 0) > 0).length : 0;
             const statsHtml = `
+                ${tituloSelectorHtml}
                 <div class="profile-stat"><div class="profile-stat-label">Partidas jugadas</div><div class="profile-stat-value">${s.partidasJugadas || 0}</div></div>
                 <div class="profile-stat"><div class="profile-stat-label">Victorias vs IA</div><div class="profile-stat-value">${s.victoriasIA || 0}</div></div>
                 <div class="profile-stat"><div class="profile-stat-label">Victorias online</div><div class="profile-stat-value">${s.victoriasOnline || 0}</div></div>
@@ -7613,6 +7696,13 @@
             `;
             document.getElementById('profile-stats').innerHTML = statsHtml;
         }
+        function cambiarTituloActivo(tituloId) {
+            if (!_inventario) return;
+            _inventario.tituloActivo = tituloId || null;
+            guardarInventario();
+            renderizarPerfilPropio();
+        }
+
         function elegirCartaFavorita() {
             // Abrir la colección para que el jugador elija
             if (!confirm('¿Quieres elegir tu carta favorita desde la colección? Se abrirá la biblioteca y podrás hacer click en una carta para marcarla como favorita.')) return;
@@ -7639,24 +7729,25 @@
                 listEl.innerHTML = '<div class="friends-empty">Inicia sesión con Discord para usar el sistema de amigos.</div>';
                 return;
             }
-            // Cargar lista de amigos desde Supabase
-            cargarInventarioSupabaseSiLogueado().then(() => {
-                const amigos = (_inventario?.amigos) || [];
-                if (!amigos.length) {
-                    listEl.innerHTML = '<div class="friends-empty">No tienes amigos todavía. ¡Busca por nombre para añadir!</div>';
-                    return;
-                }
-                listEl.innerHTML = '<div class="friends-empty">Cargando amigos...</div>';
-                // Consultar estado online de cada amigo
-                if (_socketOnline) {
-                    _socketOnline.emit('consultar-amigos-online', { amigos });
-                    _socketOnline.once('amigos-online-resultado', (onlineMap) => {
-                        renderizarListaAmigosHTML(amigos, onlineMap || {});
-                    });
-                } else {
-                    renderizarListaAmigosHTML(amigos, {});
-                }
-            });
+            // Bug fix: NO recargar de Supabase aquí. Si recargamos, se sobrescribe
+            // el array local de amigos (que puede tener cambios no guardados aún)
+            // con los datos antiguos de Supabase, perdiendo los amigos recién añadidos.
+            const amigos = (_inventario?.amigos) || [];
+            if (!amigos.length) {
+                listEl.innerHTML = '<div class="friends-empty">No tienes amigos todavía. ¡Busca por nombre para añadir!</div>';
+                return;
+            }
+            listEl.innerHTML = '<div class="friends-empty">Cargando amigos...</div>';
+            // Extraer solo los IDs para consultar estado online
+            const amigosIds = amigos.map(a => (typeof a === 'string' ? a : a.id));
+            if (_socketOnline) {
+                _socketOnline.emit('consultar-amigos-online', { amigos: amigosIds });
+                _socketOnline.once('amigos-online-resultado', (onlineMap) => {
+                    renderizarListaAmigosHTML(amigos, onlineMap || {});
+                });
+            } else {
+                renderizarListaAmigosHTML(amigos, {});
+            }
         }
         function renderizarListaAmigosHTML(amigos, onlineMap) {
             const listEl = document.getElementById('friends-list');
@@ -7664,11 +7755,14 @@
                 listEl.innerHTML = '<div class="friends-empty">No tienes amigos todavía. ¡Busca por nombre para añadir!</div>';
                 return;
             }
-            listEl.innerHTML = amigos.map(id => {
+            listEl.innerHTML = amigos.map(a => {
+                // Soportar ambos formatos: string (antiguo) y {id, username} (nuevo)
+                const id = typeof a === 'string' ? a : a.id;
+                const username = typeof a === 'string' ? id.substring(0, 8) + '...' : (a.username || id.substring(0, 8) + '...');
                 const online = onlineMap[id] || false;
                 return `<div class="friend-item" onclick="verPerfilAmigo('${id}')">
                     <div class="friend-status-dot ${online ? 'online' : ''}"></div>
-                    <span class="friend-name">${escapeHtml(id.substring(0, 8))}...</span>
+                    <span class="friend-name">${escapeHtml(username)}</span>
                     <button class="friend-remove-btn" onclick="event.stopPropagation(); eliminarAmigo('${id}')">✕</button>
                 </div>`;
             }).join('');
@@ -7711,8 +7805,12 @@
         async function anadirAmigo(discordId, username) {
             if (!_inventario) return;
             if (!_inventario.amigos) _inventario.amigos = [];
-            if (_inventario.amigos.includes(discordId)) return alert('Ya es tu amigo.');
-            _inventario.amigos.push(discordId);
+            // Bug fix: guardar como objeto { id, username } para mostrar el nombre
+            // en la lista de amigos en vez de un ID truncado.
+            // Soportar formato antiguo (string) y nuevo (objeto).
+            const yaAmigo = _inventario.amigos.some(a => (typeof a === 'string' ? a : a.id) === discordId);
+            if (yaAmigo) return alert('Ya es tu amigo.');
+            _inventario.amigos.push({ id: discordId, username: username || discordId });
             guardarInventario();
             // Limpiar búsqueda y refrescar
             document.getElementById('friend-search-input').value = '';
@@ -7723,7 +7821,7 @@
         async function eliminarAmigo(discordId) {
             if (!_inventario) return;
             if (!confirm('¿Eliminar este amigo?')) return;
-            _inventario.amigos = (_inventario.amigos || []).filter(id => id !== discordId);
+            _inventario.amigos = (_inventario.amigos || []).filter(a => (typeof a === 'string' ? a : a.id) !== discordId);
             guardarInventario();
             renderizarListaAmigos();
         }
@@ -7889,6 +7987,7 @@
                 cartas: inv.cartas || _inventario?.cartas || {},
                 amigos: inv.amigos || _inventario?.amigos || [],
                 cartaFavorita: inv.cartaFavorita || _inventario?.cartaFavorita || null,
+                tituloActivo: inv.tituloActivo || _inventario?.tituloActivo || null,
                 perfil: inv.perfil || _inventario?.perfil || { bio: '' }
             };
             // Cargar stats: MERGE en vez de sobrescribir
@@ -7922,6 +8021,7 @@
                     infrecuentesUnicas: maxNum(statsLocal.infrecuentesUnicas, statsSupa.infrecuentesUnicas),
                     rarasUnicas: maxNum(statsLocal.rarasUnicas, statsSupa.rarasUnicas),
                     superRarasUnicas: maxNum(statsLocal.superRarasUnicas, statsSupa.superRarasUnicas),
+                    victoriasIADificil: maxNum(statsLocal.victoriasIADificil || 0, statsSupa.victoriasIADificil || 0),
                     // Logros reclamados: unión de ambos arrays
                     logrosReclamados: Array.from(new Set([...(statsLocal.logrosReclamados || []), ...(statsSupa.logrosReclamados || [])])),
                     // Login: usar el de Supabase (más reciente)
@@ -7990,6 +8090,7 @@
                         mazos: JSON.parse(localStorage.getItem('gc_tcg_mazos') || '[]'),
                         amigos: _inventario.amigos || [],
                         cartaFavorita: _inventario.cartaFavorita || null,
+                        tituloActivo: _inventario.tituloActivo || null,
                         perfil: _inventario.perfil || { bio: '' }
                     })
                 });
@@ -8437,6 +8538,33 @@
         }
 
 
+        // ===== TÍTULOS DE JUGADOR =====
+        // Los títulos se desbloquean con logros y se muestran en el perfil y en el choque de líderes.
+        const TITULOS = [
+            { id: 'coleccionista_tercio', nombre: 'Coleccionista', desc: 'Consigue 1/3 de las cartas (36)', color: '#4ee06a', check: s => (s.cartasUnicas || 0) >= 36 },
+            { id: 'coleccionista_mitad', nombre: 'Gran Coleccionista', desc: 'Consigue la mitad de las cartas (54)', color: '#5aa0ff', check: s => (s.cartasUnicas || 0) >= 54 },
+            { id: 'coleccionista_total', nombre: 'Coleccionista Total', desc: 'Consigue todas las cartas (108)', color: '#ff60ff', check: s => (s.cartasUnicas || 0) >= 108 },
+            { id: 'dominador_dificil', nombre: 'Dominador', desc: 'Vence a la IA en modo difícil 20 veces', color: '#ff5050', check: s => (s.victoriasIADificil || 0) >= 20 },
+        ];
+        // Calcular títulos desbloqueados del jugador
+        function obtenerTitulosDesbloqueados() {
+            if (!_statsJugador) return [];
+            return TITULOS.filter(t => t.check(_statsJugador));
+        }
+        // Obtener título activo del jugador (el último desbloqueado, o el seleccionado manualmente)
+        function obtenerTituloActivo() {
+            if (!_inventario) return null;
+            const desbloqueados = obtenerTitulosDesbloqueados();
+            if (!desbloqueados.length) return null;
+            // Si hay un título seleccionado manualmente y está desbloqueado, usarlo
+            if (_inventario.tituloActivo) {
+                const sel = desbloqueados.find(t => t.id === _inventario.tituloActivo);
+                if (sel) return sel;
+            }
+            // Si no, usar el último desbloqueado
+            return desbloqueados[desbloqueados.length - 1];
+        }
+
         // ===== LOGROS Y MISIONES =====
         // Definición de logros
         const LOGROS = [
@@ -8445,6 +8573,10 @@
             { id: 'incansable', icon: '🔥', nombre: 'Incansable', desc: 'Juega 50 partidas', reward: 200, check: s => s.partidasJugadas >= 50, progress: s => `${Math.min(s.partidasJugadas,50)}/50` },
             { id: 'primera_victoria_ia', icon: '🤖', nombre: 'Dominador de IA', desc: 'Gana 1 partida contra la IA', reward: 50, check: s => s.victoriasIA >= 1, progress: s => `${Math.min(s.victoriasIA,1)}/1` },
             { id: 'reina_maquina', icon: '👑', nombre: 'Rey de la Máquina', desc: 'Gana 25 partidas contra la IA', reward: 300, check: s => s.victoriasIA >= 25, progress: s => `${Math.min(s.victoriasIA,25)}/25` },
+            { id: 'ia_dificil_5', icon: '⚔️', nombre: 'Guerrero Difícil', desc: 'Gana 5 partidas contra la IA en modo Difícil', reward: 200, check: s => (s.victoriasIADificil || 0) >= 5, progress: s => `${Math.min(s.victoriasIADificil || 0,5)}/5` },
+            { id: 'ia_dificil_10', icon: '🗡️', nombre: 'Maestro Difícil', desc: 'Gana 10 partidas contra la IA en modo Difícil', reward: 400, check: s => (s.victoriasIADificil || 0) >= 10, progress: s => `${Math.min(s.victoriasIADificil || 0,10)}/10` },
+            { id: 'ia_dificil_15', icon: '💀', nombre: 'Dominador Difícil', desc: 'Gana 15 partidas contra la IA en modo Difícil', reward: 600, check: s => (s.victoriasIADificil || 0) >= 15, progress: s => `${Math.min(s.victoriasIADificil || 0,15)}/15` },
+            { id: 'ia_dificil_20', icon: '🏆', nombre: 'Leyenda Difícil', desc: 'Gana 20 partidas contra la IA en modo Difícil', reward: 1000, check: s => (s.victoriasIADificil || 0) >= 20, progress: s => `${Math.min(s.victoriasIADificil || 0,20)}/20` },
             { id: 'primera_sangre', icon: '🩸', nombre: 'Primera sangre online', desc: 'Gana 1 partida online', reward: 100, check: s => s.victoriasOnline >= 1, progress: s => `${Math.min(s.victoriasOnline,1)}/1` },
             { id: 'duelista', icon: '🗡️', nombre: 'Duelista online', desc: 'Gana 10 partidas online', reward: 300, check: s => s.victoriasOnline >= 10, progress: s => `${Math.min(s.victoriasOnline,10)}/10` },
             { id: 'campeon', icon: '🏆', nombre: 'Campeón online', desc: 'Gana 50 partidas online', reward: 800, check: s => s.victoriasOnline >= 50, progress: s => `${Math.min(s.victoriasOnline,50)}/50` },
@@ -8516,6 +8648,7 @@
                         despertares: 0, cartasFabricadas: 0, cartasRecicladas: 0,
                         counterPlays: 0, bloqueadores: 0,
                         cartasUnicas: 0, comunesUnicas: 0, infrecuentesUnicas: 0, rarasUnicas: 0, superRarasUnicas: 0,
+                        victoriasIADificil: 0,
                         logrosReclamados: [],
                         ultimoLogin: null, loginClaimedHoy: false, primeraVictoriaHoy: false
                     };
@@ -8525,7 +8658,7 @@
                 _statsJugador = { partidasJugadas: 0, victoriasIA: 0, victoriasOnline: 0, derrotas: 0, mejorRacha: 0, rachaActual: 0, sobresAbiertos: 0, despertares: 0, cartasFabricadas: 0, cartasRecicladas: 0, counterPlays: 0, bloqueadores: 0, cartasUnicas: 0, comunesUnicas: 0, infrecuentesUnicas: 0, rarasUnicas: 0, superRarasUnicas: 0, logrosReclamados: [], ultimoLogin: null, loginClaimedHoy: false, primeraVictoriaHoy: false };
             }
             // Migración: asegurar que todos los campos numéricos existen (evita NaN en logros)
-            const _defaultsStats = { partidasJugadas: 0, victoriasIA: 0, victoriasOnline: 0, derrotas: 0, mejorRacha: 0, rachaActual: 0, sobresAbiertos: 0, despertares: 0, cartasFabricadas: 0, cartasRecicladas: 0, counterPlays: 0, bloqueadores: 0, cartasUnicas: 0, comunesUnicas: 0, infrecuentesUnicas: 0, rarasUnicas: 0, superRarasUnicas: 0 };
+            const _defaultsStats = { partidasJugadas: 0, victoriasIA: 0, victoriasOnline: 0, derrotas: 0, mejorRacha: 0, rachaActual: 0, sobresAbiertos: 0, despertares: 0, cartasFabricadas: 0, cartasRecicladas: 0, counterPlays: 0, bloqueadores: 0, cartasUnicas: 0, comunesUnicas: 0, infrecuentesUnicas: 0, rarasUnicas: 0, superRarasUnicas: 0, victoriasIADificil: 0 };
             let _statsCambiados = false;
             for (const k in _defaultsStats) {
                 if (_statsJugador[k] === undefined || _statsJugador[k] === null || (typeof _statsJugador[k] === 'number' && isNaN(_statsJugador[k]))) {
@@ -8612,6 +8745,8 @@
         // Actualizar stats al terminar partida
         function registrarFinPartida(resultado, modo) {
             if (!_statsJugador) cargarStats();
+            // Asegurar que el stat victoriasIADificil existe
+            if (_statsJugador.victoriasIADificil === undefined) _statsJugador.victoriasIADificil = 0;
             _statsJugador.partidasJugadas++;
             if (resultado === 'victoria') {
                 if (modo === 'online') {
@@ -8619,7 +8754,13 @@
                     if (_inventario) { _inventario.coins += 75; guardarInventario(); actualizarBarraMonedas(); }
                 } else {
                     _statsJugador.victoriasIA++;
-                    if (_inventario) { _inventario.coins += 75; guardarInventario(); actualizarBarraMonedas(); }
+                    // Modo difícil: 150 monedas y stat separado
+                    if (estadoPartida && estadoPartida.dificultad === 'dificil') {
+                        _statsJugador.victoriasIADificil++;
+                        if (_inventario) { _inventario.coins += 150; guardarInventario(); actualizarBarraMonedas(); }
+                    } else {
+                        if (_inventario) { _inventario.coins += 75; guardarInventario(); actualizarBarraMonedas(); }
+                    }
                 }
                 _statsJugador.rachaActual++;
                 if (_statsJugador.rachaActual > _statsJugador.mejorRacha) _statsJugador.mejorRacha = _statsJugador.rachaActual;
@@ -8820,10 +8961,11 @@
                     if (_inventario.energy == null) _inventario.energy = 0;
                     if (!_inventario.amigos) _inventario.amigos = [];
                     if (_inventario.cartaFavorita === undefined) _inventario.cartaFavorita = null;
+                    if (_inventario.tituloActivo === undefined) _inventario.tituloActivo = null;
                     if (!_inventario.perfil) _inventario.perfil = { bio: '' };
                 } else {
                     // Empezar de cero: 0 cartas, 0 monedas, 0 energy
-                    _inventario = { coins: 0, energy: 0, cartas: {}, amigos: [], cartaFavorita: null, perfil: { bio: '' } };
+                    _inventario = { coins: 0, energy: 0, cartas: {}, amigos: [], cartaFavorita: null, tituloActivo: null, perfil: { bio: '' } };
                     guardarInventario();
                 }
             } catch (e) {
@@ -9581,6 +9723,13 @@
         function cerrarPlayMode() {
             document.getElementById('play-mode-overlay').classList.add('hidden');
         }
+        function mostrarSelectorDificultadIA() {
+            cerrarPlayMode();
+            document.getElementById('ia-difficulty-overlay').classList.remove('hidden');
+        }
+        function cerrarSelectorDificultadIA() {
+            document.getElementById('ia-difficulty-overlay').classList.add('hidden');
+        }
 
         function iniciarPartidaOnline() {
             // Necesitas un mazo válido para jugar online
@@ -9686,6 +9835,8 @@
             });
             // Recibir snapshot del rival
             _socketOnline.on('accion-rival', (data) => {
+                // Bug fix: ocultar overlay defensivamente al recibir cualquier acción.
+                if (typeof ocultarReconnectOverlay === 'function') ocultarReconnectOverlay();
                 if (data.tipo === 'snapshot') {
                     aplicarSnapshotRival(data);
                 } else if (data.tipo === 'fin-turno') {
@@ -10177,7 +10328,7 @@
             return lista;
         }
 
-        function iniciarPartida(modo) {
+        function iniciarPartida(modo, dificultad) {
             const mazo = obtenerMazoAsignado();
             if (!mazo) return alert('Necesitas un mazo válido para jugar contra la IA. Crea uno en la sección de Mazos o completa el Tutorial para recibir el Mazo de Regalo.');
             const jugador = {
@@ -10212,6 +10363,7 @@
                 log: 'Preparando duelo...', atacanteSeleccionado: null,
                 pagoPendiente: null, introActiva: true, finalizada: false,
                 modo: modo || 'solo',
+                dificultad: dificultad || 'normal', // 'normal' o 'dificil'
                 soyHost: true,
                 turnoDelJugadorLocal: true
             };
@@ -11000,7 +11152,23 @@
             const pintarIntro = (el, carta, side) => {
                 el.className = `intro-leader-card ${side}`;
                 el.style.opacity = '1';
-                el.innerHTML = `<img src="${carta.img || ''}" alt="${escapeHtml(carta.nombre)}"><span class="intro-name">${escapeHtml(carta.nombre)}</span>`;
+                // Bug fix / feature: mostrar el título del jugador en vez del nombre del líder.
+                // Si el jugador tiene un título desbloqueado, mostrarlo bajo la imagen.
+                let nombreTexto = escapeHtml(carta.nombre);
+                let tituloHtml = '';
+                if (side === 'player') {
+                    const titulo = obtenerTituloActivo();
+                    if (titulo) {
+                        tituloHtml = `<span class="intro-title" style="position:absolute;top:6px;left:0;right:0;padding:4px 6px;background:linear-gradient(transparent,rgba(0,0,0,.85));color:${titulo.color};font-size:10px;font-weight:900;text-align:center;text-transform:uppercase;letter-spacing:1px;text-shadow:0 0 8px ${titulo.color}66;">${escapeHtml(titulo.nombre)}</span>`;
+                        nombreTexto = escapeHtml(getNombreJugador());
+                    }
+                } else {
+                    // Rival: en online mostrar su título si lo conocemos; en IA no mostrar título
+                    if (estadoPartida?.modo === 'online' && estadoPartida?.rivalNombre) {
+                        nombreTexto = escapeHtml(estadoPartida.rivalNombre);
+                    }
+                }
+                el.innerHTML = `<img src="${carta.img || ''}" alt="${escapeHtml(carta.nombre)}">${tituloHtml}<span class="intro-name">${nombreTexto}</span>`;
             };
             pintarIntro(playerEl, playerLider, 'player');
             pintarIntro(rivalEl, rivalLider, 'rival');
@@ -11112,10 +11280,12 @@
             }
             // Calcular monedas ganadas ANTES de registrar (para mostrarlas)
             const modo = estadoPartida.modo;
+            const esDificil = estadoPartida.dificultad === 'dificil';
             let monedasGanadas = 0;
             let bonusPrimeraVictoria = 0;
             if (resultado === 'victoria') {
-                monedasGanadas = 75; // Tanto IA como online
+                // Modo difícil da 150 monedas; resto da 75
+                monedasGanadas = (modo !== 'online' && esDificil) ? 150 : 75;
                 // Primera victoria del día (+100 bonus)
                 if (_statsJugador && !_statsJugador.primeraVictoriaHoy) {
                     bonusPrimeraVictoria = 100;
@@ -11252,9 +11422,22 @@
                 if (!c.flags?.arañaBloqueada && !c.flags?.enderezarCoste) {
                     c.rested = false;
                     c.ataquesRestantes = ataquesPorTurno(c.id);
+                    // Modo difícil: re-aplicar buff a unidades que no lo tengan (safety)
+                    if (estadoPartida.dificultad === 'dificil') {
+                        if (!c.buffs) c.buffs = { poder: 0, combo: 0, batalla: 0 };
+                        if ((c.buffs.poder || 0) < 5000) c.buffs.poder = (c.buffs.poder || 0) + 5000;
+                        if (!c.flags) c.flags = {};
+                        c.flags.dobleGolpe = true;
+                    }
                 }
             });
             r.liderZona = { id: r.liderId, rested: false, ataquesRestantes: 1, buffs: { poder: 0, combo: 0, batalla: 0 } };
+            // Modo difícil: el líder de la IA también tiene +5000 poder y Doble Golpe
+            if (estadoPartida.dificultad === 'dificil') {
+                r.liderZona.buffs.poder = 5000;
+                if (!r.liderZona.flags) r.liderZona.flags = {};
+                r.liderZona.flags.dobleGolpe = true;
+            }
             r.manaActivo = r.mana.length;
             r.manaUsadoEsteTurno = false;
             if (r.mazo.length) {
@@ -11331,6 +11514,13 @@
                     r.manaActivo = r.mana.filter(m => !m.rested).length;
                     r.mano.splice(idxJugar, 1);
                     const u = window.MotorEfectos ? MotorEfectos.crearUnidadCampo(idJugar, { rested: false }) : { id: idJugar, rested: false, ataquesRestantes: ataquesPorTurno(idJugar) };
+                    // Modo difícil: todas las cartas de la IA tienen +5000 poder y Doble Golpe
+                    if (estadoPartida.dificultad === 'dificil') {
+                        if (!u.buffs) u.buffs = { poder: 0, combo: 0, batalla: 0 };
+                        u.buffs.poder += 5000;
+                        if (!u.flags) u.flags = {};
+                        u.flags.dobleGolpe = true;
+                    }
                     r.batalla.push(u);
                     if (window.MotorEfectos) await MotorEfectos.alJugar('rival', idJugar, u);
                     estadoPartida.log = 'La IA juega ' + (carta.nombre || idJugar) + '.';
@@ -11351,15 +11541,10 @@
             }
 
             // === FASE DE COMBATE ===
-            // Bug fix: NADIE puede atacar en su primer turno. En 1v1 el jugador va primero
-            // (turno=1) y la IA va segunda (turno=2). La IA no puede atacar en turno <= 2.
-            // (Misma regla que online: el primer turno de cada jugador es sin ataques.)
-            if (estadoPartida.turno <= 2) {
-                estadoPartida.faseIndex = 2;
-                estadoPartida.log = 'La IA no puede atacar en su primer turno.';
-                renderizarPartida();
-                await sleep(500);
-            } else {
+            // Bug fix: la IA puede atacar desde su primer turno (turno=2 en 1v1).
+            // La restricción "no atacar en el primer turno" se eliminó para 1v1.
+            // En online se mantiene la restricción para el segundo jugador.
+            {
             estadoPartida.faseIndex = 2;
             estadoPartida.log = 'La IA ataca...';
             renderizarPartida();
@@ -11410,9 +11595,9 @@
             }
 
             // === ATAQUE CON EL LÍDER DE LA IA ===
-            // Después de atacar con las unidades, el líder ataca si puede
-            // (no en el turno 1, y si no está rested y tiene ataques restantes).
-            if (estadoPartida.turno > 2 && r.liderZona && !r.liderZona.rested && (r.liderZona.ataquesRestantes ?? 0) > 0) {
+            // Después de atacar con las unidades, el líder ataca si puede.
+            // Bug fix: el líder de la IA puede atacar desde su primer turno.
+            if (r.liderZona && !r.liderZona.rested && (r.liderZona.ataquesRestantes ?? 0) > 0) {
                 estadoPartida.log = 'La IA ataca con su líder...';
                 renderizarPartida();
                 await sleep(500);
@@ -11439,7 +11624,7 @@
                 await sleep(800);
                 if (estadoPartida.finalizada) return;
             }
-            } // fin else (la IA puede atacar, turno > 2)
+            }
 
             // === FIN DE TURNO DE LA IA ===
             if (window.MotorEfectos) MotorEfectos.alFinTurno('rival');
@@ -11469,6 +11654,81 @@
         // Cuando el jugador ataca a la IA, esta puede combar para defender.
         // Implementada directamente en terminarAtaque() para 1v1 y tutorial.
 
+        // === LÓGICA DE COMBO DE ATAQUE DE LA IA ===
+        // La IA combea al atacar cuando quiere asegurar un ataque:
+        // 1. Si ataca una unidad con más poder que el atacante, combea para superarla.
+        // 2. Si ataca al líder, combea si tiene cartas de combo baratas para asegurar daño.
+        async function iaComboAtaque(atacante, objetivo, poderAtacante) {
+            const r = estadoPartida.rival;
+            if (!r.mano.length) return 0; // Sin cartas en mano, no puede combar
+            // Calcular poder del defensor
+            let poderDefensor = 0;
+            const j = estadoPartida.jugador;
+            if (objetivo.tipo === 'lider') {
+                const lid = getCardById(j.liderId);
+                poderDefensor = j.liderDespierto ? Number(lid?.poderEvo || 0) : Number(lid?.poder || 0);
+            } else if (objetivo.tipo === 'unidad') {
+                const def = j.batalla[objetivo.index];
+                if (def) poderDefensor = Number(getCardById(def.id)?.poder || 0);
+            }
+            // Decidir si combea
+            let debeCombar = false;
+            let necesita = 0;
+            if (objetivo.tipo === 'unidad') {
+                // Si la unidad defensora tiene igual o más poder, combea para asegurar la victoria
+                if (poderDefensor >= poderAtacante) {
+                    debeCombar = true;
+                    necesita = poderDefensor - poderAtacante + 1;
+                }
+            } else {
+                // Ataque al líder: combea si el atacante tiene poco poder (para asegurar daño)
+                // o si el líder rival tiene mucho poder (para superarlo)
+                if (poderAtacante < poderDefensor) {
+                    debeCombar = true;
+                    necesita = poderDefensor - poderAtacante + 1;
+                } else if (poderAtacante < 10000 && r.mano.length > 3) {
+                    // Atacante débil al líder: combear si tiene cartas de combo para hacer más daño
+                    debeCombar = true;
+                    necesita = 1; // Cualquier cantidad extra es buena
+                }
+            }
+            if (!debeCombar) return 0;
+            // Buscar cartas de combo en mano que no sean líderes ni tokens ni extras
+            const cartasCombo = [];
+            for (let i = 0; i < r.mano.length; i++) {
+                const id = r.mano[i];
+                const c = getCardById(id);
+                if (!c || esLider(c) || esToken(c)) continue;
+                if (String(c.clase || c.tipo || '').toLowerCase().includes('extra')) continue;
+                const poder = poderCombo(c);
+                if (poder > 0) cartasCombo.push({ id, index: i, poder });
+            }
+            if (!cartasCombo.length) return 0;
+            // Ordenar por poder ascendente (usar las más débiles primero)
+            cartasCombo.sort((a, b) => a.poder - b.poder);
+            let comboAcum = 0;
+            const usadas = [];
+            for (const cc of cartasCombo) {
+                if (comboAcum >= necesita && objetivo.tipo === 'unidad') break;
+                // Para ataque al líder, usar hasta 2 cartas de combo como máximo
+                if (objetivo.tipo === 'lider' && usadas.length >= 2) break;
+                comboAcum += cc.poder;
+                usadas.push(cc);
+            }
+            if (comboAcum < necesita && objetivo.tipo === 'unidad') return 0; // No llega, no combar
+            // Aplicar combo: mover cartas de mano a combo y descarte
+            usadas.sort((a, b) => b.index - a.index); // Ordenar desc para splice seguro
+            usadas.forEach(({ id, index }) => {
+                r.mano.splice(index, 1);
+                r.combo.push({ id, comboMode: true });
+                r.descarte.push(id);
+            });
+            estadoPartida.log = 'La IA combea para asegurar el ataque (+' + comboAcum + ' poder).';
+            renderizarPartida();
+            await sleep(500);
+            return comboAcum;
+        }
+
         // Ejecutar un ataque de la IA respetando: counter play → bloqueo → combo defensora → resolución
         async function ejecutarAtaqueIA(unidadIndex, objetivo, opts) {
             opts = opts || {};
@@ -11494,6 +11754,14 @@
                 defensorCombo: 0
             };
             renderizarPartida(); // Actualizar panel de combate
+
+            // === 0. FASE DE COMBO DE ATAQUE (IA) ===
+            // La IA decide si combea para asegurar el ataque.
+            const comboAtaque = await iaComboAtaque(atacante, objetivo, _poderAtacanteInicial);
+            if (comboAtaque > 0) {
+                estadoPartida.ataqueActual.atacanteCombo = comboAtaque;
+                estadoPartida.rivalComboActual = comboAtaque;
+            }
 
             // === 1. FASE DE COUNTER ATAQUE (del jugador) ===
             // El jugador puede tener cartas de Counter Ataque en mano para negar el ataque.
@@ -11679,6 +11947,13 @@
             estadoPartida.log = 'El líder rival (' + (getCardById(r.liderId)?.nombre || '') + ') declara ataque.';
             renderizarPartida();
             await sleep(500);
+
+            // === 0. FASE DE COMBO DE ATAQUE (IA líder) ===
+            const comboAtaqueLid = await iaComboAtaque(atacante, objetivo, _poderAtacanteInicial);
+            if (comboAtaqueLid > 0) {
+                estadoPartida.ataqueActual.atacanteCombo = comboAtaqueLid;
+                estadoPartida.rivalComboActual = comboAtaqueLid;
+            }
 
             // === 1. FASE DE COUNTER ATAQUE (del jugador) ===
             // El jugador puede tener cartas de Counter Ataque en mano para negar el ataque.
@@ -12329,8 +12604,10 @@
 
         function puedeAtacarAhora(cartaZona) {
             if (!estadoPartida || estadoPartida.faseIndex !== 2) return false;
-            // En modo tutorial se puede atacar desde el turno 1 (para enseñar las mecánicas)
-            if (estadoPartida.modo !== 'tutorial' && estadoPartida.turno <= 1) return false;
+            // Bug fix: en 1v1 contra IA, el jugador puede atacar desde su primer turno.
+            // La regla "no atacar en el primer turno" solo aplica en online al segundo
+            // jugador (turno=2 si no empezó). En tutorial se puede atacar desde el turno 1.
+            if (estadoPartida.modo === 'online' && estadoPartida.turno <= 1 && !estadoPartida.turnoDelJugadorLocal) return false;
             return cartaZona && !cartaZona.rested && (cartaZona.ataquesRestantes ?? 1) > 0;
         }
 
@@ -13897,6 +14174,8 @@
                         // Handler completo de acciones del rival (todos los tipos)
                         _socketOnline.on('accion-rival', (data) => {
                             if (!estadoPartida || estadoPartida.modo !== 'online') return;
+                            // Bug fix: ocultar overlay defensivamente al recibir cualquier acción.
+                            ocultarReconnectOverlay();
                             if (data.tipo === 'snapshot') {
                                 aplicarSnapshotRival(data);
                             } else if (data.tipo === 'fin-turno') {
@@ -14008,12 +14287,17 @@
                         _socketOnline.on('respuesta-peticion-recibida', (data) => {
                             if (window.MotorEfectos) MotorEfectos.recibirRespuestaRival(data);
                         });
-                        // Tras reconectar, forzar snapshot para re-sincronizar con el rival
-                        setTimeout(() => {
-                            if (estadoPartida && estadoPartida.modo === 'online' && typeof sincronizarEstadoOnline === 'function') {
-                                sincronizarEstadoOnline('reconectar');
-                            }
-                        }, 500);
+                        // Bug fix: tras reconectar, enviar snapshot inmediato para que el rival
+                        // sepa que estamos vivos y pueda ocultar su overlay. Repetir 3 veces con
+                        // pequeño delay para asegurar que llega (la conexión puede ser inestable
+                        // justo tras reconectar).
+                        for (let delay = 300; delay <= 1500; delay += 400) {
+                            setTimeout(() => {
+                                if (estadoPartida && estadoPartida.modo === 'online' && typeof sincronizarEstadoOnline === 'function') {
+                                    sincronizarEstadoOnline('reconectar');
+                                }
+                            }, delay);
+                        }
                     }
                     if (window.MotorEfectos) MotorEfectos.init();
                     renderizarPartida();
@@ -14058,6 +14342,10 @@
     </script>
 </body>
 </html>
+
+
+
+
 
 
 
