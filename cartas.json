@@ -42,7 +42,7 @@
   {
     "id": "red_lider_02",
     "nombre": "Mr Greedy & Trump",
-    "nombreEvo": "Capitalismo Salvaje",
+    "nombreEvo": "Duo Capitalista",
     "clase": "Líder",
     "color": "Rojo",
     "personaje": "Donald Trump & Mr Greedy",
@@ -78,9 +78,9 @@
         "desc": "Cuando este Líder ataca, roba 1 carta."
       },
       {
-        "tag": "Automático",
-        "css": "tag-auto",
-        "desc": "Cada vez que tu oponente use una habilidad [Counter], debe poner la carta superior de su mazo en su pila de descartes a modo de impuesto, o el Counter se niega."
+        "tag": "Doble Golpe",
+        "css": "tag-doble",
+        "desc": "Si esta carta inflige daño, inflige 2 puntos de daño en lugar de 1."
       }
     ]
   },
@@ -125,7 +125,7 @@
       {
         "tag": "Automático",
         "css": "tag-auto",
-        "desc": "Cuando este Líder ataca, roba 1 carta. Luego, ambos jugadores deben elegir una carta de su mano y colocarla en su respectiva pila de descartes."
+        "desc": "Cuando este Líder ataca, roba 1 carta. Luego, ambos jugadores deben elegir una carta de su mano y colocarla en su respectiva pila de descartes, y elegir una unidad de su Área de Batalla y mandarla a la pila de descartes. Si tienes \"Anillo de Cobre\" en tu Zona de Campo, solo el rival debe hacer ambas cosas."
       }
     ]
   },
@@ -295,7 +295,7 @@
       {
         "tag": "Automático",
         "css": "tag-auto",
-        "desc": "Cuando este Líder ataca, roba 1 carta. Si es una carta de [Desafío], puedes revelarla para que tu Líder gane +5000 y [Crítico] durante este turno."
+        "desc": "Cuando este Líder ataca, roba 1 carta. Si juegas una carta de [Desafío], elige una unidad propia o a tu Líder y gana +5000 de poder y [Crítico] durante este turno."
       },
       {
         "tag": "Activar: Batalla",
@@ -345,7 +345,7 @@
       {
         "tag": "Automático",
         "css": "tag-auto",
-        "desc": "Cuando este Líder ataca o es atacado, el oponente debe elegir una carta de su mano y colocarla en su respectiva pila de descartes a menos que rinda una de sus unidades en juego cambiándola a modo descanso."
+        "desc": "Cuando esta carta ataca, elige una unidad rival. Esta no podrá usarse para combar ni bloquear durante este turno."
       }
     ]
   },
@@ -488,7 +488,7 @@
       {
         "tag": "Permanente",
         "css": "tag-perm",
-        "desc": "Si hay 2 o más cartas con origen \"Grupo\" en tu pila de descartes, reduce el coste de energía de esta carta en tu mano en 2."
+        "desc": "Si hay 2 o más cartas con origen \"Grupo\" en tu pila de descartes, reduce el coste de energía de esta carta en tu mano en 1."
       }
     ]
   },
@@ -504,7 +504,7 @@
     "img": "https://hugopima.github.io/gctcg-assets/imagenes/Aandrea.png",
     "costeTotal": 5,
     "costeColor": 3,
-    "poder": 20000,
+    "poder": 15000,
     "combo": "1+10000",
     "lore": "Vive en el culo del mundo, en un pueblo que se llama Legua Completa… ¿Que es una legua?",
     "habilidades": [
@@ -553,8 +553,8 @@
     "origen": "Grupo",
     "rareza": "Rara",
     "img": "https://hugopima.github.io/gctcg-assets/imagenes/Avictor.png",
-    "costeTotal": 8,
-    "costeColor": 5,
+    "costeTotal": 7,
+    "costeColor": 4,
     "poder": 25000,
     "combo": "1+10000",
     "lore": "Maestro inversor, hace inversiones de alto riesgo en empresas petroleras árabes, aunque nunca le salen bien.",
@@ -562,7 +562,7 @@
       {
         "tag": "Permanente",
         "css": "tag-perm",
-        "desc": "Si tienes en tu mano solo 3 cartas o menos además de esta carta, reduce el coste de maná de esta carta a 6."
+        "desc": "Si tienes en tu mano solo 3 cartas o menos además de esta carta, reduce el coste de maná de esta carta a 5."
       },
       {
         "tag": "Automático",
@@ -586,8 +586,8 @@
     "origen": "Grupo",
     "rareza": "Rara",
     "img": "https://hugopima.github.io/gctcg-assets/imagenes/Alucas.png",
-    "costeTotal": 3,
-    "costeColor": 1,
+    "costeTotal": 2,
+    "costeColor": 0,
     "poder": 5000,
     "combo": "0+5000",
     "lore": "Gran artista, pero con un gran fallo, es furro.",
@@ -698,7 +698,7 @@
     "img": "https://hugopima.github.io/gctcg-assets/imagenes/Acris.png",
     "costeTotal": 2,
     "costeColor": 1,
-    "poder": 15000,
+    "poder": 10000,
     "combo": "0+5000",
     "lore": "Bailarín, especialmente de K-Pop, habla mucho de “los del baile”, creemos que es un Cartel de México.",
     "habilidades": [
@@ -846,7 +846,7 @@
     "img": "https://hugopima.github.io/gctcg-assets/imagenes/Aimpostor.png",
     "costeTotal": 5,
     "costeColor": 3,
-    "poder": 15000,
+    "poder": 20000,
     "combo": "1+10000",
     "lore": "Cuando le dicen que no puede jugar mas minecraft, se hace pasar por jesucristobeibe.",
     "habilidades": [
@@ -940,7 +940,7 @@
       {
         "tag": "Activar",
         "css": "tag-active",
-        "desc": "Batalla: Elige hasta 1 de tus Líderes o unidades en combate; gana +5000 de poder por el resto del turno. Luego, elige hasta 1 de tus manás azules y cámbialo a modo activo."
+        "desc": "Batalla: Elige hasta 1 de tus Líderes o unidades en combate; gana +5000 de poder por el resto del turno. Luego, elige hasta 2 de tus manás azules y cámbialos a modo activo."
       }
     ]
   },
@@ -1007,7 +1007,7 @@
     "img": "https://hugopima.github.io/gctcg-assets/imagenes/Rchica.png",
     "costeTotal": 2,
     "costeColor": 2,
-    "poder": 15000,
+    "poder": 10000,
     "combo": "0+5000",
     "lore": "Fue la primera. Lo ha visto todo.",
     "habilidades": [
@@ -1051,7 +1051,7 @@
     "origen": "FNAF",
     "rareza": "Super Rara",
     "img": "https://hugopima.github.io/gctcg-assets/imagenes/Rspringtrap.png",
-    "costeTotal": 6,
+    "costeTotal": 7,
     "costeColor": 4,
     "poder": 25000,
     "combo": "1+10000",
@@ -1148,13 +1148,13 @@
     "costeTotal": 2,
     "costeColor": 1,
     "poder": 10000,
-    "combo": "0+5000",
+    "combo": "1+5000",
     "lore": "uh… Hello? Hello hello! I have a message for you…",
     "habilidades": [
       {
         "tag": "Activar",
         "css": "tag-active",
-        "desc": "Principal : Durante tu turno, cuando hagas un combo con esta carta de tu mano, elige hasta 1 de las cartas de tu oponente con Bloqueador y un coste de energía de 3 o menos, y elimínala."
+        "desc": "Principal: Durante tu turno, cuando hagas un combo con esta carta de tu mano, destruye todos los bloqueadores de coste 3 o menos del rival."
       }
     ]
   },
@@ -1305,7 +1305,7 @@
       {
         "tag": "Automático",
         "css": "tag-auto",
-        "desc": "Al activar su bloqueador, el rival debe elegir 1 carta de su mano y llevarla a su pila de descartes. Luego, puedes mover 1 carta de la zona de combo del rival a su pila de descartes."
+        "desc": "Al activar su bloqueador, el rival debe elegir 2 cartas de su mano y llevarlas a su pila de descartes. Luego, puedes mover 1 carta de la zona de combo del rival a su pila de descartes."
       },
       {
         "tag": "Bloqueador",
@@ -1331,6 +1331,11 @@
     "lore": "¿Por qué veo su cara en todas partes? Que en paz descanse…",
     "habilidades": [
       {
+        "tag": "Crítico",
+        "css": "tag-critico",
+        "desc": "Si esta carta inflige daño a un Líder, la carta de vida se coloca en la pila de descartes en lugar de ir a la mano del rival."
+      },
+      {
         "tag": "Permanente",
         "css": "tag-perm",
         "desc": "Cada vez que tu oponente use un [Counter], debe pagar 1 maná adicional o el Counter se niega."
@@ -1354,7 +1359,7 @@
     "img": "https://hugopima.github.io/gctcg-assets/imagenes/Rmusk.png",
     "costeTotal": 6,
     "costeColor": 4,
-    "poder": 30000,
+    "poder": 20000,
     "combo": "1+10000",
     "lore": "¡El poder de la tecnología! Si aprendes a pronunciar el nombre completo de su hijo te hago bizum.",
     "habilidades": [
@@ -1405,7 +1410,7 @@
     "img": "https://hugopima.github.io/gctcg-assets/imagenes/Rcoolboy.png",
     "costeTotal": 2,
     "costeColor": 1,
-    "poder": 10000,
+    "poder": 15000,
     "combo": "0+5000",
     "lore": "Es demasiado cool para que le golpeen. ¡Coolboy!",
     "habilidades": [
@@ -1520,6 +1525,11 @@
     "lore": "Palm Beach Pete no es Jeffrey Epstein. O eso dice…",
     "habilidades": [
       {
+        "tag": "Crítico",
+        "css": "tag-critico",
+        "desc": "Si esta carta inflige daño a un Líder, la carta de vida se coloca en la pila de descartes en lugar de ir a la mano del rival."
+      },
+      {
         "tag": "Permanente",
         "css": "tag-perm",
         "desc": "Esta carta no puede ser objetivo de las habilidades de las cartas de batalla de tu oponente."
@@ -1558,7 +1568,7 @@
       {
         "tag": "Activar",
         "css": "tag-active",
-        "desc": "Principal: Tira un dado, si este saca una puntuación de 20 suma 15000 de poder a una unidad."
+        "desc": "Principal: Tira un dado, si este saca una puntuación entre 16 y 20 (inclusive) suma 10000 de poder a una unidad."
       }
     ]
   },
@@ -1590,7 +1600,7 @@
     "origen": "Minecraft",
     "rareza": "Rara",
     "img": "https://hugopima.github.io/gctcg-assets/imagenes/Vcazon.png",
-    "costeTotal": 4,
+    "costeTotal": 5,
     "costeColor": 3,
     "poder": 20000,
     "combo": "1+10000",
@@ -1931,7 +1941,7 @@
     "img": "https://hugopima.github.io/gctcg-assets/imagenes/Vbonesy.png",
     "costeTotal": 3,
     "costeColor": 2,
-    "poder": 20000,
+    "poder": 15000,
     "combo": "0+5000",
     "lore": "Bonesy es conocido por hacer daño residual con su efecto de Wither… Ten cuidado…",
     "habilidades": [
@@ -2072,8 +2082,8 @@
     "origen": "Minecraft",
     "rareza": "Común",
     "img": "https://hugopima.github.io/gctcg-assets/imagenes/Varaña.png",
-    "costeTotal": 4,
-    "costeColor": 3,
+    "costeTotal": 3,
+    "costeColor": 2,
     "poder": 15000,
     "combo": "0+5000",
     "lore": "Aunque para nosotros sea un enemigo molesto que llena el campo de telarañas, es solo una madre que cuida de sus arañas…",
@@ -2213,13 +2223,13 @@
     "rareza": "Común",
     "img": "https://hugopima.github.io/gctcg-assets/imagenes/Nlibro.png",
     "costeTotal": 1,
-    "costeColor": 1,
+    "costeColor": 0,
     "lore": "Imagina no saber que la bola de estrella de fuegos artificiales se puede hacer con las cosas más random posibles.",
     "habilidades": [
       {
         "tag": "Principal",
         "css": "tag-active",
-        "desc": "Si tu Líder es de color Negro, busca una carta de origen \"Minecraft\" en tu baraja, muéstrala y añádela a tu mano. Luego baraja. Si esa carta tenía un coste de maná de 1, puedes jugarla directamente al campo en modo descanso en lugar de añadirla a la mano."
+        "desc": "Busca una carta de origen \"Minecraft\" en tu baraja, muéstrala y añádela a tu mano. Luego baraja. Si esa carta tenía un coste de maná de 1, puedes jugarla directamente al campo en modo descanso en lugar de añadirla a la mano. Si no tienes cartas de origen \"Minecraft\" en tu baraja pero tu Líder es Negro, roba 2 cartas. Si no tienes cartas de origen \"Minecraft\" en tu baraja pero tu Líder es de otro color, roba 1 carta."
       },
       {
         "tag": "Desafío",
@@ -2282,7 +2292,7 @@
     "costeTotal": 2,
     "costeColor": 1,
     "poder": 10000,
-    "combo": "0+5000",
+    "combo": "1+5000",
     "lore": "Tres \"Tung\". Ni uno más, ni uno menos. Triple T para los amigos.",
     "habilidades": [
       {
@@ -2327,7 +2337,7 @@
     "img": "https://hugopima.github.io/gctcg-assets/imagenes/Ntrabajo.png",
     "costeTotal": 2,
     "costeColor": 1,
-    "poder": 15000,
+    "poder": 10000,
     "combo": "0+5000",
     "lore": "Él mejor amigo de todo el mundo (menos de Manuel). Si no lo conoces… Eso dice mucho de ti.",
     "habilidades": [
@@ -2348,10 +2358,10 @@
     "origen": "Discord",
     "rareza": "Rara",
     "img": "https://hugopima.github.io/gctcg-assets/imagenes/Nnexus.png",
-    "costeTotal": 3,
-    "costeColor": 2,
+    "costeTotal": 4,
+    "costeColor": 3,
     "poder": 20000,
-    "combo": "0+5000",
+    "combo": "1+10000",
     "lore": "Es el bot de Gaming Club… Ya sabes… El de los logros.. El de la economía… Sabes quién es, ¿verdad?...",
     "habilidades": [
       {
@@ -2422,7 +2432,7 @@
     "origen": "Meme",
     "rareza": "Infrecuente",
     "img": "https://hugopima.github.io/gctcg-assets/imagenes/Ndonpollo.png",
-    "costeTotal": 4,
+    "costeTotal": 3,
     "costeColor": 2,
     "poder": 15000,
     "combo": "1+10000",
@@ -2446,7 +2456,7 @@
     "rareza": "Rara",
     "img": "https://hugopima.github.io/gctcg-assets/imagenes/Nportal.png",
     "costeTotal": 3,
-    "costeColor": 1,
+    "costeColor": 0,
     "poder": 15000,
     "combo": "0+5000",
     "lore": "¿Qué? ¡NO TE ESCUCHO, HABLA MÁS ALTO! 10/10 la música.",
@@ -2515,8 +2525,8 @@
     "rareza": "Infrecuente",
     "img": "https://hugopima.github.io/gctcg-assets/imagenes/Naubrey.png",
     "costeTotal": 2,
-    "costeColor": 2,
-    "poder": 15000,
+    "costeColor": 1,
+    "poder": 10000,
     "combo": "0+5000",
     "lore": "No te dejes engañar por su aspecto, es dura como una piedra. Cumple el rol de tanque estupendamente… Le gustan mucho los lagos",
     "habilidades": [
@@ -2551,7 +2561,7 @@
       {
         "tag": "Automático",
         "css": "tag-auto",
-        "desc": "Cuando esta carta ataca, puedes poner cualquier carta menos otro “Hero” o “Omori’s Gang” en forma activa otra vez."
+        "desc": "Cuando esta carta ataca, puedes poner en forma activa a una carta aliada que cueste menos de 4 y que no sea personaje \"Hero\"."
       }
     ]
   },
@@ -2597,7 +2607,7 @@
       {
         "tag": "Permanente",
         "css": "tag-perm",
-        "desc": "Puedes colocar a Omori, Kel, Aubrey y Hero bajo esta carta. Si lo haces, busca un “Omori’s gang” de tu mano o baraja juegalo gratis."
+        "desc": "Puedes colocar a Omori, Kel, Aubrey y Hero bajo esta carta (cuesta 1 de maná por carta). Si lo haces, busca un \"Omori's gang\" de tu mano, baraja o pila de descartes y juégalo gratis. Cuando RELEASE ENERGY invoca un \"Omori's Gang\", esta carta vuelve a la pila de descartes."
       }
     ]
   },
@@ -2816,9 +2826,15 @@
     "img": "https://hugopima.github.io/gctcg-assets/imagenes/TOKENp.png",
     "costeTotal": 1,
     "costeColor": 0,
-    "poder": 1000,
+    "poder": 5000,
     "combo": "0+10000",
     "lore": "Linganguliguliguli wacha lingangu lingangu… Linganguliguliguli wacha lingangu lingangu….",
-    "habilidades": []
+    "habilidades": [
+      {
+        "tag": "Automático",
+        "css": "tag-auto",
+        "desc": "Cuando haces un combo con esta carta, roba 1 carta."
+      }
+    ]
   }
 ]
