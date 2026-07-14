@@ -3601,7 +3601,19 @@
         window._socketOnline.emit('respuesta-peticion', { token, respuesta: { counter: false } });
         return;
       }
-      const opts = counters.map(id => ({ label: getCardById(id)?.nombre, value: id, cardId: id }));
+      // Bug fix: los Counter Ataque cuestan 1 de maná. Filtrar los pagables.
+      const countersPagables = counters.filter(id => {
+        const c = getCardById(id);
+        const coste = window.MotorEfectos ? MotorEfectos.costeEfectivo(c, 'jugador') : Number(c?.costeTotal || 0);
+        const manaActivo = z.mana.filter(m => !m.rested).length;
+        return manaActivo >= coste;
+      });
+      if (!countersPagables.length) {
+        log('No tienes maná suficiente para usar un Counter Ataque.');
+        window._socketOnline.emit('respuesta-peticion', { token, respuesta: { counter: false } });
+        return;
+      }
+      const opts = countersPagables.map(id => ({ label: getCardById(id)?.nombre, value: id, cardId: id }));
       mostrarInfoAtacante(atacanteHtml, titulo).then(() => {
         return elegirConModal(titulo, opts.concat([{ label: 'No', value: null }]), { noCancelable: true });
       }).then(async pick => {
@@ -3609,6 +3621,10 @@
           window._socketOnline.emit('respuesta-peticion', { token, respuesta: { counter: false } });
           return;
         }
+        // Bug fix: pagar el coste del counter (1 maná) antes del impuesto de Kirk
+        const cCard = getCardById(pick);
+        const costeCounter = window.MotorEfectos ? MotorEfectos.costeEfectivo(cCard, 'jugador') : Number(cCard?.costeTotal || 0);
+        if (costeCounter > 0) descansarMana('jugador', null, costeCounter);
         // Pagar impuesto de Charlie Kirk (si el rival tiene a Kirk en campo).
         // El receptor (yo) soy el que counter; el rival es el atacante.
         const riv = 'rival';
@@ -7229,6 +7245,18 @@
     const counters = z.mano.filter(id => tieneTag(getCardById(id), 'counter ataque'));
     if (!counters.length) return false;
     if (ataqueCtx.noCounter) return false;
+    // Bug fix: los Counter Ataque cuestan 1 de maná (aunque enderezen maná, el coste base se paga)
+    // Filtrar solo los counters que el jugador puede pagar
+    const countersPagables = counters.filter(id => {
+        const c = getCardById(id);
+        const coste = window.MotorEfectos ? MotorEfectos.costeEfectivo(c, quien) : Number(c?.costeTotal || 0);
+        const manaActivo = z.mana.filter(m => !m.rested).length;
+        return manaActivo >= coste;
+    });
+    if (!countersPagables.length) {
+        log('No tienes maná suficiente para usar un Counter Ataque.');
+        return false;
+    }
     // === IA AUTO-DECISIÓN EN MODO SOLO ===
     // Si el que contraataca es el rival (IA) en modo no-online, decidir automáticamente.
     // La IA decide según el contexto:
@@ -7256,11 +7284,15 @@
         }
       }
       // Si la IA tiene muchos counters, sube la probabilidad (no necesita conservarlos).
-      if (counters.length > 2) probabilidad = Math.min(1.0, probabilidad + 0.15);
+      if (countersPagables.length > 2) probabilidad = Math.min(1.0, probabilidad + 0.15);
       if (Math.random() < probabilidad) {
-        const pick = counters[0];
+        const pick = countersPagables[0];
         const hi = z.mano.indexOf(pick);
         if (hi < 0) return false;
+        // Bug fix: pagar el coste del counter (1 maná)
+        const cCard = getCardById(pick);
+        const costeCounter = window.MotorEfectos ? MotorEfectos.costeEfectivo(cCard, quien) : Number(cCard?.costeTotal || 0);
+        if (costeCounter > 0) descansarMana(quien, null, costeCounter);
         if (!await pagarImpuestoCounter(quien, pick)) return false;
         descartarCartaMano(quien, hi);
         dispatch(pick, 'alCounterAtaque', [quien, ataqueCtx]);
@@ -7273,11 +7305,15 @@
       }
       return false;
     }
-    const opts = counters.map(id => ({ label: getCardById(id)?.nombre, value: id, cardId: id }));
-    const pick = await elegirConModal('¿Usar Counter Ataque? Elige una carta para negar el ataque', opts.concat([{ label: 'No', value: null }]), { noCancelable: true });
+    const opts = countersPagables.map(id => ({ label: getCardById(id)?.nombre, value: id, cardId: id }));
+    const pick = await elegirConModal('¿Usar Counter Ataque? Elige una carta para negar el ataque (cuesta 1 maná)', opts.concat([{ label: 'No', value: null }]), { noCancelable: true });
     if (!pick) return false;
     const hi = z.mano.indexOf(pick);
     if (hi < 0) return false;
+    // Bug fix: pagar el coste del counter (1 maná)
+    const cCard = getCardById(pick);
+    const costeCounter = window.MotorEfectos ? MotorEfectos.costeEfectivo(cCard, quien) : Number(cCard?.costeTotal || 0);
+    if (costeCounter > 0) descansarMana(quien, null, costeCounter);
     if (!await pagarImpuestoCounter(quien, pick)) return false;
     descartarCartaMano(quien, hi);
     dispatch(pick, 'alCounterAtaque', [quien, ataqueCtx]);
@@ -11948,6 +11984,17 @@
             // La IA ataca con todas las unidades activas que puedan atacar
             // Cada ataque respeta el flujo: counter ataque → bloqueo → combo defensora → resolución
             const j = estadoPartida.jugador;
+            // Bug fix: helper para detectar doble/triple golpe o crítico en una unidad
+            const tieneHabilidadEspecial = (zona, cardId) => {
+                if (!zona) return false;
+                const c = getCardById(cardId);
+                // Doble/triple golpe por flag o por tag
+                if (zona.flags?.dobleGolpe || zona.flags?.tripleGolpe) return true;
+                if (typeof tieneTag === 'function' && (tieneTag(c, 'doble golpe') || tieneTag(c, 'triple golpe'))) return true;
+                // Crítico por tag
+                if (typeof tieneTag === 'function' && tieneTag(c, 'critico')) return true;
+                return false;
+            };
             let ataqueIdx = 0;
             while (ataqueIdx < r.batalla.length) {
                 const u = r.batalla[ataqueIdx];
@@ -11955,25 +12002,35 @@
                     ataqueIdx++;
                     continue;
                 }
-                // Decidir objetivo: priorizar unidades con mismo poder, luego líder, luego unidades con menos poder
+                // Bug fix: si la unidad tiene doble golpe, triple golpe o crítico, siempre ataca al líder
                 let objetivo = { tipo: 'lider' };
-                const descansadas = j.batalla.map((c, idx) => ({ c, idx })).filter(x => x.c && x.c.rested);
-                if (descansadas.length) {
-                    const poderAtacante = Number(getCardById(u.id)?.poder || 0);
-                    // Buscar unidad con mismo poder
-                    const mismoPoder = descansadas.filter(x => Number(getCardById(x.c.id)?.poder || 0) === poderAtacante);
-                    if (mismoPoder.length) {
-                        objetivo = { tipo: 'unidad', index: mismoPoder[0].idx };
-                    } else {
-                        // Buscar unidad con menos poder (que la IA pueda derrotar)
-                        const masDebiles = descansadas.filter(x => Number(getCardById(x.c.id)?.poder || 0) < poderAtacante);
-                        if (masDebiles.length) {
-                            // Atacar la más fuerte de las débiles (mejor trade)
-                            masDebiles.sort((a, b) => Number(getCardById(b.c.id)?.poder || 0) - Number(getCardById(a.c.id)?.poder || 0));
-                            objetivo = { tipo: 'unidad', index: masDebiles[0].idx };
+                if (!tieneHabilidadEspecial(u, u.id)) {
+                    // Decidir objetivo: priorizar unidades con mismo poder, luego líder, luego unidades con menos poder
+                    const descansadas = j.batalla.map((c, idx) => ({ c, idx })).filter(x => x.c && x.c.rested);
+                    if (descansadas.length) {
+                        const poderAtacante = Number(getCardById(u.id)?.poder || 0);
+                        // Buscar unidad con mismo poder
+                        const mismoPoder = descansadas.filter(x => Number(getCardById(x.c.id)?.poder || 0) === poderAtacante);
+                        if (mismoPoder.length) {
+                            objetivo = { tipo: 'unidad', index: mismoPoder[0].idx };
                         } else {
-                            // Todas son más fuertes: no atacar a unidades, ir a por el líder
-                            objetivo = { tipo: 'lider' };
+                            // Buscar unidad con menos poder (que la IA pueda derrotar)
+                            const masDebiles = descansadas.filter(x => Number(getCardById(x.c.id)?.poder || 0) < poderAtacante);
+                            if (masDebiles.length) {
+                                // Bug fix: NO atacar cartas de 5000 de poder (no merece la pena)
+                                const masDebilesValidas = masDebiles.filter(x => Number(getCardById(x.c.id)?.poder || 0) > 5000);
+                                if (masDebilesValidas.length) {
+                                    // Atacar la más fuerte de las débiles válidas (mejor trade)
+                                    masDebilesValidas.sort((a, b) => Number(getCardById(b.c.id)?.poder || 0) - Number(getCardById(a.c.id)?.poder || 0));
+                                    objetivo = { tipo: 'unidad', index: masDebilesValidas[0].idx };
+                                } else {
+                                    // Si solo hay cartas de 5000, atacar al líder
+                                    objetivo = { tipo: 'lider' };
+                                }
+                            } else {
+                                // Todas son más fuertes: no atacar a unidades, ir a por el líder
+                                objetivo = { tipo: 'lider' };
+                            }
                         }
                     }
                 }
@@ -11996,22 +12053,31 @@
                 estadoPartida.log = 'La IA ataca con su líder...';
                 renderizarPartida();
                 await sleep(500);
-                // Decidir objetivo del líder: priorizar unidades con mismo poder, luego líder
+                // Decidir objetivo del líder
                 let objLider = { tipo: 'lider' };
-                const descansadasLid = j.batalla.map((c, idx) => ({ c, idx })).filter(x => x.c && x.c.rested);
-                if (descansadasLid.length) {
-                    const lid = getCardById(r.liderId);
-                    const poderLid = r.liderDespierto ? Number(lid?.poderEvo || 0) : Number(lid?.poder || 0);
-                    const mismoPoder = descansadasLid.filter(x => Number(getCardById(x.c.id)?.poder || 0) === poderLid);
-                    if (mismoPoder.length) {
-                        objLider = { tipo: 'unidad', index: mismoPoder[0].idx };
-                    } else {
-                        const masDebiles = descansadasLid.filter(x => Number(getCardById(x.c.id)?.poder || 0) < poderLid);
-                        if (masDebiles.length) {
-                            masDebiles.sort((a, b) => Number(getCardById(b.c.id)?.poder || 0) - Number(getCardById(a.c.id)?.poder || 0));
-                            objLider = { tipo: 'unidad', index: masDebiles[0].idx };
+                // Bug fix: si el líder tiene doble/triple golpe o crítico, siempre ataca al líder
+                if (!tieneHabilidadEspecial(r.liderZona, r.liderId)) {
+                    const descansadasLid = j.batalla.map((c, idx) => ({ c, idx })).filter(x => x.c && x.c.rested);
+                    if (descansadasLid.length) {
+                        const lid = getCardById(r.liderId);
+                        const poderLid = r.liderDespierto ? Number(lid?.poderEvo || 0) : Number(lid?.poder || 0);
+                        const mismoPoder = descansadasLid.filter(x => Number(getCardById(x.c.id)?.poder || 0) === poderLid);
+                        if (mismoPoder.length) {
+                            objLider = { tipo: 'unidad', index: mismoPoder[0].idx };
                         } else {
-                            objLider = { tipo: 'lider' };
+                            const masDebiles = descansadasLid.filter(x => Number(getCardById(x.c.id)?.poder || 0) < poderLid);
+                            if (masDebiles.length) {
+                                // Bug fix: NO atacar cartas de 5000 de poder
+                                const masDebilesValidas = masDebiles.filter(x => Number(getCardById(x.c.id)?.poder || 0) > 5000);
+                                if (masDebilesValidas.length) {
+                                    masDebilesValidas.sort((a, b) => Number(getCardById(b.c.id)?.poder || 0) - Number(getCardById(a.c.id)?.poder || 0));
+                                    objLider = { tipo: 'unidad', index: masDebilesValidas[0].idx };
+                                } else {
+                                    objLider = { tipo: 'lider' };
+                                }
+                            } else {
+                                objLider = { tipo: 'lider' };
+                            }
                         }
                     }
                 }
@@ -12105,11 +12171,14 @@
             let comboAcum = 0;
             const usadas = [];
             for (const cc of cartasCombo) {
-                if (comboAcum >= necesita && objetivo.tipo === 'unidad') break;
+                // Bug fix: parar ANTES de añadir si ya tenemos suficiente poder
+                if (objetivo.tipo === 'unidad' && comboAcum >= necesita) break;
                 // Para ataque al líder, usar hasta 2 cartas de combo como máximo
                 if (objetivo.tipo === 'lider' && usadas.length >= 2) break;
                 comboAcum += cc.poder;
                 usadas.push(cc);
+                // Bug fix: si atacamos unidad y ya superamos el poder necesario, parar
+                if (objetivo.tipo === 'unidad' && comboAcum >= necesita) break;
             }
             if (comboAcum < necesita && objetivo.tipo === 'unidad') return 0; // No llega, no combar
             // Aplicar combo: mover cartas de mano a combo y descarte
@@ -12235,6 +12304,9 @@
             const poderAtacante = window.MotorEfectos
                 ? MotorEfectos.poderCarta(atacante.id, atacante, { quien: 'rival', atacanteId: atacante.id, atacanteZona: atacante })
                 : Number(getCardById(atacante.id)?.poder || 0);
+            // Bug fix: incluir el combo de ataque de la IA en el poder del atacante total
+            // para que la comparación y el choque visual sean correctos.
+            const poderAtacanteTotal = poderAtacante + (estadoPartida.ataqueActual?.atacanteCombo || 0);
 
             // Preguntar al jugador si quiere combar (solo si tiene cartas en mano y es una unidad defensora o líder)
             // Fase de combo defensora: entrar directamente (sin modal previo).
@@ -12244,23 +12316,19 @@
                 // Pero esto es para cuando la IA ES la defensora. En 1v1, la IA es la ATACANTE,
                 // así que aquí el defensor es el jugador y esperamos a que el jugador combe.
                 if (j.mano.length > 0 || j.batalla.some(c => !c.rested)) {
-                    estadoPartida.ataqueActual = {
-                        atacanteRef: { tipo: 'unidad', index: unidadIndex },
-                        atacanteId: atacante.id,
-                        atacanteZonaRef: atacante,
-                        atacanteBase: poderAtacante,
-                        atacanteCombo: 0,
-                        objetivo: objetivo,
-                        defensorCombo: 0
-                    };
+                    // Bug fix: NO reiniciar ataqueActual aquí. Preservar atacanteCombo del combo de la IA.
+                    // Solo actualizar el objetivo (por si cambió por bloqueo) y defensorCombo.
+                    estadoPartida.ataqueActual.objetivo = objetivo;
+                    estadoPartida.ataqueActual.defensorCombo = 0;
                     await esperarComboDefensora();
                     defensorCombo = (estadoPartida.ataqueActual?.defensorCombo) || 0;
                 }
             }
 
             // === 4. RESOLUCIÓN ===
+            // Bug fix: usar poderAtacanteTotal (base + combo IA) para la resolución
             const poderDefensorTotal = poderDefensorBase + defensorCombo;
-            const ganaAtacante = poderAtacante >= poderDefensorTotal;
+            const ganaAtacante = poderAtacanteTotal >= poderDefensorTotal;
 
             // Marcar atacante como descansado
             atacante.ataquesRestantes = Math.max(0, (atacante.ataquesRestantes ?? 1) - 1);
@@ -12316,7 +12384,7 @@
             estadoPartida.rivalComboActual = 0;
             estadoPartida.faseIndex = 2;
             _resolviendoAtaqueIA = false; // Limpiar flag
-            mostrarChoque(poderDefensorTotal, poderAtacante, ganaAtacante ? 'Atacante' : 'Defensor', !ganaAtacante);
+            mostrarChoque(poderDefensorTotal, poderAtacanteTotal, ganaAtacante ? 'Atacante' : 'Defensor', !ganaAtacante);
             renderizarPartida();
             if (typeof verificarFinPartida === 'function') verificarFinPartida();
             return true;
@@ -12430,15 +12498,9 @@
 
             if (!opts.skipComboDefensora) {
                 if (j.mano.length > 0 || j.batalla.some(c => !c.rested)) {
-                    estadoPartida.ataqueActual = {
-                        atacanteRef: { tipo: 'lider' },
-                        atacanteId: r.liderId,
-                        atacanteZonaRef: atacante,
-                        atacanteBase: poderAtacante,
-                        atacanteCombo: 0,
-                        objetivo: objetivo,
-                        defensorCombo: 0
-                    };
+                    // Bug fix: NO reiniciar ataqueActual aquí. Solo actualizar objetivo y defensorCombo.
+                    estadoPartida.ataqueActual.objetivo = objetivo;
+                    estadoPartida.ataqueActual.defensorCombo = 0;
                     await esperarComboDefensora();
                     defensorCombo = (estadoPartida.ataqueActual?.defensorCombo) || 0;
                 }
@@ -13727,14 +13789,25 @@
             // Así permitimos combear con copias distintas de la misma carta
             const atk = estadoPartida.atacanteSeleccionado;
             const atkZona = atk?.tipo === 'unidad' ? estadoPartida.jugador.batalla[atk.index] : null;
-            const ataqueZona = estadoPartida.ataqueActual?.atacanteRef?.tipo === 'unidad'
+            // Bug fix: cuando el jugador ES el atacante (en su turno),
+            // atacanteRef.index apunta a jugador.batalla y debemos evitar combear con esa unidad.
+            // Pero cuando el jugador ES el DEFENSOR (ataque de la IA o del rival online),
+            // el atacante está en estadoPartida.rival.batalla, NO en jugador.batalla,
+            // así que NO debemos comparar con jugador.batalla[atacanteRef.index].
+            // Para distinguir: si es el turno del jugador local Y hay un atacanteSeleccionado
+            // o el ataqueActual fue iniciado por el jugador, entonces el jugador es el atacante.
+            const esJugadorAtacante = estadoPartida.ataqueActual
+                && estadoPartida.ataqueActual.atacanteRef?.tipo === 'unidad'
+                && estadoPartida.turnoDelJugadorLocal === true;
+            const ataqueZona = esJugadorAtacante
                 ? estadoPartida.jugador.batalla[estadoPartida.ataqueActual.atacanteRef.index]
                 : null;
-            // Bug fix: usar atacanteZonaRef (referencia directa) además del index, porque
-            // tras combear con otra unidad del campo, los índices cambian y atacanteRef.index
-            // apunta a una zona distinta (o undefined), permitiendo combar con el atacante
-            // y softlockeando el juego al no quedar atacante en campo.
-            const ataqueZonaRef = estadoPartida.ataqueActual?.atacanteZonaRef || null;
+            // atacanteZonaRef es la referencia directa al objeto atacante.
+            // Solo es relevante cuando el jugador es el atacante.
+            // Cuando defiende, atacanteZonaRef es un clon del rival y no coincide con zona.
+            const ataqueZonaRef = esJugadorAtacante
+                ? (estadoPartida.ataqueActual?.atacanteZonaRef || null)
+                : null;
             if ((atkZona && atkZona === zona) || (ataqueZona && ataqueZona === zona) || (ataqueZonaRef && ataqueZonaRef === zona)) {
                 return alert('No puedes combear con la propia unidad atacante.');
             }
