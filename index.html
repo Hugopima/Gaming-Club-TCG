@@ -4405,7 +4405,11 @@
   });
 
   R('lucas', {
-    modificarPoder(id, zona, c, p) { return p + contarTipoEnJuego('animal') * 5000; }
+    modificarPoder(id, zona, c, p) {
+      // Lucas gana +5000 por cada animal en juego (propios y del rival).
+      // contarTipoEnJuego ya cuenta ambos jugadores (jugador y rival).
+      return p + contarTipoEnJuego('animal') * 5000;
+    }
   });
 
   R('carlospro', {});
@@ -5942,7 +5946,9 @@
 
   R('gato', {
     async alJugar(quien) {
-      const ok = await elegirConModal('¿Tomar 1 vida? Doble Golpe', [{ label: 'Sí', value: true }, { label: 'No', value: false }]);
+      // Bug fix: eliminar botón Cancelar. Usar noCancelable: true para que
+      // solo se puedan elegir Sí o No, sin opción de cancelar.
+      const ok = await elegirConModal('¿Tomar 1 vida? Doble Golpe', [{ label: 'Sí', value: true }, { label: 'No', value: false }], { noCancelable: true });
       if (ok && zonaJugador(quien).vida.length) {
         zonaJugador(quien).mano.push(zonaJugador(quien).vida.pop());
         const u = zonaJugador(quien).batalla[zonaJugador(quien).batalla.length - 1];
@@ -6156,7 +6162,9 @@
       // Verificar si se han colocado las 4 cartas necesarias
       const tieneTodas = ['omori', 'kel', 'aubrey', 'hero'].every(id => campo.debajo.includes(id));
       if (tieneTodas) {
-        // Buscar Omori's gang en mano o baraja
+        // Bug fix: buscar Omori's gang en mano, mazo Y descarte.
+        // Antes solo buscaba en mano y mazo. Si estaba en descarte,
+        // no se jugaba (bug). Ahora se busca en los 3 sitios.
         const z2 = zonaJugador(quien);
         let gangIdx = z2.mano.indexOf('gang');
         let gangSrc = gangIdx >= 0 ? 'mano' : null;
@@ -6164,9 +6172,14 @@
           gangIdx = z2.mazo.indexOf('gang');
           if (gangIdx >= 0) gangSrc = 'mazo';
         }
+        if (!gangSrc) {
+          gangIdx = z2.descarte.indexOf('gang');
+          if (gangIdx >= 0) gangSrc = 'descarte';
+        }
         if (gangSrc) {
           if (gangSrc === 'mano') z2.mano.splice(gangIdx, 1);
-          else z2.mazo.splice(gangIdx, 1);
+          else if (gangSrc === 'mazo') z2.mazo.splice(gangIdx, 1);
+          else if (gangSrc === 'descarte') z2.descarte.splice(gangIdx, 1);
           // Jugar Omori's gang gratis
           z2.batalla.push(crearUnidadCampo('gang', { rested: false }));
           dispatch('gang', 'alJugar', [quien, 'gang', z2.batalla[z2.batalla.length - 1]]);
@@ -6175,7 +6188,7 @@
           campo.debajo = [];
           log("¡RELEASE ENERGY activada! Omori's Gang entra al campo gratis.");
         } else {
-          log("RELEASE ENERGY: tienes las 4 cartas debajo, pero no se ha encontrado Omori's Gang en tu mano ni baraja.");
+          log("RELEASE ENERGY: tienes las 4 cartas debajo, pero no se ha encontrado Omori's Gang en tu mano, mazo ni descarte.");
         }
       }
       if (typeof renderizarPartida === 'function') renderizarPartida();
@@ -6222,35 +6235,57 @@
         v = Math.random() < 0.5 ? 'desc' : 'kill';
         log('Sweetheart: la IA elige ' + (v === 'desc' ? 'descartar top del mazo' : 'destruir unidad ≤4') + '.');
       }
+      // Bug fix: si el rival no tiene cartas en mazo NI unidades ≤4,
+      // no se puede aplicar ningún efecto. Antes, si elegía 'desc' con mazo
+      // vacío, no pasaba nada (correcto), pero si elegía 'kill' sin unidades,
+      // intentaba descartar del mazo vacío sin log claro.
+      // Ahora: comprobar opciones reales antes de elegir.
+      const rivZ = zonaJugador(riv);
+      const tieneMazo = rivZ.mazo.length > 0;
+      const unidadesKill = opcionesUnidades(riv, (u, i, c) => Number(c?.costeTotal || 99) <= 4);
+      const tieneUnidadesKill = unidadesKill.length > 0;
+
+      // Si no tiene ni mazo ni unidades, no hacer nada
+      if (!tieneMazo && !tieneUnidadesKill) {
+        log('Sweetheart: el rival no tiene cartas en el mazo ni unidades ≤4. Sin efecto.');
+        if (typeof renderizarPartida === 'function') renderizarPartida();
+        return;
+      }
+
+      // Si solo tiene una de las dos opciones, forzar esa
+      if (!tieneMazo && tieneUnidadesKill) v = 'kill';
+      else if (tieneMazo && !tieneUnidadesKill) v = 'desc';
+      // Si tiene ambas, respetar la elección del rival (v ya está set)
+
       if (v === 'desc') {
         // Descartar la carta superior del mazo del rival
-        const top = zonaJugador(riv).mazo.pop();
+        const top = rivZ.mazo.pop();
         if (top) {
-          zonaJugador(riv).descarte.push(top);
+          rivZ.descarte.push(top);
           log('Sweetheart: el rival descarta la carta superior de su mazo.');
         } else {
           log('Sweetheart: el rival no tiene cartas en el mazo.');
         }
         if (estadoPartida?.modo === 'online' && typeof sincronizarEstadoOnline === 'function') sincronizarEstadoOnline('sweetheart');
       } else if (v === 'kill') {
-        const opts = opcionesUnidades(riv, (u, i, c) => Number(c?.costeTotal || 99) <= 4);
-        if (opts.length) {
-          const optsConCardId = opts.map(o => ({ label: o.label, value: o.cardId, cardId: o.cardId }));
-          const pickCardId = await elegirConModalRival('Sweetheart: elige unidad ≤4 para destruir', optsConCardId.concat([{ label: 'No destruir', value: null }]));
-          if (pickCardId) {
-            const idxLocal = zonaJugador(riv).batalla.findIndex(u => u && u.id === pickCardId);
-            if (idxLocal >= 0) {
-              destruirUnidad(riv, idxLocal);
-              log('Sweetheart: el rival destruye una de sus unidades.');
-              if (estadoPartida?.modo === 'online' && typeof enviarEfectoRival === 'function') {
-                enviarEfectoRival({ tipo: 'destruir-unidad', cardId: pickCardId, nombre: 'Sweetheart' });
-              }
+        const optsConCardId = unidadesKill.map(o => ({ label: o.label, value: o.cardId, cardId: o.cardId }));
+        const pickCardId = await elegirConModalRival('Sweetheart: elige unidad ≤4 para destruir', optsConCardId.concat([{ label: 'No destruir', value: null }]));
+        if (pickCardId) {
+          const idxLocal = rivZ.batalla.findIndex(u => u && u.id === pickCardId);
+          if (idxLocal >= 0) {
+            destruirUnidad(riv, idxLocal);
+            log('Sweetheart: el rival destruye una de sus unidades.');
+            if (estadoPartida?.modo === 'online' && typeof enviarEfectoRival === 'function') {
+              enviarEfectoRival({ tipo: 'destruir-unidad', cardId: pickCardId, nombre: 'Sweetheart' });
             }
           }
-        } else {
-          log('Sweetheart: el rival no tiene unidades ≤4, descarta top del mazo en su lugar.');
-          const top = zonaJugador(riv).mazo.pop();
-          if (top) zonaJugador(riv).descarte.push(top);
+        } else if (tieneMazo) {
+          // Si canceló la destrucción, descartar top del mazo como fallback
+          const top = rivZ.mazo.pop();
+          if (top) {
+            rivZ.descarte.push(top);
+            log('Sweetheart: el rival canceló destruir unidad, descarta top del mazo.');
+          }
         }
         if (estadoPartida?.modo === 'online' && typeof sincronizarEstadoOnline === 'function') sincronizarEstadoOnline('sweetheart');
       }
@@ -11514,8 +11549,10 @@
             await sleep(400);
 
             // 1. Poner EXACTAMENTE 1 maná por turno (regla del juego)
-            // Solo si no ha puesto maná este turno y tiene cartas en mano
-            if (!r.manaUsadoEsteTurno && r.mano.length > 0) {
+            // Solo si no ha puesto maná este turno y tiene cartas en mano.
+            // Bug fix: si la IA tiene 1 o menos cartas en mano, NO poner maná
+            // (se quedaría sin cartas para jugar). Mínimo 2 cartas para poder poner maná.
+            if (!r.manaUsadoEsteTurno && r.mano.length > 1) {
                 // Elegir la carta menos útil para maná: extras primero (PERO NO counter ataque
                 // ni counter play, que la IA debe guardar en mano para contrarrestar),
                 // luego la de mayor coste.
@@ -11724,7 +11761,8 @@
             const j = estadoPartida.jugador;
             if (objetivo.tipo === 'lider') {
                 const lid = getCardById(j.liderId);
-                poderDefensor = j.liderDespierto ? Number(lid?.poderEvo || 0) : Number(lid?.poder || 0);
+                // Bug fix: validación estricta de liderDespierto === true.
+                poderDefensor = (j.liderDespierto === true) ? Number(lid?.poderEvo || 0) : Number(lid?.poder || 0);
             } else if (objetivo.tipo === 'unidad') {
                 const def = j.batalla[objetivo.index];
                 if (def) poderDefensor = Number(getCardById(def.id)?.poder || 0);
@@ -11886,7 +11924,9 @@
             let poderDefensorBase = 0;
             if (objetivo.tipo === 'lider') {
                 const lid = getCardById(j.liderId);
-                poderDefensorBase = j.liderDespierto ? Number(lid?.poderEvo || 0) : Number(lid?.poder || 0);
+                // Bug fix: validación estricta de liderDespierto === true.
+                // Antes usaba truthy, lo que podía activar poderEvo sin despertar.
+                poderDefensorBase = (j.liderDespierto === true) ? Number(lid?.poderEvo || 0) : Number(lid?.poder || 0);
             } else {
                 const def = j.batalla[objetivo.index];
                 if (def) poderDefensorBase = Number(getCardById(def.id)?.poder || 0);
@@ -11963,6 +12003,12 @@
             // Limpiar combo del defensor y estado del ataque
             j.combo.forEach(c => j.descarte.push(c.id || c));
             j.combo = [];
+            // Bug fix: limpiar también el combo del rival (IA) tras el ataque.
+            // Antes no se limpiaba, así que las cartas usadas para combo de ataque
+            // se quedaban en la zona de combo hasta el siguiente turno.
+            if (r.combo && r.combo.length) {
+                r.combo = [];
+            }
             estadoPartida.ataqueActual = null;
             estadoPartida.rivalAtacanteId = null;
             estadoPartida.rivalComboActual = 0;
@@ -12070,14 +12116,15 @@
             let poderDefensorBase = 0;
             if (objetivo.tipo === 'lider') {
                 const lid = getCardById(j.liderId);
-                poderDefensorBase = j.liderDespierto ? Number(lid?.poderEvo || 0) : Number(lid?.poder || 0);
+                // Bug fix: validación estricta de liderDespierto === true.
+                poderDefensorBase = (j.liderDespierto === true) ? Number(lid?.poderEvo || 0) : Number(lid?.poder || 0);
             } else {
                 const def = j.batalla[objetivo.index];
                 if (def) poderDefensorBase = Number(getCardById(def.id)?.poder || 0);
             }
             const poderAtacante = window.MotorEfectos
                 ? MotorEfectos.poderCarta(r.liderId, atacante, { quien: 'rival', atacanteId: r.liderId, atacanteZona: atacante, objetivo: objetivo })
-                : (r.liderDespierto ? Number(getCardById(r.liderId)?.poderEvo || 0) : Number(getCardById(r.liderId)?.poder || 0));
+                : ((r.liderDespierto === true) ? Number(getCardById(r.liderId)?.poderEvo || 0) : Number(getCardById(r.liderId)?.poder || 0));
 
             if (!opts.skipComboDefensora) {
                 if (j.mano.length > 0 || j.batalla.some(c => !c.rested)) {
@@ -12139,6 +12186,10 @@
             // Limpiar combo del defensor y estado del ataque
             j.combo.forEach(c => j.descarte.push(c.id || c));
             j.combo = [];
+            // Bug fix: limpiar también el combo del rival (IA) tras el ataque del líder.
+            if (r.combo && r.combo.length) {
+                r.combo = [];
+            }
             estadoPartida.ataqueActual = null;
             estadoPartida.rivalAtacanteId = null;
             estadoPartida.rivalComboActual = 0;
@@ -12305,8 +12356,17 @@
         }
         function soltarEnBatalla(event) {
             event.preventDefault();
-            const index = Number(event.dataTransfer.getData('hand-index'));
-            if (Number.isNaN(index)) return;
+            const handData = event.dataTransfer.getData('hand-index');
+            // Bug fix: ser más robusto con el parsing del index.
+            // A veces getData devuelve null/undefined/'' y Number() falla.
+            if (handData === '' || handData == null) {
+                // No es una carta de la mano, ignorar silenciosamente
+                return;
+            }
+            const index = Number(handData);
+            if (!Number.isFinite(index) || index < 0) return;
+            // Verificar que la carta sigue en la mano (puede haber cambiado)
+            if (!estadoPartida || !estadoPartida.jugador || !estadoPartida.jugador.mano[index]) return;
             // Si hay RELEASE ENERGY en campo y la carta es Omori/Kel/Aubrey/Hero, redirigir a soltarEnCampo
             if (estadoPartida?.jugador?.campo?.[0]?.id === 'release') {
                 const cartaId = estadoPartida.jugador.mano[index];
@@ -13088,16 +13148,24 @@
                         const necesita = poderAtacanteJug - poderDefensorBaseIA + 1;
                         let comboAcum = 0;
                         const usadas = [];
-                        for (let i = 0; i < r.mano.length && comboAcum < necesita; i++) {
+                        // Bug fix: ordenar cartas de combo por poder ascendente ANTES de seleccionar,
+                        // y parar en cuanto comboAcum >= necesita. Así la IA solo comba lo justo
+                        // para sobrevivir, sin pasarse.
+                        const cartasComboDisp = [];
+                        for (let i = 0; i < r.mano.length; i++) {
                             const id = r.mano[i];
                             const c = getCardById(id);
                             if (!c || esLider(c) || esToken(c)) continue;
                             if (String(c.clase || c.tipo || '').toLowerCase().includes('extra')) continue;
                             const poder = poderCombo(c);
-                            if (poder > 0) {
-                                comboAcum += poder;
-                                usadas.push({ id, index: i });
-                            }
+                            if (poder > 0) cartasComboDisp.push({ id, index: i, poder });
+                        }
+                        // Ordenar por poder ascendente (usar las más débiles primero)
+                        cartasComboDisp.sort((a, b) => a.poder - b.poder);
+                        for (const cc of cartasComboDisp) {
+                            if (comboAcum >= necesita) break; // Parar en cuanto llegue al umbral
+                            comboAcum += cc.poder;
+                            usadas.push(cc);
                         }
                         if (comboAcum >= necesita) {
                             usadas.sort((a, b) => b.index - a.index);
