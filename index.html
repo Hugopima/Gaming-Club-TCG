@@ -7266,48 +7266,55 @@
     async alJugar(quien) {
       const riv = rivalDe(quien);
       const rivZ = zonaJugador(riv);
-      const tieneMazo = rivZ.mazo.length > 0;
+      const tieneMano = rivZ.mano.length > 0;
       const unidadesKill = opcionesUnidades(riv, (u, i, c) => Number(c?.costeTotal || 99) <= 4);
       const tieneUnidadesKill = unidadesKill.length > 0;
 
-      // Si no tiene ni mazo ni unidades, no hacer nada
-      if (!tieneMazo && !tieneUnidadesKill) {
-        log('Sweetheart: el rival no tiene cartas en el mazo ni unidades ≤4. Sin efecto.');
+      // Si no tiene ni mano ni unidades, no hacer nada
+      if (!tieneMano && !tieneUnidadesKill) {
+        log('Sweetheart: el rival no tiene cartas en la mano ni unidades ≤4. Sin efecto.');
         if (typeof renderizarPartida === 'function') renderizarPartida();
         return;
       }
 
-      // Si no tiene unidades, forzar descarte (sin opción de elegir)
-      // Si no tiene mazo, forzar destruir unidad (sin opción de elegir)
+      // Si no tiene unidades, forzar descarte de mano
+      // Si no tiene mano, forzar destruir unidad
       let v;
       if (!tieneUnidadesKill) {
         v = 'desc';
-      } else if (!tieneMazo) {
+      } else if (!tieneMano) {
         v = 'kill';
       } else {
         // Tiene ambas: dejar que el rival elija (sin opción de cancelar)
         if (estadoPartida?.modo === 'online' && window._socketOnline) {
-          v = await elegirConModalRival('Sweetheart: ¿descartar la carta superior de tu mazo o destruir una unidad de coste ≤4?', [
-            { label: 'Descartar carta superior del mazo', value: 'desc' },
+          v = await elegirConModalRival('Sweetheart: ¿descartar 1 carta de tu mano o destruir una unidad de coste ≤4?', [
+            { label: 'Descartar 1 carta de la mano', value: 'desc' },
             { label: 'Destruir unidad ≤4', value: 'kill' }
           ], { noCancelable: true });
         } else {
           // 1v1 vs IA: la IA elige aleatoriamente
           v = Math.random() < 0.5 ? 'desc' : 'kill';
-          log('Sweetheart: la IA elige ' + (v === 'desc' ? 'descartar top del mazo' : 'destruir unidad ≤4') + '.');
+          log('Sweetheart: la IA elige ' + (v === 'desc' ? 'descartar carta de mano' : 'destruir unidad ≤4') + '.');
         }
       }
 
       if (v === 'desc') {
-        // Descartar la carta superior del mazo del rival
-        const top = rivZ.mazo.pop();
-        if (top) {
-          rivZ.descarte.push(top);
-          log('Sweetheart: el rival descarta la carta superior de su mazo.');
+        // Descartar una carta de la mano del rival
+        if (estadoPartida?.modo === 'online' && window._socketOnline) {
+          // Online: el rival elige qué carta descartar
+          await elegirDescarteObligatorio(riv, 'Sweetheart: elige 1 carta de tu mano para descartar');
+          log('Sweetheart: el rival descarta 1 carta de su mano.');
+          if (typeof sincronizarEstadoOnline === 'function') sincronizarEstadoOnline('sweetheart');
         } else {
-          log('Sweetheart: el rival no tiene cartas en el mazo.');
+          // 1v1 vs IA: descartar aleatorio
+          const descartada = descartarAleatorio(riv);
+          if (descartada) {
+            log('Sweetheart: la IA descarta ' + (getCardById(descartada)?.nombre || 'una carta') + ' de su mano.');
+          } else {
+            log('Sweetheart: el rival no tiene cartas en la mano.');
+          }
         }
-        if (estadoPartida?.modo === 'online' && typeof sincronizarEstadoOnline === 'function') sincronizarEstadoOnline('sweetheart');
+        if (typeof renderizarPartida === 'function') renderizarPartida();
       } else if (v === 'kill') {
         const optsConCardId = unidadesKill.map(o => ({ label: o.label, value: o.cardId, cardId: o.cardId }));
         const pickCardId = await elegirConModalRival('Sweetheart: elige unidad ≤4 para destruir', optsConCardId, { noCancelable: true });
@@ -11627,9 +11634,9 @@
                 alert('Tu mazo no tiene un banquillo. No puedes cambiar cartas.');
                 return;
             }
-            const banquillo = mazo.banquillo;
-            const cartasMazo = mazo.cartas;
-            // Crear overlay de sideboard
+            // Hacer copias locales de trabajo para que los cambios se acumulen
+            window._sbMazoCartas = JSON.parse(JSON.stringify(mazo.cartas));
+            window._sbMazoBanquillo = JSON.parse(JSON.stringify(mazo.banquillo));
             const sb = document.createElement('div');
             sb.id = 'sideboard-overlay';
             sb.style.cssText = 'position:fixed;inset:0;z-index:3100;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;padding:24px;';
@@ -11654,16 +11661,14 @@
             </div>`;
             sb.innerHTML = html;
             document.body.appendChild(sb);
-            // Renderizar listas
-            window._sbCambios = []; // [{out: cardId, in: cardId}]
-            renderizarSideboardListas(cartasMazo, banquillo);
+            window._sbCambios = 0;
+            renderizarSideboardListas(window._sbMazoCartas, window._sbMazoBanquillo);
         }
 
         function renderizarSideboardListas(cartasMazo, banquillo) {
             const mazoList = document.getElementById('sb-mazo-list');
             const banqList = document.getElementById('sb-banquillo-list');
             if (!mazoList || !banqList) return;
-            // Renderizar mazo
             let mazoHtml = '';
             Object.entries(cartasMazo).forEach(([id, cant]) => {
                 const c = getCardById(id);
@@ -11675,7 +11680,6 @@
                 </div>`;
             });
             mazoList.innerHTML = mazoHtml || '<p style="color:#666;font-size:12px;">Sin cartas</p>';
-            // Renderizar banquillo
             let banqHtml = '';
             Object.entries(banquillo).forEach(([id, cant]) => {
                 const c = getCardById(id);
@@ -11691,49 +11695,51 @@
         }
 
         function sbMoverCarta(cardId, origen) {
-            const mazo = obtenerMazoAsignado();
-            if (!mazo) return;
-            if (window._sbCambios.length >= 10) {
+            if (window._sbCambios >= 10) {
                 alert('Ya has hecho el máximo de 10 cambios.');
                 return;
             }
             if (origen === 'mazo') {
-                // Sacar del mazo, meter al banquillo
-                if (!mazo.cartas[cardId] || mazo.cartas[cardId] <= 0) return;
-                mazo.cartas[cardId]--;
-                if (mazo.cartas[cardId] <= 0) delete mazo.cartas[cardId];
-                mazo.banquillo[cardId] = (mazo.banquillo[cardId] || 0) + 1;
+                if (!window._sbMazoCartas[cardId] || window._sbMazoCartas[cardId] <= 0) return;
+                window._sbMazoCartas[cardId]--;
+                if (window._sbMazoCartas[cardId] <= 0) delete window._sbMazoCartas[cardId];
+                window._sbMazoBanquillo[cardId] = (window._sbMazoBanquillo[cardId] || 0) + 1;
             } else {
-                // Sacar del banquillo, meter al mazo
-                if (!mazo.banquillo[cardId] || mazo.banquillo[cardId] <= 0) return;
-                mazo.banquillo[cardId]--;
-                if (mazo.banquillo[cardId] <= 0) delete mazo.banquillo[cardId];
-                mazo.cartas[cardId] = (mazo.cartas[cardId] || 0) + 1;
+                if (!window._sbMazoBanquillo[cardId] || window._sbMazoBanquillo[cardId] <= 0) return;
+                window._sbMazoBanquillo[cardId]--;
+                if (window._sbMazoBanquillo[cardId] <= 0) delete window._sbMazoBanquillo[cardId];
+                window._sbMazoCartas[cardId] = (window._sbMazoCartas[cardId] || 0) + 1;
             }
-            // Contar cambios como el total de cartas movidas (cada click = 1 cambio)
-            window._sbCambios.push(true);
-            renderizarSideboardListas(mazo.cartas, mazo.banquillo);
+            window._sbCambios++;
+            renderizarSideboardListas(window._sbMazoCartas, window._sbMazoBanquillo);
         }
 
         function actualizarSbCount() {
             const el = document.getElementById('sb-count');
-            if (el) el.textContent = `${window._sbCambios?.length || 0} cambios realizados (máx 10)`;
+            if (el) el.textContent = `${window._sbCambios || 0} cambios realizados (máx 10)`;
         }
 
         function cerrarSideboard(aplicar) {
             const sb = document.getElementById('sideboard-overlay');
             if (sb) sb.remove();
-            if (!aplicar) {
-                // Revertir: restaurar mazo original
+            if (aplicar) {
+                // Escribir los cambios de vuelta al mazo
                 const mazo = obtenerMazoAsignado();
-                if (mazo && _compBanquilloOriginal) {
-                    // TODO: revertir correctamente. Por simplicidad, recargar del almacenamiento.
+                if (mazo) {
+                    mazo.cartas = JSON.parse(JSON.stringify(window._sbMazoCartas));
+                    mazo.banquillo = JSON.parse(JSON.stringify(window._sbMazoBanquillo));
+                    // Guardar en localStorage
+                    const existente = mazosGuardados.findIndex(m => m.id === mazo.id);
+                    if (existente >= 0) {
+                        mazosGuardados[existente] = mazo;
+                        guardarListaMazos();
+                    }
                 }
             }
-            // Sincronizar online si es necesario
-            if (estadoPartida?.modo === 'online' && window._socketOnline) {
-                sincronizarEstadoOnline('sideboard-done');
-            }
+            // Limpiar variables
+            window._sbMazoCartas = null;
+            window._sbMazoBanquillo = null;
+            window._sbCambios = 0;
         }
 
         function finalizarCompetitivo(ganeMatch) {
@@ -11761,13 +11767,16 @@
             const ov = document.getElementById('comp-waiting-overlay');
             if (ov) ov.remove();
             if (window._compSetTimeout) { clearTimeout(window._compSetTimeout); window._compSetTimeout = null; }
-            window._compRivalListo = false;
 
-            // Re-iniciar partida con el mismo mazo
             const mazo = obtenerMazoAsignado();
             if (!mazo) { alert('Error: no se pudo cargar el mazo.'); return; }
 
-            // Preparar nueva partida (sin volver a matchmaking)
+            // Guardar info del rival antes de resetear
+            const rivalLiderId = estadoPartida?.rival?.liderId || 'red_lider_01';
+            const rivalNombre = estadoPartida?.rivalNombre || 'Rival';
+            const rivalTitulo = estadoPartida?.rivalTitulo || null;
+
+            // Crear nueva partida (estado local)
             estadoPartida = {
                 jugador: {
                     liderId: mazo.liderId,
@@ -11775,35 +11784,30 @@
                     vida: [], mano: [], mazo: [], mana: [], batalla: [], combo: [], descarte: [], campo: [], manaActivo: 0, liderDespierto: false
                 },
                 rival: {
-                    liderId: estadoPartida?.rival?.liderId || 'red_lider_01',
-                    liderZona: { id: estadoPartida?.rival?.liderId || 'red_lider_01', rested: false, ataquesRestantes: 0, buffs: { poder: 0, combo: 0, batalla: 0 } },
+                    liderId: rivalLiderId,
+                    liderZona: { id: rivalLiderId, rested: false, ataquesRestantes: 0, buffs: { poder: 0, combo: 0, batalla: 0 } },
                     vida: [], mano: [], mazo: [], mana: [], batalla: [], combo: [], descarte: [], campo: [], manaActivo: 0, liderDespierto: false
                 },
                 turno: 1, faseIndex: 0, log: `Set ${_compSetActual} - ¡A jugar!`,
                 atacanteSeleccionado: null, pagoPendiente: null,
                 introActiva: false, finalizada: false,
                 modo: 'online', soyHost: true, turnoDelJugadorLocal: true,
-                rivalNombre: estadoPartida?.rivalNombre || 'Rival',
-                rivalTitulo: estadoPartida?.rivalTitulo || null,
+                rivalNombre: rivalNombre,
+                rivalTitulo: rivalTitulo,
                 dificultad: 'normal'
             };
 
             // Preparar mazo del jugador
             const cartaIds = [];
             Object.entries(mazo.cartas).forEach(([id, cant]) => { for (let i = 0; i < cant; i++) cartaIds.push(id); });
-            // Barajar
             for (let i = cartaIds.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [cartaIds[i], cartaIds[j]] = [cartaIds[j], cartaIds[i]]; }
             estadoPartida.jugador.mazo = cartaIds;
             estadoPartida.jugador.vida = ['protegida','protegida','protegida','protegida','protegida'];
-            // Robar 6
             for (let i = 0; i < 6; i++) { if (estadoPartida.jugador.mazo.length) estadoPartida.jugador.mano.push(estadoPartida.jugador.mazo.pop()); }
 
-            // Rival (simulado por ahora - en online real, el rival enviaría su mazo)
-            const rivalMazo = ['freddy','bonnie','chica','foxy','pizza','freddy','bonnie','chica','foxy','pizza','freddy','bonnie','chica','foxy','pizza'];
-            for (let i = rivalMazo.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [rivalMazo[i], rivalMazo[j]] = [rivalMazo[j], rivalMazo[i]]; }
-            estadoPartida.rival.mazo = rivalMazo;
+            // Rival
             estadoPartida.rival.vida = ['desconocida','desconocida','desconocida','desconocida','desconocida'];
-            for (let i = 0; i < 6; i++) { estadoPartida.rival.mano.push('desconocida'); }
+            for (let i = 0; i < 6; i++) estadoPartida.rival.mano.push('desconocida');
 
             // Mostrar tablero
             ocultarPantallasPrincipales();
@@ -11812,12 +11816,28 @@
             mostrarFase('Carga');
             renderizarPartida();
 
+            // Re-enviar intercambio de líderes para sincronizar con el rival
+            if (_socketOnline) {
+                const tituloActivo = obtenerTituloActivo();
+                _socketOnline.emit('accion-juego', {
+                    tipo: 'intercambio-lider',
+                    liderId: estadoPartida.jugador.liderId,
+                    nombreJugador: getNombreJugador(),
+                    titulo: tituloActivo ? { nombre: tituloActivo.nombre, color: tituloActivo.color } : null,
+                    compSet: _compSetActual
+                });
+                // Enviar snapshot inicial para que el rival vea el estado del juego
+                setTimeout(() => {
+                    if (typeof sincronizarEstadoOnline === 'function') sincronizarEstadoOnline('comp-set-inicio');
+                }, 500);
+            }
+
             // Intro de líderes + mulligan
             setTimeout(() => {
                 reproducirIntroLideres(() => {
                     iniciarFlujoMulligan(estadoPartida.jugador, estadoPartida.rival);
                 });
-            }, 500);
+            }, 800);
         }
 
         // === CREAR SALA PRIVADA ===
