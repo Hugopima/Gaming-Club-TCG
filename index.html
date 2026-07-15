@@ -7265,22 +7265,6 @@
   R('sweetheart', {
     async alJugar(quien) {
       const riv = rivalDe(quien);
-      let v;
-      if (estadoPartida?.modo === 'online' && window._socketOnline) {
-        v = await elegirConModalRival('Sweetheart: ¿descartar la carta superior de tu mazo o destruir una unidad de coste ≤4?', [
-          { label: 'Descartar carta superior del mazo', value: 'desc' },
-          { label: 'Destruir unidad ≤4', value: 'kill' }
-        ]);
-      } else {
-        // 1v1 vs IA: la IA elige aleatoriamente
-        v = Math.random() < 0.5 ? 'desc' : 'kill';
-        log('Sweetheart: la IA elige ' + (v === 'desc' ? 'descartar top del mazo' : 'destruir unidad ≤4') + '.');
-      }
-      // Bug fix: si el rival no tiene cartas en mazo NI unidades ≤4,
-      // no se puede aplicar ningún efecto. Antes, si elegía 'desc' con mazo
-      // vacío, no pasaba nada (correcto), pero si elegía 'kill' sin unidades,
-      // intentaba descartar del mazo vacío sin log claro.
-      // Ahora: comprobar opciones reales antes de elegir.
       const rivZ = zonaJugador(riv);
       const tieneMazo = rivZ.mazo.length > 0;
       const unidadesKill = opcionesUnidades(riv, (u, i, c) => Number(c?.costeTotal || 99) <= 4);
@@ -7293,10 +7277,26 @@
         return;
       }
 
-      // Si solo tiene una de las dos opciones, forzar esa
-      if (!tieneMazo && tieneUnidadesKill) v = 'kill';
-      else if (tieneMazo && !tieneUnidadesKill) v = 'desc';
-      // Si tiene ambas, respetar la elección del rival (v ya está set)
+      // Si no tiene unidades, forzar descarte (sin opción de elegir)
+      // Si no tiene mazo, forzar destruir unidad (sin opción de elegir)
+      let v;
+      if (!tieneUnidadesKill) {
+        v = 'desc';
+      } else if (!tieneMazo) {
+        v = 'kill';
+      } else {
+        // Tiene ambas: dejar que el rival elija (sin opción de cancelar)
+        if (estadoPartida?.modo === 'online' && window._socketOnline) {
+          v = await elegirConModalRival('Sweetheart: ¿descartar la carta superior de tu mazo o destruir una unidad de coste ≤4?', [
+            { label: 'Descartar carta superior del mazo', value: 'desc' },
+            { label: 'Destruir unidad ≤4', value: 'kill' }
+          ], { noCancelable: true });
+        } else {
+          // 1v1 vs IA: la IA elige aleatoriamente
+          v = Math.random() < 0.5 ? 'desc' : 'kill';
+          log('Sweetheart: la IA elige ' + (v === 'desc' ? 'descartar top del mazo' : 'destruir unidad ≤4') + '.');
+        }
+      }
 
       if (v === 'desc') {
         // Descartar la carta superior del mazo del rival
@@ -7310,7 +7310,7 @@
         if (estadoPartida?.modo === 'online' && typeof sincronizarEstadoOnline === 'function') sincronizarEstadoOnline('sweetheart');
       } else if (v === 'kill') {
         const optsConCardId = unidadesKill.map(o => ({ label: o.label, value: o.cardId, cardId: o.cardId }));
-        const pickCardId = await elegirConModalRival('Sweetheart: elige unidad ≤4 para destruir', optsConCardId.concat([{ label: 'No destruir', value: null }]));
+        const pickCardId = await elegirConModalRival('Sweetheart: elige unidad ≤4 para destruir', optsConCardId, { noCancelable: true });
         if (pickCardId) {
           const idxLocal = rivZ.batalla.findIndex(u => u && u.id === pickCardId);
           if (idxLocal >= 0) {
@@ -8615,6 +8615,8 @@
                 sec.style.display = 'none';
             }
             actualizarVistaBanquillo();
+            // Re-renderizar la biblioteca para que los botones cambien entre +Banq y Quitar
+            renderizarEditor();
         }
 
         function actualizarVistaBanquillo() {
@@ -11273,6 +11275,15 @@
                 } else if (data.tipo === 'animacion-robo') {
                     // El rival robó una carta: animar en mi pantalla
                     if (typeof animarRoboRival === 'function') animarRoboRival();
+                } else if (data.tipo === 'comp-set-listo') {
+                    // El rival está listo para el siguiente set competitivo
+                    window._compRivalListo = true;
+                    // Si yo ya estoy esperando (overlay visible), iniciar el set
+                    const waitOv = document.getElementById('comp-waiting-overlay');
+                    if (waitOv) {
+                        if (window._compSetTimeout) { clearTimeout(window._compSetTimeout); window._compSetTimeout = null; }
+                        iniciarSiguienteSetComp();
+                    }
                 } else if (data.tipo === 'animacion-dado') {
                     // El rival tiró un dado: mostrar el resultado SIN requerir click del receptor.
                     if (typeof mostrarDado === 'function') {
@@ -11692,15 +11703,15 @@
                 mazo.cartas[cardId]--;
                 if (mazo.cartas[cardId] <= 0) delete mazo.cartas[cardId];
                 mazo.banquillo[cardId] = (mazo.banquillo[cardId] || 0) + 1;
-                window._sbCambios.push({ out: cardId, in: cardId });
             } else {
                 // Sacar del banquillo, meter al mazo
                 if (!mazo.banquillo[cardId] || mazo.banquillo[cardId] <= 0) return;
                 mazo.banquillo[cardId]--;
                 if (mazo.banquillo[cardId] <= 0) delete mazo.banquillo[cardId];
                 mazo.cartas[cardId] = (mazo.cartas[cardId] || 0) + 1;
-                window._sbCambios.push({ out: cardId, in: cardId });
             }
+            // Contar cambios como el total de cartas movidas (cada click = 1 cambio)
+            window._sbCambios.push(true);
             renderizarSideboardListas(mazo.cartas, mazo.banquillo);
         }
 
@@ -11742,6 +11753,71 @@
             _compMisVictorias = 0;
             _compVictoriasRival = 0;
             _esCompetitivo = false;
+        }
+
+        // Iniciar el siguiente set del modo competitivo
+        function iniciarSiguienteSetComp() {
+            // Limpiar overlay de espera
+            const ov = document.getElementById('comp-waiting-overlay');
+            if (ov) ov.remove();
+            if (window._compSetTimeout) { clearTimeout(window._compSetTimeout); window._compSetTimeout = null; }
+            window._compRivalListo = false;
+
+            // Re-iniciar partida con el mismo mazo
+            const mazo = obtenerMazoAsignado();
+            if (!mazo) { alert('Error: no se pudo cargar el mazo.'); return; }
+
+            // Preparar nueva partida (sin volver a matchmaking)
+            estadoPartida = {
+                jugador: {
+                    liderId: mazo.liderId,
+                    liderZona: { id: mazo.liderId, rested: false, ataquesRestantes: 0, buffs: { poder: 0, combo: 0, batalla: 0 } },
+                    vida: [], mano: [], mazo: [], mana: [], batalla: [], combo: [], descarte: [], campo: [], manaActivo: 0, liderDespierto: false
+                },
+                rival: {
+                    liderId: estadoPartida?.rival?.liderId || 'red_lider_01',
+                    liderZona: { id: estadoPartida?.rival?.liderId || 'red_lider_01', rested: false, ataquesRestantes: 0, buffs: { poder: 0, combo: 0, batalla: 0 } },
+                    vida: [], mano: [], mazo: [], mana: [], batalla: [], combo: [], descarte: [], campo: [], manaActivo: 0, liderDespierto: false
+                },
+                turno: 1, faseIndex: 0, log: `Set ${_compSetActual} - ¡A jugar!`,
+                atacanteSeleccionado: null, pagoPendiente: null,
+                introActiva: false, finalizada: false,
+                modo: 'online', soyHost: true, turnoDelJugadorLocal: true,
+                rivalNombre: estadoPartida?.rivalNombre || 'Rival',
+                rivalTitulo: estadoPartida?.rivalTitulo || null,
+                dificultad: 'normal'
+            };
+
+            // Preparar mazo del jugador
+            const cartaIds = [];
+            Object.entries(mazo.cartas).forEach(([id, cant]) => { for (let i = 0; i < cant; i++) cartaIds.push(id); });
+            // Barajar
+            for (let i = cartaIds.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [cartaIds[i], cartaIds[j]] = [cartaIds[j], cartaIds[i]]; }
+            estadoPartida.jugador.mazo = cartaIds;
+            estadoPartida.jugador.vida = ['protegida','protegida','protegida','protegida','protegida'];
+            // Robar 6
+            for (let i = 0; i < 6; i++) { if (estadoPartida.jugador.mazo.length) estadoPartida.jugador.mano.push(estadoPartida.jugador.mazo.pop()); }
+
+            // Rival (simulado por ahora - en online real, el rival enviaría su mazo)
+            const rivalMazo = ['freddy','bonnie','chica','foxy','pizza','freddy','bonnie','chica','foxy','pizza','freddy','bonnie','chica','foxy','pizza'];
+            for (let i = rivalMazo.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [rivalMazo[i], rivalMazo[j]] = [rivalMazo[j], rivalMazo[i]]; }
+            estadoPartida.rival.mazo = rivalMazo;
+            estadoPartida.rival.vida = ['desconocida','desconocida','desconocida','desconocida','desconocida'];
+            for (let i = 0; i < 6; i++) { estadoPartida.rival.mano.push('desconocida'); }
+
+            // Mostrar tablero
+            ocultarPantallasPrincipales();
+            document.getElementById('game-screen').classList.remove('hidden');
+            document.getElementById('main-menu').classList.add('hidden');
+            mostrarFase('Carga');
+            renderizarPartida();
+
+            // Intro de líderes + mulligan
+            setTimeout(() => {
+                reproducirIntroLideres(() => {
+                    iniciarFlujoMulligan(estadoPartida.jugador, estadoPartida.rival);
+                });
+            }, 500);
         }
 
         // === CREAR SALA PRIVADA ===
@@ -12928,14 +13004,32 @@
                 // Mostrar transición competitiva
                 mostrarTransicionCompetitiva(ganadorSet, (hayMasSets) => {
                     if (hayMasSets) {
-                        // Iniciar siguiente set: nueva partida con el mismo mazo
-                        // Por ahora, en modo online esto requiere re-conectar.
-                        // En modo solo/IA sería más simple, pero el competitivo es online.
-                        // Mostrar mensaje de que se está preparando el siguiente set
-                        alert('Preparando set ' + _compSetActual + '...');
-                        // TODO: La lógica completa de re-iniciar partida entre sets online
-                        // requiere coordinación via socket. Por ahora, volver al lobby.
-                        document.getElementById('online-lobby-overlay').classList.remove('hidden');
+                        // Mostrar overlay de "esperando al rival" en vez de volver a matchmaking
+                        const waitOverlay = document.createElement('div');
+                        waitOverlay.id = 'comp-waiting-overlay';
+                        waitOverlay.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,.9);display:flex;align-items:center;justify-content:center;padding:24px;';
+                        waitOverlay.innerHTML = `<div style="text-align:center;background:var(--dark-panel);border:2px solid var(--gold);border-radius:20px;padding:40px;box-shadow:0 0 60px rgba(255,215,0,.3);">
+                            <div style="font-size:48px;margin-bottom:16px;animation:spin 2s linear infinite;">⏳</div>
+                            <h2 style="color:#fff07c;text-transform:uppercase;margin:0 0 8px;font-size:24px;">Preparando set ${_compSetActual}</h2>
+                            <p style="color:#5ee7ff;font-size:14px;margin:8px 0 0;">Esperando a que el rival esté listo...</p>
+                            <div style="display:flex;gap:8px;justify-content:center;margin-top:20px;">
+                                <div style="width:12px;height:12px;background:#5ee7ff;border-radius:50%;animation:bounce 1.4s infinite;"></div>
+                                <div style="width:12px;height:12px;background:#5ee7ff;border-radius:50%;animation:bounce 1.4s infinite .2s;"></div>
+                                <div style="width:12px;height:12px;background:#5ee7ff;border-radius:50%;animation:bounce 1.4s infinite .4s;"></div>
+                            </div>
+                        </div>`;
+                        document.body.appendChild(waitOverlay);
+                        // Enviar señal de "listo" al rival via socket
+                        if (_socketOnline) {
+                            _socketOnline.emit('accion-juego', { tipo: 'comp-set-listo', set: _compSetActual });
+                        }
+                        // Escuchar señal del rival (se maneja en configurarEventosSocket)
+                        // Por seguridad, si no llega en 30s, iniciar igual
+                        window._compSetTimeout = setTimeout(() => {
+                            const ov = document.getElementById('comp-waiting-overlay');
+                            if (ov) ov.remove();
+                            iniciarSiguienteSetComp();
+                        }, 30000);
                     }
                 });
                 return;
