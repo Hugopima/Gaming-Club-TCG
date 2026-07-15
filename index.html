@@ -536,9 +536,9 @@
             text-shadow: 0 1px 2px rgba(0,0,0,0.6);
         }
         .btn-nav::before {
-            content: '◀'; display: inline-block; margin-right: 8px; font-size: 0.85em;
-            opacity: 0.7; transition: transform 0.2s ease;
+            content: ''; display: inline-block; margin-right: 0;
         }
+        .btn-nav:hover::before { transform: none; }
         .btn-nav:hover {
             background: linear-gradient(145deg, #5a3a22, #2a1a0a) !important;
             border-color: var(--gold) !important;
@@ -547,7 +547,6 @@
                         inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -3px 6px rgba(0,0,0,0.3) !important;
             transform: translateY(-2px) scale(1.03);
         }
-        .btn-nav:hover::before { transform: translateX(-3px); }
         .btn-nav:active {
             transform: translateY(3px);
             box-shadow: 0 2px 0 #1a0f06, inset 0 1px 0 rgba(255,255,255,0.1) !important;
@@ -1310,7 +1309,7 @@
         .combo-card .card-cost-badge { transform: rotate(-90deg); top: 8px; left: -15px; }
         .combo-card .card-power-badge { transform: rotate(-90deg); left: -27px; right: auto; bottom: 30px; }
         .combo-card .mana-dots { display: none; }
-        .select-deck-btn.active { background: linear-gradient(145deg, #1fa56a, #9cffc8); color: #062915; }
+        .select-deck-btn.active { background: linear-gradient(145deg, #1fa56a, #0d6a40) !important; color: #9cffc8 !important; border-color: #49ef78 !important; box-shadow: 0 3px 0 #0a4520, 0 0 12px rgba(73,239,120,0.4) !important; }
         .discard-view { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px,1fr)); gap: 14px; margin-top: 18px; }
         .drop-open-btn { position:absolute; top:-24px; right:-8px; border:1px solid #fff07c; background:#06151d; color:#fff07c; border-radius:999px; cursor:pointer; font-weight:900; }
 
@@ -1376,7 +1375,7 @@
             height: 236px;
             border-radius: 10px;
             border: 3px solid #ffd700;
-            overflow: hidden;
+            overflow: visible;
             box-shadow: 0 0 38px rgba(255, 215, 0, 0.32), 0 18px 46px rgba(0,0,0,0.68);
             z-index: 3;
             transition:
@@ -1387,7 +1386,7 @@
                 transform 0.85s cubic-bezier(0.22, 1, 0.36, 1),
                 opacity 0.45s ease;
         }
-        .intro-leader-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .intro-leader-card img { width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 7px; }
         .intro-leader-card.rival img { transform: scaleX(-1); }
         .intro-leader-card .intro-name {
             position: absolute;
@@ -8493,23 +8492,40 @@
             sortedCartas.forEach(c => {
                 const i = datosCartas.indexOf(c);
                 const id = getCardId(c);
-                const copias = copiasEnMazo(id);
+                const copiasMazo = copiasEnMazo(id);
+                const copiasBanq = (miMazo.banquillo && miMazo.banquillo[id]) || 0;
+                const copiasTotales = copiasMazo + copiasBanq; // Copias compartidas entre mazo y banquillo
                 const poseidas = getCantidadCarta(id);
                 const lider = esLider(c);
-                const agotado = (poseidas <= 0) || (!lider && (copias >= 4 || copias >= poseidas));
+                const banqAbierto = document.getElementById('banquillo-section')?.style.display !== 'none';
+                const agotado = (poseidas <= 0) || (!lider && (copiasTotales >= 4 || copiasTotales >= poseidas));
                 const cantidadHtml = `<span class="owned-count ${poseidas === 0 ? 'zero' : ''}" style="bottom:auto;right:auto;top:4px;left:4px;">${poseidas}</span>`;
                 const bwStyle = (poseidas === 0) ? 'filter: grayscale(100%) brightness(0.6); opacity:0.7;' : '';
+                let btnDerecho = '';
+                if (lider) {
+                    btnDerecho = `<button class="mini-btn" ${agotado ? 'disabled' : ''} onclick="seleccionarLider('${id}')">Líder</button>`;
+                } else if (banqAbierto) {
+                    // Banquillo abierto: mostrar +Banq
+                    btnDerecho = `<button class="mini-btn" style="background:linear-gradient(145deg,rgba(80,60,10,.9),rgba(40,30,4,.95));border-color:rgba(255,215,0,.4);" ${agotado ? 'disabled' : ''} onclick="agregarAlBanquillo('${id}')" title="Añadir al banquillo">+Banq</button>`;
+                } else {
+                    // Banquillo cerrado: mostrar Quitar si está en el mazo, sino deshabilitado
+                    if (copiasMazo > 0) {
+                        btnDerecho = `<button class="mini-btn" style="background:linear-gradient(145deg,rgba(100,30,20,.9),rgba(50,15,10,.95));border-color:rgba(255,80,60,.4);" onclick="quitarCarta('${id}')" title="Quitar del mazo">Quitar</button>`;
+                    } else {
+                        btnDerecho = `<button class="mini-btn" disabled style="opacity:0.3;">Quitar</button>`;
+                    }
+                }
                 libContainer.innerHTML += `
                     <div class="deck-card" style="border-color: ${obtenerColorBorde(c.color)}">
                         <div class="deck-card-img" onclick="abrirDetalleMazo(${i})">
                             ${c.img ? `<img src="${c.img}" alt="${escapeHtml(c.nombre)}" style="${bwStyle}">` : ''}
-                            <span class="copy-badge">${lider ? (miMazo.liderId === id ? 'L' : '-') : copias + '/' + Math.min(4, poseidas)}</span>
+                            <span class="copy-badge">${lider ? (miMazo.liderId === id ? 'L' : '-') : copiasTotales + '/' + Math.min(4, poseidas)}</span>
                             ${cantidadHtml}
                         </div>
                         <div class="deck-card-name">${escapeHtml(c.nombre)}</div>
                         <div class="deck-card-actions">
                             <button class="mini-btn" ${agotado ? 'disabled' : ''} onclick="${lider ? `seleccionarLider('${id}')` : `anadirCarta('${id}')`}">${lider ? 'Líder' : '+Mazo'}</button>
-                            ${!lider ? `<button class="mini-btn" style="background:linear-gradient(145deg,rgba(80,60,10,.9),rgba(40,30,4,.95));border-color:rgba(255,215,0,.4);" ${poseidas <= 0 ? 'disabled' : ''} onclick="agregarAlBanquillo('${id}')" title="Añadir al banquillo">+Banq</button>` : ''}
+                            ${btnDerecho}
                         </div>
                     </div>`;
             });
@@ -8528,23 +8544,28 @@
             const carta = getCardById(id);
             if (!carta || esLider(carta) || esToken(carta)) return;
             if (totalCartasMazo() >= 60) return alert("Maximo 60 cartas en el mazo.");
-            if (copiasEnMazo(id) >= 4) return alert("Solo puedes llevar hasta 4 copias de cada carta.");
-            // No se pueden añadir cartas que no se poseen
+            const copiasMazo = copiasEnMazo(id);
+            const copiasBanq = (miMazo.banquillo && miMazo.banquillo[id]) || 0;
+            const copiasTotales = copiasMazo + copiasBanq;
             const poseidas = getCantidadCarta(id);
             if (poseidas <= 0) return alert("No tienes esta carta. Ábrela en sobres o fabrícala.");
-            // No se pueden añadir más copias de las que se poseen
-            if (copiasEnMazo(id) >= poseidas) return alert("Solo tienes " + poseidas + " copia(s) de esta carta.");
-            miMazo.cartas[id] = copiasEnMazo(id) + 1;
+            if (copiasTotales >= 4) return alert("Solo puedes llevar hasta 4 copias de cada carta (entre mazo y banquillo).");
+            if (copiasTotales >= poseidas) return alert("Solo tienes " + poseidas + " copia(s) de esta carta.");
+            miMazo.cartas[id] = copiasMazo + 1;
             actualizarVistaMazo();
             renderizarEditor();
         }
 
-        function quitarCartaPorId(id) {
+        function quitarCarta(id) {
             if (!miMazo.cartas[id]) return;
             miMazo.cartas[id] -= 1;
             if (miMazo.cartas[id] <= 0) delete miMazo.cartas[id];
             actualizarVistaMazo();
             renderizarEditor();
+        }
+
+        function quitarCartaPorId(id) {
+            quitarCarta(id);
         }
 
         function quitarLider() {
@@ -8637,8 +8658,14 @@
             if (!miMazo.banquillo) miMazo.banquillo = {};
             const total = Object.values(miMazo.banquillo).reduce((s, n) => s + n, 0);
             if (total >= 15) { alert('El banquillo ya tiene 15 cartas (máximo).'); return; }
-            if ((miMazo.banquillo[id] || 0) >= 4) { alert('Máximo 4 copias de cada carta en el banquillo.'); return; }
-            miMazo.banquillo[id] = (miMazo.banquillo[id] || 0) + 1;
+            const copiasMazo = copiasEnMazo(id);
+            const copiasBanq = miMazo.banquillo[id] || 0;
+            const copiasTotales = copiasMazo + copiasBanq;
+            const poseidas = getCantidadCarta(id);
+            if (poseidas <= 0) { alert('No tienes esta carta.'); return; }
+            if (copiasTotales >= 4) { alert('Ya tienes 4 copias de esta carta entre mazo y banquillo.'); return; }
+            if (copiasTotales >= poseidas) { alert('Solo tienes ' + poseidas + ' copia(s) de esta carta.'); return; }
+            miMazo.banquillo[id] = copiasBanq + 1;
             actualizarVistaBanquillo();
             renderizarEditor();
         }
@@ -9864,6 +9891,7 @@
             { id: 'comp_5', icon: '🥈', nombre: 'Competidor', desc: 'Gana 5 partidas competitivas', reward: 300, check: s => (s.copas || 0) >= 5, progress: s => `${Math.min(s.copas || 0,5)}/5` },
             { id: 'comp_10', icon: '🥇', nombre: 'Veterano Competitivo', desc: 'Gana 10 partidas competitivas', reward: 600, check: s => (s.copas || 0) >= 10, progress: s => `${Math.min(s.copas || 0,10)}/10` },
             { id: 'comp_20', icon: '👑', nombre: 'Leyenda Competitiva', desc: 'Gana 20 partidas competitivas', reward: 1200, check: s => (s.copas || 0) >= 20, progress: s => `${Math.min(s.copas || 0,20)}/20` },
+            // ===== LOGROS DE TÍTULOS (AGRUPADOS AL FINAL) =====
             { id: 'titulo_competidor', icon: '🏷️', nombre: 'Título: Competidor', desc: 'Gana 20 partidas competitivas para desbloquear el título "Competidor"', reward: 0, esTitulo: true, tituloId: 'competidor', check: s => (s.copas || 0) >= 20, progress: s => `${Math.min(s.copas || 0,20)}/20` },
         ];
 
@@ -11486,7 +11514,8 @@
                 return;
             }
             // Verificar que el mazo tenga banquillo
-            if (!mazo.banquillo || Object.keys(mazo.banquillo).length < 10) {
+            const totalBanq = mazo.banquillo ? Object.values(mazo.banquillo).reduce((s, n) => s + n, 0) : 0;
+            if (totalBanq < 10) {
                 if (!confirm('Tu mazo no tiene un banquillo de 10-15 cartas. En el modo competitivo, el banquillo te permite cambiar cartas entre sets. ¿Quieres buscar partida de todas formas?')) return;
             }
             if (_onlineRoomId) {
@@ -12000,6 +12029,11 @@
             if (!estadoPartida) return;
             estadoPartida.soyHost = empiezaJugadorLocal;
             estadoPartida.turnoDelJugadorLocal = empiezaJugadorLocal;
+
+            // Inicializar estado competitivo si la búsqueda fue competitiva
+            if (_esCompetitivo) {
+                iniciarEstadoCompetitivo(true);
+            }
 
             // Enviar mi liderId, mi nombre y mi título al rival inmediatamente para que lo conozca
             if (_socketOnline) {
@@ -12879,6 +12913,34 @@
         function mostrarFinPartida(resultado) {
             if (!estadoPartida) return;
             estadoPartida.finalizada = true;
+
+            // === MODO COMPETITIVO: Best of 3 ===
+            if (_esCompetitivo && _compSetActual > 0) {
+                const ganadorSet = resultado === 'victoria' ? 'jugador' : 'rival';
+                // Notificar al servidor
+                if (estadoPartida.modo === 'online' && _socketOnline) {
+                    _socketOnline.emit('partida-terminada');
+                    _onlineRoomId = null;
+                }
+                // Ocultar tablero
+                ocultarPantallasPrincipales();
+                document.getElementById('main-menu').classList.remove('hidden');
+                // Mostrar transición competitiva
+                mostrarTransicionCompetitiva(ganadorSet, (hayMasSets) => {
+                    if (hayMasSets) {
+                        // Iniciar siguiente set: nueva partida con el mismo mazo
+                        // Por ahora, en modo online esto requiere re-conectar.
+                        // En modo solo/IA sería más simple, pero el competitivo es online.
+                        // Mostrar mensaje de que se está preparando el siguiente set
+                        alert('Preparando set ' + _compSetActual + '...');
+                        // TODO: La lógica completa de re-iniciar partida entre sets online
+                        // requiere coordinación via socket. Por ahora, volver al lobby.
+                        document.getElementById('online-lobby-overlay').classList.remove('hidden');
+                    }
+                });
+                return;
+            }
+
             // Notificar al servidor que la partida terminó para limpiar dataRoomId
             if (estadoPartida.modo === 'online' && _socketOnline) {
                 _socketOnline.emit('partida-terminada');
