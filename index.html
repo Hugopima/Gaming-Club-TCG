@@ -11291,6 +11291,15 @@
                         if (window._compSetTimeout) { clearTimeout(window._compSetTimeout); window._compSetTimeout = null; }
                         iniciarSiguienteSetComp();
                     }
+                } else if (data.tipo === 'comp-set-rendido') {
+                    // BUG FIX: el rival se ha rendido del set actual en modo competitivo.
+                    // A diferencia de 'rendirse' (que destruye la sala en el servidor),
+                    // este mensaje va por accion-juego y mantiene la sala viva, así
+                    // podemos seguir jugando el siguiente set si quedan.
+                    if (estadoPartida) {
+                        estadoPartida.finalizada = true;
+                        mostrarFinPartida('victoria');
+                    }
                 } else if (data.tipo === 'animacion-dado') {
                     // El rival tiró un dado: mostrar el resultado SIN requerir click del receptor.
                     if (typeof mostrarDado === 'function') {
@@ -11460,7 +11469,12 @@
                 ocultarReconnectOverlay();
             });
             _socketOnline.on('rival-rendido', () => {
-                // El rival se rindió: gano yo
+                // El rival se rindió: gano yo.
+                // BUG FIX: en modo competitivo NO se usa 'rendirse' del servidor
+                // (porque destruye la sala). En su lugar se usa 'comp-set-rendido'
+                // por accion-juego. Así que si este evento llega en modo competitivo,
+                // es porque algo se desincronizó; lo ignoramos para no procesar doble.
+                if (_esCompetitivo && _compSetActual > 0) return;
                 if (estadoPartida) {
                     estadoPartida.finalizada = true;
                     mostrarFinPartida('victoria');
@@ -11510,6 +11524,7 @@
         let _compMisVictorias = 0;         // Victorias del jugador local
         let _compVictoriasRival = 0;       // Victorias del rival
         let _compBanquilloOriginal = null; // Copia del mazo original (para restaurar tras sideboard)
+        let _compBanquilloOriginalBanq = null; // Copia del banquillo original (para restaurar tras sideboard)
         let _roomModeCompetitivo = false;  // Toggle en sala privada
 
         function updateOnlineDesc(text) {
@@ -11575,9 +11590,17 @@
             // turnoDelJugadorLocal=true en AMBOS jugadores, causando que los dos
             // jugaran simultáneamente y el snapshot del rival se ignorara.
             window._compEmpiezoYoSet1 = !!empiezaJugadorLocal;
-            // Guardar copia del mazo original para sideboard
+            // Guardar copia del mazo original (cartas Y banquillo) para sideboard.
+            // Al terminar el match hay que restaurar AMBOS, no solo las cartas,
+            // porque el sideboard intercambia cartas entre mazo y banquillo.
             const mazo = obtenerMazoAsignado();
-            _compBanquilloOriginal = mazo ? JSON.parse(JSON.stringify(mazo.cartas)) : null;
+            if (mazo) {
+                _compBanquilloOriginal = JSON.parse(JSON.stringify(mazo.cartas));
+                _compBanquilloOriginalBanq = mazo.banquillo ? JSON.parse(JSON.stringify(mazo.banquillo)) : {};
+            } else {
+                _compBanquilloOriginal = null;
+                _compBanquilloOriginalBanq = null;
+            }
         }
 
         // Mostrar overlay entre sets competitivos
@@ -11772,11 +11795,18 @@
             if (waitOv) waitOv.remove();
             if (window._compSetTimeout) { clearTimeout(window._compSetTimeout); window._compSetTimeout = null; }
             window._compRivalListo = false;
-            // Restaurar mazo original (deshacer cambios de sideboard)
+            // Restaurar mazo original (deshacer cambios de sideboard).
+            // BUG FIX: hay que restaurar cartas Y banquillo, porque el sideboard
+            // intercambia cartas entre las dos listas. Si solo restauramos cartas,
+            // el banquillo se queda con las cartas movidas y la próxima partida
+            // competitiva arranca con un banquillo equivocado.
             if (_compBanquilloOriginal) {
                 const mazo = obtenerMazoAsignado();
                 if (mazo) {
                     mazo.cartas = JSON.parse(JSON.stringify(_compBanquilloOriginal));
+                    if (_compBanquilloOriginalBanq) {
+                        mazo.banquillo = JSON.parse(JSON.stringify(_compBanquilloOriginalBanq));
+                    }
                     const existente = mazosGuardados.findIndex(m => m.id === mazo.id);
                     if (existente >= 0) {
                         mazosGuardados[existente] = mazo;
@@ -11784,6 +11814,7 @@
                     }
                 }
                 _compBanquilloOriginal = null;
+                _compBanquilloOriginalBanq = null;
             }
             // Mostrar overlay de fin de match
             const finOv = document.createElement('div');
@@ -11812,86 +11843,33 @@
             // BUG FIX: resetear el flag "rival listo" para que no se arrastre del set anterior
             window._compRivalListo = false;
 
-            const mazo = obtenerMazoAsignado();
-            if (!mazo) { alert('Error: no se pudo cargar el mazo.'); return; }
-
-            // Guardar info del rival antes de resetear
-            const rivalLiderId = estadoPartida?.rival?.liderId || 'red_lider_01';
-            const rivalNombre = estadoPartida?.rivalNombre || 'Rival';
-            const rivalTitulo = estadoPartida?.rivalTitulo || null;
-
-            // BUG FIX: calcular quién empieza este set alternando respecto al set 1.
-            // Set 1: decide la moneda (guardada en _compEmpiezoYoSet1).
-            // Set 2: empieza el contrario.
-            // Set 3: empieza el mismo que el set 1.
-            // Sin esto, antes hardcoded `turnoDelJugadorLocal=true` y AMBOS jugadores
-            // creían que era su turno, causando desincronización total.
+            // BUG FIX (versión 2): calcular quién empieza este set alternando
+            // respecto al set 1.
+            //   Set 1 (impar): decide la moneda (guardada en _compEmpiezoYoSet1).
+            //   Set 2 (par):   empieza el contrario.
+            //   Set 3 (impar): empieza el mismo que el set 1.
+            // Cada jugador lo computa localmente con su propio _compEmpiezoYoSet1
+            // (que es opuesto al del rival), así los dos calculan resultados opuestos.
             const empiezoYoSet1 = window._compEmpiezoYoSet1 === true;
             const setPar = (_compSetActual % 2) === 0;
             const empiezoYoEsteSet = setPar ? !empiezoYoSet1 : empiezoYoSet1;
 
-            // Crear nueva partida (estado local)
-            estadoPartida = {
-                jugador: {
-                    liderId: mazo.liderId,
-                    liderZona: { id: mazo.liderId, rested: false, ataquesRestantes: 0, buffs: { poder: 0, combo: 0, batalla: 0 } },
-                    vida: [], mano: [], mazo: [], mana: [], batalla: [], combo: [], descarte: [], campo: [], manaActivo: 0, liderDespierto: false
-                },
-                rival: {
-                    liderId: rivalLiderId,
-                    liderZona: { id: rivalLiderId, rested: false, ataquesRestantes: 0, buffs: { poder: 0, combo: 0, batalla: 0 } },
-                    vida: [], mano: [], mazo: [], mana: [], batalla: [], combo: [], descarte: [], campo: [], manaActivo: 0, liderDespierto: false
-                },
-                turno: 1, faseIndex: 0, log: `Set ${_compSetActual} - ¡A jugar!`,
-                atacanteSeleccionado: null, pagoPendiente: null,
-                introActiva: false, finalizada: false,
-                modo: 'online', soyHost: empiezoYoEsteSet, turnoDelJugadorLocal: empiezoYoEsteSet,
-                rivalNombre: rivalNombre,
-                rivalTitulo: rivalTitulo,
-                dificultad: 'normal'
-            };
-
-            // Preparar mazo del jugador
-            const cartaIds = [];
-            Object.entries(mazo.cartas).forEach(([id, cant]) => { for (let i = 0; i < cant; i++) cartaIds.push(id); });
-            for (let i = cartaIds.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [cartaIds[i], cartaIds[j]] = [cartaIds[j], cartaIds[i]]; }
-            estadoPartida.jugador.mazo = cartaIds;
-            estadoPartida.jugador.vida = ['protegida','protegida','protegida','protegida','protegida'];
-            for (let i = 0; i < 6; i++) { if (estadoPartida.jugador.mazo.length) estadoPartida.jugador.mano.push(estadoPartida.jugador.mazo.pop()); }
-
-            // Rival
-            estadoPartida.rival.vida = ['desconocida','desconocida','desconocida','desconocida','desconocida'];
-            for (let i = 0; i < 6; i++) estadoPartida.rival.mano.push('desconocida');
-
-            // Mostrar tablero
-            ocultarPantallasPrincipales();
-            document.getElementById('game-screen').classList.remove('hidden');
-            document.getElementById('main-menu').classList.add('hidden');
-            mostrarFase('Carga');
-            renderizarPartida();
-
-            // Re-enviar intercambio de líderes para sincronizar con el rival
-            if (_socketOnline) {
-                const tituloActivo = obtenerTituloActivo();
-                _socketOnline.emit('accion-juego', {
-                    tipo: 'intercambio-lider',
-                    liderId: estadoPartida.jugador.liderId,
-                    nombreJugador: getNombreJugador(),
-                    titulo: tituloActivo ? { nombre: tituloActivo.nombre, color: tituloActivo.color } : null,
-                    compSet: _compSetActual
-                });
-                // Enviar snapshot inicial para que el rival vea el estado del juego
-                setTimeout(() => {
-                    if (typeof sincronizarEstadoOnline === 'function') sincronizarEstadoOnline('comp-set-inicio');
-                }, 500);
-            }
-
-            // Intro de líderes + mulligan
-            setTimeout(() => {
-                reproducirIntroLideres(() => {
-                    iniciarFlujoMulligan(estadoPartida.jugador, estadoPartida.rival);
-                });
-            }, 800);
+            // BUG FIX (versión 2): NO construir estadoPartida a mano. Llamamos a
+            // iniciarPartida('online') que hace EXACTAMENTE lo mismo que para el
+            // set 1: baraja el mazo, roba 6 cartas, crea rival con 6 desconocidas,
+            // muestra el tablero, etc. Luego llamamos a configurarPartidaOnline
+            // con {setCompetitivo:true} para que:
+            //   - setee soyHost y turnoDelJugadorLocal con el valor alternado
+            //   - NO resetee _compSetActual ni las victorias
+            //   - emita intercambio-lider para que el rival conozca mi líder
+            //   - muestre la animación de moneda, intro de líderes y mulligan
+            // Así el set 2/3 arranca idéntico a una partida online normal y todo
+            // el sistema de snapshots, fin-turno, ataques, etc. funciona igual.
+            iniciarPartida('online');
+            // iniciarPartida llama a iniciarPartidaOnlineFlow, que solo pone el log
+            // en "Esperando configuración..." y espera la moneda. Como aquí la moneda
+            // ya está decidida (alternando), la invocamos nosotros directamente:
+            configurarPartidaOnline(empiezoYoEsteSet, { setCompetitivo: true });
         }
 
         // === CREAR SALA PRIVADA ===
@@ -12175,25 +12153,33 @@
             // Cuando llegue, se llama a configurarPartidaOnline(resultado)
         }
 
-        function configurarPartidaOnline(empiezaJugadorLocal) {
+        function configurarPartidaOnline(empiezaJugadorLocal, opciones) {
             if (!estadoPartida) return;
             estadoPartida.soyHost = empiezaJugadorLocal;
             estadoPartida.turnoDelJugadorLocal = empiezaJugadorLocal;
 
-            // Inicializar estado competitivo si la búsqueda fue competitiva
-            if (_esCompetitivo) {
+            // Inicializar estado competitivo si la búsqueda fue competitiva.
+            // BUG FIX: si estamos arrancando el set 2 o 3 (opciones.setCompetitivo),
+            // NO llamamos a iniciarEstadoCompetitivo porque eso resetearía
+            // _compSetActual a 1 y pondría las victorias a 0. Solo se llama
+            // la primera vez, cuando se arranca el set 1 desde matchmaking.
+            if (_esCompetitivo && !(opciones && opciones.setCompetitivo)) {
                 iniciarEstadoCompetitivo(true, empiezaJugadorLocal);
             }
 
             // Enviar mi liderId, mi nombre y mi título al rival inmediatamente para que lo conozca
             if (_socketOnline) {
                 const tituloActivo = obtenerTituloActivo();
-                _socketOnline.emit('accion-juego', {
+                const payload = {
                     tipo: 'intercambio-lider',
                     liderId: estadoPartida.jugador.liderId,
                     nombreJugador: getNombreJugador(),
                     titulo: tituloActivo ? { nombre: tituloActivo.nombre, color: tituloActivo.color } : null
-                });
+                };
+                if (opciones && opciones.setCompetitivo) {
+                    payload.compSet = _compSetActual;
+                }
+                _socketOnline.emit('accion-juego', payload);
             }
 
             // Mostrar animación de moneda
@@ -15476,13 +15462,53 @@
             _resolviendoAtaqueIA = false;
             // Limpiar estado persistido
             try { localStorage.removeItem('gc_tcg_partida_online'); } catch (e) {}
-            // Solo enviar 'rendirse' si la partida NO está finalizada.
-            if (_socketOnline && estadoPartida && estadoPartida.modo === 'online' && !estadoPartida.finalizada) {
-                _socketOnline.emit('rendirse');
+            // BUG FIX: en modo competitivo, NO emitir 'rendirse' al servidor porque
+            // destruye la sala. En su lugar, emitir 'comp-set-rendido' por accion-juego
+            // (que mantiene la sala viva) y 'partida-terminada' al final para limpiar.
+            // En modo online normal, mantener el comportamiento original.
+            if (_socketOnline && estadoPartida && estadoPartida.modo === 'online') {
+                if (!estadoPartida.finalizada) {
+                    if (_esCompetitivo && _compSetActual > 0) {
+                        _socketOnline.emit('accion-juego', { tipo: 'comp-set-rendido', set: _compSetActual });
+                        // Avisar al servidor para que libere la sala (el match entero
+                        // se da por perdido al salir del menú sin terminar).
+                        _socketOnline.emit('partida-terminada');
+                        _onlineRoomId = null;
+                    } else {
+                        _socketOnline.emit('rendirse');
+                    }
+                } else {
+                    // Si la partida terminó normalmente, avisar al servidor para que
+                    // limpie dataRoomId. En modo competitivo esto solo lo hace
+                    // finalizarCompetitivo; aquí no debemos duplicarlo.
+                    if (!(_esCompetitivo && _compSetActual > 0)) {
+                        _socketOnline.emit('partida-terminada');
+                    }
+                }
             }
-            // Si la partida terminó normalmente, avisar al servidor para que limpie dataRoomId.
-            if (_socketOnline && estadoPartida && estadoPartida.modo === 'online' && estadoPartida.finalizada) {
-                _socketOnline.emit('partida-terminada');
+            // Resetear estado competitivo al salir del menú a la fuerza
+            if (_esCompetitivo) {
+                _compSetActual = 0;
+                _compMisVictorias = 0;
+                _compVictoriasRival = 0;
+                _esCompetitivo = false;
+                // Restaurar mazo original (cartas + banquillo)
+                if (_compBanquilloOriginal) {
+                    const mazo = obtenerMazoAsignado();
+                    if (mazo) {
+                        mazo.cartas = JSON.parse(JSON.stringify(_compBanquilloOriginal));
+                        if (_compBanquilloOriginalBanq) {
+                            mazo.banquillo = JSON.parse(JSON.stringify(_compBanquilloOriginalBanq));
+                        }
+                        const existente = mazosGuardados.findIndex(m => m.id === mazo.id);
+                        if (existente >= 0) {
+                            mazosGuardados[existente] = mazo;
+                            guardarListaMazos();
+                        }
+                    }
+                    _compBanquilloOriginal = null;
+                    _compBanquilloOriginalBanq = null;
+                }
             }
             estadoPartida = null;
             ocultarPantallasPrincipales();
@@ -15499,11 +15525,21 @@
 
         function confirmarRendicion() {
             document.getElementById('surrender-dialog')?.classList.add('hidden');
-            // Notificar al rival que se rinde
+            // BUG FIX: en modo competitivo, NO emitir 'rendirse' al servidor porque
+            // eso destruye la sala (limpia dataRoomId en ambos jugadores) y
+            // dejaría de sincronizar los siguientes sets. En su lugar, enviamos
+            // 'comp-set-rendido' por accion-juego, que mantiene la sala viva.
+            // El rival lo recibe por accion-rival y llama a mostrarFinPartida('victoria'),
+            // que arranca la transición al siguiente set (o finaliza el match).
             if (_socketOnline) {
-                _socketOnline.emit('rendirse');
+                if (_esCompetitivo && _compSetActual > 0) {
+                    _socketOnline.emit('accion-juego', { tipo: 'comp-set-rendido', set: _compSetActual });
+                } else {
+                    _socketOnline.emit('rendirse');
+                }
             }
-            // Mostrar derrota
+            // Mostrar derrota localmente (arranca la transición al siguiente set
+            // o finaliza el match, según el marcador)
             if (estadoPartida) {
                 estadoPartida.finalizada = true;
                 mostrarFinPartida('derrota');
