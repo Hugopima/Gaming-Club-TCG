@@ -8692,7 +8692,7 @@
             alert('🔄 BANQUILLO (SIDEBOARD)\n\n' +
                 'El banquillo es un conjunto de 10-15 cartas adicionales que NO cuentan para tu mazo principal.\n\n' +
                 '¿Para qué sirve?\n' +
-                'En el MODO COMPETITIVO (mejor de 3), entre set y set puedes cambiar hasta 10 cartas de tu mazo por cartas de tu banquillo. Esto te permite adaptarte al mazo rival.\n\n' +
+                'En el MODO COMPETITIVO (mejor de 3), entre set y set puedes cambiar hasta 20 cartas de tu mazo por cartas de tu banquillo. Esto te permite adaptarte al mazo rival.\n\n' +
                 'Ejemplo: Si el rival juega muchas cartas de coste bajo, puedes meter cartas de contraataque desde tu banquillo.\n\n' +
                 'Reglas:\n' +
                 '• 10-15 cartas en el banquillo\n' +
@@ -11564,11 +11564,17 @@
         }
 
         // Iniciar estado competitivo al empezar una partida online
-        function iniciarEstadoCompetitivo(esComp) {
+        function iniciarEstadoCompetitivo(esComp, empiezaJugadorLocal) {
             _esCompetitivo = esComp;
             _compSetActual = 1;
             _compMisVictorias = 0;
             _compVictoriasRival = 0;
+            // BUG FIX: recordar quién empezó el set 1 (decidido por la moneda del
+            // servidor) para poder alternar correctamente el jugador que empieza
+            // en los sets 2 y 3. Sin esto, iniciarSiguienteSetComp hardcodeaba
+            // turnoDelJugadorLocal=true en AMBOS jugadores, causando que los dos
+            // jugaran simultáneamente y el snapshot del rival se ignorara.
+            window._compEmpiezoYoSet1 = !!empiezaJugadorLocal;
             // Guardar copia del mazo original para sideboard
             const mazo = obtenerMazoAsignado();
             _compBanquilloOriginal = mazo ? JSON.parse(JSON.stringify(mazo.cartas)) : null;
@@ -11642,7 +11648,7 @@
             sb.style.cssText = 'position:fixed;inset:0;z-index:3100;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;padding:24px;';
             let html = `<div style="width:min(900px,95vw);max-height:85vh;overflow-y:auto;border:2px solid var(--gold);border-radius:20px;background:var(--dark-panel);padding:28px;">
                 <h2 style="color:#fff07c;text-align:center;text-transform:uppercase;margin:0 0 8px;letter-spacing:2px;">🔄 Banquillo - Sideboard</h2>
-                <p style="color:#aaa;text-align:center;font-size:13px;margin:0 0 20px;">Selecciona hasta 10 cartas para intercambiar entre tu mazo y el banquillo.</p>
+                <p style="color:#aaa;text-align:center;font-size:13px;margin:0 0 20px;">Selecciona hasta 20 cartas para intercambiar entre tu mazo y el banquillo.</p>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
                     <div>
                         <h3 style="color:#8cffb3;font-size:14px;text-transform:uppercase;margin:0 0 10px;">Tu mazo actual</h3>
@@ -11653,7 +11659,7 @@
                         <div id="sb-banquillo-list" style="display:flex;flex-direction:column;gap:6px;max-height:300px;overflow-y:auto;"></div>
                     </div>
                 </div>
-                <p id="sb-count" style="color:#fff07c;text-align:center;margin:16px 0 8px;font-weight:900;">0 cambios realizados (máx 10)</p>
+                <p id="sb-count" style="color:#fff07c;text-align:center;margin:16px 0 8px;font-weight:900;">0 cambios realizados (máx 20)</p>
                 <div style="display:flex;gap:10px;justify-content:center;">
                     <button class="plate-btn btn-nav" onclick="cerrarSideboard(false)">Cancelar</button>
                     <button class="plate-btn" onclick="cerrarSideboard(true)">Aplicar cambios</button>
@@ -11695,8 +11701,8 @@
         }
 
         function sbMoverCarta(cardId, origen) {
-            if (window._sbCambios >= 10) {
-                alert('Ya has hecho el máximo de 10 cambios.');
+            if (window._sbCambios >= 20) {
+                alert('Ya has hecho el máximo de 20 cambios.');
                 return;
             }
             if (origen === 'mazo') {
@@ -11716,7 +11722,7 @@
 
         function actualizarSbCount() {
             const el = document.getElementById('sb-count');
-            if (el) el.textContent = `${window._sbCambios || 0} cambios realizados (máx 10)`;
+            if (el) el.textContent = `${window._sbCambios || 0} cambios realizados (máx 20)`;
         }
 
         function cerrarSideboard(aplicar) {
@@ -11754,6 +11760,42 @@
                 _statsJugador.partidasCompetitivas = (_statsJugador.partidasCompetitivas || 0) + 1;
             }
             guardarStats();
+            // BUG FIX: ahora sí emitir 'partida-terminada' para limpiar la sala en el
+            // servidor, ya que el match entero ha terminado. Entre sets NO se emitía
+            // (para mantener la sala viva), así que es aquí donde debe hacerse.
+            if (_socketOnline) {
+                _socketOnline.emit('partida-terminada');
+                _onlineRoomId = null;
+            }
+            // Limpiar overlay de espera por si acaso
+            const waitOv = document.getElementById('comp-waiting-overlay');
+            if (waitOv) waitOv.remove();
+            if (window._compSetTimeout) { clearTimeout(window._compSetTimeout); window._compSetTimeout = null; }
+            window._compRivalListo = false;
+            // Restaurar mazo original (deshacer cambios de sideboard)
+            if (_compBanquilloOriginal) {
+                const mazo = obtenerMazoAsignado();
+                if (mazo) {
+                    mazo.cartas = JSON.parse(JSON.stringify(_compBanquilloOriginal));
+                    const existente = mazosGuardados.findIndex(m => m.id === mazo.id);
+                    if (existente >= 0) {
+                        mazosGuardados[existente] = mazo;
+                        guardarListaMazos();
+                    }
+                }
+                _compBanquilloOriginal = null;
+            }
+            // Mostrar overlay de fin de match
+            const finOv = document.createElement('div');
+            finOv.id = 'comp-match-end-overlay';
+            finOv.style.cssText = 'position:fixed;inset:0;z-index:3100;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;padding:24px;';
+            finOv.innerHTML = `<div style="width:min(500px,95vw);border:2px solid var(--gold);border-radius:20px;background:var(--dark-panel);padding:36px;text-align:center;box-shadow:0 0 60px rgba(255,215,0,.3);animation:modalOpen 0.3s cubic-bezier(0.175,0.885,0.32,1.275) forwards;">
+                <div style="font-size:64px;margin-bottom:12px;">${ganeMatch ? '🏆' : '💀'}</div>
+                <h2 style="color:${ganeMatch ? '#8cffb3' : '#ff8080'};font-size:28px;text-transform:uppercase;margin:0 0 8px;letter-spacing:2px;">${ganeMatch ? '¡Match ganado!' : 'Match perdido'}</h2>
+                <div style="color:#aaa;font-size:16px;margin:12px 0 20px;">Resultado final: <span style="color:#fff07c;font-weight:900;">${_compMisVictorias}</span> - <span style="color:#5ee7ff;font-weight:900;">${_compVictoriasRival}</span></div>
+                <button class="plate-btn btn-blue" style="margin-top:12px;" onclick="(function(){var o=document.getElementById('comp-match-end-overlay');if(o)o.remove();mostrarPantallaOnline('main');})()">Volver al menú online</button>
+            </div>`;
+            document.body.appendChild(finOv);
             // Resetear estado competitivo
             _compSetActual = 0;
             _compMisVictorias = 0;
@@ -11767,6 +11809,8 @@
             const ov = document.getElementById('comp-waiting-overlay');
             if (ov) ov.remove();
             if (window._compSetTimeout) { clearTimeout(window._compSetTimeout); window._compSetTimeout = null; }
+            // BUG FIX: resetear el flag "rival listo" para que no se arrastre del set anterior
+            window._compRivalListo = false;
 
             const mazo = obtenerMazoAsignado();
             if (!mazo) { alert('Error: no se pudo cargar el mazo.'); return; }
@@ -11775,6 +11819,16 @@
             const rivalLiderId = estadoPartida?.rival?.liderId || 'red_lider_01';
             const rivalNombre = estadoPartida?.rivalNombre || 'Rival';
             const rivalTitulo = estadoPartida?.rivalTitulo || null;
+
+            // BUG FIX: calcular quién empieza este set alternando respecto al set 1.
+            // Set 1: decide la moneda (guardada en _compEmpiezoYoSet1).
+            // Set 2: empieza el contrario.
+            // Set 3: empieza el mismo que el set 1.
+            // Sin esto, antes hardcoded `turnoDelJugadorLocal=true` y AMBOS jugadores
+            // creían que era su turno, causando desincronización total.
+            const empiezoYoSet1 = window._compEmpiezoYoSet1 === true;
+            const setPar = (_compSetActual % 2) === 0;
+            const empiezoYoEsteSet = setPar ? !empiezoYoSet1 : empiezoYoSet1;
 
             // Crear nueva partida (estado local)
             estadoPartida = {
@@ -11791,7 +11845,7 @@
                 turno: 1, faseIndex: 0, log: `Set ${_compSetActual} - ¡A jugar!`,
                 atacanteSeleccionado: null, pagoPendiente: null,
                 introActiva: false, finalizada: false,
-                modo: 'online', soyHost: true, turnoDelJugadorLocal: true,
+                modo: 'online', soyHost: empiezoYoEsteSet, turnoDelJugadorLocal: empiezoYoEsteSet,
                 rivalNombre: rivalNombre,
                 rivalTitulo: rivalTitulo,
                 dificultad: 'normal'
@@ -12128,7 +12182,7 @@
 
             // Inicializar estado competitivo si la búsqueda fue competitiva
             if (_esCompetitivo) {
-                iniciarEstadoCompetitivo(true);
+                iniciarEstadoCompetitivo(true, empiezaJugadorLocal);
             }
 
             // Enviar mi liderId, mi nombre y mi título al rival inmediatamente para que lo conozca
@@ -13013,17 +13067,34 @@
             // === MODO COMPETITIVO: Best of 3 ===
             if (_esCompetitivo && _compSetActual > 0) {
                 const ganadorSet = resultado === 'victoria' ? 'jugador' : 'rival';
-                // Notificar al servidor
-                if (estadoPartida.modo === 'online' && _socketOnline) {
-                    _socketOnline.emit('partida-terminada');
-                    _onlineRoomId = null;
-                }
+                // BUG FIX: NO emitir 'partida-terminada' aquí. Eso destruye la sala
+                // en el servidor (limpia socket.dataRoomId en AMBOS jugadores) y hace
+                // que todas las acciones posteriores (comp-set-listo, intercambio-lider,
+                // snapshots, fin-turno...) se descarten silenciosamente. La sala debe
+                // permanecer activa entre sets del mismo match competitivo.
+                // Solo se emitirá 'partida-terminada' al finalizar el match entero
+                // (ver finalizarCompetitivo).
                 // Ocultar tablero
                 ocultarPantallasPrincipales();
                 document.getElementById('main-menu').classList.remove('hidden');
                 // Mostrar transición competitiva
                 mostrarTransicionCompetitiva(ganadorSet, (hayMasSets) => {
                     if (hayMasSets) {
+                        // BUG FIX: siempre emitir 'comp-set-listo', incluso si el rival
+                        // ya avisó. Así el rival (que puede estar esperando en su overlay)
+                        // también arranca su set. Si el rival aún no ha hecho click en
+                        // "Continuar", su handler simplemente marcará _compRivalListo=true
+                        // y esperará; cuando haga click, verá el flag y arrancará al instante.
+                        if (_socketOnline) {
+                            _socketOnline.emit('accion-juego', { tipo: 'comp-set-listo', set: _compSetActual });
+                        }
+                        // Si el rival ya avisó que está listo (comp-set-listo llegó
+                        // antes de este click), arrancar el set ya, sin mostrar overlay.
+                        if (window._compRivalListo) {
+                            window._compRivalListo = false;
+                            iniciarSiguienteSetComp();
+                            return;
+                        }
                         // Mostrar overlay de "esperando al rival" en vez de volver a matchmaking
                         const waitOverlay = document.createElement('div');
                         waitOverlay.id = 'comp-waiting-overlay';
@@ -13039,10 +13110,6 @@
                             </div>
                         </div>`;
                         document.body.appendChild(waitOverlay);
-                        // Enviar señal de "listo" al rival via socket
-                        if (_socketOnline) {
-                            _socketOnline.emit('accion-juego', { tipo: 'comp-set-listo', set: _compSetActual });
-                        }
                         // Escuchar señal del rival (se maneja en configurarEventosSocket)
                         // Por seguridad, si no llega en 30s, iniciar igual
                         window._compSetTimeout = setTimeout(() => {
