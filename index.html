@@ -1174,6 +1174,36 @@
         .op-battle-zone { left: 520px; top: 238px; width: 720px; height: 150px; transform: rotate(180deg); }
         .player-battle-zone { left: 520px; top: 420px; width: 720px; height: 160px; }
         .player-combo-zone { left: 430px; top: 600px; width: 730px; height: 126px; }
+        /* BUG FIX (v5): zona de maná visible para el jugador y el rival.
+           Antes el maná solo se mostraba como un contador (energy-hud). Ahora se
+           muestran las cartas de maná individuales y se giran (clase 'rested') al
+           ser usadas, igual que las unidades en la zona de batalla. */
+        .player-mana-zone {
+            position: absolute; left: 200px; bottom: 50px; width: 220px; height: 90px;
+            z-index: 10; display: flex; flex-direction: column; align-items: center;
+            background: linear-gradient(145deg, rgba(20,40,30,0.6), rgba(10,20,15,0.7));
+            border: 1.5px solid rgba(74,238,106,0.3); border-radius: 10px; padding: 4px;
+            overflow: visible;
+        }
+        .op-mana-zone {
+            position: absolute; right: 200px; top: 50px; width: 220px; height: 90px;
+            z-index: 10; display: flex; flex-direction: column; align-items: center;
+            background: linear-gradient(145deg, rgba(40,20,20,0.6), rgba(20,10,10,0.7));
+            border: 1.5px solid rgba(255,115,94,0.3); border-radius: 10px; padding: 4px;
+            overflow: visible;
+        }
+        .player-mana-zone .mat-cards, .op-mana-zone .mat-cards {
+            display: flex; gap: 2px; flex-wrap: nowrap; overflow-x: auto; max-width: 100%;
+        }
+        .player-mana-zone .game-card-mini, .op-mana-zone .game-card-mini {
+            width: 48px; height: 68px; flex-shrink: 0;
+        }
+        .player-mana-zone .game-card-mini.rested {
+            transform: rotate(90deg); margin: 0 14px; opacity: 0.6;
+        }
+        .op-mana-zone .game-card-mini.rested {
+            transform: rotate(90deg); margin: 0 14px; opacity: 0.6;
+        }
         .leader-lane { position: absolute; left: -142px; top: 14px; width: 118px; height: 132px; z-index: 5; display: flex; align-items: center; justify-content: center; overflow: visible; }
         .field-lane { position: absolute; right: 18px; top: 12px; width: 92px; height: 128px; z-index: 4; display: flex; align-items: center; justify-content: center; }
         .stack-zone, .drop-stack { position: absolute; z-index: 11; width: 86px; height: 122px; display: flex; align-items: center; justify-content: center; color: #ffd700; font-weight: 900; text-shadow: 0 2px 5px #000; }
@@ -3317,6 +3347,13 @@
             <section class="stack-zone player-deck-stack"><div id="player-deck-zone"></div><span id="player-deck-count">0</span></section>
             <section class="drop-stack op-drop-stack"><div id="op-drop-zone"></div><span>DESCARTE</span></section>
             <section class="drop-stack player-drop-stack"><div id="player-drop-zone"></div><span>DESCARTE</span></section>
+
+            <!-- BUG FIX (v5): zona de maná visible para el jugador. Antes el maná solo
+                 se mostraba como un contador numérico (energy-hud), así que al pagar
+                 no se veía qué cartas se habían girado. Ahora se muestran las cartas
+                 de maná individuales y se giran (clase 'rested') al ser usadas. -->
+            <section class="playmat-zone player-mana-zone" id="player-mana-zone-section"><div class="mat-label">MANÁ</div><div class="mat-cards" id="player-mana-zone"></div></section>
+            <section class="playmat-zone op-mana-zone" id="op-mana-zone-section"><div class="mat-label">MANÁ RIVAL</div><div class="mat-cards" id="op-mana-zone"></div></section>
 
             <section class="playmat-zone op-combo-zone"><div class="mat-label">COMBO AREA</div><div class="mat-cards" id="op-combo-zone"></div></section>
             <section class="playmat-zone op-battle-zone"><div class="mat-label">BATTLE AREA</div><div class="leader-lane" id="op-leader-zone"></div><div class="field-lane op-field-lane" id="op-field-zone"></div><div class="mat-cards" id="op-battle-zone"></div></section>
@@ -8519,7 +8556,13 @@
                     sorted.sort((a, b) => (a.personaje || '').localeCompare(b.personaje || '') || (a.nombre || '').localeCompare(b.nombre || ''));
                     break;
                 case 'tipo':
-                    sorted.sort((a, b) => (a.tipo || '').localeCompare(b.tipo || '') || (a.nombre || '').localeCompare(b.nombre || ''));
+                    // BUG FIX (v5): ordenar por el primer tipo individual (para que
+                    // "Animal / Zombie" se ordene con las que empiezan por "Animal").
+                    sorted.sort((a, b) => {
+                        const ta = (typeof getTiposCarta === 'function' ? getTiposCarta(a)[0] : '') || '';
+                        const tb = (typeof getTiposCarta === 'function' ? getTiposCarta(b)[0] : '') || '';
+                        return ta.localeCompare(tb) || (a.nombre || '').localeCompare(b.nombre || '');
+                    });
                     break;
                 case 'origen':
                     sorted.sort((a, b) => (a.origen || '').localeCompare(b.origen || '') || (a.nombre || '').localeCompare(b.nombre || ''));
@@ -8548,6 +8591,17 @@
         // Aplica: texto de búsqueda (nombre, habilidad, tipo, personaje, origen),
         // filtro de clase, filtro de habilidad, filtro de tipo, filtro de personaje,
         // filtro de origen. Devuelve true si la carta pasa todos los filtros.
+        // BUG FIX (v5): los tipos compuestos como "Animal / Zombie" o "Enderman / Animal"
+        // se tratan como múltiples tipos. La carta pertenece a AMBOS tipos a la vez,
+        // así que el filtro de "Animal" muestra las cartas con tipo "Animal", "Animal / Zombie"
+        // y "Enderman / Animal". Lo mismo para las sinergias (Lucas cuenta todos los animales).
+        function getTiposCarta(carta) {
+            // Devuelve un array de tipos individuales (split por "/").
+            // Ej: "Zombie / Animal" → ["Zombie", "Animal"]
+            const t = String(carta?.tipo || '').trim();
+            if (!t) return [];
+            return t.split('/').map(s => s.trim()).filter(Boolean);
+        }
         function cartaPasaFiltros(carta, busqueda, clase, habilidad, tipo, personaje, origen) {
             // Filtro de clase (lider/unidad/extra/token)
             if (clase) {
@@ -8561,8 +8615,11 @@
             }
             // Filtro de habilidad (por tag)
             if (habilidad && !tieneTag(carta, habilidad)) return false;
-            // Filtro de tipo
-            if (tipo && String(carta.tipo || '').toLowerCase() !== String(tipo).toLowerCase()) return false;
+            // Filtro de tipo (soporta tipos compuestos con "/")
+            if (tipo) {
+                const tiposCarta = getTiposCarta(carta).map(t => t.toLowerCase());
+                if (!tiposCarta.includes(String(tipo).toLowerCase())) return false;
+            }
             // Filtro de personaje
             if (personaje && String(carta.personaje || '').toLowerCase() !== String(personaje).toLowerCase()) return false;
             // Filtro de origen
@@ -8587,6 +8644,10 @@
 
         // Llena los selects de Tipo, Personaje y Origen con los valores disponibles
         // en datosCartas. Se llama al renderizar por primera vez.
+        // BUG FIX (v5): los tipos compuestos ("Animal / Zombie") se descomponen en
+        // sus tipos individuales ("Animal", "Zombie") para que no aparezcan como
+        // opciones separadas en el filtro. Una carta con tipo "Animal / Zombie"
+        // aparece tanto en "Animal" como en "Zombie".
         let _filtrosColeccionIniciados = false;
         let _filtrosEditorIniciados = false;
         function llenarFiltrosDinamicos(prefix) {
@@ -8595,10 +8656,13 @@
             const selOri = document.getElementById(prefix + '-filter-origen');
             if (selTipo) {
                 const tipos = new Set();
-                datosCartas.forEach(c => { if (c.tipo) tipos.add(c.tipo); });
+                datosCartas.forEach(c => {
+                    // Descomponer tipos compuestos "A / B" → "A", "B"
+                    getTiposCarta(c).forEach(t => tipos.add(t));
+                });
                 const currentTipo = selTipo.value;
                 selTipo.innerHTML = '<option value="">Todos</option>' +
-                    [...tipos].sort().map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('');
+                    [...tipos].sort((a, b) => a.localeCompare(b)).map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('');
                 if (currentTipo) selTipo.value = currentTipo;
             }
             if (selPers) {
@@ -8606,7 +8670,7 @@
                 datosCartas.forEach(c => { if (c.personaje) personajes.add(c.personaje); });
                 const currentPers = selPers.value;
                 selPers.innerHTML = '<option value="">Todos</option>' +
-                    [...personajes].sort().map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join('');
+                    [...personajes].sort((a, b) => a.localeCompare(b)).map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join('');
                 if (currentPers) selPers.value = currentPers;
             }
             if (selOri) {
@@ -8614,7 +8678,7 @@
                 datosCartas.forEach(c => { if (c.origen) origenes.add(c.origen); });
                 const currentOri = selOri.value;
                 selOri.innerHTML = '<option value="">Todos</option>' +
-                    [...origenes].sort().map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join('');
+                    [...origenes].sort((a, b) => a.localeCompare(b)).map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join('');
                 if (currentOri) selOri.value = currentOri;
             }
         }
@@ -9103,8 +9167,23 @@
                 }
             }
             renderizarListaAmigos();
+            // BUG FIX (v5): refrescar la lista de amigos cada 10s mientras el overlay
+            // esté abierto, para que el círculo verde se actualice si un amigo se
+            // conecta/desconecta mientras tenemos la lista abierta.
+            if (_amigosRefreshInterval) clearInterval(_amigosRefreshInterval);
+            _amigosRefreshInterval = setInterval(() => {
+                // Solo refrescar si el overlay sigue abierto
+                if (document.getElementById('friends-overlay')?.classList.contains('active')) {
+                    renderizarListaAmigos();
+                } else {
+                    // Si se cerró, limpiar el intervalo
+                    if (_amigosRefreshInterval) { clearInterval(_amigosRefreshInterval); _amigosRefreshInterval = null; }
+                }
+            }, 30000);
         }
         function cerrarAmigos() {
+            // BUG FIX (v5): limpiar el intervalo de refresco al cerrar
+            if (_amigosRefreshInterval) { clearInterval(_amigosRefreshInterval); _amigosRefreshInterval = null; }
             cerrarModalAnim('friends-overlay', 'active');
         }
 
@@ -13550,6 +13629,11 @@
                 // Modo solo: ahora juega la IA, y después vuelve el turno del jugador.
                 estadoPartida.turnoDelJugadorLocal = false;
                 estadoPartida.turno += 1;
+                // BUG FIX (v5): limpiar atacanteSeleccionado al pasar al turno de la IA.
+                // Si no se limpia, el panel de combate piensa que el jugador sigue siendo
+                // el atacante (porque atacanteSeleccionado sigue teniendo valor del turno
+                // anterior) y muestra "Atacante: tu carta" en vez de "Atacante: carta IA".
+                estadoPartida.atacanteSeleccionado = null;
                 estadoPartida.log = 'Turno de la IA...';
                 renderizarPartida();
                 // Ejecutar turno de la IA tras un breve delay para que se vea el log
@@ -14023,15 +14107,24 @@
             // El jugador puede combar para aumentar el poder del defensor.
             let defensorCombo = 0;
             // Calcular poder base del defensor
+            // BUG FIX (v5): usar poderCarta para incluir buffs de batalla (FNAMP +5000,
+            // Energía de Patroclo, etc.) y modificadores dinámicos (Lucas +5000/animal).
+            // Antes usaba solo Number(getCardById(def.id)?.poder || 0), que ignoraba los
+            // buffs, así que el choque mostraba el poder base sin el +5000 de FNAMP.
             let poderDefensorBase = 0;
             if (objetivo.tipo === 'lider') {
                 const lid = getCardById(j.liderId);
-                // Bug fix: validación estricta de liderDespierto === true.
-                // Antes usaba truthy, lo que podía activar poderEvo sin despertar.
-                poderDefensorBase = (j.liderDespierto === true) ? Number(lid?.poderEvo || 0) : Number(lid?.poder || 0);
+                const liderZona = j.liderZona || { id: j.liderId, rested: false, buffs: { poder: 0, combo: 0, batalla: 0 } };
+                poderDefensorBase = (window.MotorEfectos
+                    ? MotorEfectos.poderCarta(j.liderId, liderZona, { quien: 'jugador', defensorId: j.liderId, defensorZona: liderZona })
+                    : ((j.liderDespierto === true) ? Number(lid?.poderEvo || 0) : Number(lid?.poder || 0)) + (liderZona.buffs?.poder || 0) + (liderZona.buffs?.batalla || 0));
             } else {
                 const def = j.batalla[objetivo.index];
-                if (def) poderDefensorBase = Number(getCardById(def.id)?.poder || 0);
+                if (def) {
+                    poderDefensorBase = (window.MotorEfectos
+                        ? MotorEfectos.poderCarta(def.id, def, { quien: 'jugador', defensorId: def.id, defensorZona: def, defensorIndex: objetivo.index })
+                        : Number(getCardById(def.id)?.poder || 0) + (def.buffs?.poder || 0) + (def.buffs?.batalla || 0));
+                }
             }
             // Calcular poder del atacante
             const poderAtacante = window.MotorEfectos
@@ -14221,14 +14314,22 @@
 
             // === 2. FASE DE COMBO DEFENSORA ===
             let defensorCombo = 0;
+            // BUG FIX (v5): usar poderCarta para incluir buffs de batalla (FNAMP +5000,
+            // Energía de Patroclo, etc.) y modificadores dinámicos (Lucas +5000/animal).
             let poderDefensorBase = 0;
             if (objetivo.tipo === 'lider') {
                 const lid = getCardById(j.liderId);
-                // Bug fix: validación estricta de liderDespierto === true.
-                poderDefensorBase = (j.liderDespierto === true) ? Number(lid?.poderEvo || 0) : Number(lid?.poder || 0);
+                const liderZona = j.liderZona || { id: j.liderId, rested: false, buffs: { poder: 0, combo: 0, batalla: 0 } };
+                poderDefensorBase = (window.MotorEfectos
+                    ? MotorEfectos.poderCarta(j.liderId, liderZona, { quien: 'jugador', defensorId: j.liderId, defensorZona: liderZona })
+                    : ((j.liderDespierto === true) ? Number(lid?.poderEvo || 0) : Number(lid?.poder || 0)) + (liderZona.buffs?.poder || 0) + (liderZona.buffs?.batalla || 0));
             } else {
                 const def = j.batalla[objetivo.index];
-                if (def) poderDefensorBase = Number(getCardById(def.id)?.poder || 0);
+                if (def) {
+                    poderDefensorBase = (window.MotorEfectos
+                        ? MotorEfectos.poderCarta(def.id, def, { quien: 'jugador', defensorId: def.id, defensorZona: def, defensorIndex: objetivo.index })
+                        : Number(getCardById(def.id)?.poder || 0) + (def.buffs?.poder || 0) + (def.buffs?.batalla || 0));
+                }
             }
             const poderAtacante = window.MotorEfectos
                 ? MotorEfectos.poderCarta(r.liderId, atacante, { quien: 'rival', atacanteId: r.liderId, atacanteZona: atacante, objetivo: objetivo })
@@ -14977,7 +15078,14 @@
             let defensorNombre = '', defensorImg = '', defensorPoder = 0;
             let atacanteEsLider = false, defensorEsLider = false;
             // ¿El jugador es el atacante o el defensor?
-            const jugadorAtaca = estadoPartida.atacanteSeleccionado !== null && estadoPartida.atacanteSeleccionado !== undefined;
+            // BUG FIX (v5): antes solo miraba atacanteSeleccionado, pero si el jugador
+            // había seleccionado un atacante en su turno y no se limpió al pasar al
+            // turno de la IA, el panel mostraba "Atacante: tu carta" aunque la IA
+            // estuviera atacando. Ahora también comprobamos rivalAtacanteId y
+            // turnoDelJugadorLocal para priorizar correctamente.
+            const jugadorAtaca = (estadoPartida.atacanteSeleccionado !== null && estadoPartida.atacanteSeleccionado !== undefined)
+                && !estadoPartida.rivalAtacanteId
+                && estadoPartida.turnoDelJugadorLocal !== false;
             if (jugadorAtaca) {
                 // Atacante = jugador
                 if (estadoPartida.atacanteSeleccionado?.tipo === 'lider') {
@@ -16341,6 +16449,11 @@
             const comboBtn = document.getElementById('end-combo-btn');
             if (comboBtn) comboBtn.style.display = (estadoPartida.faseIndex === 3 || estadoPartida.faseIndex === 4) ? 'inline-block' : 'none';
             renderZona('op-combo-zone', r.combo.map(c => miniCarta(c, 'combo-card', { comboMode: true })).join(''));
+            // BUG FIX (v5): renderizar las cartas de maná individuales. Las cartas
+            // descansadas (giradas/usadas) se muestran con la clase 'rested' para
+            // que se vean giradas visualmente, igual que las unidades descansadas.
+            renderZona('player-mana-zone', (j.mana || []).map(m => miniCarta(m.id || m, (typeof m === 'object' && m.rested) ? 'rested' : '', { onClick: `abrirDetalleJuego('${(typeof m === 'object' ? m.id : m)}')` })).join(''));
+            renderZona('op-mana-zone', (r.mana || []).map(m => miniCarta(m.id || m, (typeof m === 'object' && m.rested) ? 'rested' : '', { onClick: `abrirDetalleJuego('${(typeof m === 'object' ? m.id : m)}')` })).join(''));
             renderZona('player-field-zone', j.campo.map(c => {
                 // Si el campo es RELEASE ENERGY, pasar el objeto completo para mostrar contador de cartas debajo
                 const campoObj = (typeof c === 'object') ? c : { id: c };
