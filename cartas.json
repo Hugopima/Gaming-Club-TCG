@@ -595,7 +595,7 @@
       {
         "tag": "Permanente",
         "css": "tag-perm",
-        "desc": "Gana +5000 por cada carta tipo \"Animal\" en juego (en ambos bandos)."
+        "desc": "Gana +5000 por cada carta tipo \"Animal\" en juego."
       }
     ]
   },
