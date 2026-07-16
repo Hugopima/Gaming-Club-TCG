@@ -756,6 +756,21 @@
             border-color: rgba(94, 231, 255, 0.5);
             background: linear-gradient(145deg, rgba(20,30,50,0.7), rgba(8,12,24,0.85));
         }
+        /* BUG FIX (v9): mazo inválido (menos de 50 cartas o sin líder) se ve en rojo */
+        .deck-tile.invalid {
+            border-color: rgba(255, 80, 60, 0.5);
+            background: linear-gradient(145deg, rgba(40,12,8,0.7), rgba(20,6,2,0.85));
+        }
+        .deck-tile.invalid::before {
+            background: linear-gradient(180deg, #ff735e, transparent);
+        }
+        .deck-tile.invalid:hover {
+            border-color: rgba(255, 80, 60, 0.7);
+            box-shadow: 0 12px 28px rgba(0,0,0,0.5), 0 0 20px rgba(255,80,60,0.2);
+        }
+        .deck-tile.invalid h3 {
+            color: #ff9a7e;
+        }
         .deck-tile.is-gift::before { background: linear-gradient(180deg, #5ee7ff, transparent); }
         .deck-tile.is-gift .deck-gift-badge {
             position: absolute; top: 12px; right: 12px;
@@ -8509,14 +8524,24 @@
                 const liderImg = lider && lider.img ? `<img src="${lider.img}" alt="${escapeHtml(lider.nombre)}">` : 'Sin lider';
                 const esRegalo = mazo.id === 'mazo_regalo_tutorial';
                 const giftClass = esRegalo ? ' is-gift' : '';
+                // BUG FIX (v9): clase 'invalid' para que el deck-tile se vea en rojo
+                // cuando el mazo no es válido (menos de 50 cartas o sin líder).
+                const invalidClass = !valido ? ' invalid' : '';
                 const giftBadge = esRegalo ? `<div class="deck-gift-badge">🎁 Regalo</div>` : '';
                 const borrarBtn = esRegalo
                     ? `<button class="plate-btn deck-action-btn deck-locked-btn" disabled title="El mazo de regalo no se puede eliminar">🔒 Bloqueado</button>`
                     : `<button class="plate-btn btn-nav deck-action-btn" onclick="borrarMazo('${mazo.id}')">Borrar</button>`;
                 const upDisabled = idx === 0 ? 'disabled' : '';
                 const downDisabled = idx === mazosGuardados.length - 1 ? 'disabled' : '';
+                // BUG FIX (v9): el botón "Usar" está deshabilitado si el mazo no es
+                // válido. El jugador puede editarlo para completarlo, pero no usarlo.
+                const usarDisabled = !valido ? 'disabled' : '';
+                const usarTitle = !valido ? ' title="Mazo incompleto: necesita 50-60 cartas y un líder"' : '';
+                const usarBtn = valido
+                    ? `<button class="plate-btn btn-nav deck-action-btn select-deck-btn ${mazo.id === mazoAsignadoId ? 'active' : ''}" onclick="asignarMazoActivo('${mazo.id}')">Usar</button>`
+                    : `<button class="plate-btn deck-action-btn deck-locked-btn" disabled title="Mazo incompleto: necesita 50-60 cartas y un líder">🔒 Usar</button>`;
                 lista.innerHTML += `
-                    <article class="deck-tile${giftClass}">
+                    <article class="deck-tile${giftClass}${invalidClass}">
                         ${giftBadge}
                         <div class="deck-tile-main">
                             <div class="deck-leader-cover">${liderImg}</div>
@@ -8529,7 +8554,7 @@
                         <div class="deck-tile-actions">
                             <button class="deck-reorder-btn" onclick="reordenarMazo(${idx}, -1)" title="Subir" ${upDisabled}>▲</button>
                             <button class="deck-reorder-btn" onclick="reordenarMazo(${idx}, 1)" title="Bajar" ${downDisabled}>▼</button>
-                            <button class="plate-btn btn-nav deck-action-btn select-deck-btn ${mazo.id === mazoAsignadoId ? 'active' : ''}" onclick="asignarMazoActivo('${mazo.id}')">Usar</button>
+                            ${usarBtn}
                             <button class="plate-btn btn-nav deck-action-btn" onclick="editarMazo('${mazo.id}')">Editar</button>
                             ${borrarBtn}
                         </div>
@@ -8549,6 +8574,12 @@
         }
 
         function asignarMazoActivo(id) {
+            // BUG FIX (v9): no permitir asignar un mazo inválido como activo.
+            const mazo = mazosGuardados.find(m => m.id === id);
+            if (mazo && !mazoEsValido(mazo)) {
+                alert('Este mazo no es válido. Necesita entre 50 y 60 cartas y un líder para poder usarlo.');
+                return;
+            }
             mazoAsignadoId = id;
             localStorage.setItem('gc_tcg_mazo_asignado', id);
             renderizarSelectorMazos();
@@ -9227,15 +9258,22 @@
             limpiarTokensDelMazo();
             const total = totalCartasMazo();
             if (!miMazo.liderId) return alert("Selecciona un lider primero.");
-            if (total < 50) return alert("Minimo 50 cartas para un mazo valido.");
             if (total > 60) return alert("Maximo 60 cartas en el mazo.");
+            // BUG FIX (v9): se permite guardar mazos con menos de 50 cartas.
+            // El mazo se guardará pero se marcará como inválido (no se puede usar
+            // para jugar hasta que tenga entre 50 y 60 cartas). Así el jugador
+            // puede ir construyendo el mazo poco a poco sin perder el progreso.
             miMazo.nombre = document.getElementById('deck-name').value.trim() || "Mazo sin nombre";
             const copia = JSON.parse(JSON.stringify(miMazo));
             const existente = mazosGuardados.findIndex(m => m.id === copia.id);
             if (existente >= 0) mazosGuardados[existente] = copia;
             else mazosGuardados.push(copia);
             guardarListaMazos();
-            alert("Mazo guardado correctamente.");
+            if (total < 50) {
+                alert("Mazo guardado, pero tiene solo " + total + " cartas. Necesitas al menos 50 para poder jugar con él. Aparecerá en rojo en la lista.");
+            } else {
+                alert("Mazo guardado correctamente.");
+            }
             volverASelectorMazos();
         }
 
