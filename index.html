@@ -1174,36 +1174,6 @@
         .op-battle-zone { left: 520px; top: 238px; width: 720px; height: 150px; transform: rotate(180deg); }
         .player-battle-zone { left: 520px; top: 420px; width: 720px; height: 160px; }
         .player-combo-zone { left: 430px; top: 600px; width: 730px; height: 126px; }
-        /* BUG FIX (v5): zona de maná visible para el jugador y el rival.
-           Antes el maná solo se mostraba como un contador (energy-hud). Ahora se
-           muestran las cartas de maná individuales y se giran (clase 'rested') al
-           ser usadas, igual que las unidades en la zona de batalla. */
-        .player-mana-zone {
-            position: absolute; left: 200px; bottom: 50px; width: 220px; height: 90px;
-            z-index: 10; display: flex; flex-direction: column; align-items: center;
-            background: linear-gradient(145deg, rgba(20,40,30,0.6), rgba(10,20,15,0.7));
-            border: 1.5px solid rgba(74,238,106,0.3); border-radius: 10px; padding: 4px;
-            overflow: visible;
-        }
-        .op-mana-zone {
-            position: absolute; right: 200px; top: 50px; width: 220px; height: 90px;
-            z-index: 10; display: flex; flex-direction: column; align-items: center;
-            background: linear-gradient(145deg, rgba(40,20,20,0.6), rgba(20,10,10,0.7));
-            border: 1.5px solid rgba(255,115,94,0.3); border-radius: 10px; padding: 4px;
-            overflow: visible;
-        }
-        .player-mana-zone .mat-cards, .op-mana-zone .mat-cards {
-            display: flex; gap: 2px; flex-wrap: nowrap; overflow-x: auto; max-width: 100%;
-        }
-        .player-mana-zone .game-card-mini, .op-mana-zone .game-card-mini {
-            width: 48px; height: 68px; flex-shrink: 0;
-        }
-        .player-mana-zone .game-card-mini.rested {
-            transform: rotate(90deg); margin: 0 14px; opacity: 0.6;
-        }
-        .op-mana-zone .game-card-mini.rested {
-            transform: rotate(90deg); margin: 0 14px; opacity: 0.6;
-        }
         .leader-lane { position: absolute; left: -142px; top: 14px; width: 118px; height: 132px; z-index: 5; display: flex; align-items: center; justify-content: center; overflow: visible; }
         .field-lane { position: absolute; right: 18px; top: 12px; width: 92px; height: 128px; z-index: 4; display: flex; align-items: center; justify-content: center; }
         .stack-zone, .drop-stack { position: absolute; z-index: 11; width: 86px; height: 122px; display: flex; align-items: center; justify-content: center; color: #ffd700; font-weight: 900; text-shadow: 0 2px 5px #000; }
@@ -1290,8 +1260,13 @@
         .badge-debajo { bottom: 4px; right: -10px; background: #8e44ad; top: auto; }
         .game-modal-panel h2 { color: #fff07c; margin-top: 0; text-transform: uppercase; }
         .mana-pay-options { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin: 20px 0; }
-        .mana-option { border: 2px solid rgba(255,255,255,.35); border-radius: 8px; padding: 6px; background: rgba(255,255,255,.05); cursor: pointer; }
-        .mana-option.selected { border-color: #fff07c; box-shadow: 0 0 18px rgba(255,240,124,.5); }
+        .mana-option { border: 2px solid rgba(255,255,255,.35); border-radius: 8px; padding: 6px; background: rgba(255,255,255,.05); cursor: pointer; transition: all .2s; }
+        .mana-option.selected { border-color: #fff07c; box-shadow: 0 0 18px rgba(255,240,124,.5); transform: translateY(-4px); }
+        /* BUG FIX (v6): las cartas de maná descansadas (giradas/usadas) se muestran
+           atenuadas y con cursor bloqueado, para que se distingan visualmente de las
+           activas incluso dentro del modal de pago. */
+        .mana-option.unavailable { opacity: 0.5; cursor: not-allowed; filter: grayscale(60%); }
+        .mana-option.unavailable .game-card-mini { transform: rotate(90deg); }
         .clash-card { width: 250px; height: 170px; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; font-weight: 900; text-shadow: 0 3px 8px #000; transform: scale(.9); animation: clashIn .45s ease forwards; }
         .clash-card span { font-size: 58px; } .clash-card small { font-size: 24px; text-transform: uppercase; }
         .clash-card.blue { background: linear-gradient(135deg, #0b55ff, #24e4ff); box-shadow: 0 0 45px rgba(36,228,255,.55); }
@@ -2000,6 +1975,69 @@
             animation: burstFade 1s ease; opacity: 0;
         }
         @keyframes burstFade { 0% { opacity: 0; } 30% { opacity: 1; } 100% { opacity: 0; } }
+
+        /* === BUG FIX (v6): efectos dopaminérgicos al revelar cartas === */
+        /* Shake (vibración) al revelar una carta rara o super rara */
+        .stacked-card.shake-rara { animation: shakeRara .5s ease; }
+        @keyframes shakeRara {
+            0%, 100% { transform: translateX(-50%) rotate(0); }
+            20% { transform: translateX(calc(-50% - 8px)) rotate(-2deg); }
+            40% { transform: translateX(calc(-50% + 8px)) rotate(2deg); }
+            60% { transform: translateX(calc(-50% - 6px)) rotate(-1deg); }
+            80% { transform: translateX(calc(-50% + 6px)) rotate(1deg); }
+        }
+        .stacked-card.shake-super-rara { animation: shakeSuperRara .7s ease; }
+        @keyframes shakeSuperRara {
+            0%, 100% { transform: translateX(-50%) rotate(0) scale(1); }
+            15% { transform: translateX(calc(-50% - 12px)) rotate(-3deg) scale(1.03); }
+            30% { transform: translateX(calc(-50% + 12px)) rotate(3deg) scale(1.03); }
+            45% { transform: translateX(calc(-50% - 10px)) rotate(-2deg) scale(1.04); }
+            60% { transform: translateX(calc(-50% + 10px)) rotate(2deg) scale(1.04); }
+            75% { transform: translateX(calc(-50% - 6px)) rotate(-1deg) scale(1.02); }
+            90% { transform: translateX(calc(-50% + 6px)) rotate(1deg) scale(1.02); }
+        }
+        /* Resplandor de color que rodea la carta al revelarla */
+        .stacked-card.glow-rara .card-front { box-shadow: 0 0 50px rgba(90,160,255,.7), 0 0 80px rgba(90,160,255,.4), 0 15px 35px rgba(0,0,0,.5); }
+        .stacked-card.glow-super-rara .card-front { box-shadow: 0 0 60px rgba(255,96,255,.8), 0 0 100px rgba(255,96,255,.5), 0 15px 35px rgba(0,0,0,.5); animation: superRaraGlow 1.5s ease infinite; }
+        @keyframes superRaraGlow {
+            0%, 100% { box-shadow: 0 0 60px rgba(255,96,255,.8), 0 0 100px rgba(255,96,255,.5), 0 15px 35px rgba(0,0,0,.5); }
+            50% { box-shadow: 0 0 80px rgba(255,96,255,1), 0 0 140px rgba(255,96,255,.7), 0 15px 35px rgba(0,0,0,.5); }
+        }
+        /* Texto flotante grande que aparece al revelar una carta rara/super rara */
+        .rarity-float-text {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            font-size: 64px; font-weight: 900; text-transform: uppercase;
+            letter-spacing: 4px; pointer-events: none; z-index: 100;
+            text-shadow: 0 0 20px currentColor, 0 4px 8px rgba(0,0,0,.8);
+            animation: floatTextPop 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        @keyframes floatTextPop {
+            0% { transform: translate(-50%, -50%) scale(0) rotate(-10deg); opacity: 0; }
+            30% { transform: translate(-50%, -50%) scale(1.3) rotate(2deg); opacity: 1; }
+            60% { transform: translate(-50%, -50%) scale(1) rotate(0); opacity: 1; }
+            100% { transform: translate(-50%, -150%) scale(0.8) rotate(0); opacity: 0; }
+        }
+        .rarity-float-text.rara { color: #5aa0ff; }
+        .rarity-float-text.super-rara { color: #ff60ff; }
+        /* Partículas que explotan al revelar una carta rara/super rara */
+        .particle-burst {
+            position: absolute; top: 50%; left: 50%; pointer-events: none; z-index: 90;
+        }
+        .particle-burst .particle {
+            position: absolute; width: 8px; height: 8px; border-radius: 50%;
+            animation: particleFly 1s ease-out forwards;
+        }
+        @keyframes particleFly {
+            0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            100% { transform: translate(var(--dx), var(--dy)) scale(0); opacity: 0; }
+        }
+        /* Flash blanco rápido al revelar (efecto cámara) */
+        .reveal-flash {
+            position: fixed; inset: 0; background: white; pointer-events: none; z-index: 9999;
+            animation: flashFade .3s ease-out forwards;
+        }
+        @keyframes flashFade { 0% { opacity: 0.8; } 100% { opacity: 0; } }
 
         /* Contador de sobre (para 10 sobres) */
         .pack-counter {
@@ -2965,6 +3003,14 @@
                         <option value="extra">Extra</option>
                         <option value="token">Token</option>
                     </select>
+                    <label>Color:</label>
+                    <select class="sort-filter-select" id="collection-filter-color" onchange="renderizarBiblioteca()">
+                        <option value="">Todos</option>
+                        <option value="Rojo">Rojo</option>
+                        <option value="Azul">Azul</option>
+                        <option value="Verde">Verde</option>
+                        <option value="Negro">Negro</option>
+                    </select>
                     <label>Habilidad:</label>
                     <select class="sort-filter-select" id="collection-filter-habilidad" onchange="renderizarBiblioteca()">
                         <option value="">Todas</option>
@@ -3118,6 +3164,14 @@
                         <option value="lider">Líder</option>
                         <option value="unidad">Unidad</option>
                         <option value="extra">Extra</option>
+                    </select>
+                    <label>Color:</label>
+                    <select class="sort-filter-select" id="deck-filter-color" onchange="renderizarEditor()">
+                        <option value="">Todos</option>
+                        <option value="Rojo">Rojo</option>
+                        <option value="Azul">Azul</option>
+                        <option value="Verde">Verde</option>
+                        <option value="Negro">Negro</option>
                     </select>
                     <label>Habilidad:</label>
                     <select class="sort-filter-select" id="deck-filter-habilidad" onchange="renderizarEditor()">
@@ -3347,13 +3401,6 @@
             <section class="stack-zone player-deck-stack"><div id="player-deck-zone"></div><span id="player-deck-count">0</span></section>
             <section class="drop-stack op-drop-stack"><div id="op-drop-zone"></div><span>DESCARTE</span></section>
             <section class="drop-stack player-drop-stack"><div id="player-drop-zone"></div><span>DESCARTE</span></section>
-
-            <!-- BUG FIX (v5): zona de maná visible para el jugador. Antes el maná solo
-                 se mostraba como un contador numérico (energy-hud), así que al pagar
-                 no se veía qué cartas se habían girado. Ahora se muestran las cartas
-                 de maná individuales y se giran (clase 'rested') al ser usadas. -->
-            <section class="playmat-zone player-mana-zone" id="player-mana-zone-section"><div class="mat-label">MANÁ</div><div class="mat-cards" id="player-mana-zone"></div></section>
-            <section class="playmat-zone op-mana-zone" id="op-mana-zone-section"><div class="mat-label">MANÁ RIVAL</div><div class="mat-cards" id="op-mana-zone"></div></section>
 
             <section class="playmat-zone op-combo-zone"><div class="mat-label">COMBO AREA</div><div class="mat-cards" id="op-combo-zone"></div></section>
             <section class="playmat-zone op-battle-zone"><div class="mat-label">BATTLE AREA</div><div class="leader-lane" id="op-leader-zone"></div><div class="field-lane op-field-lane" id="op-field-zone"></div><div class="mat-cards" id="op-battle-zone"></div></section>
@@ -4031,11 +4078,27 @@
     // Bug fix: validar estrictamente que liderDespierto === true (no truthy).
     // Antes cualquier valor truthy activaba el poder evo, causando que el choque
     // mostrara 15000 incluso sin despertar.
+    // BUG FIX (v7): si ambos jugadores tienen el mismo líder (mismo liderId), no
+    // podemos decidir qué líder es este mirando solo el liderId. Usamos la
+    // referencia `zona` para saber a qué jugador pertenece, y entonces miramos
+    // SU liderDespierto. Antes, si el jugador estaba despertado y el rival no,
+    // el líder del rival recibía poderEvo por error.
     if (estadoPartida) {
       const esLiderJugador = estadoPartida.jugador?.liderId === id && estadoPartida.jugador?.liderDespierto === true;
       const esLiderRival = estadoPartida.rival?.liderId === id && estadoPartida.rival?.liderDespierto === true;
-      if ((esLiderJugador || esLiderRival) && carta.poderEvo) {
-        p = Number(carta.poderEvo);
+      // Desambiguar por referencia de zona si ambos líderes comparten id
+      if (esLiderJugador || esLiderRival) {
+        // Si zona es la liderZona de un jugador concreto, usar solo ese
+        if (zona && estadoPartida.jugador?.liderZona === zona) {
+          if (estadoPartida.jugador?.liderDespierto === true && carta.poderEvo) p = Number(carta.poderEvo);
+        } else if (zona && estadoPartida.rival?.liderZona === zona) {
+          if (estadoPartida.rival?.liderDespierto === true && carta.poderEvo) p = Number(carta.poderEvo);
+        } else {
+          // Sin zona o zona ambigua: aplicar solo si exactamente uno de los dos
+          // está despertado (comportamiento anterior). Si ambos están despertados
+          // o ambos no lo están, no hay ambigüedad.
+          if (carta.poderEvo) p = Number(carta.poderEvo);
+        }
       }
     }
     return p;
@@ -8602,7 +8665,7 @@
             if (!t) return [];
             return t.split('/').map(s => s.trim()).filter(Boolean);
         }
-        function cartaPasaFiltros(carta, busqueda, clase, habilidad, tipo, personaje, origen) {
+        function cartaPasaFiltros(carta, busqueda, clase, habilidad, tipo, personaje, origen, color) {
             // Filtro de clase (lider/unidad/extra/token)
             if (clase) {
                 const cn = claseNormalizada(carta);
@@ -8613,6 +8676,8 @@
                     if (cn !== clase) return false;
                 }
             }
+            // BUG FIX (v6): filtro de color (Rojo, Azul, Verde, Negro)
+            if (color && String(carta.color || '').toLowerCase() !== String(color).toLowerCase()) return false;
             // Filtro de habilidad (por tag)
             if (habilidad && !tieneTag(carta, habilidad)) return false;
             // Filtro de tipo (soporta tipos compuestos con "/")
@@ -8687,6 +8752,7 @@
         function leerFiltros(prefix) {
             const searchEl = document.getElementById(prefix + '-search');
             const claseEl = document.getElementById(prefix + '-filter-clase');
+            const colorEl = document.getElementById(prefix + '-filter-color');
             const habEl = document.getElementById(prefix + '-filter-habilidad');
             const tipoEl = document.getElementById(prefix + '-filter-tipo');
             const persEl = document.getElementById(prefix + '-filter-personaje');
@@ -8694,6 +8760,7 @@
             return {
                 busqueda: (searchEl?.value || '').trim(),
                 clase: claseEl?.value || '',
+                color: colorEl?.value || '',
                 habilidad: habEl?.value || '',
                 tipo: tipoEl?.value || '',
                 personaje: persEl?.value || '',
@@ -8735,7 +8802,7 @@
             // único grid de "Resultados" (en grid-lideres) y ocultar los otros 3.
             // Si no hay filtros, mostrar los 4 grids separados como antes.
             const f = leerFiltros('collection');
-            const hayFiltros = f.busqueda || f.clase || f.habilidad || f.tipo || f.personaje || f.origen;
+            const hayFiltros = f.busqueda || f.clase || f.color || f.habilidad || f.tipo || f.personaje || f.origen;
 
             const renderCard = (c) => {
                 const i = datosCartas.indexOf(c);
@@ -8752,7 +8819,7 @@
 
             if (hayFiltros) {
                 // Modo búsqueda: filtrar todas las cartas y mostrarlas en un único grid.
-                const filtradas = datosCartas.filter(c => cartaPasaFiltros(c, f.busqueda, f.clase, f.habilidad, f.tipo, f.personaje, f.origen));
+                const filtradas = datosCartas.filter(c => cartaPasaFiltros(c, f.busqueda, f.clase, f.habilidad, f.tipo, f.personaje, f.origen, f.color));
                 const sortedFiltradas = ordenarCartas(filtradas, criterio);
                 // Ocultar los títulos y grids de unidades/extras/tokens
                 const titulos = document.querySelectorAll('#collection-screen .section-title');
@@ -8804,13 +8871,13 @@
             const criterio = sortSelect ? sortSelect.value : 'color';
             // BUG FIX (v4): leer filtros y aplicarlos.
             const f = leerFiltros('deck');
-            const hayFiltros = f.busqueda || f.clase || f.habilidad || f.tipo || f.personaje || f.origen;
+            const hayFiltros = f.busqueda || f.clase || f.color || f.habilidad || f.tipo || f.personaje || f.origen;
             // Separar líderes (siempre primero) del resto
             let lideres, noLideres;
             if (hayFiltros) {
                 // En modo búsqueda, filtrar todas las cartas (incluidos tokens si el
                 // filtro de clase lo pide) y mostrarlas en un único listado.
-                const filtradas = datosCartas.filter(c => cartaPasaFiltros(c, f.busqueda, f.clase, f.habilidad, f.tipo, f.personaje, f.origen));
+                const filtradas = datosCartas.filter(c => cartaPasaFiltros(c, f.busqueda, f.clase, f.habilidad, f.tipo, f.personaje, f.origen, f.color));
                 lideres = filtradas.filter(c => !esToken(c) && esLider(c));
                 noLideres = filtradas.filter(c => !(esLider(c)) && (f.clase === 'token' ? esToken(c) : !esToken(c)));
             } else {
@@ -11197,6 +11264,28 @@
                     void burst.offsetWidth;
                     burst.style.animation = 'burstFade 1s ease';
                 }
+                // BUG FIX (v6): efectos dopaminérgicos según rareza
+                if (item.rareza === 'rara' || item.rareza === 'super rara') {
+                    // 1. Shake (vibración)
+                    card.classList.add(item.rareza === 'super rara' ? 'shake-super-rara' : 'shake-rara');
+                    // 2. Glow (resplandor de color)
+                    card.classList.add(item.rareza === 'super rara' ? 'glow-super-rara' : 'glow-rara');
+                    // 3. Texto flotante grande
+                    const floatText = document.createElement('div');
+                    floatText.className = 'rarity-float-text ' + (item.rareza === 'super rara' ? 'super-rara' : 'rara');
+                    floatText.textContent = item.rareza === 'super rara' ? '¡SÚPER RARA!' : '¡RARA!';
+                    card.appendChild(floatText);
+                    setTimeout(() => floatText.remove(), 1300);
+                    // 4. Partículas que explotan
+                    crearParticulas(card, item.rareza);
+                    // 5. Flash blanco rápido (solo super rara)
+                    if (item.rareza === 'super rara') {
+                        const flash = document.createElement('div');
+                        flash.className = 'reveal-flash';
+                        document.body.appendChild(flash);
+                        setTimeout(() => flash.remove(), 400);
+                    }
+                }
                 // Mostrar hint "Toca para siguiente" si hay más cartas
                 if (idx < _packState.cartas.length - 1) {
                     const newHint = document.getElementById('card-hint');
@@ -11211,6 +11300,34 @@
                     navBtn.classList.add('show');
                 }
             }, 250);
+        }
+
+        // BUG FIX (v6): crea partículas que explotan desde el centro de la carta.
+        // Color según rareza: rara = azul, super rara = magenta.
+        function crearParticulas(parent, rareza) {
+            const colores = rareza === 'super rara'
+                ? ['#ff60ff', '#c040d0', '#fff07c', '#5ee7ff']
+                : ['#5aa0ff', '#2a6ac0', '#fff07c'];
+            const numParticulas = rareza === 'super rara' ? 24 : 14;
+            const burst = document.createElement('div');
+            burst.className = 'particle-burst';
+            for (let i = 0; i < numParticulas; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                const angulo = (Math.PI * 2 * i) / numParticulas + Math.random() * 0.3;
+                const distancia = 80 + Math.random() * 120;
+                const dx = Math.cos(angulo) * distancia;
+                const dy = Math.sin(angulo) * distancia;
+                p.style.setProperty('--dx', dx + 'px');
+                p.style.setProperty('--dy', dy + 'px');
+                p.style.background = colores[Math.floor(Math.random() * colores.length)];
+                p.style.boxShadow = '0 0 8px ' + p.style.background;
+                p.style.width = (6 + Math.random() * 8) + 'px';
+                p.style.height = p.style.width;
+                burst.appendChild(p);
+            }
+            parent.appendChild(burst);
+            setTimeout(() => burst.remove(), 1100);
         }
 
         // Avanzar a la siguiente carta: deslizar la actual hacia la izquierda
@@ -14805,7 +14922,11 @@
             cont.innerHTML = estadoPartida.jugador.mana.map((m, i) => {
                 const selected = p.seleccion.includes(i);
                 const unavailable = m.rested ? ' unavailable' : '';
-                return `<div class="mana-option ${selected ? 'selected' : ''}${unavailable}" onclick="event.stopPropagation(); toggleManaPago(${i})">${miniCarta(m.id, 'plain-card', { noInfo: true })}</div>`;
+                // BUG FIX (v6): las cartas de maná descansadas (ya usadas/giradas)
+                // se muestran con la clase 'rested' para que se vean giradas 90°,
+                // igual que las unidades descansadas en el tablero.
+                const restedCls = m.rested ? 'rested' : '';
+                return `<div class="mana-option ${selected ? 'selected' : ''}${unavailable}" onclick="event.stopPropagation(); toggleManaPago(${i})">${miniCarta(m.id, `plain-card ${restedCls}`.trim(), { noInfo: true })}</div>`;
             }).join('');
         }
 
@@ -16092,10 +16213,22 @@
             // Calcular poder efectivo con buffs (para reflejar visualmente +5000 etc.)
             let basePoder = Number(carta.poder || 0);
             // Si es líder y está despierto, usar poderEvo
+            // BUG FIX (v7): antes, si ambos jugadores tenían el mismo líder (mismo
+            // liderId) y el jugador estaba despertado pero el rival NO, al renderizar
+            // el líder del rival se cumplía la primera condición
+            // (jugador.liderId === obj.id && jugador.liderDespierto) y se usaba
+            // poderEvo para el rival aunque no estuviera despertado. Ahora
+            // determinamos a qué jugador pertenece ESTA carta (obj) antes de mirar
+            // su liderDespierto, en vez de mirar solo el liderId.
             if (lider && estadoPartida) {
-                if (estadoPartida.jugador?.liderId === obj.id && estadoPartida.jugador?.liderDespierto && carta.poderEvo) {
+                // Determinar a qué jugador pertenece esta zona (obj) comparando
+                // referencias con liderZona de cada jugador.
+                const esLiderJugador = estadoPartida.jugador?.liderZona === obj
+                    || (estadoPartida.jugador?.liderId === obj.id && !estadoPartida.rival?.liderZona);
+                const esLiderRival = estadoPartida.rival?.liderZona === obj;
+                if (esLiderJugador && estadoPartida.jugador?.liderDespierto && carta.poderEvo) {
                     basePoder = Number(carta.poderEvo);
-                } else if (estadoPartida.rival?.liderId === obj.id && estadoPartida.rival?.liderDespierto && carta.poderEvo) {
+                } else if (esLiderRival && estadoPartida.rival?.liderDespierto && carta.poderEvo) {
                     basePoder = Number(carta.poderEvo);
                 }
             }
@@ -16449,11 +16582,6 @@
             const comboBtn = document.getElementById('end-combo-btn');
             if (comboBtn) comboBtn.style.display = (estadoPartida.faseIndex === 3 || estadoPartida.faseIndex === 4) ? 'inline-block' : 'none';
             renderZona('op-combo-zone', r.combo.map(c => miniCarta(c, 'combo-card', { comboMode: true })).join(''));
-            // BUG FIX (v5): renderizar las cartas de maná individuales. Las cartas
-            // descansadas (giradas/usadas) se muestran con la clase 'rested' para
-            // que se vean giradas visualmente, igual que las unidades descansadas.
-            renderZona('player-mana-zone', (j.mana || []).map(m => miniCarta(m.id || m, (typeof m === 'object' && m.rested) ? 'rested' : '', { onClick: `abrirDetalleJuego('${(typeof m === 'object' ? m.id : m)}')` })).join(''));
-            renderZona('op-mana-zone', (r.mana || []).map(m => miniCarta(m.id || m, (typeof m === 'object' && m.rested) ? 'rested' : '', { onClick: `abrirDetalleJuego('${(typeof m === 'object' ? m.id : m)}')` })).join(''));
             renderZona('player-field-zone', j.campo.map(c => {
                 // Si el campo es RELEASE ENERGY, pasar el objeto completo para mostrar contador de cartas debajo
                 const campoObj = (typeof c === 'object') ? c : { id: c };
@@ -16868,6 +16996,60 @@
                 return e.returnValue;
             }
         });
+
+        // === BUG FIX (v7): manejador de errores global para evitar crashes ===
+        // Captura cualquier error no manejado y muestra un mensaje amigable al
+        // usuario en vez de dejar la pantalla congelada. También intenta
+        // recuperar el estado (volver al menú principal) para que el jugador
+        // pueda seguir jugando.
+        window.addEventListener('error', (e) => {
+            console.error('[Error capturado]', e.error || e.message, e.filename + ':' + e.lineno);
+            mostrarErrorAmigable(e.error || e.message || 'Error desconocido');
+        });
+        window.addEventListener('unhandledrejection', (e) => {
+            console.error('[Promesa rechazada no capturada]', e.reason);
+            mostrarErrorAmigable(e.reason instanceof Error ? e.reason : (e.reason || 'Error de conexión'));
+        });
+        function mostrarErrorAmigable(error) {
+            // Si ya hay un overlay de error, no duplicar
+            if (document.getElementById('global-error-overlay')) return;
+            const msg = (error && error.message) ? error.message : String(error || 'Error desconocido');
+            // Truncar mensaje largo
+            const msgCorto = msg.length > 200 ? msg.substring(0, 200) + '...' : msg;
+            const overlay = document.createElement('div');
+            overlay.id = 'global-error-overlay';
+            overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;padding:24px;font-family:Segoe UI,Roboto,sans-serif;';
+            overlay.innerHTML = `<div style="width:min(440px,95vw);background:linear-gradient(180deg,#2a1010,#1a0606);border:2px solid #ff735e;border-radius:16px;padding:32px;text-align:center;box-shadow:0 0 40px rgba(255,115,94,.4);">
+                <div style="font-size:56px;margin-bottom:12px;">⚠️</div>
+                <h2 style="color:#ff735e;font-size:22px;text-transform:uppercase;margin:0 0 12px;letter-spacing:2px;">¡Vaya! Algo salió mal</h2>
+                <p style="color:#ddd;font-size:14px;margin:0 0 8px;line-height:1.5;">Se produjo un error inesperado, pero el juego no se ha cerrado.</p>
+                <p style="color:#aaa;font-size:12px;margin:0 0 20px;font-family:monospace;background:rgba(0,0,0,.4);padding:8px 12px;border-radius:8px;word-break:break-word;">${msgCorto.replace(/</g,'&lt;')}</p>
+                <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+                    <button id="global-error-continue" style="background:linear-gradient(145deg,#2a8a3a,#1a5a25);border:2px solid #4ee06a;color:white;padding:10px 20px;border-radius:10px;font-weight:900;cursor:pointer;font-size:13px;text-transform:uppercase;letter-spacing:1px;">Seguir jugando</button>
+                    <button id="global-error-menu" style="background:linear-gradient(145deg,#3a2818,#1a0f06);border:2px solid var(--gold);color:var(--gold-light);padding:10px 20px;border-radius:10px;font-weight:900;cursor:pointer;font-size:13px;text-transform:uppercase;letter-spacing:1px;">Ir al menú</button>
+                    <button id="global-error-reload" style="background:linear-gradient(145deg,#2a4a8a,#1a2a5a);border:2px solid #5aa0ff;color:white;padding:10px 20px;border-radius:10px;font-weight:900;cursor:pointer;font-size:13px;text-transform:uppercase;letter-spacing:1px;">Recargar</button>
+                </div>
+            </div>`;
+            document.body.appendChild(overlay);
+            document.getElementById('global-error-continue').onclick = () => {
+                overlay.remove();
+                // Intentar re-renderizar para desbloquear
+                try { if (typeof renderizarPartida === 'function' && window.estadoPartida) renderizarPartida(); } catch (e) {}
+            };
+            document.getElementById('global-error-menu').onclick = () => {
+                overlay.remove();
+                // Volver al menú principal
+                try {
+                    if (window.estadoPartida) estadoPartida = null;
+                    if (typeof ocultarPantallasPrincipales === 'function') ocultarPantallasPrincipales();
+                    const mm = document.getElementById('main-menu');
+                    if (mm) mm.classList.remove('hidden');
+                } catch (e) { location.reload(); }
+            };
+            document.getElementById('global-error-reload').onclick = () => location.reload();
+        }
+        // Exponer para que otros scripts puedan llamarlo si quieren
+        window.mostrarErrorAmigable = mostrarErrorAmigable;
     </script>
 </body>
 </html>
