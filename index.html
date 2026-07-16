@@ -5629,9 +5629,12 @@
 
   R('lucas', {
     modificarPoder(id, zona, c, p) {
-      // Lucas gana +5000 por cada animal en juego (propios y del rival).
-      // contarTipoEnJuego ya cuenta ambos jugadores (jugador y rival).
-      return p + contarTipoEnJuego('animal') * 5000;
+      const quienLucas = c?.quien
+        || (estadoPartida?.rival?.batalla?.some(u => u === zona) ? 'rival' : 'jugador');
+      const animalesPropios = unidadesEnCampo(quienLucas, (u, i, carta) =>
+        String(carta?.tipo || '').toLowerCase().includes('animal')
+      ).length;
+      return p + animalesPropios * 5000;
     }
   });
 
@@ -15985,6 +15988,14 @@
             let id = pendiente.cardId;
             if (pendiente.origen === 'mano') estadoPartida.jugador.mano.splice(pendiente.index, 1);
             if (pendiente.origen === 'campo') {
+                const atacanteRef = estadoPartida.ataqueActual?.atacanteRef;
+                const jugadorEsAtacante = estadoPartida.turnoDelJugadorLocal === true;
+                if (jugadorEsAtacante && atacanteRef?.tipo === 'unidad' && pendiente.index < atacanteRef.index) {
+                    atacanteRef.index -= 1;
+                    if (estadoPartida.atacanteSeleccionado?.tipo === 'unidad') {
+                        estadoPartida.atacanteSeleccionado.index = Math.max(0, estadoPartida.atacanteSeleccionado.index - 1);
+                    }
+                }
                 // Buscar la carta por referencia para asegurarnos de eliminar la correcta
                 const idxToRemove = estadoPartida.jugador.batalla.findIndex((u, i) => i === pendiente.index);
                 if (idxToRemove >= 0) estadoPartida.jugador.batalla.splice(idxToRemove, 1);
@@ -16640,8 +16651,11 @@
             </div>`;
             renderZona('op-leader-zone', ocultarLideres ? '' : rivalLiderHtml);
             const atacanteIdx = estadoPartida.atacanteSeleccionado?.tipo === 'unidad' ? estadoPartida.atacanteSeleccionado.index : -1;
+            const atacanteZonaRefActual = estadoPartida.ataqueActual?.atacanteRef?.tipo === 'unidad'
+                ? estadoPartida.ataqueActual.atacanteZonaRef
+                : null;
             renderZona('player-battle-zone', j.batalla.map((c, i) => {
-                const esAtacante = i === atacanteIdx;
+                const esAtacante = (atacanteZonaRefActual && atacanteZonaRefActual === c) || (!atacanteZonaRefActual && i === atacanteIdx);
                 const cartaDatos = getCardById(c.id);
                 const esExtraCard = cartaDatos && String(cartaDatos.clase || cartaDatos.tipo || '').toLowerCase().includes('extra');
                 const esFaseComboODefensa = esFaseCombo || estadoPartida.faseIndex === 4;
