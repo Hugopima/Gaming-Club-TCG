@@ -3033,8 +3033,12 @@
                     <select class="sort-filter-select" id="collection-filter-tipo" onchange="renderizarBiblioteca()">
                         <option value="">Todos</option>
                     </select>
-                    <label>Personaje:</label>
-                    <select class="sort-filter-select" id="collection-filter-personaje" onchange="renderizarBiblioteca()">
+                    <label>Coste:</label>
+                    <select class="sort-filter-select" id="collection-filter-coste" onchange="renderizarBiblioteca()">
+                        <option value="">Todos</option>
+                    </select>
+                    <label>Poder:</label>
+                    <select class="sort-filter-select" id="collection-filter-poder" onchange="renderizarBiblioteca()">
                         <option value="">Todos</option>
                     </select>
                     <label>Origen:</label>
@@ -3195,8 +3199,12 @@
                     <select class="sort-filter-select" id="deck-filter-tipo" onchange="renderizarEditor()">
                         <option value="">Todos</option>
                     </select>
-                    <label>Personaje:</label>
-                    <select class="sort-filter-select" id="deck-filter-personaje" onchange="renderizarEditor()">
+                    <label>Coste:</label>
+                    <select class="sort-filter-select" id="deck-filter-coste" onchange="renderizarEditor()">
+                        <option value="">Todos</option>
+                    </select>
+                    <label>Poder:</label>
+                    <select class="sort-filter-select" id="deck-filter-poder" onchange="renderizarEditor()">
                         <option value="">Todos</option>
                     </select>
                     <label>Origen:</label>
@@ -3388,11 +3396,9 @@
 
             <div class="energy-hud-wrap enemy-energy-wrap">
                 <section class="energy-hud enemy-energy"><span id="op-energy-active">0</span><b>/</b><span id="op-energy-total">0</span><em>MANÁ</em></section>
-                <button class="mana-view-btn" title="Ver maná rival" onclick="abrirMana('rival')">⌄</button>
             </div>
             <div class="energy-hud-wrap player-energy-wrap">
                 <section class="energy-hud player-energy" ondragover="permitirDrop(event)" ondrop="soltarEnMana(event)"><em>MANÁ</em><span id="player-energy-active">0</span><b>/</b><span id="player-energy-total">0</span></section>
-                <button class="mana-view-btn" title="Ver tu maná" onclick="abrirMana('jugador')">⌄</button>
             </div>
             <section class="life-hud enemy-life"><span id="op-life-count">8</span><em>VIDAS</em></section>
             <section class="life-hud player-life"><span id="player-life-count">8</span><em>VIDAS</em></section>
@@ -8665,7 +8671,7 @@
             if (!t) return [];
             return t.split('/').map(s => s.trim()).filter(Boolean);
         }
-        function cartaPasaFiltros(carta, busqueda, clase, habilidad, tipo, personaje, origen, color) {
+        function cartaPasaFiltros(carta, busqueda, clase, habilidad, tipo, coste, poder, origen, color) {
             // Filtro de clase (lider/unidad/extra/token)
             if (clase) {
                 const cn = claseNormalizada(carta);
@@ -8685,8 +8691,10 @@
                 const tiposCarta = getTiposCarta(carta).map(t => t.toLowerCase());
                 if (!tiposCarta.includes(String(tipo).toLowerCase())) return false;
             }
-            // Filtro de personaje
-            if (personaje && String(carta.personaje || '').toLowerCase() !== String(personaje).toLowerCase()) return false;
+            // BUG FIX (v8): filtro de coste (comparación numérica)
+            if (coste && Number(carta.costeTotal) !== Number(coste)) return false;
+            // BUG FIX (v8): filtro de poder (comparación numérica)
+            if (poder && Number(carta.poder) !== Number(poder)) return false;
             // Filtro de origen
             if (origen && String(carta.origen || '').toLowerCase() !== String(origen).toLowerCase()) return false;
             // Búsqueda de texto: busca en nombre, habilidades (tag + desc), tipo, personaje, origen
@@ -8707,17 +8715,19 @@
             return true;
         }
 
-        // Llena los selects de Tipo, Personaje y Origen con los valores disponibles
+        // Llena los selects de Tipo, Coste, Poder y Origen con los valores disponibles
         // en datosCartas. Se llama al renderizar por primera vez.
         // BUG FIX (v5): los tipos compuestos ("Animal / Zombie") se descomponen en
         // sus tipos individuales ("Animal", "Zombie") para que no aparezcan como
         // opciones separadas en el filtro. Una carta con tipo "Animal / Zombie"
         // aparece tanto en "Animal" como en "Zombie".
+        // BUG FIX (v8): el filtro de Personaje se ha sustituido por Coste y Poder.
         let _filtrosColeccionIniciados = false;
         let _filtrosEditorIniciados = false;
         function llenarFiltrosDinamicos(prefix) {
             const selTipo = document.getElementById(prefix + '-filter-tipo');
-            const selPers = document.getElementById(prefix + '-filter-personaje');
+            const selCoste = document.getElementById(prefix + '-filter-coste');
+            const selPoder = document.getElementById(prefix + '-filter-poder');
             const selOri = document.getElementById(prefix + '-filter-origen');
             if (selTipo) {
                 const tipos = new Set();
@@ -8730,13 +8740,23 @@
                     [...tipos].sort((a, b) => a.localeCompare(b)).map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('');
                 if (currentTipo) selTipo.value = currentTipo;
             }
-            if (selPers) {
-                const personajes = new Set();
-                datosCartas.forEach(c => { if (c.personaje) personajes.add(c.personaje); });
-                const currentPers = selPers.value;
-                selPers.innerHTML = '<option value="">Todos</option>' +
-                    [...personajes].sort((a, b) => a.localeCompare(b)).map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join('');
-                if (currentPers) selPers.value = currentPers;
+            // BUG FIX (v8): llenar filtro de Coste con los costes disponibles
+            if (selCoste) {
+                const costes = new Set();
+                datosCartas.forEach(c => { if (c.costeTotal != null) costes.add(Number(c.costeTotal)); });
+                const currentCoste = selCoste.value;
+                selCoste.innerHTML = '<option value="">Todos</option>' +
+                    [...costes].sort((a, b) => a - b).map(co => `<option value="${co}">${co}</option>`).join('');
+                if (currentCoste) selCoste.value = currentCoste;
+            }
+            // BUG FIX (v8): llenar filtro de Poder con los poderes disponibles
+            if (selPoder) {
+                const poderes = new Set();
+                datosCartas.forEach(c => { if (c.poder != null) poderes.add(Number(c.poder)); });
+                const currentPoder = selPoder.value;
+                selPoder.innerHTML = '<option value="">Todos</option>' +
+                    [...poderes].sort((a, b) => a - b).map(po => `<option value="${po}">${po.toLocaleString('es-ES')}</option>`).join('');
+                if (currentPoder) selPoder.value = currentPoder;
             }
             if (selOri) {
                 const origenes = new Set();
@@ -8755,7 +8775,8 @@
             const colorEl = document.getElementById(prefix + '-filter-color');
             const habEl = document.getElementById(prefix + '-filter-habilidad');
             const tipoEl = document.getElementById(prefix + '-filter-tipo');
-            const persEl = document.getElementById(prefix + '-filter-personaje');
+            const costeEl = document.getElementById(prefix + '-filter-coste');
+            const poderEl = document.getElementById(prefix + '-filter-poder');
             const oriEl = document.getElementById(prefix + '-filter-origen');
             return {
                 busqueda: (searchEl?.value || '').trim(),
@@ -8763,7 +8784,8 @@
                 color: colorEl?.value || '',
                 habilidad: habEl?.value || '',
                 tipo: tipoEl?.value || '',
-                personaje: persEl?.value || '',
+                coste: costeEl?.value || '',
+                poder: poderEl?.value || '',
                 origen: oriEl?.value || ''
             };
         }
@@ -8802,7 +8824,7 @@
             // único grid de "Resultados" (en grid-lideres) y ocultar los otros 3.
             // Si no hay filtros, mostrar los 4 grids separados como antes.
             const f = leerFiltros('collection');
-            const hayFiltros = f.busqueda || f.clase || f.color || f.habilidad || f.tipo || f.personaje || f.origen;
+            const hayFiltros = f.busqueda || f.clase || f.color || f.habilidad || f.tipo || f.coste || f.poder || f.origen;
 
             const renderCard = (c) => {
                 const i = datosCartas.indexOf(c);
@@ -8819,7 +8841,7 @@
 
             if (hayFiltros) {
                 // Modo búsqueda: filtrar todas las cartas y mostrarlas en un único grid.
-                const filtradas = datosCartas.filter(c => cartaPasaFiltros(c, f.busqueda, f.clase, f.habilidad, f.tipo, f.personaje, f.origen, f.color));
+                const filtradas = datosCartas.filter(c => cartaPasaFiltros(c, f.busqueda, f.clase, f.habilidad, f.tipo, f.coste, f.poder, f.origen, f.color));
                 const sortedFiltradas = ordenarCartas(filtradas, criterio);
                 // Ocultar los títulos y grids de unidades/extras/tokens
                 const titulos = document.querySelectorAll('#collection-screen .section-title');
@@ -8871,13 +8893,13 @@
             const criterio = sortSelect ? sortSelect.value : 'color';
             // BUG FIX (v4): leer filtros y aplicarlos.
             const f = leerFiltros('deck');
-            const hayFiltros = f.busqueda || f.clase || f.color || f.habilidad || f.tipo || f.personaje || f.origen;
+            const hayFiltros = f.busqueda || f.clase || f.color || f.habilidad || f.tipo || f.coste || f.poder || f.origen;
             // Separar líderes (siempre primero) del resto
             let lideres, noLideres;
             if (hayFiltros) {
                 // En modo búsqueda, filtrar todas las cartas (incluidos tokens si el
                 // filtro de clase lo pide) y mostrarlas en un único listado.
-                const filtradas = datosCartas.filter(c => cartaPasaFiltros(c, f.busqueda, f.clase, f.habilidad, f.tipo, f.personaje, f.origen, f.color));
+                const filtradas = datosCartas.filter(c => cartaPasaFiltros(c, f.busqueda, f.clase, f.habilidad, f.tipo, f.coste, f.poder, f.origen, f.color));
                 lideres = filtradas.filter(c => !esToken(c) && esLider(c));
                 noLideres = filtradas.filter(c => !(esLider(c)) && (f.clase === 'token' ? esToken(c) : !esToken(c)));
             } else {
@@ -11229,6 +11251,43 @@
         // Click en una carta de la pila
         function clickCartaPila(idx) {
             if (!_packState || _packState.fase !== 'revelando') return;
+            // BUG FIX (v8): si estamos en medio de una transición (esperando a que
+            // aparezca la siguiente carta tras un click rápido), permitir saltar
+            // la animación inmediatamente con un nuevo click.
+            if (_packState.enTransicion) {
+                if (_packState.timeoutTransicion) {
+                    clearTimeout(_packState.timeoutTransicion);
+                    _packState.timeoutTransicion = null;
+                }
+                _packState.enTransicion = false;
+                // Mostrar la siguiente carta inmediatamente
+                if (_packState.indice < _packState.cartas.length) {
+                    mostrarSiguienteCartaEnPila();
+                } else {
+                    mostrarResumenSobre();
+                }
+                return;
+            }
+            // BUG FIX (v8): si la carta actual está en medio del flip (revelándose),
+            // un click la completa instantáneamente y avanza a la siguiente.
+            if (_packState.enFlip) {
+                if (_packState.timeoutFlip1) { clearTimeout(_packState.timeoutFlip1); _packState.timeoutFlip1 = null; }
+                if (_packState.timeoutFlip2) { clearTimeout(_packState.timeoutFlip2); _packState.timeoutFlip2 = null; }
+                _packState.enFlip = false;
+                // Completar la revelación inmediatamente
+                const card = document.querySelector('.stacked-card[data-idx="' + _packState.indice + '"]');
+                if (card) {
+                    card.classList.remove('flipping');
+                    card.classList.add('revealed');
+                    const back = card.querySelector('.card-back');
+                    const front = card.querySelector('.card-front');
+                    if (back) back.style.display = 'none';
+                    if (front) front.style.display = 'flex';
+                }
+                // Avanzar a la siguiente
+                avanzarSiguienteCarta();
+                return;
+            }
             // Solo se puede clickar la carta actual (la de encima)
             if (idx !== _packState.indice) return;
             const card = document.querySelector('.stacked-card[data-idx="' + idx + '"]');
@@ -11250,14 +11309,29 @@
 
             card.classList.add('flipping');
             if (hint) hint.style.display = 'none';
+            // BUG FIX (v8): marcar que estamos en flip para que un click pueda
+            // saltárselo.
+            _packState.enFlip = true;
 
-            setTimeout(() => {
+            // Fase 1 (250ms): swap de back→front cuando la carta está de canto (90°),
+            // invisible para el usuario.
+            _packState.timeoutFlip1 = setTimeout(() => {
+                _packState.timeoutFlip1 = null;
                 card.classList.add('revealed');
                 card.querySelector('.card-back').style.display = 'none';
                 card.querySelector('.card-front').style.display = 'flex';
+            }, 250);
+
+            // Fase 2 (500ms): el flip ha terminado. Ahora sí mostrar los efectos
+            // dopaminérgicos (shake, glow, texto, partículas, flash) para que NO
+            // corten la animación de voltear.
+            _packState.timeoutFlip2 = setTimeout(() => {
+                _packState.timeoutFlip2 = null;
+                _packState.enFlip = false;
+                card.classList.remove('flipping');
                 if (banner) banner.classList.add('show');
-                // Burst para super rara
                 const item = _packState.cartas[idx];
+                // Burst para super rara
                 if (item.rareza === 'super rara' && burst) {
                     burst.style.display = 'block';
                     burst.style.animation = 'none';
@@ -11265,6 +11339,8 @@
                     burst.style.animation = 'burstFade 1s ease';
                 }
                 // BUG FIX (v6): efectos dopaminérgicos según rareza
+                // BUG FIX (v8): retrasados hasta que acaba el flip (500ms) para que
+                // el shake no corte la animación de voltear.
                 if (item.rareza === 'rara' || item.rareza === 'super rara') {
                     // 1. Shake (vibración)
                     card.classList.add(item.rareza === 'super rara' ? 'shake-super-rara' : 'shake-rara');
@@ -11299,7 +11375,7 @@
                     navBtn.textContent = _packState.sobreActual < _packState.totalSobres - 1 ? 'Ver resumen y abrir siguiente' : 'Ver resumen';
                     navBtn.classList.add('show');
                 }
-            }, 250);
+            }, 500);
         }
 
         // BUG FIX (v6): crea partículas que explotan desde el centro de la carta.
@@ -11342,8 +11418,13 @@
                 cardActual.classList.add('sliding-out');
             }
             _packState.indice++;
-            // Tras la animación de deslizamiento, re-renderizar la pila
-            setTimeout(() => {
+            // BUG FIX (v8): marcar que estamos en transición para que si el usuario
+            // hace click durante la animación de deslizamiento, se pueda saltar
+            // inmediatamente a la siguiente carta.
+            _packState.enTransicion = true;
+            _packState.timeoutTransicion = setTimeout(() => {
+                _packState.enTransicion = false;
+                _packState.timeoutTransicion = null;
                 // Si quedan cartas, mostrar la siguiente (boca abajo)
                 if (_packState.indice < _packState.cartas.length) {
                     mostrarSiguienteCartaEnPila();
