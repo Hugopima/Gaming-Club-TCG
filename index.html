@@ -3411,9 +3411,11 @@
 
             <div class="energy-hud-wrap enemy-energy-wrap">
                 <section class="energy-hud enemy-energy"><span id="op-energy-active">0</span><b>/</b><span id="op-energy-total">0</span><em>MANÁ</em></section>
+                <button class="mana-view-btn" title="Ver maná rival" onclick="abrirMana('rival')">⌄</button>
             </div>
             <div class="energy-hud-wrap player-energy-wrap">
                 <section class="energy-hud player-energy" ondragover="permitirDrop(event)" ondrop="soltarEnMana(event)"><em>MANÁ</em><span id="player-energy-active">0</span><b>/</b><span id="player-energy-total">0</span></section>
+                <button class="mana-view-btn" title="Ver tu maná" onclick="abrirMana('jugador')">⌄</button>
             </div>
             <section class="life-hud enemy-life"><span id="op-life-count">8</span><em>VIDAS</em></section>
             <section class="life-hud player-life"><span id="player-life-count">8</span><em>VIDAS</em></section>
@@ -5242,10 +5244,22 @@
     },
     async ejecutarActivar(key, quien) {
       if (key === 'manaDesc') {
-        await elegirDescarteObligatorio(quien, 'Toñi: descarta 1 carta');
         const z = zonaJugador(quien);
-        const opts = z.descarte.map((id, i) => ({ label: getCardById(id)?.nombre || id, value: { src: 'desc', i }, cardId: id }))
+        // BUG FIX (v10): capturar la longitud del descarte ANTES de descartar.
+        // Las cartas que se añadan al descarte a partir de esa posición son las
+        // recién descartadas y NO deben aparecer como opción para maná.
+        const lenDescarteAntes = z.descarte.length;
+        await elegirDescarteObligatorio(quien, 'Toñi: descarta 1 carta');
+        // Construir opciones: solo las cartas del descarte que ya estaban ANTES
+        // (índices < lenDescarteAntes) + las de la mano.
+        const opts = z.descarte.slice(0, lenDescarteAntes).map((id, i) => ({ label: getCardById(id)?.nombre || id, value: { src: 'desc', i }, cardId: id }))
           .concat(z.mano.map((id, i) => ({ label: (getCardById(id)?.nombre || id) + ' (mano)', value: { src: 'mano', i }, cardId: id })));
+        if (!opts.length) {
+            log('Toñi la panadera: no hay cartas válidas para maná.');
+            marcarHabilidadUsada(claveTurno(quien, 'gl1_act'));
+            if (typeof renderizarPartida === 'function') renderizarPartida();
+            return;
+        }
         const pick = await elegirConModal('Toñi: elige carta para maná (del descarte o de tu mano)', opts);
         if (pick?.src === 'desc') { const [id] = z.descarte.splice(pick.i, 1); z.mana.push({ id, rested: true }); }
         else if (pick?.src === 'mano') { const [id] = z.mano.splice(pick.i, 1); z.mana.push({ id, rested: true }); }
@@ -5477,11 +5491,17 @@
   R('agus', {
     async alJugar(quien) {
       const z = zonaJugador(quien);
+      // BUG FIX (v10): antes buscaba por origen que incluyera "animal", pero el
+      // campo correcto es "tipo" (las cartas con tipo "Animal", "Animal / Zombie",
+      // etc.). Lucas también tiene tipo "Animal", así que el filtro por tipo ya
+      // lo incluye. Mantenemos la comprobación de personaje === 'lucas' por si
+      // acaso Lucas tuviera un tipo distinto en el futuro.
       const candidatos = z.mazo.filter(id => {
         const c = getCardById(id);
-        return String(c?.origen || '').toLowerCase().includes('animal') || String(c?.personaje || '').toLowerCase() === 'lucas';
+        const tipo = String(c?.tipo || '').toLowerCase();
+        return tipo.includes('animal') || String(c?.personaje || '').toLowerCase() === 'lucas';
       });
-      if (!candidatos.length) { log('Agustín: no hay cartas Animal/Lucas en el mazo.'); return; }
+      if (!candidatos.length) { log('Agustín: no hay cartas Animal en el mazo.'); return; }
       // eliminar duplicados manteniendo orden
       const vistos = new Set();
       const uniq = candidatos.filter(id => { if (vistos.has(id)) return false; vistos.add(id); return true; });
@@ -13312,8 +13332,27 @@
                     estadoPartida.rival.liderZona = snap.miEstado.liderZona;
                 }
                 // Guardar info del combo del rival para mostrarlo visualmente
-                estadoPartida.rivalComboActual = snap.miEstado.ataqueComboActual || 0;
-                estadoPartida.rivalAtacanteId = snap.miEstado.atacanteId || null;
+                // BUG FIX (v10): si el atacanteId del snapshot es una carta PROPIA
+                // (del jugador local), significa que el rival está DEFENDIENDO, no
+                // atacando. En ese caso, NO debemos setear rivalAtacanteId ni
+                // rivalComboActual, porque esos campos son para cuando el RIVAL es
+                // el atacante. Antes se seteaban siempre, causando que el panel de
+                // combate mostrara al jugador como defensor y al rival como atacante
+                // cuando en realidad era al revés.
+                const snapAtacanteId = snap.miEstado.atacanteId || null;
+                const esAtacantePropio = snapAtacanteId && (
+                    snapAtacanteId === estadoPartida.jugador?.liderId ||
+                    (estadoPartida.jugador?.batalla || []).some(u => u && u.id === snapAtacanteId)
+                );
+                if (esAtacantePropio) {
+                    // El rival está defendiendo (el atacante soy yo). NO setear
+                    // rivalAtacanteId ni rivalComboActual.
+                    estadoPartida.rivalComboActual = 0;
+                    estadoPartida.rivalAtacanteId = null;
+                } else {
+                    estadoPartida.rivalComboActual = snap.miEstado.ataqueComboActual || 0;
+                    estadoPartida.rivalAtacanteId = snapAtacanteId;
+                }
                 // === Fix panel de combate del defensor ===
                 // Si el rival está atacando, setear ataqueActual con el objetivo y poder base
                 // para que el panel de combate muestre atacante + defensor desde el inicio.
@@ -15284,6 +15323,13 @@
                     objetivoNombre: objetivoNombre,
                     objetivoImg: objetivoImg
                 });
+                // BUG FIX (v10): sincronizar el estado inmediatamente tras declarar
+                // el ataque para que el rival vea el panel de combate (atacante +
+                // defensor) desde este momento, no solo cuando llegue a su fase de
+                // defensa. Antes solo se enviaba 'notificacion-ataque' (aviso visual)
+                // pero no el snapshot con ataqueActual, así que el panel del rival
+                // quedaba vacío hasta la fase de defensa.
+                sincronizarEstadoOnline('atacar');
             }
             renderizarPartida();
         }
