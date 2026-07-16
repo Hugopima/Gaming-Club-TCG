@@ -635,6 +635,17 @@
         }
         .sort-filter-select:hover { border-color: var(--gold) !important; }
         .sort-filter-select option { background: #1a0a30; color: var(--gold-light); }
+        /* BUG FIX (v4): input de búsqueda para filtrar cartas por nombre, habilidad, etc. */
+        .sort-filter-input {
+            background: linear-gradient(145deg, rgba(0,0,0,0.7), rgba(20,12,4,0.85)) !important;
+            border: 1.5px solid rgba(255,215,0,0.4) !important; border-radius: 8px !important;
+            color: var(--gold-light) !important; font-weight: 600 !important; padding: 8px 14px !important;
+            font-size: 13px !important; min-width: 200px; flex: 1 1 200px;
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.6) !important;
+            outline: none !important;
+        }
+        .sort-filter-input::placeholder { color: rgba(255,243,160,0.5) !important; font-style: italic; }
+        .sort-filter-input:focus { border-color: var(--gold) !important; box-shadow: inset 0 2px 6px rgba(0,0,0,0.6), 0 0 10px rgba(255,215,0,0.3) !important; }
 
         .auto-recycle-btn {
             background: linear-gradient(145deg, #1a6d3c, #0d4a28) !important;
@@ -760,10 +771,14 @@
         .deck-tile-main { display: grid; grid-template-columns: 92px 1fr; gap: 16px; align-items: center; }
         .deck-leader-cover { width: 92px; height: 128px; border-radius: 10px; border: 2px solid rgba(255,215,0,0.55); background: #070707; overflow: hidden; display: flex; align-items: center; justify-content: center; color: #aaa; font-size: 12px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
         .deck-leader-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .deck-tile-actions { display: flex; gap: 5px; flex-wrap: nowrap; justify-content: flex-end; align-items: center; overflow: hidden; }
+        .deck-tile-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; align-items: center; overflow: visible; }
         .deck-tile-actions .deck-action-btn {
-            min-width: 0; padding: 6px 8px; font-size: 10px; border-radius: 7px;
-            box-shadow: 0 3px #1a0f06; letter-spacing: 0.5px;
+            /* BUG FIX: antes los botones eran min-width:0 con padding:6px 8px y
+               font-size:10px, lo que hacía que el texto "Usar"/"Editar"/"Borrar"
+               no cupiera y se cortara. Ahora tienen padding más generoso, font-size
+               legible y min-width para que el texto siempre entre. */
+            min-width: 78px; padding: 8px 14px; font-size: 13px; border-radius: 8px;
+            box-shadow: 0 3px #1a0f06; letter-spacing: 0.5px; text-align: center;
         }
         .deck-tile-actions .deck-reorder-btn {
             background: linear-gradient(145deg, #3a2818, #1a0f06);
@@ -2595,6 +2610,26 @@
             border: 2px solid var(--gold); border-radius: 20px; padding: 28px 32px;
             box-shadow: 0 0 60px rgba(255,215,0,.3), inset 0 1px 0 rgba(255,255,255,0.05); position: relative;
         }
+        /* BUG FIX: la X de cerrar del modal de logros/misiones usaba la clase
+           "credits-close" pero sin estilo propio, así que aparecía como botón
+           blanco por defecto (sin fondador dorado que pegue con el resto del
+           modal). Le damos un estilo dorado/oscura consistente con el modal. */
+        .achievements-modal .credits-close {
+            position: absolute; top: 14px; right: 18px;
+            background: linear-gradient(145deg, rgba(60,40,12,0.85), rgba(30,18,4,0.95));
+            border: 1.5px solid rgba(255,215,0,0.5); border-radius: 50%;
+            width: 36px; height: 36px;
+            color: var(--gold-light); font-size: 22px; font-weight: 900; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
+            transition: all .15s; line-height: 1;
+        }
+        .achievements-modal .credits-close:hover {
+            background: linear-gradient(145deg, rgba(255,80,60,0.85), rgba(180,40,20,0.95));
+            border-color: #ff735e; color: #fff;
+            transform: scale(1.1) rotate(90deg);
+            box-shadow: 0 4px 12px rgba(255,80,60,0.4);
+        }
         .achievements-modal .ach-tabs {
             display: flex; gap: 6px; margin-bottom: 20px; padding-bottom: 4px;
         }
@@ -2877,6 +2912,8 @@
             <div class="grid-wrapper">
                 <h1 class="main-title">Biblioteca de Cartas <span class="collection-counter" id="collection-counter">0/0</span></h1>
                 <div class="sort-filter-bar">
+                    <label>🔎 Buscar:</label>
+                    <input type="text" class="sort-filter-input" id="collection-search" placeholder="Nombre, habilidad, tipo, personaje, origen..." oninput="renderizarBiblioteca()">
                     <label>Ordenar por:</label>
                     <select class="sort-filter-select" id="collection-sort" onchange="renderizarBiblioteca()">
                         <option value="color">Color (predeterminado)</option>
@@ -2889,6 +2926,44 @@
                         <option value="copias_desc">Nº de copias (mayor a menor)</option>
                         <option value="rareza_asc">Rareza (menor a mayor)</option>
                         <option value="rareza_desc">Rareza (mayor a menor)</option>
+                    </select>
+                    <label>Clase:</label>
+                    <select class="sort-filter-select" id="collection-filter-clase" onchange="renderizarBiblioteca()">
+                        <option value="">Todas</option>
+                        <option value="lider">Líder</option>
+                        <option value="unidad">Unidad</option>
+                        <option value="extra">Extra</option>
+                        <option value="token">Token</option>
+                    </select>
+                    <label>Habilidad:</label>
+                    <select class="sort-filter-select" id="collection-filter-habilidad" onchange="renderizarBiblioteca()">
+                        <option value="">Todas</option>
+                        <option value="doble golpe">Doble Golpe</option>
+                        <option value="triple golpe">Triple Golpe</option>
+                        <option value="bloqueador">Bloqueador</option>
+                        <option value="critico">Crítico</option>
+                        <option value="venganza">Venganza</option>
+                        <option value="counter play">Counter Play</option>
+                        <option value="counter ataque">Counter Ataque</option>
+                        <option value="evolucion">Evolución</option>
+                        <option value="campo">Campo</option>
+                        <option value="permanente">Permanente</option>
+                        <option value="automatico">Automático</option>
+                        <option value="desafio">Desafío</option>
+                        <option value="transformacion">Transformación</option>
+                        <option value="activar">Activar</option>
+                    </select>
+                    <label>Tipo:</label>
+                    <select class="sort-filter-select" id="collection-filter-tipo" onchange="renderizarBiblioteca()">
+                        <option value="">Todos</option>
+                    </select>
+                    <label>Personaje:</label>
+                    <select class="sort-filter-select" id="collection-filter-personaje" onchange="renderizarBiblioteca()">
+                        <option value="">Todos</option>
+                    </select>
+                    <label>Origen:</label>
+                    <select class="sort-filter-select" id="collection-filter-origen" onchange="renderizarBiblioteca()">
+                        <option value="">Todos</option>
                     </select>
                     <button class="auto-recycle-btn" onclick="reciclarSobraAutomatico()">♻️ Auto-reciclar sobras</button>
                 </div>
@@ -2992,6 +3067,8 @@
             <section class="deck-library-section">
                 <h2 class="section-title">Biblioteca</h2>
                 <div class="sort-filter-bar">
+                    <label>🔎 Buscar:</label>
+                    <input type="text" class="sort-filter-input" id="deck-search" placeholder="Nombre, habilidad, tipo, personaje, origen..." oninput="renderizarEditor()">
                     <label>Ordenar por:</label>
                     <select class="sort-filter-select" id="deck-sort" onchange="renderizarEditor()">
                         <option value="color">Color (predeterminado)</option>
@@ -3005,6 +3082,44 @@
                         <option value="rareza_asc">Rareza (menor a mayor)</option>
                         <option value="rareza_desc">Rareza (mayor a menor)</option>
                     </select>
+                    <label>Clase:</label>
+                    <select class="sort-filter-select" id="deck-filter-clase" onchange="renderizarEditor()">
+                        <option value="">Todas</option>
+                        <option value="lider">Líder</option>
+                        <option value="unidad">Unidad</option>
+                        <option value="extra">Extra</option>
+                    </select>
+                    <label>Habilidad:</label>
+                    <select class="sort-filter-select" id="deck-filter-habilidad" onchange="renderizarEditor()">
+                        <option value="">Todas</option>
+                        <option value="doble golpe">Doble Golpe</option>
+                        <option value="triple golpe">Triple Golpe</option>
+                        <option value="bloqueador">Bloqueador</option>
+                        <option value="critico">Crítico</option>
+                        <option value="venganza">Venganza</option>
+                        <option value="counter play">Counter Play</option>
+                        <option value="counter ataque">Counter Ataque</option>
+                        <option value="evolucion">Evolución</option>
+                        <option value="campo">Campo</option>
+                        <option value="permanente">Permanente</option>
+                        <option value="automatico">Automático</option>
+                        <option value="desafio">Desafío</option>
+                        <option value="transformacion">Transformación</option>
+                        <option value="activar">Activar</option>
+                    </select>
+                    <label>Tipo:</label>
+                    <select class="sort-filter-select" id="deck-filter-tipo" onchange="renderizarEditor()">
+                        <option value="">Todos</option>
+                    </select>
+                    <label>Personaje:</label>
+                    <select class="sort-filter-select" id="deck-filter-personaje" onchange="renderizarEditor()">
+                        <option value="">Todos</option>
+                    </select>
+                    <label>Origen:</label>
+                    <select class="sort-filter-select" id="deck-filter-origen" onchange="renderizarEditor()">
+                        <option value="">Todos</option>
+                    </select>
+                    <button class="auto-recycle-btn" onclick="reciclarSobraAutomatico()">♻️ Auto-reciclar sobras</button>
                 </div>
                 <div id="library-cards" class="deck-library-grid"></div>
             </section>
@@ -4732,9 +4847,9 @@
   function modificarPoderBatalla(id, zona, c) {
     let mod = 0;
     c = c || ctx;
-    if (id === 'lucas' || zona?.id === 'lucas') {
-      mod += contarTipoEnJuego('animal') * 5000;
-    }
+    // BUG FIX: Lucas ya NO se buffa aquí. Antes se aplicaba +5000 por animal
+    // AQUÍ y OTRA VEZ en R('lucas').modificarPoder (línea ~5378), sumando +10000
+    // por animal en total. Ahora el bonus solo se aplica en R('lucas').modificarPoder.
     if (id === 'peppa' && c.atacanteId === id) {
       mod += (zonaJugador(c.atacanteQuien).combo?.length || 0) * 2500;
     }
@@ -8429,6 +8544,99 @@
             return sorted;
         }
 
+        // BUG FIX (v4): funciones de filtrado para la colección y el editor de mazos.
+        // Aplica: texto de búsqueda (nombre, habilidad, tipo, personaje, origen),
+        // filtro de clase, filtro de habilidad, filtro de tipo, filtro de personaje,
+        // filtro de origen. Devuelve true si la carta pasa todos los filtros.
+        function cartaPasaFiltros(carta, busqueda, clase, habilidad, tipo, personaje, origen) {
+            // Filtro de clase (lider/unidad/extra/token)
+            if (clase) {
+                const cn = claseNormalizada(carta);
+                if (clase === 'token') {
+                    if (!esToken(carta)) return false;
+                } else {
+                    if (esToken(carta)) return false;
+                    if (cn !== clase) return false;
+                }
+            }
+            // Filtro de habilidad (por tag)
+            if (habilidad && !tieneTag(carta, habilidad)) return false;
+            // Filtro de tipo
+            if (tipo && String(carta.tipo || '').toLowerCase() !== String(tipo).toLowerCase()) return false;
+            // Filtro de personaje
+            if (personaje && String(carta.personaje || '').toLowerCase() !== String(personaje).toLowerCase()) return false;
+            // Filtro de origen
+            if (origen && String(carta.origen || '').toLowerCase() !== String(origen).toLowerCase()) return false;
+            // Búsqueda de texto: busca en nombre, habilidades (tag + desc), tipo, personaje, origen
+            if (busqueda) {
+                const b = busqueda.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                if (!b) return true;
+                const campos = [
+                    carta.nombre || '',
+                    carta.personaje || '',
+                    carta.tipo || '',
+                    carta.origen || '',
+                    carta.clase || '',
+                    carta.rareza || '',
+                    ...(carta.habilidades || []).map(h => (h.tag || '') + ' ' + (h.desc || ''))
+                ].join(' ').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                if (!campos.includes(b)) return false;
+            }
+            return true;
+        }
+
+        // Llena los selects de Tipo, Personaje y Origen con los valores disponibles
+        // en datosCartas. Se llama al renderizar por primera vez.
+        let _filtrosColeccionIniciados = false;
+        let _filtrosEditorIniciados = false;
+        function llenarFiltrosDinamicos(prefix) {
+            const selTipo = document.getElementById(prefix + '-filter-tipo');
+            const selPers = document.getElementById(prefix + '-filter-personaje');
+            const selOri = document.getElementById(prefix + '-filter-origen');
+            if (selTipo) {
+                const tipos = new Set();
+                datosCartas.forEach(c => { if (c.tipo) tipos.add(c.tipo); });
+                const currentTipo = selTipo.value;
+                selTipo.innerHTML = '<option value="">Todos</option>' +
+                    [...tipos].sort().map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('');
+                if (currentTipo) selTipo.value = currentTipo;
+            }
+            if (selPers) {
+                const personajes = new Set();
+                datosCartas.forEach(c => { if (c.personaje) personajes.add(c.personaje); });
+                const currentPers = selPers.value;
+                selPers.innerHTML = '<option value="">Todos</option>' +
+                    [...personajes].sort().map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join('');
+                if (currentPers) selPers.value = currentPers;
+            }
+            if (selOri) {
+                const origenes = new Set();
+                datosCartas.forEach(c => { if (c.origen) origenes.add(c.origen); });
+                const currentOri = selOri.value;
+                selOri.innerHTML = '<option value="">Todos</option>' +
+                    [...origenes].sort().map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join('');
+                if (currentOri) selOri.value = currentOri;
+            }
+        }
+
+        // Lee los filtros de la barra (colección o editor) y devuelve un objeto
+        function leerFiltros(prefix) {
+            const searchEl = document.getElementById(prefix + '-search');
+            const claseEl = document.getElementById(prefix + '-filter-clase');
+            const habEl = document.getElementById(prefix + '-filter-habilidad');
+            const tipoEl = document.getElementById(prefix + '-filter-tipo');
+            const persEl = document.getElementById(prefix + '-filter-personaje');
+            const oriEl = document.getElementById(prefix + '-filter-origen');
+            return {
+                busqueda: (searchEl?.value || '').trim(),
+                clase: claseEl?.value || '',
+                habilidad: habEl?.value || '',
+                tipo: tipoEl?.value || '',
+                personaje: persEl?.value || '',
+                origen: oriEl?.value || ''
+            };
+        }
+
         function renderizarBiblioteca() {
             const gl = document.getElementById('grid-lideres');
             const gu = document.getElementById('grid-unidades');
@@ -8436,6 +8644,13 @@
             const gt = document.getElementById('grid-tokens');
             if (!gl || !gu || !ge || !gt) return;
             gl.innerHTML = ""; gu.innerHTML = ""; ge.innerHTML = ""; gt.innerHTML = "";
+
+            // BUG FIX (v4): llenar los selects dinámicos (Tipo, Personaje, Origen)
+            // la primera vez que se renderiza la biblioteca.
+            if (!_filtrosColeccionIniciados) {
+                llenarFiltrosDinamicos('collection');
+                _filtrosColeccionIniciados = true;
+            }
 
             // Extra: contador de cartas en colección (sin tokens)
             let cartasUnicasPoseidas = 0;
@@ -8452,16 +8667,11 @@
             const sortSelect = document.getElementById('collection-sort');
             const criterio = sortSelect ? sortSelect.value : 'color';
 
-            // Separar por categoría y ordenar dentro de cada una
-            const lideres = datosCartas.filter(c => claseNormalizada(c) === 'lider');
-            const unidades = datosCartas.filter(c => !esToken(c) && claseNormalizada(c) === 'unidad');
-            const extras = datosCartas.filter(c => !esToken(c) && claseNormalizada(c) === 'extra');
-            const tokens = datosCartas.filter(c => esToken(c));
-
-            const sortedLideres = ordenarCartas(lideres, criterio);
-            const sortedUnidades = ordenarCartas(unidades, criterio);
-            const sortedExtras = ordenarCartas(extras, criterio);
-            const sortedTokens = ordenarCartas(tokens, criterio);
+            // BUG FIX (v4): leer filtros. Si hay filtros activos, mostrar todo en un
+            // único grid de "Resultados" (en grid-lideres) y ocultar los otros 3.
+            // Si no hay filtros, mostrar los 4 grids separados como antes.
+            const f = leerFiltros('collection');
+            const hayFiltros = f.busqueda || f.clase || f.habilidad || f.tipo || f.personaje || f.origen;
 
             const renderCard = (c) => {
                 const i = datosCartas.indexOf(c);
@@ -8476,26 +8686,83 @@
                 </div>`;
             };
 
-            sortedLideres.forEach(c => gl.innerHTML += renderCard(c));
-            sortedUnidades.forEach(c => gu.innerHTML += renderCard(c));
-            sortedExtras.forEach(c => ge.innerHTML += renderCard(c));
-            sortedTokens.forEach(c => gt.innerHTML += renderCard(c));
+            if (hayFiltros) {
+                // Modo búsqueda: filtrar todas las cartas y mostrarlas en un único grid.
+                const filtradas = datosCartas.filter(c => cartaPasaFiltros(c, f.busqueda, f.clase, f.habilidad, f.tipo, f.personaje, f.origen));
+                const sortedFiltradas = ordenarCartas(filtradas, criterio);
+                // Ocultar los títulos y grids de unidades/extras/tokens
+                const titulos = document.querySelectorAll('#collection-screen .section-title');
+                // Mostrar solo el primer título como "Resultados (N)"
+                if (titulos[0]) titulos[0].textContent = 'Resultados (' + sortedFiltradas.length + ')';
+                if (titulos[1]) titulos[1].style.display = 'none';
+                if (titulos[2]) titulos[2].style.display = 'none';
+                if (titulos[3]) titulos[3].style.display = 'none';
+                gu.innerHTML = '';
+                ge.innerHTML = '';
+                gt.innerHTML = '';
+                sortedFiltradas.forEach(c => gl.innerHTML += renderCard(c));
+                if (sortedFiltradas.length === 0) {
+                    gl.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#aaa;padding:40px;font-size:14px;">No se encontraron cartas con esos criterios.</div>';
+                }
+            } else {
+                // Modo normal: 4 grids separados
+                const titulos = document.querySelectorAll('#collection-screen .section-title');
+                if (titulos[0]) { titulos[0].textContent = 'Líderes'; titulos[0].style.display = ''; }
+                if (titulos[1]) { titulos[1].textContent = 'Unidades'; titulos[1].style.display = ''; }
+                if (titulos[2]) { titulos[2].textContent = 'Extras'; titulos[2].style.display = ''; }
+                if (titulos[3]) { titulos[3].textContent = 'Tokens'; titulos[3].style.display = ''; }
+                const lideres = datosCartas.filter(c => claseNormalizada(c) === 'lider');
+                const unidades = datosCartas.filter(c => !esToken(c) && claseNormalizada(c) === 'unidad');
+                const extras = datosCartas.filter(c => !esToken(c) && claseNormalizada(c) === 'extra');
+                const tokens = datosCartas.filter(c => esToken(c));
+                const sortedLideres = ordenarCartas(lideres, criterio);
+                const sortedUnidades = ordenarCartas(unidades, criterio);
+                const sortedExtras = ordenarCartas(extras, criterio);
+                const sortedTokens = ordenarCartas(tokens, criterio);
+                sortedLideres.forEach(c => gl.innerHTML += renderCard(c));
+                sortedUnidades.forEach(c => gu.innerHTML += renderCard(c));
+                sortedExtras.forEach(c => ge.innerHTML += renderCard(c));
+                sortedTokens.forEach(c => gt.innerHTML += renderCard(c));
+            }
         }
 
         function renderizarEditor() {
             const libContainer = document.getElementById('library-cards');
             libContainer.innerHTML = "";
+            // BUG FIX (v4): llenar los selects dinámicos (Tipo, Personaje, Origen)
+            // la primera vez que se renderiza el editor.
+            if (!_filtrosEditorIniciados) {
+                llenarFiltrosDinamicos('deck');
+                _filtrosEditorIniciados = true;
+            }
             // Leer criterio de ordenación
             const sortSelect = document.getElementById('deck-sort');
             const criterio = sortSelect ? sortSelect.value : 'color';
+            // BUG FIX (v4): leer filtros y aplicarlos.
+            const f = leerFiltros('deck');
+            const hayFiltros = f.busqueda || f.clase || f.habilidad || f.tipo || f.personaje || f.origen;
             // Separar líderes (siempre primero) del resto
-            const lideres = datosCartas.filter(c => !esToken(c) && esLider(c));
-            const noLideres = datosCartas.filter(c => !esToken(c) && !esLider(c));
+            let lideres, noLideres;
+            if (hayFiltros) {
+                // En modo búsqueda, filtrar todas las cartas (incluidos tokens si el
+                // filtro de clase lo pide) y mostrarlas en un único listado.
+                const filtradas = datosCartas.filter(c => cartaPasaFiltros(c, f.busqueda, f.clase, f.habilidad, f.tipo, f.personaje, f.origen));
+                lideres = filtradas.filter(c => !esToken(c) && esLider(c));
+                noLideres = filtradas.filter(c => !(esLider(c)) && (f.clase === 'token' ? esToken(c) : !esToken(c)));
+            } else {
+                lideres = datosCartas.filter(c => !esToken(c) && esLider(c));
+                noLideres = datosCartas.filter(c => !esToken(c) && !esLider(c));
+            }
             // Ordenar ambos grupos
             const sortedLideres = ordenarCartas(lideres, criterio);
             const sortedNoLideres = ordenarCartas(noLideres, criterio);
             // Combinar: líderes primero, luego el resto
             const sortedCartas = [...sortedLideres, ...sortedNoLideres];
+            // Mostrar contador de resultados si hay filtros
+            if (hayFiltros && sortedCartas.length === 0) {
+                libContainer.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#aaa;padding:40px;font-size:14px;">No se encontraron cartas con esos criterios.</div>';
+                return;
+            }
             sortedCartas.forEach(c => {
                 const i = datosCartas.indexOf(c);
                 const id = getCardId(c);
@@ -8509,13 +8776,24 @@
                 const cantidadHtml = `<span class="owned-count ${poseidas === 0 ? 'zero' : ''}" style="bottom:auto;right:auto;top:4px;left:4px;">${poseidas}</span>`;
                 const bwStyle = (poseidas === 0) ? 'filter: grayscale(100%) brightness(0.6); opacity:0.7;' : '';
                 let btnDerecho = '';
+                let btnIzquierdo = '';
                 if (lider) {
-                    btnDerecho = `<button class="mini-btn" ${agotado ? 'disabled' : ''} onclick="seleccionarLider('${id}')">Líder</button>`;
+                    // BUG FIX: antes había dos botones "Líder" (uno aquí y otro en
+                    // btnDerecho) que hacían lo mismo (seleccionarLider). Ahora el
+                    // botón izquierdo es "Elegir" (o "Elegido" si ya es el líder
+                    // actual) y el derecho es "Quitar" (solo si ya está elegido).
+                    const yaElegido = miMazo.liderId === id;
+                    btnIzquierdo = `<button class="mini-btn" ${yaElegido ? 'disabled style="opacity:0.6;"' : ''} onclick="seleccionarLider('${id}')">${yaElegido ? '✓ Elegido' : 'Elegir'}</button>`;
+                    btnDerecho = yaElegido
+                        ? `<button class="mini-btn" style="background:linear-gradient(145deg,rgba(100,30,20,.9),rgba(50,15,10,.95));border-color:rgba(255,80,60,.4);" onclick="quitarLider()" title="Quitar líder">Quitar</button>`
+                        : `<button class="mini-btn" disabled style="opacity:0.3;">—</button>`;
                 } else if (banqAbierto) {
-                    // Banquillo abierto: mostrar +Banq
+                    // Banquillo abierto: +Banq a la derecha, +Mazo a la izquierda
+                    btnIzquierdo = `<button class="mini-btn" ${agotado ? 'disabled' : ''} onclick="anadirCarta('${id}')">+Mazo</button>`;
                     btnDerecho = `<button class="mini-btn" style="background:linear-gradient(145deg,rgba(80,60,10,.9),rgba(40,30,4,.95));border-color:rgba(255,215,0,.4);" ${agotado ? 'disabled' : ''} onclick="agregarAlBanquillo('${id}')" title="Añadir al banquillo">+Banq</button>`;
                 } else {
-                    // Banquillo cerrado: mostrar Quitar si está en el mazo, sino deshabilitado
+                    // Banquillo cerrado: +Mazo a la izquierda, Quitar a la derecha
+                    btnIzquierdo = `<button class="mini-btn" ${agotado ? 'disabled' : ''} onclick="anadirCarta('${id}')">+Mazo</button>`;
                     if (copiasMazo > 0) {
                         btnDerecho = `<button class="mini-btn" style="background:linear-gradient(145deg,rgba(100,30,20,.9),rgba(50,15,10,.95));border-color:rgba(255,80,60,.4);" onclick="quitarCarta('${id}')" title="Quitar del mazo">Quitar</button>`;
                     } else {
@@ -8531,7 +8809,7 @@
                         </div>
                         <div class="deck-card-name">${escapeHtml(c.nombre)}</div>
                         <div class="deck-card-actions">
-                            <button class="mini-btn" ${agotado ? 'disabled' : ''} onclick="${lider ? `seleccionarLider('${id}')` : `anadirCarta('${id}')`}">${lider ? 'Líder' : '+Mazo'}</button>
+                            ${btnIzquierdo}
                             ${btnDerecho}
                         </div>
                     </div>`;
@@ -8812,6 +9090,18 @@
         // ===== AMIGOS =====
         function abrirAmigos() {
             document.getElementById('friends-overlay').classList.add('active');
+            // BUG FIX: re-registrar el discord_id al abrir la lista de amigos.
+            // Si el socket se conectó antes de que el usuario se logueara con
+            // Discord (por ejemplo, abrió el lobby online sin login y luego se
+            // logueó), el servidor no tiene asociado discord_id ↔ socket.id, así
+            // que estaOnline() devuelve false para todos los amigos y el círculo
+            // verde nunca aparece. Re-emitir aquí lo arregla.
+            if (_socketOnline && _socketOnline.connected) {
+                const user = getDiscordUser();
+                if (user && user.id) {
+                    _socketOnline.emit('registrar-usuario', { discord_id: user.id });
+                }
+            }
             renderizarListaAmigos();
         }
         function cerrarAmigos() {
@@ -8859,6 +9149,10 @@
             guardarInventario();
             actualizarBarraMonedas();
             renderizarBiblioteca();
+            // BUG FIX (v4): también re-renderizar el editor de mazos por si se
+            // invocó el reciclador desde ahí (las cartas recicladas ya no estarán
+            // disponibles para añadir al mazo).
+            if (typeof renderizarEditor === 'function') renderizarEditor();
             alert(`¡Reciclaje completado! +${energyTotal} Club Energy.`);
         }
 
@@ -11154,6 +11448,15 @@
                     _socketOnline.emit('registrar-usuario', { discord_id: user.id });
                 }
             });
+            // BUG FIX: si el socket YA está conectado cuando configuramos los eventos
+            // (puede pasar si io() reutiliza una conexión existente), el evento 'connect'
+            // no se volverá a disparar, así que registramos aquí también.
+            if (_socketOnline.connected) {
+                const user = getDiscordUser();
+                if (user && user.id) {
+                    _socketOnline.emit('registrar-usuario', { discord_id: user.id });
+                }
+            }
             _socketOnline.on('connect_error', () => {
                 statusEl.innerHTML = '❌ No se pudo conectar. ¿Está el servidor activo en Render?';
                 statusEl.style.color = '#ff735e';
@@ -13438,7 +13741,7 @@
                             // Buscar unidad con menos poder (que la IA pueda derrotar)
                             const masDebiles = descansadas.filter(x => Number(getCardById(x.c.id)?.poder || 0) < poderAtacante);
                             if (masDebiles.length) {
-                                // Bug fix: NO atacar cartas de 5000 de poder (no merece la pena)
+                                // NO atacar cartas de 5000 de poder (no merece la pena)
                                 const masDebilesValidas = masDebiles.filter(x => Number(getCardById(x.c.id)?.poder || 0) > 5000);
                                 if (masDebilesValidas.length) {
                                     // Atacar la más fuerte de las débiles válidas (mejor trade)
@@ -13488,7 +13791,7 @@
                         } else {
                             const masDebiles = descansadasLid.filter(x => Number(getCardById(x.c.id)?.poder || 0) < poderLid);
                             if (masDebiles.length) {
-                                // Bug fix: NO atacar cartas de 5000 de poder
+                                // NO atacar cartas de 5000 de poder
                                 const masDebilesValidas = masDebiles.filter(x => Number(getCardById(x.c.id)?.poder || 0) > 5000);
                                 if (masDebilesValidas.length) {
                                     masDebilesValidas.sort((a, b) => Number(getCardById(b.c.id)?.poder || 0) - Number(getCardById(a.c.id)?.poder || 0));
@@ -13662,6 +13965,15 @@
                         // El ataque fue negado por un counter ataque del jugador.
                         atacante.ataquesRestantes = Math.max(0, (atacante.ataquesRestantes ?? 1) - 1);
                         atacante.rested = atacante.ataquesRestantes <= 0;
+                        // BUG FIX: limpiar el combo de la IA (r.combo) que se había
+                        // acumulado en la fase de combo de ataque. Si no se limpia,
+                        // las cartas se quedan en la zona de combo hasta el final del
+                        // combate, lo que se ve raro y confunde al jugador.
+                        // Las cartas ya están en el descarte (se añadieron al hacer
+                        // combo), así que solo vaciamos r.combo sin duplicar.
+                        if (r.combo && r.combo.length) {
+                            r.combo = [];
+                        }
                         estadoPartida.ataqueActual = null;
                         estadoPartida.rivalAtacanteId = null;
                         estadoPartida.rivalComboActual = 0;
@@ -13859,6 +14171,11 @@
                         // El ataque fue negado por un counter ataque del jugador.
                         atacante.ataquesRestantes = Math.max(0, (atacante.ataquesRestantes ?? 1) - 1);
                         atacante.rested = atacante.ataquesRestantes <= 0;
+                        // BUG FIX: limpiar el combo de la IA (r.combo) que se había
+                        // acumulado en la fase de combo de ataque del líder.
+                        if (r.combo && r.combo.length) {
+                            r.combo = [];
+                        }
                         estadoPartida.ataqueActual = null;
                         estadoPartida.rivalAtacanteId = null;
                         estadoPartida.rivalComboActual = 0;
@@ -14946,16 +15263,25 @@
                 const r = estadoPartida.rival;
                 if (r.mano.length > 0) {
                     let poderDefensorBaseIA = 0;
+                    let esDefensorDebil = false;
                     if (ataque.objetivo?.tipo === 'lider') {
                         const lid = getCardById(r.liderId);
                         poderDefensorBaseIA = r.liderDespierto ? Number(lid?.poderEvo || 0) : Number(lid?.poder || 0);
                     } else if (ataque.objetivo?.tipo === 'unidad') {
                         const def = r.batalla[ataque.objetivo.index];
                         if (def) poderDefensorBaseIA = Number(getCardById(def.id)?.poder || 0);
+                        // BUG FIX: marcar si la unidad defensora es débil (≤5000 poder).
+                        // No merece la pena gastar cartas de combo para salvar una carta
+                        // que apenas hace daño; mejor dejarla morir y conservar la mano.
+                        esDefensorDebil = poderDefensorBaseIA <= 5000;
                     }
                     const poderAtacanteJug = ataque.atacanteBase + (ataque.atacanteCombo || 0);
-                    // La IA combea si el atacante tiene más poder (70% probabilidad)
-                    if (poderAtacanteJug > poderDefensorBaseIA && Math.random() < 0.7) {
+                    // La IA combea si el atacante tiene más poder (70% probabilidad).
+                    // BUG FIX: NO combar si el defensor es una unidad débil (≤5000).
+                    // Antes la IA gastaba 2-3 cartas de combo para salvar una carta de
+                    // 5000 que no amenazaba nada, desperdiciando recursos.
+                    // Excepción: si el defensor es el líder, siempre puede combar.
+                    if (poderAtacanteJug > poderDefensorBaseIA && !esDefensorDebil && Math.random() < 0.7) {
                         const necesita = poderAtacanteJug - poderDefensorBaseIA + 1;
                         let comboAcum = 0;
                         const usadas = [];
@@ -15670,7 +15996,12 @@
             const buffTotal = (buffs.poder || 0) + (buffs.batalla || 0);
             // Aplicar bonus de campo permanente (Energía de Patroclo: +5000 a unidades)
             let campoBonus = 0;
-            if (!lider && !comboMode && !opts.plain && estadoPartida) {
+            // BUG FIX: excluir los Extras de campo (como "energia") del bonus, porque
+            // son cartas de Campo, no unidades, y no deben buffarse a sí mismas.
+            // Antes, la carta "Energía de Patroclo" mostraba 5000 en su badge porque
+            // se detectaba a sí misma como campo y se aplicaba +5000.
+            const esExtraCampo = String(carta.clase || carta.tipo || '').toLowerCase().includes('extra');
+            if (!lider && !comboMode && !opts.plain && !esExtraCampo && estadoPartida) {
                 // Determinar a qué jugador pertenece esta carta
                 let quienCalc = 'jugador';
                 const enJugador = estadoPartida.jugador?.batalla?.some(u => u === obj);
@@ -15679,7 +16010,41 @@
                 const campo = estadoPartida[quienCalc]?.campo?.[0];
                 if (campo?.id === 'energia') campoBonus = 5000;
             }
-            const totalPoder = basePoder + buffTotal + campoBonus;
+            // BUG FIX: usar poderCarta (que incluye modificarPoder dinámico, como el
+            // bonus de Lucas por animales) para que el badge se actualice conforme
+            // haya más animales en el campo. Antes se usaba basePoder + buffTotal +
+            // campoBonus, que NO incluía el bonus dinámico de Lucas ni de otros
+            // efectos basados en modificarPoder.
+            // BUG FIX (v2): el bonus de Lucas debe aplicarse SIEMPRE, incluso en el
+            // turno del rival/IA. Para ello pasamos un ctx completo a poderCarta con
+            // atacanteId/atacanteZona (por si la carta es la atacante, Peppa etc.
+            // también funcionan) y quien (para que el campo de Energía de Patroclo
+            // se detecte correctamente).
+            let totalPoder;
+            if (comboMode) {
+                totalPoder = basePoder + buffTotal + campoBonus;
+            } else if (window.MotorEfectos && !lider && !opts.plain && estadoPartida) {
+                // Determinar a qué jugador pertenece esta carta
+                let quienCalc = 'jugador';
+                const enJugador = estadoPartida.jugador?.batalla?.some(u => u === obj);
+                const enRival = estadoPartida.rival?.batalla?.some(u => u === obj);
+                if (enRival) quienCalc = 'rival';
+                // Construir ctx completo para que TODOS los modificarPoder funcionen
+                // (Peppa necesita atacanteId, Lucas solo necesita contar animales).
+                const ctxCalc = {
+                    quien: quienCalc,
+                    atacanteId: carta.id,
+                    atacanteQuien: quienCalc,
+                    atacanteZona: obj
+                };
+                try {
+                    totalPoder = MotorEfectos.poderCarta(carta.id, obj, ctxCalc);
+                } catch (e) {
+                    totalPoder = basePoder + buffTotal + campoBonus;
+                }
+            } else {
+                totalPoder = basePoder + buffTotal + campoBonus;
+            }
             const powerText = comboMode ? `+${poderCombo(carta)}` : (totalPoder ? String(totalPoder) : '');
             const costHtml = lider || opts.plain ? '' : `<span class="card-cost-badge">${costText}</span>`;
             const dotHtml = lider || comboMode || opts.plain ? '' : costeDots(carta);
@@ -15762,7 +16127,25 @@
             if (estadoPartida.faseIndex === 4 && estadoPartida.ataqueActual?.objetivo?.tipo === 'lider' && estadoPartida.ataqueActual?.defensorCombo && estadoPartida.rivalAtacanteId) {
                 comboLider += estadoPartida.ataqueActual.defensorCombo;
             }
-            const liderPoderActual = liderPoderBase + (liderObj.buffs.poder || 0) + (liderObj.buffs.batalla || 0) + comboLider;
+            const liderPoderActual = (() => {
+                // BUG FIX (v2): usar poderCarta para que los modificadores dinámicos
+                // (como el bonus de Lucas por animales, si alguna vez un líder lo
+                // tuviera) se apliquen también al líder. Si no hay MotorEfectos,
+                // usar el cálculo manual anterior.
+                if (window.MotorEfectos) {
+                    try {
+                        const ctxLid = {
+                            quien: 'jugador',
+                            atacanteId: j.liderId,
+                            atacanteQuien: 'jugador',
+                            atacanteZona: liderObj
+                        };
+                        const base = MotorEfectos.poderCarta(j.liderId, liderObj, ctxLid);
+                        return base + comboLider;
+                    } catch (e) {}
+                }
+                return liderPoderBase + (liderObj.buffs.poder || 0) + (liderObj.buffs.batalla || 0) + comboLider;
+            })();
             // Botones activables del líder
             let liderActivables = '';
             if (window.MotorEfectos && estadoPartida.faseIndex >= 1) {
@@ -15808,7 +16191,23 @@
             if (estadoPartida.faseIndex === 4 && estadoPartida.ataqueActual?.objetivo?.tipo === 'lider' && estadoPartida.ataqueActual?.defensorCombo && !estadoPartida.rivalAtacanteId) {
                 rivalDefensaLider = estadoPartida.ataqueActual.defensorCombo;
             }
-            const rivalLiderPoder = rivalLiderBase + (rivalLiderObj.buffs.poder || 0) + (rivalLiderObj.buffs.batalla || 0) + rivalComboLider + rivalDefensaLider;
+            const rivalLiderPoder = (() => {
+                // BUG FIX (v2): usar poderCarta para que los modificadores dinámicos
+                // se apliquen también al líder rival.
+                if (window.MotorEfectos) {
+                    try {
+                        const ctxLid = {
+                            quien: 'rival',
+                            atacanteId: r.liderId,
+                            atacanteQuien: 'rival',
+                            atacanteZona: rivalLiderObj
+                        };
+                        const base = MotorEfectos.poderCarta(r.liderId, rivalLiderObj, ctxLid);
+                        return base + rivalComboLider + rivalDefensaLider;
+                    } catch (e) {}
+                }
+                return rivalLiderBase + (rivalLiderObj.buffs.poder || 0) + (rivalLiderObj.buffs.batalla || 0) + rivalComboLider + rivalDefensaLider;
+            })();
             const rivalLiderAtacando = estadoPartida.rivalAtacanteId === r.liderId && (estadoPartida.faseIndex === 3 || estadoPartida.faseIndex === 4);
             let rivalLiderBadge = '';
             if (rivalLiderObj.flags?.dobleGolpe || rivalLiderObj.flags?.tripleGolpe) {
