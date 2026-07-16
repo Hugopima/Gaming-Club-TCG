@@ -405,7 +405,11 @@ app.post('/api/perfil', async (req, res) => {
                     cartasRecicladas: (data.stats && data.stats.cartasRecicladas) || 0,
                     counterPlays: (data.stats && data.stats.counterPlays) || 0,
                     bloqueadores: (data.stats && data.stats.bloqueadores) || 0,
-                    cartasUnicas: (data.stats && data.stats.cartasUnicas) || 0
+                    cartasUnicas: (data.stats && data.stats.cartasUnicas) || 0,
+                    // BUG FIX: faltaban copas y partidasCompetitivas en el perfil público,
+                    // así que los amigos siempre veían "0 copas" aunque el jugador tuviera.
+                    copas: (data.stats && data.stats.copas) || 0,
+                    partidasCompetitivas: (data.stats && data.stats.partidasCompetitivas) || 0
                 },
                 totalCartas: totalCartas,
                 cartasUnicas: cartasUnicas
