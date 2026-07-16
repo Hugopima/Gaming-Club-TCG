@@ -13332,24 +13332,28 @@
                     estadoPartida.rival.liderZona = snap.miEstado.liderZona;
                 }
                 // Guardar info del combo del rival para mostrarlo visualmente
-                // BUG FIX (v10): si el atacanteId del snapshot es una carta PROPIA
-                // (del jugador local), significa que el rival está DEFENDIENDO, no
-                // atacando. En ese caso, NO debemos setear rivalAtacanteId ni
-                // rivalComboActual, porque esos campos son para cuando el RIVAL es
-                // el atacante. Antes se seteaban siempre, causando que el panel de
-                // combate mostrara al jugador como defensor y al rival como atacante
-                // cuando en realidad era al revés.
+                // BUG FIX (v11): el fix anterior (v10) comprobaba si el atacanteId
+                // era una carta propia para decidir si el rival estaba defendiendo.
+                // Pero eso fallaba cuando ambos jugadores tenían la misma carta: si
+                // el rival atacaba con una carta que el jugador también tenía, el
+                // fix limpiaba rivalAtacanteId incorrectamente.
+                // Solución correcta: usar el faseIndex del snapshot. Si el rival está
+                // en faseIndex 3 (combo de ataque), el rival es el ATACANTE. Si está
+                // en faseIndex 4 (combo defensora), el rival es el DEFENSOR y el
+                // atacante soy yo → NO setear rivalAtacanteId.
+                const snapFaseIndex = snap.faseIndex;
                 const snapAtacanteId = snap.miEstado.atacanteId || null;
-                const esAtacantePropio = snapAtacanteId && (
-                    snapAtacanteId === estadoPartida.jugador?.liderId ||
-                    (estadoPartida.jugador?.batalla || []).some(u => u && u.id === snapAtacanteId)
-                );
-                if (esAtacantePropio) {
-                    // El rival está defendiendo (el atacante soy yo). NO setear
-                    // rivalAtacanteId ni rivalComboActual.
+                if (snapFaseIndex === 4) {
+                    // El rival está en fase de defensa → el atacante soy yo.
+                    // NO setear rivalAtacanteId ni rivalComboActual.
                     estadoPartida.rivalComboActual = 0;
                     estadoPartida.rivalAtacanteId = null;
+                } else if (snapFaseIndex === 3 && snapAtacanteId) {
+                    // El rival está en fase de combo de ataque → el rival ataca.
+                    estadoPartida.rivalComboActual = snap.miEstado.ataqueComboActual || 0;
+                    estadoPartida.rivalAtacanteId = snapAtacanteId;
                 } else {
+                    // Otra fase (0, 1, 2): no hay ataque en curso.
                     estadoPartida.rivalComboActual = snap.miEstado.ataqueComboActual || 0;
                     estadoPartida.rivalAtacanteId = snapAtacanteId;
                 }
@@ -15295,6 +15299,12 @@
                 atacanteBase: poderBase,
                 atacanteCombo: 0
             };
+            // BUG FIX (v11): limpiar rivalAtacanteId cuando el jugador ataca. Si no
+            // se limpia, y el rival tenía una carta con el mismo id que atacó en el
+            // turno anterior, esa carta del rival seguiría brillando como "atacante"
+            // y mostraría el combo del jugador en su poder.
+            estadoPartida.rivalAtacanteId = null;
+            estadoPartida.rivalComboActual = 0;
             estadoPartida.faseIndex = 3;
             estadoPartida.log = 'Fase de combo: arrastra cartas de tu mano o campo al area de combo.';
             mostrarFase('Combo');
@@ -16698,7 +16708,12 @@
                 let cConCombo = c;
                 // El brillo de atacante rival debe verse tanto en fase 3 (yo soy atacante, el rival me ataca visualmente)
                 // como en fase 4 (yo soy defensor, el rival está atacando).
-                const esAtacanteRival = estadoPartida.rivalAtacanteId === c.id && (estadoPartida.faseIndex === 3 || estadoPartida.faseIndex === 4);
+                // BUG FIX (v11): si el jugador local es el atacante (atacanteSeleccionado
+                // está seteado), NO aplicar el glow de "atacante rival" aunque el id
+                // coincida. Esto evita que la carta del rival con el mismo id brille
+                // como si fuera el atacante cuando en realidad el atacante es el jugador.
+                const jugadorEsAtacante = estadoPartida.atacanteSeleccionado !== null && estadoPartida.atacanteSeleccionado !== undefined;
+                const esAtacanteRival = !jugadorEsAtacante && estadoPartida.rivalAtacanteId === c.id && (estadoPartida.faseIndex === 3 || estadoPartida.faseIndex === 4);
                 if (esAtacanteRival && estadoPartida.rivalComboActual) {
                     cConCombo = Object.assign({}, c, {
                         buffs: Object.assign({}, c.buffs || {}, {
