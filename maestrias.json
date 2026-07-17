@@ -3,7 +3,7 @@
     "cardId": "red_lider_01",
     "cardName": "Adivina el Animatrónico",
     "cardClase": "Líder",
-    "titulo": "Difícil",
+    "titulo": "Nivel: Difícil",
     "misiones": [
       {
         "id": "m1",
@@ -12,12 +12,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta como líder y gana 50 partidas"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta como líder y gana 100 partidas"
           }
         ]
@@ -29,12 +29,12 @@
         "niveles": [
           {
             "objetivo": 10,
-            "reward": 20,
+            "reward": 100,
             "desc": "Despierta a este líder 10 vez"
           },
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Despierta a este líder 50 veces"
           }
         ]
@@ -44,7 +44,7 @@
         "tipo": "titulo",
         "objetivo": 150,
         "desc": "Juega este líder en tu mazo y gana 150 partidas (tras completar las otras dos)",
-        "titulo": "Difícil"
+        "titulo": "Nivel: Difícil"
       }
     ]
   },
@@ -61,12 +61,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta como líder y gana 50 partidas"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta como líder y gana 100 partidas"
           }
         ]
@@ -78,12 +78,12 @@
         "niveles": [
           {
             "objetivo": 10,
-            "reward": 20,
+            "reward": 100,
             "desc": "Despierta a este líder 10 vez"
           },
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Despierta a este líder 50 veces"
           }
         ]
@@ -110,12 +110,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta como líder y gana 50 partidas"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta como líder y gana 100 partidas"
           }
         ]
@@ -127,12 +127,12 @@
         "niveles": [
           {
             "objetivo": 10,
-            "reward": 20,
+            "reward": 100,
             "desc": "Despierta a este líder 10 vez"
           },
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Despierta a este líder 50 veces"
           }
         ]
@@ -159,12 +159,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta como líder y gana 50 partidas"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta como líder y gana 100 partidas"
           }
         ]
@@ -176,12 +176,12 @@
         "niveles": [
           {
             "objetivo": 10,
-            "reward": 20,
+            "reward": 100,
             "desc": "Despierta a este líder 10 vez"
           },
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Despierta a este líder 50 veces"
           }
         ]
@@ -208,12 +208,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta como líder y gana 50 partidas"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta como líder y gana 100 partidas"
           }
         ]
@@ -225,12 +225,12 @@
         "niveles": [
           {
             "objetivo": 10,
-            "reward": 20,
+            "reward": 100,
             "desc": "Despierta a este líder 10 vez"
           },
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Despierta a este líder 50 veces"
           }
         ]
@@ -257,12 +257,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta como líder y gana 50 partidas"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta como líder y gana 100 partidas"
           }
         ]
@@ -274,12 +274,12 @@
         "niveles": [
           {
             "objetivo": 10,
-            "reward": 20,
+            "reward": 100,
             "desc": "Despierta a este líder 10 vez"
           },
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Despierta a este líder 50 veces"
           }
         ]
@@ -306,12 +306,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta como líder y gana 50 partidas"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta como líder y gana 100 partidas"
           }
         ]
@@ -323,12 +323,12 @@
         "niveles": [
           {
             "objetivo": 10,
-            "reward": 20,
+            "reward": 100,
             "desc": "Despierta a este líder 10 vez"
           },
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Despierta a este líder 50 veces"
           }
         ]
@@ -355,12 +355,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta como líder y gana 50 partidas"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta como líder y gana 100 partidas"
           }
         ]
@@ -372,12 +372,12 @@
         "niveles": [
           {
             "objetivo": 10,
-            "reward": 20,
+            "reward": 100,
             "desc": "Despierta a este líder 10 vez"
           },
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Despierta a este líder 50 veces"
           }
         ]
@@ -404,12 +404,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -421,12 +421,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -453,12 +453,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -470,12 +470,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -502,12 +502,12 @@
         "niveles": [
           {
             "objetivo": 25,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 25 veces"
           },
           {
             "objetivo": 75,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 75 veces"
           }
         ]
@@ -519,12 +519,12 @@
         "niveles": [
           {
             "objetivo": 15,
-            "reward": 20,
+            "reward": 100,
             "desc": "Pon 15 veces esta carta como maná"
           },
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Pon 50 veces esta carta como maná"
           }
         ]
@@ -551,12 +551,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -568,12 +568,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -600,12 +600,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -617,12 +617,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -649,12 +649,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -666,12 +666,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -698,12 +698,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -715,12 +715,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -747,12 +747,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -764,12 +764,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -796,12 +796,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -813,12 +813,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -845,12 +845,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -862,12 +862,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -894,12 +894,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -911,12 +911,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -943,12 +943,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -960,12 +960,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -992,12 +992,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -1009,12 +1009,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Combina 50 veces con esta carta"
           },
           {
             "objetivo": 75,
-            "reward": 50,
+            "reward": 150,
             "desc": "Combina 75 veces con esta carta"
           }
         ]
@@ -1041,12 +1041,12 @@
         "niveles": [
           {
             "objetivo": 25,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 25 veces"
           },
           {
             "objetivo": 75,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 75 veces"
           }
         ]
@@ -1058,12 +1058,12 @@
         "niveles": [
           {
             "objetivo": 15,
-            "reward": 20,
+            "reward": 100,
             "desc": "Pon 15 veces esta carta como maná"
           },
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Pon 50 veces esta carta como maná"
           }
         ]
@@ -1090,12 +1090,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -1107,12 +1107,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -1139,12 +1139,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -1156,12 +1156,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -1188,12 +1188,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -1205,12 +1205,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -1237,12 +1237,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -1254,12 +1254,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -1286,12 +1286,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -1303,12 +1303,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -1335,12 +1335,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -1352,12 +1352,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -1384,12 +1384,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -1401,12 +1401,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -1433,12 +1433,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -1450,12 +1450,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -1482,12 +1482,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -1499,12 +1499,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -1531,12 +1531,12 @@
         "niveles": [
           {
             "objetivo": 25,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 25 veces"
           },
           {
             "objetivo": 75,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 75 veces"
           }
         ]
@@ -1548,12 +1548,12 @@
         "niveles": [
           {
             "objetivo": 15,
-            "reward": 20,
+            "reward": 100,
             "desc": "Pon 15 veces esta carta como maná"
           },
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Pon 50 veces esta carta como maná"
           }
         ]
@@ -1580,12 +1580,12 @@
         "niveles": [
           {
             "objetivo": 25,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 25 veces"
           },
           {
             "objetivo": 75,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 75 veces"
           }
         ]
@@ -1597,12 +1597,12 @@
         "niveles": [
           {
             "objetivo": 15,
-            "reward": 20,
+            "reward": 100,
             "desc": "Pon 15 veces esta carta como maná"
           },
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Pon 50 veces esta carta como maná"
           }
         ]
@@ -1629,12 +1629,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -1646,12 +1646,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -1678,12 +1678,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -1695,12 +1695,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -1727,12 +1727,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -1744,12 +1744,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -1776,12 +1776,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -1793,12 +1793,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -1825,12 +1825,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -1842,12 +1842,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -1874,12 +1874,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -1891,12 +1891,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -1923,12 +1923,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -1940,12 +1940,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -1972,12 +1972,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -1989,12 +1989,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Combina 50 veces con esta carta"
           },
           {
             "objetivo": 75,
-            "reward": 50,
+            "reward": 150,
             "desc": "Combina 75 veces con esta carta"
           }
         ]
@@ -2021,12 +2021,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -2038,12 +2038,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -2070,12 +2070,12 @@
         "niveles": [
           {
             "objetivo": 25,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 25 veces"
           },
           {
             "objetivo": 75,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 75 veces"
           }
         ]
@@ -2087,12 +2087,12 @@
         "niveles": [
           {
             "objetivo": 15,
-            "reward": 20,
+            "reward": 100,
             "desc": "Pon 15 veces esta carta como maná"
           },
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Pon 50 veces esta carta como maná"
           }
         ]
@@ -2119,12 +2119,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -2136,12 +2136,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Combina 50 veces con esta carta"
           },
           {
             "objetivo": 75,
-            "reward": 50,
+            "reward": 150,
             "desc": "Combina 75 veces con esta carta"
           }
         ]
@@ -2168,12 +2168,12 @@
         "niveles": [
           {
             "objetivo": 25,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 25 veces"
           },
           {
             "objetivo": 75,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 75 veces"
           }
         ]
@@ -2185,12 +2185,12 @@
         "niveles": [
           {
             "objetivo": 15,
-            "reward": 20,
+            "reward": 100,
             "desc": "Pon 15 veces esta carta como maná"
           },
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Pon 50 veces esta carta como maná"
           }
         ]
@@ -2217,12 +2217,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -2234,12 +2234,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -2266,12 +2266,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -2283,12 +2283,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -2315,12 +2315,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -2332,12 +2332,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -2364,12 +2364,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -2381,12 +2381,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -2413,12 +2413,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -2430,12 +2430,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -2462,12 +2462,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -2479,12 +2479,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -2511,12 +2511,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -2528,12 +2528,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -2560,12 +2560,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -2577,12 +2577,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -2609,12 +2609,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -2626,12 +2626,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -2658,12 +2658,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -2675,12 +2675,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -2707,12 +2707,12 @@
         "niveles": [
           {
             "objetivo": 25,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 25 veces"
           },
           {
             "objetivo": 75,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 75 veces"
           }
         ]
@@ -2724,12 +2724,12 @@
         "niveles": [
           {
             "objetivo": 15,
-            "reward": 20,
+            "reward": 100,
             "desc": "Pon 15 veces esta carta como maná"
           },
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Pon 50 veces esta carta como maná"
           }
         ]
@@ -2756,12 +2756,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -2773,12 +2773,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -2805,12 +2805,12 @@
         "niveles": [
           {
             "objetivo": 25,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 25 veces"
           },
           {
             "objetivo": 75,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 75 veces"
           }
         ]
@@ -2822,12 +2822,12 @@
         "niveles": [
           {
             "objetivo": 15,
-            "reward": 20,
+            "reward": 100,
             "desc": "Pon 15 veces esta carta como maná"
           },
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Pon 50 veces esta carta como maná"
           }
         ]
@@ -2854,12 +2854,12 @@
         "niveles": [
           {
             "objetivo": 25,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 25 veces"
           },
           {
             "objetivo": 75,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 75 veces"
           }
         ]
@@ -2871,12 +2871,12 @@
         "niveles": [
           {
             "objetivo": 15,
-            "reward": 20,
+            "reward": 100,
             "desc": "Pon 15 veces esta carta como maná"
           },
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Pon 50 veces esta carta como maná"
           }
         ]
@@ -2903,12 +2903,12 @@
         "niveles": [
           {
             "objetivo": 25,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 25 veces"
           },
           {
             "objetivo": 75,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 75 veces"
           }
         ]
@@ -2920,12 +2920,12 @@
         "niveles": [
           {
             "objetivo": 15,
-            "reward": 20,
+            "reward": 100,
             "desc": "Pon 15 veces esta carta como maná"
           },
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Pon 50 veces esta carta como maná"
           }
         ]
@@ -2952,12 +2952,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -2969,12 +2969,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -3001,12 +3001,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -3018,12 +3018,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -3050,12 +3050,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -3067,12 +3067,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -3099,12 +3099,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -3116,12 +3116,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -3148,12 +3148,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -3165,12 +3165,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -3197,12 +3197,12 @@
         "niveles": [
           {
             "objetivo": 25,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 25 veces"
           },
           {
             "objetivo": 75,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 75 veces"
           }
         ]
@@ -3214,12 +3214,12 @@
         "niveles": [
           {
             "objetivo": 15,
-            "reward": 20,
+            "reward": 100,
             "desc": "Pon 15 veces esta carta como maná"
           },
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Pon 50 veces esta carta como maná"
           }
         ]
@@ -3246,12 +3246,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -3263,12 +3263,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -3295,12 +3295,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -3312,12 +3312,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -3344,12 +3344,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -3361,12 +3361,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Combina 50 veces con esta carta"
           },
           {
             "objetivo": 75,
-            "reward": 50,
+            "reward": 150,
             "desc": "Combina 75 veces con esta carta"
           }
         ]
@@ -3393,12 +3393,12 @@
         "niveles": [
           {
             "objetivo": 25,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 25 veces"
           },
           {
             "objetivo": 75,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 75 veces"
           }
         ]
@@ -3410,12 +3410,12 @@
         "niveles": [
           {
             "objetivo": 15,
-            "reward": 20,
+            "reward": 100,
             "desc": "Pon 15 veces esta carta como maná"
           },
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Pon 50 veces esta carta como maná"
           }
         ]
@@ -3442,12 +3442,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -3459,12 +3459,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -3491,12 +3491,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -3508,12 +3508,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -3540,12 +3540,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -3557,12 +3557,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -3589,12 +3589,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -3606,12 +3606,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -3638,12 +3638,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -3655,12 +3655,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -3687,12 +3687,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -3704,12 +3704,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -3736,12 +3736,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -3753,12 +3753,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -3785,12 +3785,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -3802,12 +3802,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -3834,12 +3834,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -3851,12 +3851,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -3883,12 +3883,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -3900,12 +3900,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -3932,12 +3932,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -3949,12 +3949,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -3981,12 +3981,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -3998,12 +3998,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -4030,12 +4030,12 @@
         "niveles": [
           {
             "objetivo": 25,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 25 veces"
           },
           {
             "objetivo": 75,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 75 veces"
           }
         ]
@@ -4047,12 +4047,12 @@
         "niveles": [
           {
             "objetivo": 15,
-            "reward": 20,
+            "reward": 100,
             "desc": "Pon 15 veces esta carta como maná"
           },
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Pon 50 veces esta carta como maná"
           }
         ]
@@ -4079,12 +4079,12 @@
         "niveles": [
           {
             "objetivo": 25,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 25 veces"
           },
           {
             "objetivo": 75,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 75 veces"
           }
         ]
@@ -4096,12 +4096,12 @@
         "niveles": [
           {
             "objetivo": 15,
-            "reward": 20,
+            "reward": 100,
             "desc": "Pon 15 veces esta carta como maná"
           },
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Pon 50 veces esta carta como maná"
           }
         ]
@@ -4128,12 +4128,12 @@
         "niveles": [
           {
             "objetivo": 25,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 25 veces"
           },
           {
             "objetivo": 75,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 75 veces"
           }
         ]
@@ -4145,12 +4145,12 @@
         "niveles": [
           {
             "objetivo": 15,
-            "reward": 20,
+            "reward": 100,
             "desc": "Pon 15 veces esta carta como maná"
           },
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Pon 50 veces esta carta como maná"
           }
         ]
@@ -4177,12 +4177,12 @@
         "niveles": [
           {
             "objetivo": 25,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 25 veces"
           },
           {
             "objetivo": 75,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 75 veces"
           }
         ]
@@ -4194,12 +4194,12 @@
         "niveles": [
           {
             "objetivo": 15,
-            "reward": 20,
+            "reward": 100,
             "desc": "Pon 15 veces esta carta como maná"
           },
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Pon 50 veces esta carta como maná"
           }
         ]
@@ -4226,12 +4226,12 @@
         "niveles": [
           {
             "objetivo": 25,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 25 veces"
           },
           {
             "objetivo": 75,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 75 veces"
           }
         ]
@@ -4243,12 +4243,12 @@
         "niveles": [
           {
             "objetivo": 15,
-            "reward": 20,
+            "reward": 100,
             "desc": "Pon 15 veces esta carta como maná"
           },
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Pon 50 veces esta carta como maná"
           }
         ]
@@ -4275,12 +4275,12 @@
         "niveles": [
           {
             "objetivo": 25,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 25 veces"
           },
           {
             "objetivo": 75,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 75 veces"
           }
         ]
@@ -4292,12 +4292,12 @@
         "niveles": [
           {
             "objetivo": 15,
-            "reward": 20,
+            "reward": 100,
             "desc": "Pon 15 veces esta carta como maná"
           },
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Pon 50 veces esta carta como maná"
           }
         ]
@@ -4324,12 +4324,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -4341,12 +4341,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Combina 50 veces con esta carta"
           },
           {
             "objetivo": 75,
-            "reward": 50,
+            "reward": 150,
             "desc": "Combina 75 veces con esta carta"
           }
         ]
@@ -4373,12 +4373,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -4390,12 +4390,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -4422,12 +4422,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -4439,12 +4439,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -4471,12 +4471,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -4488,12 +4488,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -4520,12 +4520,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -4537,12 +4537,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -4569,12 +4569,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -4586,12 +4586,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -4618,12 +4618,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -4635,12 +4635,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -4667,12 +4667,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -4684,12 +4684,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -4716,12 +4716,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -4733,12 +4733,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -4765,12 +4765,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -4782,12 +4782,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -4814,12 +4814,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -4831,12 +4831,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -4863,12 +4863,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -4880,12 +4880,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -4912,12 +4912,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -4929,12 +4929,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Combina 50 veces con esta carta"
           },
           {
             "objetivo": 75,
-            "reward": 50,
+            "reward": 150,
             "desc": "Combina 75 veces con esta carta"
           }
         ]
@@ -4961,12 +4961,12 @@
         "niveles": [
           {
             "objetivo": 25,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 25 veces"
           },
           {
             "objetivo": 75,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 75 veces"
           }
         ]
@@ -4978,12 +4978,12 @@
         "niveles": [
           {
             "objetivo": 15,
-            "reward": 20,
+            "reward": 100,
             "desc": "Pon 15 veces esta carta como maná"
           },
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Pon 50 veces esta carta como maná"
           }
         ]
@@ -5010,12 +5010,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -5027,12 +5027,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -5059,12 +5059,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -5076,12 +5076,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -5108,12 +5108,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -5125,12 +5125,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -5157,12 +5157,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -5174,12 +5174,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -5206,12 +5206,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -5223,12 +5223,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
@@ -5255,12 +5255,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 50,
+            "reward": 150,
             "desc": "Juega esta carta y gana 50 veces"
           },
           {
             "objetivo": 100,
-            "reward": 100,
+            "reward": 200,
             "desc": "Juega esta carta y gana 100 veces"
           }
         ]
@@ -5272,12 +5272,12 @@
         "niveles": [
           {
             "objetivo": 50,
-            "reward": 20,
+            "reward": 100,
             "desc": "Derrota 50 unidades rivales con esta carta"
           },
           {
             "objetivo": 100,
-            "reward": 50,
+            "reward": 150,
             "desc": "Derrota 100 unidades rivales con esta carta"
           }
         ]
