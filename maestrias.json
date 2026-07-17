@@ -1,0 +1,5078 @@
+{
+  "red_lider_01": {
+    "cardId": "red_lider_01",
+    "cardName": "Adivina el Animatrónico",
+    "cardClase": "Líder",
+    "titulo": "Dificultad: Difícil",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 50,
+            "desc": "Juega esta carta como líder y gana 5 partidas"
+          },
+          {
+            "objetivo": 15,
+            "reward": 100,
+            "desc": "Juega esta carta como líder y gana 15 partidas"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 1,
+            "reward": 20,
+            "desc": "Despierta a este líder 1 vez"
+          },
+          {
+            "objetivo": 3,
+            "reward": 50,
+            "desc": "Despierta a este líder 3 veces"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Juega este líder en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Dificultad: Difícil"
+      }
+    ]
+  },
+  "red_lider_02": {
+    "cardId": "red_lider_02",
+    "cardName": "Mr Greedy & Trump",
+    "cardClase": "Líder",
+    "titulo": "Capitalismo",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 50,
+            "desc": "Juega esta carta como líder y gana 5 partidas"
+          },
+          {
+            "objetivo": 15,
+            "reward": 100,
+            "desc": "Juega esta carta como líder y gana 15 partidas"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 1,
+            "reward": 20,
+            "desc": "Despierta a este líder 1 vez"
+          },
+          {
+            "objetivo": 3,
+            "reward": 50,
+            "desc": "Despierta a este líder 3 veces"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Juega este líder en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Capitalismo"
+      }
+    ]
+  },
+  "blue_lider_01": {
+    "cardId": "blue_lider_01",
+    "cardName": "INFINITYCRAFT",
+    "cardClase": "Líder",
+    "titulo": "Artesano Infinito",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 50,
+            "desc": "Juega esta carta como líder y gana 5 partidas"
+          },
+          {
+            "objetivo": 15,
+            "reward": 100,
+            "desc": "Juega esta carta como líder y gana 15 partidas"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 1,
+            "reward": 20,
+            "desc": "Despierta a este líder 1 vez"
+          },
+          {
+            "objetivo": 3,
+            "reward": 50,
+            "desc": "Despierta a este líder 3 veces"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Juega este líder en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Artesano Infinito"
+      }
+    ]
+  },
+  "blue_lider_02": {
+    "cardId": "blue_lider_02",
+    "cardName": "Hugopima, el maestro",
+    "cardClase": "Líder",
+    "titulo": "De hecho…",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 50,
+            "desc": "Juega esta carta como líder y gana 5 partidas"
+          },
+          {
+            "objetivo": 15,
+            "reward": 100,
+            "desc": "Juega esta carta como líder y gana 15 partidas"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 1,
+            "reward": 20,
+            "desc": "Despierta a este líder 1 vez"
+          },
+          {
+            "objetivo": 3,
+            "reward": 50,
+            "desc": "Despierta a este líder 3 veces"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Juega este líder en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "De hecho…"
+      }
+    ]
+  },
+  "green_lider_01": {
+    "cardId": "green_lider_01",
+    "cardName": "Toñi, la panadera",
+    "cardClase": "Líder",
+    "titulo": "Paciente Cero",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 50,
+            "desc": "Juega esta carta como líder y gana 5 partidas"
+          },
+          {
+            "objetivo": 15,
+            "reward": 100,
+            "desc": "Juega esta carta como líder y gana 15 partidas"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 1,
+            "reward": 20,
+            "desc": "Despierta a este líder 1 vez"
+          },
+          {
+            "objetivo": 3,
+            "reward": 50,
+            "desc": "Despierta a este líder 3 veces"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Juega este líder en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Paciente Cero"
+      }
+    ]
+  },
+  "green_lider_02": {
+    "cardId": "green_lider_02",
+    "cardName": "Xiao",
+    "cardClase": "Líder",
+    "titulo": "Pirómano",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 50,
+            "desc": "Juega esta carta como líder y gana 5 partidas"
+          },
+          {
+            "objetivo": 15,
+            "reward": 100,
+            "desc": "Juega esta carta como líder y gana 15 partidas"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 1,
+            "reward": 20,
+            "desc": "Despierta a este líder 1 vez"
+          },
+          {
+            "objetivo": 3,
+            "reward": 50,
+            "desc": "Despierta a este líder 3 veces"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Juega este líder en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Pirómano"
+      }
+    ]
+  },
+  "black_lider_01": {
+    "cardId": "black_lider_01",
+    "cardName": "Iniciador, el desafiante",
+    "cardClase": "Líder",
+    "titulo": "Headmaster",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 50,
+            "desc": "Juega esta carta como líder y gana 5 partidas"
+          },
+          {
+            "objetivo": 15,
+            "reward": 100,
+            "desc": "Juega esta carta como líder y gana 15 partidas"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 1,
+            "reward": 20,
+            "desc": "Despierta a este líder 1 vez"
+          },
+          {
+            "objetivo": 3,
+            "reward": 50,
+            "desc": "Despierta a este líder 3 veces"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Juega este líder en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Headmaster"
+      }
+    ]
+  },
+  "black_lider_02": {
+    "cardId": "black_lider_02",
+    "cardName": "Mari",
+    "cardClase": "Líder",
+    "titulo": "143",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 50,
+            "desc": "Juega esta carta como líder y gana 5 partidas"
+          },
+          {
+            "objetivo": 15,
+            "reward": 100,
+            "desc": "Juega esta carta como líder y gana 15 partidas"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 1,
+            "reward": 20,
+            "desc": "Despierta a este líder 1 vez"
+          },
+          {
+            "objetivo": 3,
+            "reward": 50,
+            "desc": "Despierta a este líder 3 veces"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Juega este líder en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "143"
+      }
+    ]
+  },
+  "alberto": {
+    "cardId": "alberto",
+    "cardName": "Megalberto Mewing",
+    "cardClase": "Unidad",
+    "titulo": "Bye Bye 🤫🧏🏻‍♂️",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Bye Bye 🤫🧏🏻‍♂️"
+      }
+    ]
+  },
+  "agus": {
+    "cardId": "agus",
+    "cardName": "Agustin",
+    "cardClase": "Unidad",
+    "titulo": "Che Boludo",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Che Boludo"
+      }
+    ]
+  },
+  "anillo": {
+    "cardId": "anillo",
+    "cardName": "Anillo de cobre",
+    "cardClase": "Extra",
+    "titulo": "Truco Rumano",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 8,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 8 veces"
+          },
+          {
+            "objetivo": 20,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 20 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Combina 5 veces con esta carta"
+          },
+          {
+            "objetivo": 12,
+            "reward": 50,
+            "desc": "Combina 12 veces con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Truco Rumano"
+      }
+    ]
+  },
+  "jorlol207": {
+    "cardId": "jorlol207",
+    "cardName": "Jorlol207",
+    "cardClase": "Unidad",
+    "titulo": "Amante del Cobre",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Amante del Cobre"
+      }
+    ]
+  },
+  "hugopima": {
+    "cardId": "hugopima",
+    "cardName": "Hugopima",
+    "cardClase": "Unidad",
+    "titulo": "Bodrios Lover",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Bodrios Lover"
+      }
+    ]
+  },
+  "alejandro": {
+    "cardId": "alejandro",
+    "cardName": "Alejandro",
+    "cardClase": "Unidad",
+    "titulo": "Fp de Peluquería",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Fp de Peluquería"
+      }
+    ]
+  },
+  "andrea": {
+    "cardId": "andrea",
+    "cardName": "Andrea",
+    "cardClase": "Unidad",
+    "titulo": "Sin cama",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Sin cama"
+      }
+    ]
+  },
+  "sergio": {
+    "cardId": "sergio",
+    "cardName": "Sergio el Saltarín",
+    "cardClase": "Unidad",
+    "titulo": "Dando Volteretas",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Dando Volteretas"
+      }
+    ]
+  },
+  "victor-hugo": {
+    "cardId": "victor-hugo",
+    "cardName": "Víctor Hugo",
+    "cardClase": "Unidad",
+    "titulo": "As del regateo",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "As del regateo"
+      }
+    ]
+  },
+  "lucas": {
+    "cardId": "lucas",
+    "cardName": "Lucas",
+    "cardClase": "Unidad",
+    "titulo": "Furry we",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Furry we"
+      }
+    ]
+  },
+  "carlospro": {
+    "cardId": "carlospro",
+    "cardName": "Carlospro",
+    "cardClase": "Unidad",
+    "titulo": "¿Sabías que?",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "¿Sabías que?"
+      }
+    ]
+  },
+  "momolac": {
+    "cardId": "momolac",
+    "cardName": "Momolac",
+    "cardClase": "Unidad",
+    "titulo": "Arkadas",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Arkadas"
+      }
+    ]
+  },
+  "fideos": {
+    "cardId": "fideos",
+    "cardName": "Fideos Malvados",
+    "cardClase": "Unidad",
+    "titulo": "Tieso",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Tieso"
+      }
+    ]
+  },
+  "lumi": {
+    "cardId": "lumi",
+    "cardName": "Lumi es Support",
+    "cardClase": "Extra",
+    "titulo": "Support",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 8,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 8 veces"
+          },
+          {
+            "objetivo": 20,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 20 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Combina 5 veces con esta carta"
+          },
+          {
+            "objetivo": 12,
+            "reward": 50,
+            "desc": "Combina 12 veces con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Support"
+      }
+    ]
+  },
+  "cristian": {
+    "cardId": "cristian",
+    "cardName": "Cristian",
+    "cardClase": "Unidad",
+    "titulo": "Norcoreano",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Norcoreano"
+      }
+    ]
+  },
+  "angel": {
+    "cardId": "angel",
+    "cardName": "Angel",
+    "cardClase": "Unidad",
+    "titulo": "Guardería",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Guardería"
+      }
+    ]
+  },
+  "hog": {
+    "cardId": "hog",
+    "cardName": "Hog128",
+    "cardClase": "Unidad",
+    "titulo": "Programador",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Programador"
+      }
+    ]
+  },
+  "nyx": {
+    "cardId": "nyx",
+    "cardName": "Nyx",
+    "cardClase": "Unidad",
+    "titulo": "Racist Femboy",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Racist Femboy"
+      }
+    ]
+  },
+  "vagabundo": {
+    "cardId": "vagabundo",
+    "cardName": "Infinitycraft, vagabundo",
+    "cardClase": "Unidad",
+    "titulo": "En las últimas",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "En las últimas"
+      }
+    ]
+  },
+  "correas": {
+    "cardId": "correas",
+    "cardName": "Alejandro (¿Correas?)",
+    "cardClase": "Unidad",
+    "titulo": "¿Correa?",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "¿Correa?"
+      }
+    ]
+  },
+  "impostor": {
+    "cardId": "impostor",
+    "cardName": "Megalberto Impostor",
+    "cardClase": "Unidad",
+    "titulo": "JESUCRISTOBEIBE",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "JESUCRISTOBEIBE"
+      }
+    ]
+  },
+  "grito": {
+    "cardId": "grito",
+    "cardName": "Carlospro gritando",
+    "cardClase": "Unidad",
+    "titulo": "NO TIENE GRACIA",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "NO TIENE GRACIA"
+      }
+    ]
+  },
+  "brawlera": {
+    "cardId": "brawlera",
+    "cardName": "Andrea, la Brawlera",
+    "cardClase": "Unidad",
+    "titulo": "Borra la cuenta",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Borra la cuenta"
+      }
+    ]
+  },
+  "echen": {
+    "cardId": "echen",
+    "cardName": "Echen a Ana",
+    "cardClase": "Extra",
+    "titulo": "No hizo la llave",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 8,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 8 veces"
+          },
+          {
+            "objetivo": 20,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 20 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Combina 5 veces con esta carta"
+          },
+          {
+            "objetivo": 12,
+            "reward": 50,
+            "desc": "Combina 12 veces con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "No hizo la llave"
+      }
+    ]
+  },
+  "fnaf": {
+    "cardId": "fnaf",
+    "cardName": "Five Nights at Patatas Maria",
+    "cardClase": "Extra",
+    "titulo": "Exitoso",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 8,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 8 veces"
+          },
+          {
+            "objetivo": 20,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 20 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Combina 5 veces con esta carta"
+          },
+          {
+            "objetivo": 12,
+            "reward": 50,
+            "desc": "Combina 12 veces con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Exitoso"
+      }
+    ]
+  },
+  "freddy": {
+    "cardId": "freddy",
+    "cardName": "Freddy Fazbear",
+    "cardClase": "Unidad",
+    "titulo": "Hor hor hor",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Hor hor hor"
+      }
+    ]
+  },
+  "bonnie": {
+    "cardId": "bonnie",
+    "cardName": "Bonnie",
+    "cardClase": "Unidad",
+    "titulo": "We will Rock you",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "We will Rock you"
+      }
+    ]
+  },
+  "chica": {
+    "cardId": "chica",
+    "cardName": "Chica",
+    "cardClase": "Unidad",
+    "titulo": "¡Pizza!",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "¡Pizza!"
+      }
+    ]
+  },
+  "foxy": {
+    "cardId": "foxy",
+    "cardName": "Foxy",
+    "cardClase": "Unidad",
+    "titulo": "Durudundundum",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Durudundundum"
+      }
+    ]
+  },
+  "springtrap": {
+    "cardId": "springtrap",
+    "cardName": "Springtrap",
+    "cardClase": "Unidad",
+    "titulo": "Always comes back",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Always comes back"
+      }
+    ]
+  },
+  "clyde": {
+    "cardId": "clyde",
+    "cardName": "Bonnie & Bonnie & Clyde",
+    "cardClase": "Unidad",
+    "titulo": "YIPEEEEE",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "YIPEEEEE"
+      }
+    ]
+  },
+  "purple": {
+    "cardId": "purple",
+    "cardName": "Purple guy",
+    "cardClase": "Unidad",
+    "titulo": "Asesino",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Asesino"
+      }
+    ]
+  },
+  "phone": {
+    "cardId": "phone",
+    "cardName": "Phone guy",
+    "cardClase": "Unidad",
+    "titulo": "Hello? Hello!",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Hello? Hello!"
+      }
+    ]
+  },
+  "vecino": {
+    "cardId": "vecino",
+    "cardName": "Vecino Animatrónico",
+    "cardClase": "Unidad",
+    "titulo": "¡Hola, vecino!",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "¡Hola, vecino!"
+      }
+    ]
+  },
+  "pizza": {
+    "cardId": "pizza",
+    "cardName": "Pizza slice",
+    "cardClase": "Extra",
+    "titulo": "Delicioso",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 8,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 8 veces"
+          },
+          {
+            "objetivo": 20,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 20 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Combina 5 veces con esta carta"
+          },
+          {
+            "objetivo": 12,
+            "reward": 50,
+            "desc": "Combina 12 veces con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Delicioso"
+      }
+    ]
+  },
+  "golden": {
+    "cardId": "golden",
+    "cardName": "Golden Freddy",
+    "cardClase": "Unidad",
+    "titulo": "1987",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "1987"
+      }
+    ]
+  },
+  "shadow": {
+    "cardId": "shadow",
+    "cardName": "RWQFSFASXC",
+    "cardClase": "Extra",
+    "titulo": "En tus sombras",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 8,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 8 veces"
+          },
+          {
+            "objetivo": 20,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 20 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Combina 5 veces con esta carta"
+          },
+          {
+            "objetivo": 12,
+            "reward": 50,
+            "desc": "Combina 12 veces con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "En tus sombras"
+      }
+    ]
+  },
+  "balloon": {
+    "cardId": "balloon",
+    "cardName": "Balloon Boy",
+    "cardClase": "Unidad",
+    "titulo": "Ponte las pilas",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Ponte las pilas"
+      }
+    ]
+  },
+  "jeffrey": {
+    "cardId": "jeffrey",
+    "cardName": "Jeffrey Epstein",
+    "cardClase": "Unidad",
+    "titulo": "Dueño de la Isla",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Dueño de la Isla"
+      }
+    ]
+  },
+  "Rdiddy": {
+    "cardId": "Rdiddy",
+    "cardName": "P. Diddy",
+    "cardClase": "Unidad",
+    "titulo": "Aceite de Bebé",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Aceite de Bebé"
+      }
+    ]
+  },
+  "kirk": {
+    "cardId": "kirk",
+    "cardName": "Charlie Kirk",
+    "cardClase": "Unidad",
+    "titulo": "Somos Charlie Kirk",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Somos Charlie Kirk"
+      }
+    ]
+  },
+  "musk": {
+    "cardId": "musk",
+    "cardName": "Elon Musk",
+    "cardClase": "Unidad",
+    "titulo": "X Æ A-12",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "X Æ A-12"
+      }
+    ]
+  },
+  "hasnain": {
+    "cardId": "hasnain",
+    "cardName": "Hasnain",
+    "cardClase": "Unidad",
+    "titulo": "¡Noooo!",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "¡Noooo!"
+      }
+    ]
+  },
+  "coolboy": {
+    "cardId": "coolboy",
+    "cardName": "Coolboy",
+    "cardClase": "Unidad",
+    "titulo": "Fachero",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Fachero"
+      }
+    ]
+  },
+  "muzammill": {
+    "cardId": "muzammill",
+    "cardName": "Muzammill",
+    "cardClase": "Unidad",
+    "titulo": "Sobrevalorado",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Sobrevalorado"
+      }
+    ]
+  },
+  "random": {
+    "cardId": "random",
+    "cardName": "Hasnan (Brawl Stars)",
+    "cardClase": "Unidad",
+    "titulo": "1/17",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "1/17"
+      }
+    ]
+  },
+  "biggy": {
+    "cardId": "biggy",
+    "cardName": "Little Biggy",
+    "cardClase": "Unidad",
+    "titulo": "Bigger Biggy",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Bigger Biggy"
+      }
+    ]
+  },
+  "twit": {
+    "cardId": "twit",
+    "cardName": "Cancelado en Twitter",
+    "cardClase": "Extra",
+    "titulo": "Funado",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 8,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 8 veces"
+          },
+          {
+            "objetivo": 20,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 20 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Combina 5 veces con esta carta"
+          },
+          {
+            "objetivo": 12,
+            "reward": 50,
+            "desc": "Combina 12 veces con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Funado"
+      }
+    ]
+  },
+  "paloma": {
+    "cardId": "paloma",
+    "cardName": "Paloma de Palm Beach Pete",
+    "cardClase": "Unidad",
+    "titulo": "NOT Epstein",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "NOT Epstein"
+      }
+    ]
+  },
+  "juegos": {
+    "cardId": "juegos",
+    "cardName": "Juegos Indios",
+    "cardClase": "Extra",
+    "titulo": "Juegos Indios",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 8,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 8 veces"
+          },
+          {
+            "objetivo": 20,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 20 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Combina 5 veces con esta carta"
+          },
+          {
+            "objetivo": 12,
+            "reward": 50,
+            "desc": "Combina 12 veces con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Juegos Indios"
+      }
+    ]
+  },
+  "todo": {
+    "cardId": "todo",
+    "cardName": "Todo al verde",
+    "cardClase": "Extra",
+    "titulo": "LET'S GO GAMBLING",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 8,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 8 veces"
+          },
+          {
+            "objetivo": 20,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 20 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Combina 5 veces con esta carta"
+          },
+          {
+            "objetivo": 12,
+            "reward": 50,
+            "desc": "Combina 12 veces con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "LET'S GO GAMBLING"
+      }
+    ]
+  },
+  "ruleta": {
+    "cardId": "ruleta",
+    "cardName": "Ruleta",
+    "cardClase": "Extra",
+    "titulo": "Dueño del casino",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 8,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 8 veces"
+          },
+          {
+            "objetivo": 20,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 20 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Combina 5 veces con esta carta"
+          },
+          {
+            "objetivo": 12,
+            "reward": 50,
+            "desc": "Combina 12 veces con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Dueño del casino"
+      }
+    ]
+  },
+  "cazon": {
+    "cardId": "cazon",
+    "cardName": "Cazón",
+    "cardClase": "Unidad",
+    "titulo": "Original",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Original"
+      }
+    ]
+  },
+  "juan": {
+    "cardId": "juan",
+    "cardName": "Juan el Caballo",
+    "cardClase": "Unidad",
+    "titulo": ":D",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": ":D"
+      }
+    ]
+  },
+  "dymytry": {
+    "cardId": "dymytry",
+    "cardName": "Dymytry",
+    "cardClase": "Unidad",
+    "titulo": "Maldad Pura",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Maldad Pura"
+      }
+    ]
+  },
+  "juan2": {
+    "cardId": "juan2",
+    "cardName": "Juan, bajo control de DYMYTRY",
+    "cardClase": "Unidad",
+    "titulo": "Infectado",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Infectado"
+      }
+    ]
+  },
+  "patroclo": {
+    "cardId": "patroclo",
+    "cardName": "Patroclo, derrotado",
+    "cardClase": "Unidad",
+    "titulo": "Leyenda",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Leyenda"
+      }
+    ]
+  },
+  "energia": {
+    "cardId": "energia",
+    "cardName": "Energía de Patroclo",
+    "cardClase": "Extra",
+    "titulo": "Poderoso",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 8,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 8 veces"
+          },
+          {
+            "objetivo": 20,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 20 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Combina 5 veces con esta carta"
+          },
+          {
+            "objetivo": 12,
+            "reward": 50,
+            "desc": "Combina 12 veces con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Poderoso"
+      }
+    ]
+  },
+  "messi": {
+    "cardId": "messi",
+    "cardName": "Messi",
+    "cardClase": "Unidad",
+    "titulo": "GOAT",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "GOAT"
+      }
+    ]
+  },
+  "podrido": {
+    "cardId": "podrido",
+    "cardName": "Podrido",
+    "cardClase": "Unidad",
+    "titulo": "Pig Jockey",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Pig Jockey"
+      }
+    ]
+  },
+  "juanfalso": {
+    "cardId": "juanfalso",
+    "cardName": "Juan Falso",
+    "cardClase": "Unidad",
+    "titulo": "D:",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "D:"
+      }
+    ]
+  },
+  "creeper": {
+    "cardId": "creeper",
+    "cardName": "Creeper en la habitación",
+    "cardClase": "Extra",
+    "titulo": "MI CASA TIO!",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 8,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 8 veces"
+          },
+          {
+            "objetivo": 20,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 20 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Combina 5 veces con esta carta"
+          },
+          {
+            "objetivo": 12,
+            "reward": 50,
+            "desc": "Combina 12 veces con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "MI CASA TIO!"
+      }
+    ]
+  },
+  "sniffer": {
+    "cardId": "sniffer",
+    "cardName": "Sniffers",
+    "cardClase": "Unidad",
+    "titulo": "Millonario",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Millonario"
+      }
+    ]
+  },
+  "aceituna": {
+    "cardId": "aceituna",
+    "cardName": "Aceituna",
+    "cardClase": "Unidad",
+    "titulo": "Autista",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Autista"
+      }
+    ]
+  },
+  "uwu": {
+    "cardId": "uwu",
+    "cardName": "UwU el Creeper",
+    "cardClase": "Unidad",
+    "titulo": "Radioactivo",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Radioactivo"
+      }
+    ]
+  },
+  "bonesy": {
+    "cardId": "bonesy",
+    "cardName": "Bonesy",
+    "cardClase": "Unidad",
+    "titulo": "En descomposición",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "En descomposición"
+      }
+    ]
+  },
+  "hogrider": {
+    "cardId": "hogrider",
+    "cardName": "Hog Rider",
+    "cardClase": "Unidad",
+    "titulo": "HOG RIDAAAAA",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "HOG RIDAAAAA"
+      }
+    ]
+  },
+  "phantom": {
+    "cardId": "phantom",
+    "cardName": "Mega Phantom",
+    "cardClase": "Unidad",
+    "titulo": "Está sobre ti",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Está sobre ti"
+      }
+    ]
+  },
+  "aquaman": {
+    "cardId": "aquaman",
+    "cardName": "Aquaman",
+    "cardClase": "Unidad",
+    "titulo": "No necesita respirar",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "No necesita respirar"
+      }
+    ]
+  },
+  "peppa": {
+    "cardId": "peppa",
+    "cardName": "Peppa Pig",
+    "cardClase": "Unidad",
+    "titulo": "y las flechas de oro",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "y las flechas de oro"
+      }
+    ]
+  },
+  "joe": {
+    "cardId": "joe",
+    "cardName": "Joe",
+    "cardClase": "Unidad",
+    "titulo": "Familiar",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Familiar"
+      }
+    ]
+  },
+  "araña": {
+    "cardId": "araña",
+    "cardName": "Araña Madre",
+    "cardClase": "Unidad",
+    "titulo": "Tu madre",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Tu madre"
+      }
+    ]
+  },
+  "calaveras": {
+    "cardId": "calaveras",
+    "cardName": "Calaveras",
+    "cardClase": "Unidad",
+    "titulo": "Te ilusiona",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Te ilusiona"
+      }
+    ]
+  },
+  "leo": {
+    "cardId": "leo",
+    "cardName": "Leopima, inmortal",
+    "cardClase": "Unidad",
+    "titulo": "Creativo",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Creativo"
+      }
+    ]
+  },
+  "ilegal": {
+    "cardId": "ilegal",
+    "cardName": "Items ilegales",
+    "cardClase": "Extra",
+    "titulo": "Ilegalísimo",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 8,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 8 veces"
+          },
+          {
+            "objetivo": 20,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 20 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Combina 5 veces con esta carta"
+          },
+          {
+            "objetivo": 12,
+            "reward": 50,
+            "desc": "Combina 12 veces con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Ilegalísimo"
+      }
+    ]
+  },
+  "rostros": {
+    "cardId": "rostros",
+    "cardName": "Rostros pixelados",
+    "cardClase": "Extra",
+    "titulo": "¿Te conozco?",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 8,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 8 veces"
+          },
+          {
+            "objetivo": 20,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 20 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Combina 5 veces con esta carta"
+          },
+          {
+            "objetivo": 12,
+            "reward": 50,
+            "desc": "Combina 12 veces con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "¿Te conozco?"
+      }
+    ]
+  },
+  "layton": {
+    "cardId": "layton",
+    "cardName": "Desafío Reto de Layton",
+    "cardClase": "Extra",
+    "titulo": "Accidente",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 8,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 8 veces"
+          },
+          {
+            "objetivo": 20,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 20 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Combina 5 veces con esta carta"
+          },
+          {
+            "objetivo": 12,
+            "reward": 50,
+            "desc": "Combina 12 veces con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Accidente"
+      }
+    ]
+  },
+  "desafio": {
+    "cardId": "desafio",
+    "cardName": "Desafío Libro del Crafteo",
+    "cardClase": "Extra",
+    "titulo": "Sabelo todo",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 8,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 8 veces"
+          },
+          {
+            "objetivo": 20,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 20 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Combina 5 veces con esta carta"
+          },
+          {
+            "objetivo": 12,
+            "reward": 50,
+            "desc": "Combina 12 veces con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Sabelo todo"
+      }
+    ]
+  },
+  "quiz": {
+    "cardId": "quiz",
+    "cardName": "Desafío Quiz del Club",
+    "cardClase": "Extra",
+    "titulo": "Desafiante",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 8,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 8 veces"
+          },
+          {
+            "objetivo": 20,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 20 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Combina 5 veces con esta carta"
+          },
+          {
+            "objetivo": 12,
+            "reward": 50,
+            "desc": "Combina 12 veces con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Desafiante"
+      }
+    ]
+  },
+  "curriculum": {
+    "cardId": "curriculum",
+    "cardName": "Currículum",
+    "cardClase": "Extra",
+    "titulo": "Desempleado",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 8,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 8 veces"
+          },
+          {
+            "objetivo": 20,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 20 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Combina 5 veces con esta carta"
+          },
+          {
+            "objetivo": 12,
+            "reward": 50,
+            "desc": "Combina 12 veces con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Desempleado"
+      }
+    ]
+  },
+  "tung": {
+    "cardId": "tung",
+    "cardName": "Tung Tung Tung Sahur",
+    "cardClase": "Unidad",
+    "titulo": "Triple T",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Triple T"
+      }
+    ]
+  },
+  "skibidi": {
+    "cardId": "skibidi",
+    "cardName": "Skibidi Toilet",
+    "cardClase": "Unidad",
+    "titulo": "Fobia al baño",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Fobia al baño"
+      }
+    ]
+  },
+  "trabajo": {
+    "cardId": "trabajo",
+    "cardName": "Trabajoman",
+    "cardClase": "Unidad",
+    "titulo": "Orgullo de la familia",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Orgullo de la familia"
+      }
+    ]
+  },
+  "nexus": {
+    "cardId": "nexus",
+    "cardName": "Nexusgc",
+    "cardClase": "Unidad",
+    "titulo": "BOT",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "BOT"
+      }
+    ]
+  },
+  "gato": {
+    "cardId": "gato",
+    "cardName": "Gato ganador",
+    "cardClase": "Unidad",
+    "titulo": "Victorioso",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Victorioso"
+      }
+    ]
+  },
+  "club": {
+    "cardId": "club",
+    "cardName": "Club de la Comedia",
+    "cardClase": "Unidad",
+    "titulo": "Caótico",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Caótico"
+      }
+    ]
+  },
+  "donpollo": {
+    "cardId": "donpollo",
+    "cardName": "Don Pollo",
+    "cardClase": "Unidad",
+    "titulo": "Con salsa y picante",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Con salsa y picante"
+      }
+    ]
+  },
+  "portal": {
+    "cardId": "portal",
+    "cardName": "Tutorial Portal Nether",
+    "cardClase": "Unidad",
+    "titulo": "Videoclip oficial",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Videoclip oficial"
+      }
+    ]
+  },
+  "omori": {
+    "cardId": "omori",
+    "cardName": "Omori",
+    "cardClase": "Unidad",
+    "titulo": "Did not succumb",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Did not succumb"
+      }
+    ]
+  },
+  "kel": {
+    "cardId": "kel",
+    "cardName": "Kel",
+    "cardClase": "Unidad",
+    "titulo": "¡KELNUKE!",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "¡KELNUKE!"
+      }
+    ]
+  },
+  "aubrey": {
+    "cardId": "aubrey",
+    "cardName": "Aubrey",
+    "cardClase": "Unidad",
+    "titulo": "You are a Gross Color",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "You are a Gross Color"
+      }
+    ]
+  },
+  "hero": {
+    "cardId": "hero",
+    "cardName": "Hero",
+    "cardClase": "Unidad",
+    "titulo": "Let me cook",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Let me cook"
+      }
+    ]
+  },
+  "basil": {
+    "cardId": "basil",
+    "cardName": "Basil",
+    "cardClase": "Unidad",
+    "titulo": "Jardinero",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Jardinero"
+      }
+    ]
+  },
+  "release": {
+    "cardId": "release",
+    "cardName": "RELEASE ENERGY",
+    "cardClase": "Extra",
+    "titulo": "Follow-Up!",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 8,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 8 veces"
+          },
+          {
+            "objetivo": 20,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 20 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Combina 5 veces con esta carta"
+          },
+          {
+            "objetivo": 12,
+            "reward": 50,
+            "desc": "Combina 12 veces con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Follow-Up!"
+      }
+    ]
+  },
+  "gang": {
+    "cardId": "gang",
+    "cardName": "Omori’s gang",
+    "cardClase": "Unidad",
+    "titulo": "Headspace Friends",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Headspace Friends"
+      }
+    ]
+  },
+  "mewo": {
+    "cardId": "mewo",
+    "cardName": "Mewo",
+    "cardClase": "Unidad",
+    "titulo": "Meow? (Waiting)",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Meow? (Waiting)"
+      }
+    ]
+  },
+  "pluto": {
+    "cardId": "pluto",
+    "cardName": "Pluto",
+    "cardClase": "Unidad",
+    "titulo": "Flexing",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Flexing"
+      }
+    ]
+  },
+  "sweetheart": {
+    "cardId": "sweetheart",
+    "cardName": "Sweetheart",
+    "cardClase": "Unidad",
+    "titulo": "OHOHOHOHO",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "OHOHOHOHO"
+      }
+    ]
+  },
+  "capitan": {
+    "cardId": "capitan",
+    "cardName": "Captain Spaceboy",
+    "cardClase": "Unidad",
+    "titulo": "Corazón Roto",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Corazón Roto"
+      }
+    ]
+  },
+  "sprout": {
+    "cardId": "sprout",
+    "cardName": "Sprout Mole",
+    "cardClase": "Unidad",
+    "titulo": "Tofu lover",
+    "misiones": [
+      {
+        "id": "m1",
+        "tipo": "gamingcoins",
+        "niveles": [
+          {
+            "objetivo": 10,
+            "reward": 50,
+            "desc": "Juega esta carta y gana 10 veces"
+          },
+          {
+            "objetivo": 25,
+            "reward": 100,
+            "desc": "Juega esta carta y gana 25 veces"
+          }
+        ]
+      },
+      {
+        "id": "m2",
+        "tipo": "club_energy",
+        "niveles": [
+          {
+            "objetivo": 5,
+            "reward": 20,
+            "desc": "Derrota 5 unidades rivales con esta carta"
+          },
+          {
+            "objetivo": 15,
+            "reward": 50,
+            "desc": "Derrota 15 unidades rivales con esta carta"
+          }
+        ]
+      },
+      {
+        "id": "m3",
+        "tipo": "titulo",
+        "objetivo": 50,
+        "desc": "Incluye esta carta en tu mazo y gana 50 partidas (tras completar las otras dos)",
+        "titulo": "Tofu lover"
+      }
+    ]
+  }
+}
