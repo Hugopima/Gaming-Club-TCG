@@ -2826,35 +2826,36 @@
         .achievements-modal .ach-content::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); border-radius: 4px; }
         .achievements-modal .ach-content::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 4px; }
 
-        /* ===== MODAL DE MAESTRÍAS DE CARTAS ===== */
+        /* ===== MODAL DE MAESTRÍAS DE CARTAS (estilo encaja con el juego: oscuro + dorado) ===== */
         .mastery-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 3500;
+            position: fixed; inset: 0; background: rgba(0,0,0,0.82); z-index: 3500;
             display: none; align-items: center; justify-content: center;
-            font-family: inherit; backdrop-filter: blur(6px);
+            font-family: inherit; backdrop-filter: blur(4px);
         }
         .mastery-overlay.active { display: flex; animation: fadeIn .25s ease; }
         @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
         .mastery-modal {
             position: relative; width: 480px; max-width: 94vw; max-height: 90vh;
-            background: linear-gradient(180deg, #1a3a8a 0%, #0d1f4a 100%);
-            border: 3px solid #ffd700; border-radius: 22px; padding: 22px 24px 26px;
-            box-shadow: 0 0 50px rgba(255,215,0,.45), 0 18px 40px rgba(0,0,0,.7);
-            overflow-y: auto; color: #fff; animation: popIn .35s cubic-bezier(.34,1.56,.64,1);
+            background: linear-gradient(180deg, #1a1530 0%, #0d0820 100%);
+            border: 2px solid #c9a227; border-radius: 18px; padding: 22px 24px 26px;
+            box-shadow: 0 0 30px rgba(255,215,0,.25), 0 18px 40px rgba(0,0,0,.75);
+            overflow-y: auto; color: #e8dcb5; animation: popIn .35s cubic-bezier(.34,1.56,.64,1);
         }
         @keyframes popIn { from { transform: scale(.85); opacity: 0 } to { transform: scale(1); opacity: 1 } }
-        .mastery-modal::-webkit-scrollbar { width: 8px; }
-        .mastery-modal::-webkit-scrollbar-thumb { background: #ffd700; border-radius: 4px; }
+        .mastery-modal::-webkit-scrollbar { width: 6px; }
+        .mastery-modal::-webkit-scrollbar-thumb { background: #8a6d3b; border-radius: 3px; }
         .mastery-modal::-webkit-scrollbar-track { background: rgba(0,0,0,.3); }
 
         .mastery-header {
             text-align: center; margin-bottom: 18px;
-            background: linear-gradient(90deg, #00b89c, #00a8e8);
-            padding: 10px 16px; border-radius: 12px;
-            box-shadow: 0 4px 16px rgba(0,168,232,.4);
+            background: linear-gradient(90deg, #5c4a1a, #8a6d3b, #5c4a1a);
+            padding: 10px 16px; border-radius: 10px;
+            border: 1px solid rgba(255,215,0,.3);
+            box-shadow: 0 3px 12px rgba(0,0,0,.4);
         }
         .mastery-header h2 {
-            margin: 0; font-size: 26px; font-weight: 900; color: #fff;
-            text-shadow: 2px 2px 0 #003a5a; letter-spacing: 2px;
+            margin: 0; font-size: 24px; font-weight: 900; color: #fff7c2;
+            text-shadow: 1px 1px 0 #000; letter-spacing: 2px;
             text-transform: uppercase;
         }
         .mastery-card-box {
@@ -2862,128 +2863,128 @@
             margin-bottom: 18px;
         }
         .mastery-card-portrait {
-            width: 130px; height: 182px; border-radius: 14px;
-            border: 3px solid #ffd700;
-            box-shadow: 0 6px 18px rgba(0,0,0,.6), 0 0 18px rgba(255,215,0,.35);
+            width: 130px; height: 182px; border-radius: 10px;
+            border: 2px solid #c9a227;
+            box-shadow: 0 4px 14px rgba(0,0,0,.6), 0 0 10px rgba(255,215,0,.2);
             background-size: cover; background-position: center;
             position: relative; overflow: hidden;
         }
         .mastery-card-portrait::after {
             content: ''; position: absolute; inset: 0;
-            background: linear-gradient(180deg, transparent 60%, rgba(0,0,0,.55) 100%);
+            background: linear-gradient(180deg, transparent 60%, rgba(0,0,0,.45) 100%);
         }
         .mastery-card-name {
-            font-size: 17px; font-weight: 800; color: #fff;
+            font-size: 16px; font-weight: 700; color: #fff7c2;
             text-shadow: 1px 1px 0 #000; text-align: center; margin-top: 4px;
         }
 
         .mastery-mission {
-            border-radius: 14px; padding: 12px 14px; margin-bottom: 12px;
+            border-radius: 10px; padding: 11px 13px; margin-bottom: 10px;
             position: relative; overflow: hidden;
-            box-shadow: 0 3px 10px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.1);
-            border: 2px solid rgba(0,0,0,.25);
+            box-shadow: 0 2px 8px rgba(0,0,0,.4);
+            border: 1px solid rgba(255,215,0,.15);
+            color: #e8dcb5;
         }
-        .mastery-mission.m1 { background: linear-gradient(135deg, #00b89c, #008a7a); }
-        .mastery-mission.m2 { background: linear-gradient(135deg, #f1c40f, #c79100); color: #1a1a1a; }
+        /* Tonos apagados que encajan con el juego: dorado verdoso (M1), ocre (M2), bronce (M3) */
+        .mastery-mission.m1 { background: linear-gradient(135deg, #2a3a1f 0%, #1a2515 100%); border-color: rgba(180,200,80,.25); }
+        .mastery-mission.m2 { background: linear-gradient(135deg, #3a2f1a 0%, #251d0e 100%); border-color: rgba(200,160,80,.25); }
         .mastery-mission.m3 {
-            background: linear-gradient(135deg, #8e44ad, #5e2980);
-            border-color: #d4a0ff;
+            background: linear-gradient(135deg, #2f1f2a 0%, #1f1219 100%);
+            border-color: rgba(180,100,150,.3);
         }
-        .mastery-mission.m3.locked { filter: grayscale(.7) brightness(.55); }
+        .mastery-mission.m3.locked { filter: grayscale(.6) brightness(.5); opacity: .85; }
         .mastery-mission-row {
             display: flex; align-items: center; gap: 12px;
         }
         .mastery-mission-icon {
-            width: 38px; height: 38px; flex-shrink: 0;
-            background: rgba(0,0,0,.35); border-radius: 10px;
+            width: 36px; height: 36px; flex-shrink: 0;
+            background: rgba(0,0,0,.4); border-radius: 8px;
+            border: 1px solid rgba(255,215,0,.2);
             display: flex; align-items: center; justify-content: center;
-            font-size: 22px;
+            font-size: 20px;
         }
-        .m2 .mastery-mission-icon { background: rgba(255,255,255,.4); }
         .mastery-mission-body { flex: 1; min-width: 0; }
         .mastery-mission-desc {
-            font-size: 13px; font-weight: 700; line-height: 1.35;
-            margin-bottom: 6px; text-shadow: 0 1px 0 rgba(0,0,0,.3);
+            font-size: 13px; font-weight: 600; line-height: 1.35;
+            margin-bottom: 6px; color: #d8c895;
         }
-        .m2 .mastery-mission-desc { text-shadow: none; }
         .mastery-progress-track {
-            background: rgba(0,0,0,.55); height: 22px; border-radius: 11px;
+            background: rgba(0,0,0,.55); height: 20px; border-radius: 10px;
             overflow: hidden; position: relative;
             border: 1px solid rgba(0,0,0,.4);
         }
-        .m2 .mastery-progress-track { background: rgba(255,255,255,.5); }
         .mastery-progress-fill {
-            height: 100%; background: linear-gradient(180deg, #ffe066, #f1a906);
+            height: 100%; background: linear-gradient(180deg, #c9a227, #8a6d3b);
             transition: width .6s cubic-bezier(.34,1.56,.64,1);
-            border-radius: 11px 0 0 11px;
+            border-radius: 10px 0 0 10px;
         }
         .mastery-progress-text {
             position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-            font-size: 12px; font-weight: 900; color: #fff;
-            text-shadow: 1px 1px 2px #000, -1px -1px 2px #000;
+            font-size: 11px; font-weight: 800; color: #fff7c2;
+            text-shadow: 1px 1px 2px #000;
         }
         .mastery-reward {
             display: flex; flex-direction: column; align-items: center;
-            justify-content: center; min-width: 60px;
-            font-size: 12px; font-weight: 900;
+            justify-content: center; min-width: 55px;
+            font-size: 11px; font-weight: 800; color: #d8c895;
         }
-        .mastery-reward .icon { font-size: 22px; line-height: 1; }
-        .mastery-reward .amt { font-size: 14px; }
-        .mastery-mission.completed .mastery-progress-fill { background: linear-gradient(180deg, #6cf07c, #2ea83f); }
+        .mastery-reward .icon { font-size: 20px; line-height: 1; }
+        .mastery-reward .amt { font-size: 13px; color: #fff7c2; }
+        .mastery-mission.completed .mastery-progress-fill { background: linear-gradient(180deg, #6a9a4a, #3a5a25); }
         .mastery-mission.completed::after {
             content: '\2713'; position: absolute; top: 6px; right: 10px;
-            font-size: 22px; color: #6cf07c; font-weight: 900;
-            text-shadow: 0 0 8px rgba(108,240,124,.8);
+            font-size: 20px; color: #88c060; font-weight: 900;
+            text-shadow: 0 0 6px rgba(120,200,90,.6);
         }
         .mastery-levels-pips {
             display: flex; gap: 4px; margin-top: 6px; justify-content: flex-end;
         }
         .mastery-levels-pips .pip {
-            width: 10px; height: 10px; border-radius: 50%;
-            background: rgba(255,255,255,.25); border: 1px solid rgba(0,0,0,.4);
+            width: 9px; height: 9px; border-radius: 50%;
+            background: rgba(255,255,255,.15); border: 1px solid rgba(0,0,0,.4);
         }
-        .mastery-levels-pips .pip.done { background: #ffe066; box-shadow: 0 0 6px #ffe066; }
+        .mastery-levels-pips .pip.done { background: #c9a227; box-shadow: 0 0 4px rgba(201,162,39,.6); }
 
         .mastery-title-reward {
-            text-align: center; margin-top: 6px; font-size: 14px;
-            color: #ffea66; font-weight: 900; letter-spacing: 1px;
-            text-shadow: 0 0 6px rgba(255,234,102,.5);
+            text-align: center; margin-top: 6px; font-size: 13px;
+            color: #fff7c2; font-weight: 800; letter-spacing: 1px;
+            text-shadow: 0 0 4px rgba(255,215,0,.3);
         }
         .mastery-mission-claim-btn {
             display: block; margin: 8px auto 0; padding: 6px 18px;
-            background: linear-gradient(180deg, #ffe066, #f1a906);
-            border: 2px solid #fff07c; border-radius: 8px; cursor: pointer;
-            font-weight: 900; font-size: 13px; color: #1a1a1a;
-            box-shadow: 0 3px 0 #8a6010; transition: all .15s;
+            background: linear-gradient(180deg, #c9a227, #8a6d3b);
+            border: 1px solid #fff7c2; border-radius: 6px; cursor: pointer;
+            font-weight: 800; font-size: 12px; color: #1a0f00;
+            box-shadow: 0 3px 0 #5c4a1a; transition: all .15s;
         }
-        .mastery-mission-claim-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 0 #8a6010; }
-        .mastery-mission-claim-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #8a6010; }
+        .mastery-mission-claim-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 0 #5c4a1a; filter: brightness(1.1); }
+        .mastery-mission-claim-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #5c4a1a; }
         .mastery-mission-claim-btn:disabled { filter: grayscale(1); opacity: .5; cursor: not-allowed; }
 
         .mastery-close-btn {
             position: absolute; top: 10px; right: 12px;
-            width: 36px; height: 36px; border-radius: 50%;
-            background: #e74c3c; border: 3px solid #fff; color: #fff;
-            font-size: 20px; font-weight: 900; cursor: pointer;
-            box-shadow: 0 4px 0 #a8281b, 0 6px 12px rgba(0,0,0,.4);
+            width: 34px; height: 34px; border-radius: 50%;
+            background: #5a1f1f; border: 2px solid #8a3a3a; color: #fff;
+            font-size: 18px; font-weight: 900; cursor: pointer;
+            box-shadow: 0 3px 0 #2a0f0f, 0 4px 8px rgba(0,0,0,.4);
             transition: all .15s; line-height: 1;
         }
-        .mastery-close-btn:hover { transform: scale(1.1); }
-        .mastery-close-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #a8281b; }
+        .mastery-close-btn:hover { transform: scale(1.1); background: #7a2929; }
+        .mastery-close-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #2a0f0f; }
 
         /* Botón "Maestría" en el panel de detalle */
         .mastery-btn {
             display: block; margin: 18px auto 0;
             padding: 10px 24px;
-            background: linear-gradient(180deg, #8e44ad, #5e2980);
-            border: 2px solid #d4a0ff; border-radius: 10px;
-            color: #fff; font-weight: 900; font-size: 14px;
+            background: linear-gradient(180deg, #5c4a1a, #3a2f10);
+            border: 1px solid #c9a227; border-radius: 8px;
+            color: #fff7c2; font-weight: 800; font-size: 13px;
             cursor: pointer; letter-spacing: 1px;
-            box-shadow: 0 4px 0 #3a155f, 0 6px 14px rgba(0,0,0,.4);
+            box-shadow: 0 3px 0 #2a200a, 0 5px 10px rgba(0,0,0,.4);
             transition: all .15s; text-transform: uppercase;
         }
-        .mastery-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 0 #3a155f, 0 8px 18px rgba(0,0,0,.4); }
-        .mastery-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #3a155f; }
+        .mastery-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 0 #2a200a, 0 7px 14px rgba(0,0,0,.4); filter: brightness(1.1); }
+        .mastery-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #2a200a; }
 
         /* Responsive móvil */
         @media (max-width: 768px) {
@@ -3272,6 +3273,12 @@
                     <select class="sort-filter-select" id="collection-filter-origen" onchange="renderizarBiblioteca()">
                         <option value="">Todos</option>
                     </select>
+                    <label>Expansión:</label>
+                    <select class="sort-filter-select" id="collection-filter-expansion" onchange="renderizarBiblioteca()">
+                        <option value="">Todas</option>
+                        <option value="Mundos Cruzados">Mundos Cruzados</option>
+                        <option value="Promo">Promo</option>
+                    </select>
                     <button class="auto-recycle-btn" onclick="reciclarSobraAutomatico()">♻️ Auto-reciclar sobras</button>
                 </div>
                 <h2 class="section-title">Líderes</h2>
@@ -3299,6 +3306,7 @@
                         <div class="info-box" id="box-coste"><span class="info-label">Coste</span><span id="p-coste" class="info-value"></span></div>
                         <div class="info-box" id="box-combo" style="grid-column: span 2;"><span class="info-label">Combo</span><span id="p-combo" class="info-value"></span></div>
                         <div class="info-box" id="box-rareza" style="grid-column: span 2;"><span class="info-label">Rareza</span><span id="p-rareza" class="info-value rarity-val"></span></div>
+                        <div class="info-box" id="box-expansion" style="grid-column: span 2;"><span class="info-label">Expansión</span><span id="p-expansion" class="info-value"></span></div>
                     </div>
                     <div id="skill-container"></div>
                     <div id="craft-recycle-section" class="craft-section" style="display:none">
@@ -8942,7 +8950,7 @@
             if (!t) return [];
             return t.split('/').map(s => s.trim()).filter(Boolean);
         }
-        function cartaPasaFiltros(carta, busqueda, clase, habilidad, tipo, coste, poder, origen, color) {
+        function cartaPasaFiltros(carta, busqueda, clase, habilidad, tipo, coste, poder, origen, color, expansion) {
             // Filtro de clase (lider/unidad/extra/token)
             if (clase) {
                 const cn = claseNormalizada(carta);
@@ -8968,6 +8976,8 @@
             if (poder && Number(carta.poder) !== Number(poder)) return false;
             // Filtro de origen
             if (origen && String(carta.origen || '').toLowerCase() !== String(origen).toLowerCase()) return false;
+            // Filtro de expansión
+            if (expansion && String(carta.expansion || '').toLowerCase() !== String(expansion).toLowerCase()) return false;
             // Búsqueda de texto: busca en nombre, habilidades (tag + desc), tipo, personaje, origen
             if (busqueda) {
                 const b = busqueda.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -9049,6 +9059,7 @@
             const costeEl = document.getElementById(prefix + '-filter-coste');
             const poderEl = document.getElementById(prefix + '-filter-poder');
             const oriEl = document.getElementById(prefix + '-filter-origen');
+            const expEl = document.getElementById(prefix + '-filter-expansion');
             return {
                 busqueda: (searchEl?.value || '').trim(),
                 clase: claseEl?.value || '',
@@ -9057,7 +9068,8 @@
                 tipo: tipoEl?.value || '',
                 coste: costeEl?.value || '',
                 poder: poderEl?.value || '',
-                origen: oriEl?.value || ''
+                origen: oriEl?.value || '',
+                expansion: expEl?.value || ''
             };
         }
 
@@ -9095,7 +9107,7 @@
             // único grid de "Resultados" (en grid-lideres) y ocultar los otros 3.
             // Si no hay filtros, mostrar los 4 grids separados como antes.
             const f = leerFiltros('collection');
-            const hayFiltros = f.busqueda || f.clase || f.color || f.habilidad || f.tipo || f.coste || f.poder || f.origen;
+            const hayFiltros = f.busqueda || f.clase || f.color || f.habilidad || f.tipo || f.coste || f.poder || f.origen || f.expansion;
 
             const renderCard = (c) => {
                 const i = datosCartas.indexOf(c);
@@ -9112,7 +9124,7 @@
 
             if (hayFiltros) {
                 // Modo búsqueda: filtrar todas las cartas y mostrarlas en un único grid.
-                const filtradas = datosCartas.filter(c => cartaPasaFiltros(c, f.busqueda, f.clase, f.habilidad, f.tipo, f.coste, f.poder, f.origen, f.color));
+                const filtradas = datosCartas.filter(c => cartaPasaFiltros(c, f.busqueda, f.clase, f.habilidad, f.tipo, f.coste, f.poder, f.origen, f.color, f.expansion));
                 const sortedFiltradas = ordenarCartas(filtradas, criterio);
                 // Ocultar los títulos y grids de unidades/extras/tokens
                 const titulos = document.querySelectorAll('#collection-screen .section-title');
@@ -9164,13 +9176,13 @@
             const criterio = sortSelect ? sortSelect.value : 'color';
             // BUG FIX (v4): leer filtros y aplicarlos.
             const f = leerFiltros('deck');
-            const hayFiltros = f.busqueda || f.clase || f.color || f.habilidad || f.tipo || f.coste || f.poder || f.origen;
+            const hayFiltros = f.busqueda || f.clase || f.color || f.habilidad || f.tipo || f.coste || f.poder || f.origen || f.expansion;
             // Separar líderes (siempre primero) del resto
             let lideres, noLideres;
             if (hayFiltros) {
                 // En modo búsqueda, filtrar todas las cartas (incluidos tokens si el
                 // filtro de clase lo pide) y mostrarlas en un único listado.
-                const filtradas = datosCartas.filter(c => cartaPasaFiltros(c, f.busqueda, f.clase, f.habilidad, f.tipo, f.coste, f.poder, f.origen, f.color));
+                const filtradas = datosCartas.filter(c => cartaPasaFiltros(c, f.busqueda, f.clase, f.habilidad, f.tipo, f.coste, f.poder, f.origen, f.color, f.expansion));
                 lideres = filtradas.filter(c => !esToken(c) && esLider(c));
                 noLideres = filtradas.filter(c => !(esLider(c)) && (f.clase === 'token' ? esToken(c) : !esToken(c)));
             } else {
@@ -9489,6 +9501,7 @@
                         <div class="info-box"><span class="info-label">Poder</span><span class="info-value">${escapeHtml(poder)}</span></div>
                         ${lider ? '' : `<div class="info-box"><span class="info-label">Coste</span><span class="info-value">${escapeHtml(c.costeTotal ?? '-')}</span></div>`}
                         <div class="info-box" style="grid-column: span 2;"><span class="info-label">Rareza</span><span class="info-value rarity-val">${escapeHtml(c.rareza || 'Comun')}</span></div>
+                        ${c.expansion ? `<div class="info-box" style="grid-column: span 2;"><span class="info-label">Expansión</span><span class="info-value">${escapeHtml(c.expansion)}</span></div>` : ''}
                     </div>
                     <div>${skills.map(s => `<div class="skill-box"><span class="skill-tag ${escapeHtml(s.css || '')}">${escapeHtml(s.tag || '')}</span><div class="skill-desc">${escapeHtml(s.desc || '')}</div></div>`).join('')}</div>
                 </div>`;
@@ -12371,14 +12384,14 @@
                 // por accion-juego. Así que si este evento llega en modo competitivo,
                 // es porque algo se desincronizó; lo ignoramos para no procesar doble.
                 if (_esCompetitivo && _compSetActual > 0) return;
-                if (estadoPartida) {
+                if (estadoPartida && !estadoPartida.finalizada) {
                     estadoPartida.finalizada = true;
                     mostrarFinPartida('victoria');
                 }
             });
             _socketOnline.on('victoria-desconexion', () => {
                 // El rival reclamó victoria por mi desconexión: pierdo yo
-                if (estadoPartida) {
+                if (estadoPartida && !estadoPartida.finalizada) {
                     estadoPartida.finalizada = true;
                     mostrarFinPartida('derrota');
                 }
@@ -14055,6 +14068,13 @@
             if (typeof registrarFinPartida === 'function') {
                 registrarFinPartida(resultado, modo);
             }
+            // Bug fix: forzar guardado de inventario y stats tras finalizar partida
+            // para evitar pérdida de monedas y progreso si hay un error posterior.
+            try {
+                if (typeof guardarInventario === 'function') guardarInventario();
+                if (typeof guardarStats === 'function') guardarStats();
+                if (typeof programarGuardadoSupabase === 'function') programarGuardadoSupabase();
+            } catch (e) { console.error('[mostrarFinPartida] Error guardando:', e); }
             const overlay = document.getElementById('game-end-overlay');
             const panel = document.getElementById('game-end-panel');
             const title = document.getElementById('game-end-title');
@@ -15167,6 +15187,13 @@
         }
 
         function ponerManaDesdeMano(index) {
+            // Hook maestría: rastrear puesta de maná
+            try {
+                const idMana = estadoPartida?.jugador?.mano?.[index];
+                if (idMana && typeof trackMaestria_ponerMana === 'function') {
+                    trackMaestria_ponerMana(idMana);
+                }
+            } catch(e) {}
             if (!partidaInteractiva()) return;
             if (estadoPartida.faseIndex !== 0) return alert('Solo puedes cargar mana en la fase de carga.');
             if (estadoPartida.jugador.manaUsadoEsteTurno) return alert('Solo puedes poner una carta como mana por turno.');
@@ -17122,6 +17149,17 @@
             document.getElementById('p-origen').innerText = c.origen || "Desconocido";
             document.getElementById('p-rareza').innerText = c.rareza || "Comun";
             document.getElementById('p-poder').innerText = (c.esEvo && c.poderEvo) ? c.poderEvo : (c.poder || "0");
+            // Mostrar expansión (si la carta no la tiene, ocultar el info-box)
+            const boxExpansion = document.getElementById('box-expansion');
+            const pExpansion = document.getElementById('p-expansion');
+            if (boxExpansion && pExpansion) {
+                if (c.expansion) {
+                    boxExpansion.style.display = 'block';
+                    pExpansion.innerText = c.expansion;
+                } else {
+                    boxExpansion.style.display = 'none';
+                }
+            }
 
             const boxCoste = document.getElementById('box-coste');
             const boxCombo = document.getElementById('box-combo');
@@ -17292,10 +17330,10 @@
                             ocultarReconnectOverlay();
                         });
                         _socketOnline.on('rival-rendido', () => {
-                            if (estadoPartida) { estadoPartida.finalizada = true; mostrarFinPartida('victoria'); }
+                            if (estadoPartida && !estadoPartida.finalizada) { estadoPartida.finalizada = true; mostrarFinPartida('victoria'); }
                         });
                         _socketOnline.on('victoria-desconexion', () => {
-                            if (estadoPartida) { estadoPartida.finalizada = true; mostrarFinPartida('derrota'); }
+                            if (estadoPartida && !estadoPartida.finalizada) { estadoPartida.finalizada = true; mostrarFinPartida('derrota'); }
                         });
                         _socketOnline.on('partida-no-existe', () => {
                             alert('La partida ya no existe (es posible que el rival abandonara o el servidor se reiniciara).');
@@ -17306,7 +17344,7 @@
                         });
                         // Handler completo de acciones del rival (todos los tipos)
                         _socketOnline.on('accion-rival', (data) => {
-                            if (!estadoPartida || estadoPartida.modo !== 'online') return;
+                            if (!estadoPartida || estadoPartida.modo !== 'online' || estadoPartida.finalizada) return;
                             // Bug fix: ocultar overlay defensivamente al recibir cualquier acción.
                             ocultarReconnectOverlay();
                             if (data.tipo === 'snapshot') {
@@ -17386,7 +17424,7 @@
                             } else if (data.tipo === 'combo-defensora-terminado') {
                                 recibirComboDefensoraTerminado(data);
                             } else if (data.tipo === 'limpiar-combo-defensora') {
-                                if (estadoPartida) {
+                                if (estadoPartida && !estadoPartida.finalizada) {
                                     estadoPartida.jugador.combo.forEach(c => { const cid = (typeof c === 'object' ? c.id : c); estadoPartida.jugador.descarte.push(cid); if (typeof c === 'object' && c.fromField && window.MotorEfectos && MotorEfectos.marcarMomolacSiAplica) MotorEfectos.marcarMomolacSiAplica('jugador', cid); });
                                     estadoPartida.jugador.combo = [];
                                     estadoPartida.ataqueActual = null;
@@ -17494,6 +17532,32 @@
             // Si ya hay un overlay de error, no duplicar
             if (document.getElementById('global-error-overlay')) return;
             const msg = (error && error.message) ? error.message : String(error || 'Error desconocido');
+            // Bug fix: ignorar silenciosamente errores benignos que ocurren cuando
+            // estadoPartida es null (justo tras finalizar partida online o al cerrarla).
+            // Estos errores no afectan al juego pero aparecían al usuario.
+            const erroresBenignos = [
+                "Cannot read properties of null (reading 'jugador')",
+                "Cannot read properties of null (reading 'rival')",
+                "Cannot read properties of null (reading 'mazo')",
+                "Cannot read properties of null (reading 'batalla')",
+                "Cannot read properties of null (reading 'mano')",
+                "Cannot read properties of null (reading 'liderId')",
+                "Cannot read properties of null (reading 'liderDespierto')",
+                "Cannot read properties of null (reading 'ataqueActual')",
+                "Cannot read properties of null (reading 'faseIndex')",
+                "Cannot read properties of null (reading 'modo')"
+            ];
+            for (const eb of erroresBenignos) {
+                if (msg === eb || msg.includes(eb)) {
+                    console.warn('[Error benigno ignorado]', msg);
+                    return;
+                }
+            }
+            // Si estadoPartida es null, también ignorar (la partida ya terminó)
+            if (!window.estadoPartida && (msg.includes('estadoPartida') || msg.includes("'jugador'") || msg.includes("'rival'"))) {
+                console.warn('[Error benigno ignorado (estadoPartida null)]', msg);
+                return;
+            }
             // Truncar mensaje largo
             const msgCorto = msg.length > 200 ? msg.substring(0, 200) + '...' : msg;
             const overlay = document.createElement('div');
@@ -17589,11 +17653,12 @@
                     m2: 0,
                     m3: 0,  // 0 = no completada, 1 = completada
                     progreso: {
-                        jugar: 0,    // veces jugada esta carta
-                        ganar: 0,    // veces ganada partida con esta carta en mazo/líder
-                        despertar: 0,// veces despertado este líder
-                        destruir: 0, // unidades rivales destruidas con esta carta
-                        combinar: 0  // veces combinada esta carta
+                        jugar: 0,      // veces jugada esta carta
+                        ganar: 0,      // veces ganada partida con esta carta en mazo/líder
+                        despertar: 0,  // veces despertado este líder
+                        destruir: 0,   // unidades rivales destruidas con esta carta
+                        combinar: 0,   // veces combinada esta carta
+                        poner_mana: 0  // veces puesta como maná
                     },
                     // Indica si la recompensa del título fue reclamada
                     tituloReclamado: false
@@ -17660,6 +17725,15 @@
             guardarMaestriasState();
         }
 
+        // Llamar cuando se pone una carta como maná
+        function trackMaestria_ponerMana(cardId) {
+            if (!cardId) return;
+            const s = getMaestriaCardState(cardId);
+            if (!s) return;
+            s.progreso.poner_mana = (s.progreso.poner_mana || 0) + 1;
+            guardarMaestriasState();
+        }
+
         // ===== VERIFICAR SI UNA MISIÓN ESTÁ COMPLETA Y LISTA PARA RECLAMAR =====
         // Devuelve: { nivel, completada, reclamble, objetivoActual, progresoActual, reward }
         function getEstadoMision(cardId, misionId) {
@@ -17712,13 +17786,8 @@
                     totalNiveles: m.niveles.length
                 };
             }
-            // Mapear el tipo al campo de progreso
-            const campoProgreso = m.tipo === 'gamingcoins' ? 'ganar' :
-                                  m.tipo === 'club_energy' ? (
-                                      maestria.cardClase === 'Líder' ? 'despertar' :
-                                      maestria.cardClase === 'Unidad' ? 'destruir' :
-                                      'combinar'
-                                  ) : 'ganar';
+            // Usar el campoProgreso del JSON (más flexible: cada carta puede medir lo que quiera)
+            const campoProgreso = m.campoProgreso || (m.tipo === 'gamingcoins' ? 'ganar' : 'ganar');
             const progreso = state.progreso[campoProgreso] || 0;
             const progresoEnNivel = Math.min(progreso, nivelData.objetivo);
             const completada = progreso >= nivelData.objetivo;
@@ -17955,6 +18024,7 @@
         window.trackMaestria_ganarPartida = trackMaestria_ganarPartida;
         window.trackMaestria_destruirConUnidad = trackMaestria_destruirConUnidad;
         window.trackMaestria_combinarCarta = trackMaestria_combinarCarta;
+        window.trackMaestria_ponerMana = trackMaestria_ponerMana;
 
         // ===== CARGAR MAESTRÍAS AL INICIO =====
         // Hacerlo en paralelo con cargarBaseDeDatos
