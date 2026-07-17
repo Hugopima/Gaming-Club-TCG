@@ -2826,6 +2826,49 @@
         .achievements-modal .ach-content::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); border-radius: 4px; }
         .achievements-modal .ach-content::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 4px; }
 
+        /* ===== TÍTULO ESPECIAL: MAESTRO DE MAESTRÍAS (brillo arcoíris) ===== */
+        .titulo-brillante {
+            background: linear-gradient(90deg, #ff6b6b, #ffd93d, #6bcf7f, #4ecdc4, #a78bfa, #ff6b6b);
+            background-size: 300% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+            animation: tituloBrillante 4s linear infinite;
+            font-weight: 900;
+            text-shadow: 0 0 8px rgba(255,255,255,.3);
+            filter: drop-shadow(0 0 4px rgba(255,255,255,.5));
+        }
+        @keyframes tituloBrillante {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 300% 50%; }
+        }
+        .titulo-brillante-borde {
+            position: relative;
+        }
+        .titulo-brillante-borde::before {
+            content: '';
+            position: absolute;
+            inset: -3px;
+            background: linear-gradient(90deg, #ff6b6b, #ffd93d, #6bcf7f, #4ecdc4, #a78bfa, #ff6b6b);
+            background-size: 300% 100%;
+            border-radius: inherit;
+            z-index: -1;
+            animation: tituloBrillante 4s linear infinite;
+            filter: blur(8px);
+            opacity: .6;
+        }
+        /* Insignia de título especial en la lista de logros */
+        .ach-item.especial-titulo {
+            border-color: #ff6b6b !important;
+            background: linear-gradient(135deg, rgba(255,107,107,.08), rgba(167,139,250,.08), rgba(78,205,196,.08)) !important;
+            box-shadow: 0 0 15px rgba(255,107,107,.3), 0 0 25px rgba(167,139,250,.2) !important;
+        }
+        .ach-item.especial-titulo .ach-icon {
+            animation: spin 3s linear infinite;
+        }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
         /* ===== MODAL DE MAESTRÍAS DE CARTAS (estilo encaja con el juego: oscuro + dorado) ===== */
         .mastery-overlay {
             position: fixed; inset: 0; background: rgba(0,0,0,0.82); z-index: 3500;
@@ -2927,9 +2970,25 @@
             display: flex; flex-direction: column; align-items: center;
             justify-content: center; min-width: 55px;
             font-size: 11px; font-weight: 800; color: #d8c895;
+            gap: 3px;
         }
         .mastery-reward .icon { font-size: 20px; line-height: 1; }
         .mastery-reward .amt { font-size: 13px; color: #fff7c2; }
+        .mastery-reward-icon {
+            width: 22px; height: 22px; object-fit: contain;
+            filter: drop-shadow(0 0 4px rgba(255,215,0,.3));
+        }
+        .mastery-title-locked {
+            opacity: .85;
+        }
+        .mastery-title-preview {
+            color: #c9a227; font-style: italic;
+            text-shadow: 0 0 4px rgba(201,162,39,.3);
+        }
+        .mastery-title-hint {
+            text-align: center; margin-top: 2px; font-size: 11px;
+            color: #888; opacity: .8; font-weight: 600;
+        }
         .mastery-mission.completed .mastery-progress-fill { background: linear-gradient(180deg, #6a9a4a, #3a5a25); }
         .mastery-mission.completed::after {
             content: '\2713'; position: absolute; top: 6px; right: 10px;
@@ -9646,7 +9705,7 @@
             const titulosDesbloqueados = obtenerTitulosDesbloqueados();
             const nombreEl = document.getElementById('profile-name');
             if (titulo) {
-                nombreEl.innerHTML = escapeHtml(nombre) + '<br><span style="font-size:13px;color:' + titulo.color + ';text-shadow:0 0 8px ' + titulo.color + '66;text-transform:uppercase;letter-spacing:2px;">' + escapeHtml(titulo.nombre) + '</span>';
+                nombreEl.innerHTML = escapeHtml(nombre) + '<br>' + tituloHtml(titulo);
             } else {
                 nombreEl.textContent = nombre;
             }
@@ -9843,12 +9902,12 @@
                 // Bug fix: mostrar título del amigo bajo el nombre (igual que perfil propio).
                 // Calcular título a partir de tituloActivo y stats.
                 const nombreEl = document.getElementById('friend-profile-name');
-                let tituloHtml = '';
+                let tituloHtmlStr = '';
                 if (p.tituloActivo) {
                     // Buscar el título por ID en TITULOS
                     const titulo = (typeof TITULOS !== 'undefined' ? TITULOS : []).find(t => t.id === p.tituloActivo);
                     if (titulo) {
-                        tituloHtml = '<br><span style="font-size:13px;color:' + titulo.color + ';text-shadow:0 0 8px ' + titulo.color + '66;text-transform:uppercase;letter-spacing:2px;">' + escapeHtml(titulo.nombre) + '</span>';
+                        tituloHtmlStr = '<br>' + (typeof window.tituloHtml === 'function' ? window.tituloHtml(titulo) : '<span style="font-size:13px;color:' + titulo.color + ';text-shadow:0 0 8px ' + titulo.color + '66;text-transform:uppercase;letter-spacing:2px;">' + escapeHtml(titulo.nombre) + '</span>');
                     }
                 } else {
                     // Si no hay título activo, calcular automáticamente el último desbloqueado
@@ -9856,11 +9915,11 @@
                         const desbloqueados = TITULOS.filter(t => t.check(p.stats || {}));
                         if (desbloqueados.length) {
                             const titulo = desbloqueados[desbloqueados.length - 1];
-                            tituloHtml = '<br><span style="font-size:13px;color:' + titulo.color + ';text-shadow:0 0 8px ' + titulo.color + '66;text-transform:uppercase;letter-spacing:2px;">' + escapeHtml(titulo.nombre) + '</span>';
+                            tituloHtml = '<br>' + (typeof tituloHtml === 'function' ? tituloHtml(titulo) : '<span style="font-size:13px;color:' + titulo.color + ';text-shadow:0 0 8px ' + titulo.color + '66;text-transform:uppercase;letter-spacing:2px;">' + escapeHtml(titulo.nombre) + '</span>');
                         }
                     }
                 }
-                nombreEl.innerHTML = escapeHtml(p.username) + (p.online ? ' 🟢' : ' ⚫') + tituloHtml;
+                nombreEl.innerHTML = escapeHtml(p.username) + (p.online ? ' 🟢' : ' ⚫') + tituloHtmlStr;
                 // Carta favorita
                 const favEl = document.getElementById('friend-profile-fav-card');
                 if (p.cartaFavorita) {
@@ -10061,8 +10120,9 @@
                     ultimoLogin: statsSupa.ultimoLogin ?? statsLocal.ultimoLogin ?? null,
                     loginClaimedHoy: statsSupa.loginClaimedHoy ?? statsLocal.loginClaimedHoy ?? false,
                     primeraVictoriaHoy: statsSupa.primeraVictoriaHoy ?? statsLocal.primeraVictoriaHoy ?? false,
-                    // Bug fix: preservar flag de recompensa de tutorial reclamada
-                    tutorialRewardClaimed: Boolean(statsSupa.tutorialRewardClaimed) || Boolean(statsLocal.tutorialRewardClaimed)
+                    // Bug fix: preservar flag de recompensa de tutorial reclamada (doble flag)
+                    tutorialRewardClaimed: Boolean(statsSupa.tutorialRewardClaimed) || Boolean(statsLocal.tutorialRewardClaimed),
+                    tutorialCompletadoRecompensa: Boolean(statsSupa.tutorialCompletadoRecompensa) || Boolean(statsLocal.tutorialCompletadoRecompensa)
                 };
             }
             // Cargar misiones
@@ -10528,11 +10588,15 @@
                 }
                 // Mazo de regalo (solo una vez, la función darMazoRegalo ya verifica duplicados)
                 darMazoRegalo();
-                // Bug fix: Recompensa de 500 GamingCoins SOLO UNA VEZ por cuenta.
-                // Antes, repetir el tutorial daba 500 monedas cada vez.
-                if (!_statsJugador.tutorialRewardClaimed) {
-                    _statsJugador.tutorialRewardClaimed = true;
-                    guardarStats();
+                // Bug fix CRÍTICO: Recompensa de 500 GamingCoins SOLO UNA VEZ por cuenta.
+                // Doble verificación: por flag 'tutorialRewardClaimed' y por flag 'tutorialCompletadoRecompensa'
+                // (que se añade explícitamente para evitar pérdida entre sesiones).
+                const yaReclamado = Boolean(_statsJugador.tutorialRewardClaimed) ||
+                                    Boolean(_statsJugador.tutorialCompletadoRecompensa);
+                _statsJugador.tutorialRewardClaimed = true;
+                _statsJugador.tutorialCompletadoRecompensa = true;
+                guardarStats();
+                if (!yaReclamado) {
                     if (_inventario) {
                         _inventario.coins += 500;
                         guardarInventario();
@@ -10589,17 +10653,60 @@
 
         // ===== TÍTULOS DE JUGADOR =====
         // Los títulos se desbloquean con logros y se muestran en el perfil y en el choque de líderes.
+        // Cuenta cuántas maestrías ha completado el jugador (M3 reclamado).
+        // Devuelve { completadas, total }.
+        function contarMaestriasCompletadas() {
+            const total = window.MAESTRIAS_CARTAS ? Object.keys(window.MAESTRIAS_CARTAS).length : 108;
+            let completadas = 0;
+            if (_inventario && _inventario.maestrias) {
+                for (const cardId in _inventario.maestrias) {
+                    const m = _inventario.maestrias[cardId];
+                    if (m && m.tituloReclamado) completadas++;
+                }
+            }
+            return { completadas, total };
+        }
+
         const TITULOS = [
             { id: 'coleccionista_tercio', nombre: 'Coleccionista', desc: 'Consigue 1/3 de las cartas (36)', color: '#4ee06a', check: s => (s.cartasUnicas || 0) >= 36 },
             { id: 'coleccionista_mitad', nombre: 'Gran Coleccionista', desc: 'Consigue la mitad de las cartas (54)', color: '#5aa0ff', check: s => (s.cartasUnicas || 0) >= 54 },
             { id: 'coleccionista_total', nombre: 'Coleccionista Total', desc: 'Consigue todas las cartas (108)', color: '#ff60ff', check: s => (s.cartasUnicas || 0) >= 108 },
             { id: 'dominador_dificil', nombre: 'Dominador', desc: 'Vence a la IA en modo difícil 20 veces', color: '#ff5050', check: s => (s.victoriasIADificil || 0) >= 20 },
             { id: 'competidor', nombre: 'Competidor', desc: 'Gana 20 partidas competitivas', color: '#ffd700', check: s => (s.copas || 0) >= 20 },
+            // Título especial de maestrías: brilla con animación arcoíris
+            { id: 'maestro_maestrias', nombre: 'Maestro de Maestrías', desc: 'Completa todas las maestrías (108)', color: 'rainbow', especial: true, brillante: true, check: s => {
+                const r = contarMaestriasCompletadas();
+                return r.completadas >= r.total && r.total > 0;
+            } },
         ];
+        // Helper: renderiza el HTML de un título (con estilo brillante si es especial)
+        function tituloHtml(titulo) {
+            window.tituloHtml = tituloHtml; // exponer para uso en otros ámbitos
+            if (!titulo) return '';
+            if (titulo.color === 'rainbow' || titulo.brillante) {
+                return '<span class="titulo-brillante" style="font-size:13px;text-transform:uppercase;letter-spacing:2px;font-weight:900;">' + escapeHtml(titulo.nombre) + '</span>';
+            }
+            return '<span style="font-size:13px;color:' + titulo.color + ';text-shadow:0 0 8px ' + titulo.color + '66;text-transform:uppercase;letter-spacing:2px;">' + escapeHtml(titulo.nombre) + '</span>';
+        }
+
         // Calcular títulos desbloqueados del jugador
         function obtenerTitulosDesbloqueados() {
             if (!_statsJugador) return [];
-            return TITULOS.filter(t => t.check(_statsJugador));
+            // Títulos que se desbloquean automáticamente por cumplir condición (stats)
+            const autoTitulos = TITULOS.filter(t => t.check(_statsJugador));
+            // Títulos de maestría desbloqueados manualmente (guardados en _inventario.titulosDesbloqueados)
+            // Para evitar duplicados, no incluirlos si ya están en autoTitulos
+            const autoIds = new Set(autoTitulos.map(t => t.id));
+            const maestriaTitulos = [];
+            if (_inventario && Array.isArray(_inventario.titulosDesbloqueados)) {
+                _inventario.titulosDesbloqueados.forEach(tid => {
+                    if (!autoIds.has(tid)) {
+                        const t = TITULOS.find(x => x.id === tid);
+                        if (t) maestriaTitulos.push(t);
+                    }
+                });
+            }
+            return [...autoTitulos, ...maestriaTitulos];
         }
         // Obtener título activo del jugador (el último desbloqueado, o el seleccionado manualmente)
         function obtenerTituloActivo() {
@@ -10669,6 +10776,14 @@
             { id: 'comp_20', icon: '👑', nombre: 'Leyenda Competitiva', desc: 'Gana 20 partidas competitivas', reward: 1200, check: s => (s.copas || 0) >= 20, progress: s => `${Math.min(s.copas || 0,20)}/20` },
             // ===== LOGROS DE TÍTULOS (AGRUPADOS AL FINAL) =====
             { id: 'titulo_competidor', icon: '🏷️', nombre: 'Título: Competidor', desc: 'Gana 20 partidas competitivas para desbloquear el título "Competidor"', reward: 0, esTitulo: true, tituloId: 'competidor', check: s => (s.copas || 0) >= 20, progress: s => `${Math.min(s.copas || 0,20)}/20` },
+            // ===== LOGRO ESPECIAL DE MAESTRÍAS =====
+            { id: 'maestro_maestrias', icon: '🌟', nombre: 'Maestro de Maestrías', desc: 'Completa TODAS las maestrías de cartas (108) para desbloquear el título especial "Maestro de Maestrías"', reward: 0, esTitulo: true, tituloId: 'maestro_maestrias', especial: true, check: s => {
+                const r = contarMaestriasCompletadas();
+                return r.completadas >= r.total && r.total > 0;
+            }, progress: s => {
+                const r = contarMaestriasCompletadas();
+                return `${r.completadas}/${r.total}`;
+            } },
         ];
 
         // Misiones diarias y semanales (se generan aleatoriamente)
@@ -10733,6 +10848,8 @@
             if (!Array.isArray(_statsJugador.logrosReclamados)) { _statsJugador.logrosReclamados = []; _statsCambiados = true; }
             // Bug fix: migrar tutorialRewardClaimed (para cuentas existentes que no lo tienen)
             if (_statsJugador.tutorialRewardClaimed === undefined) { _statsJugador.tutorialRewardClaimed = false; _statsCambiados = true; }
+            // Bug fix: migrar tutorialCompletadoRecompensa (doble flag para evitar repetción de recompensa)
+            if (_statsJugador.tutorialCompletadoRecompensa === undefined) { _statsJugador.tutorialCompletadoRecompensa = _statsJugador.tutorialRewardClaimed || false; _statsCambiados = true; }
             if (_statsCambiados) guardarStats();
             // Cargar misiones
             try {
@@ -10929,15 +11046,25 @@
                     const completado = l.check(_statsJugador);
                     const reclamado = _statsJugador.logrosReclamados.includes(l.id);
                     const clase = reclamado ? 'claimed' : (completado ? 'completed' : '');
+                    // Logro especial de maestrías: añadir clase para estilo brillante
+                    const claseEspecial = l.especial ? ' especial-titulo' : '';
                     const accion = reclamado
                         ? '<span class="ach-claimed-mark">✓</span>'
                         : (completado ? `<button class="ach-claim-btn" onclick="reclamarLogro('${l.id}')">Reclamar</button>` : '');
                     // Logros de título: mostrar insignia de título en vez de monedas
-                    const rewardHtml = l.esTitulo
-                        ? '<span style="color:#ff60ff;font-weight:900;font-size:12px;text-transform:uppercase;letter-spacing:1px;">🏷️ TÍTULO</span>'
-                        : `<img src="https://hugopima.github.io/gctcg-assets/imagenes/moneda.png" style="width:14px;height:14px" onerror="display:none"> ${l.reward}`;
-                    const tituloStyle = l.esTitulo ? 'border-color: #ff60ff; background: rgba(255,96,255,.05);' : '';
-                    html += `<div class="ach-item ${clase}" style="${tituloStyle}">
+                    // El título especial de maestrías tiene estilo brillante
+                    let rewardHtml;
+                    if (l.especial) {
+                        rewardHtml = '<span class="titulo-brillante" style="font-weight:900;font-size:12px;text-transform:uppercase;letter-spacing:1px;">🌟 TÍTULO ESPECIAL</span>';
+                    } else if (l.esTitulo) {
+                        rewardHtml = '<span style="color:#ff60ff;font-weight:900;font-size:12px;text-transform:uppercase;letter-spacing:1px;">🏷️ TÍTULO</span>';
+                    } else {
+                        rewardHtml = `<img src="https://hugopima.github.io/gctcg-assets/imagenes/moneda.png" style="width:14px;height:14px" onerror="display:none"> ${l.reward}`;
+                    }
+                    const tituloStyle = l.especial
+                        ? 'border-color: #ff6b6b; background: linear-gradient(135deg, rgba(255,107,107,.08), rgba(167,139,250,.08), rgba(78,205,196,.08)); box-shadow: 0 0 15px rgba(255,107,107,.3);'
+                        : (l.esTitulo ? 'border-color: #ff60ff; background: rgba(255,96,255,.05);' : '');
+                    html += `<div class="ach-item ${clase}${claseEspecial}" style="${tituloStyle}">
                         <div class="ach-icon">${l.icon}</div>
                         <div class="ach-info">
                             <div class="ach-name">${escapeHtml(l.nombre)}</div>
@@ -13865,7 +13992,11 @@
                 if (side === 'player') {
                     const titulo = obtenerTituloActivo();
                     if (titulo) {
-                        tituloHtml = `<span class="intro-title" style="color:${titulo.color};">${escapeHtml(titulo.nombre)}</span>`;
+                        if (titulo.color === 'rainbow' || titulo.brillante) {
+                            tituloHtml = `<span class="intro-title titulo-brillante">${escapeHtml(titulo.nombre)}</span>`;
+                        } else {
+                            tituloHtml = `<span class="intro-title" style="color:${titulo.color};">${escapeHtml(titulo.nombre)}</span>`;
+                        }
                         nombreTexto = escapeHtml(getNombreJugador());
                     }
                 } else {
@@ -13983,7 +14114,14 @@
 
         function mostrarFinPartida(resultado) {
             if (!estadoPartida) return;
+            // Bug fix: si la partida ya está finalizada y recompensas ya dadas, no hacer nada.
+            // Esto evita que se den monedas dobles si mostrarFinPartida se llama 2 veces.
+            if (estadoPartida.finalizada && estadoPartida.recompensasDadas) {
+                console.log('[mostrarFinPartida] Recompensas ya dadas, ignorando llamada duplicada.');
+                return;
+            }
             estadoPartida.finalizada = true;
+            estadoPartida.recompensasDadas = true;
 
             // === MODO COMPETITIVO: Best of 3 ===
             if (_esCompetitivo && _compSetActual > 0) {
@@ -17924,9 +18062,11 @@
                 let pipsHtml = '';
                 let titleRewardHtml = '';
 
+                const MONEDA_IMG = 'https://hugopima.github.io/gctcg-assets/imagenes/moneda.png';
+                const ENERGY_IMG = 'https://hugopima.github.io/gctcg-assets/imagenes/energy.png';
                 if (mid === 'm1') {
                     iconText = '🎯';
-                    rewardHtml = '<div class="mastery-reward"><span class="icon">🪙</span><span class="amt">' + estado.reward + '</span></div>';
+                    rewardHtml = '<div class="mastery-reward"><img src="' + MONEDA_IMG + '" class="mastery-reward-icon" onerror="this.style.display=\'none\'"><span class="amt">' + estado.reward + '</span></div>';
                     pipsHtml = '<div class="mastery-levels-pips">';
                     for (let i = 0; i < estado.totalNiveles; i++) {
                         pipsHtml += '<span class="pip' + (i < estado.nivelActual ? ' done' : '') + '"></span>';
@@ -17937,7 +18077,7 @@
                     }
                 } else if (mid === 'm2') {
                     iconText = '⚔️';
-                    rewardHtml = '<div class="mastery-reward"><span class="icon">⚡</span><span class="amt">' + estado.reward + '</span></div>';
+                    rewardHtml = '<div class="mastery-reward"><img src="' + ENERGY_IMG + '" class="mastery-reward-icon" onerror="this.style.display=\'none\'"><span class="amt">' + estado.reward + '</span></div>';
                     pipsHtml = '<div class="mastery-levels-pips">';
                     for (let i = 0; i < estado.totalNiveles; i++) {
                         pipsHtml += '<span class="pip' + (i < estado.nivelActual ? ' done' : '') + '"></span>';
@@ -17948,23 +18088,30 @@
                     }
                 } else { // m3
                     iconText = '🏆';
+                    // Bug fix: mostrar el título SIEMPRE, incluso cuando está bloqueada,
+                    // para que los jugadores sepan qué están desbloqueando.
                     if (estado.reclamada) {
-                        titleRewardHtml = '<div class="mastery-title-reward">Título: ' + estado.titulo + ' ✓</div>';
+                        titleRewardHtml = '<div class="mastery-title-reward">Título: ' + escapeHtml(estado.titulo) + ' ✓</div>';
                     } else if (estado.desbloqueada) {
-                        titleRewardHtml = '<div class="mastery-title-reward">Título: ' + estado.titulo + '</div>';
+                        titleRewardHtml = '<div class="mastery-title-reward">Título: ' + escapeHtml(estado.titulo) + '</div>';
                         if (estado.completada) {
                             claimBtn = '<button class="mastery-mission-claim-btn" onclick="reclamarMaestria(\'' + cardId + '\',\'m3\')">Reclamar Título</button>';
                         }
                     } else {
-                        titleRewardHtml = '<div class="mastery-title-reward" style="opacity:.7">🔒 Completa M1 y M2 para desbloquear</div>';
+                        // Bloqueada: mostrar el título con candado, para que el jugador sepa qué conseguirá
+                        titleRewardHtml = '<div class="mastery-title-reward mastery-title-locked">🔒 Título: <span class="mastery-title-preview">' + escapeHtml(estado.titulo) + '</span></div><div class="mastery-title-hint">Completa M1 y M2 para desbloquear</div>';
                     }
                 }
 
                 // Build progress bar HTML
                 let progressHtml = '';
                 if (mid === 'm3' && !estado.desbloqueada) {
-                    // No mostrar barra si está bloqueada
-                    progressHtml = '<div style="text-align:center;font-size:12px;opacity:.8;padding:6px">Bloqueada</div>';
+                    // Mostrar barra de progreso de M3 bloqueada con 0/objetivo (informativa)
+                    const pct = 0;
+                    progressHtml = '<div class="mastery-progress-track" style="opacity:.5">' +
+                        '<div class="mastery-progress-fill" style="width:' + pct + '%"></div>' +
+                        '<div class="mastery-progress-text">0 / ' + estado.objetivo + '</div>' +
+                        '</div>';
                 } else {
                     const pct = (estado.progreso / estado.objetivo) * 100;
                     progressHtml = '<div class="mastery-progress-track">' +
