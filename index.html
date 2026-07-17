@@ -1467,10 +1467,11 @@
         }
         .intro-leader-card .intro-title {
             position: absolute;
+            /* top dinámico: si el título es largo, sube más para que quepa */
             top: -28px;
-            left: -12px;
-            right: -12px;
-            padding: 8px 12px;
+            left: -16px;
+            right: -16px;
+            padding: 6px 10px;
             background: linear-gradient(145deg, rgba(10,5,20,0.97), rgba(40,10,60,0.97));
             border: 2.5px solid currentColor;
             border-radius: 10px;
@@ -1478,15 +1479,25 @@
             font-weight: 900;
             text-align: center;
             text-transform: uppercase;
-            letter-spacing: 2px;
+            letter-spacing: 1px;
             z-index: 5;
             box-shadow: 0 0 20px currentColor, 0 6px 16px rgba(0,0,0,.7);
             animation: introTitleGlow 1.2s ease-in-out infinite alternate;
             text-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 2px 4px #000;
-            white-space: nowrap;
+            /* Bug fix: permitir multi-línea para títulos largos */
+            white-space: normal;
+            word-break: break-word;
+            overflow-wrap: break-word;
+            line-height: 1.15;
+            max-height: 60px;
             overflow: hidden;
-            text-overflow: ellipsis;
         }
+        /* Títulos medianos (15-25 chars): reducir font-size */
+        .intro-leader-card .intro-title.medium { font-size: 11px; letter-spacing: 0.5px; }
+        /* Títulos largos (>25 chars): reducir más y subir top */
+        .intro-leader-card .intro-title.long { font-size: 9px; letter-spacing: 0; top: -42px; padding: 4px 8px; line-height: 1.1; }
+        /* Títulos muy largos (>40 chars): aún más pequeño */
+        .intro-leader-card .intro-title.xlong { font-size: 8px; top: -52px; padding: 3px 6px; line-height: 1.05; max-height: 70px; }
         .intro-leader-card .intro-title::before,
         .intro-leader-card .intro-title::after {
             content: '◆'; position: absolute; top: 50%; transform: translateY(-50%);
@@ -9546,6 +9557,7 @@
                     <div class="deck-modal-actions">
                         ${acciones}${activarBtns}${momolacBtn}${evoBtn}
                         ${(c.imgEvo || c.nombreEvo) ? `<button class="plate-btn btn-nav" onclick="detalleMazoEvo = !detalleMazoEvo; pintarDetalleMazo();">Dar la vuelta</button>` : ''}
+                        ${(window.MAESTRIAS_CARTAS && window.MAESTRIAS_CARTAS[id] && !esToken(c)) ? `<button class="mastery-btn" style="margin-top:8px;" onclick="abrirMaestria('${id}')">⚔️ Maestría</button>` : ''}
                     </div>
                     ${!detalleSoloInfo && !esToken(c) ? htmlCraftRecycle(getCardId(c), c.rareza, c.nombre) : ''}
                 </div>
@@ -10063,6 +10075,9 @@
         // Aplicar inventario cargado de Supabase al estado local
         function aplicarInventarioDeSupabase(inv) {
             if (!inv) return;
+            // Guardar referencia al inventario local ANTES de modificarlo
+            // para que la fusión pueda comparar correctamente.
+            if (!_inventario) cargarInventario();
             // Bug fix: preservar monedas/energy local si son mayores que los de Supabase.
             // Antes se sobrescribía todo, causando pérdida de progreso si el jugador
             // había ganado monedas localmente antes de sincronizar.
@@ -10070,17 +10085,62 @@
             const energyLocal = (_inventario?.energy != null) ? _inventario.energy : 0;
             const coinsSupa = inv.coins ?? 0;
             const energySupa = inv.energy ?? 0;
+            // BUG FIX: fusionar cartas tomando el MÁXIMO de cada carta
+            // (para no perder cartas obtenidas localmente pero no sincronizadas)
+            const cartasLocal = _inventario?.cartas || {};
+            const cartasSupa = inv.cartas || {};
+            const cartasFusionadas = { ...cartasLocal };
+            for (const cardId in cartasSupa) {
+                const local = Number(cartasLocal[cardId] || 0);
+                const supa = Number(cartasSupa[cardId] || 0);
+                cartasFusionadas[cardId] = Math.max(local, supa);
+            }
+            // BUG FIX: fusionar amigos (unión, sin duplicados)
+            const amigosLocal = _inventario?.amigos || [];
+            const amigosSupa = inv.amigos || [];
+            const amigosFusionados = Array.from(new Set([...amigosLocal, ...amigosSupa]));
+            // BUG FIX: fusionar titulosDesbloqueados (unión)
+            const titulosLocal = _inventario?.titulosDesbloqueados || [];
+            const titulosSupa = inv.titulosDesbloqueados || [];
+            const titulosFusionados = Array.from(new Set([...titulosLocal, ...titulosSupa]));
+            // BUG FIX: fusionar maestrias tomando el MÁXIMO nivel y progreso de cada carta
+            const maestriasLocal = _inventario?.maestrias || {};
+            const maestriasSupa = inv.maestrias || {};
+            const maestriasFusionadas = { ...maestriasLocal };
+            for (const cardId in maestriasSupa) {
+                const localM = maestriasLocal[cardId];
+                const supaM = maestriasSupa[cardId];
+                if (!localM) {
+                    maestriasFusionadas[cardId] = supaM;
+                } else if (supaM) {
+                    // Fusionar: tomar el máximo de cada campo
+                    maestriasFusionadas[cardId] = {
+                        m1: Math.max(localM.m1 || 0, supaM.m1 || 0),
+                        m2: Math.max(localM.m2 || 0, supaM.m2 || 0),
+                        m3: Math.max(localM.m3 || 0, supaM.m3 || 0),
+                        tituloReclamado: Boolean(localM.tituloReclamado) || Boolean(supaM.tituloReclamado),
+                        progreso: {
+                            jugar: Math.max(localM.progreso?.jugar || 0, supaM.progreso?.jugar || 0),
+                            ganar: Math.max(localM.progreso?.ganar || 0, supaM.progreso?.ganar || 0),
+                            despertar: Math.max(localM.progreso?.despertar || 0, supaM.progreso?.despertar || 0),
+                            destruir: Math.max(localM.progreso?.destruir || 0, supaM.progreso?.destruir || 0),
+                            combinar: Math.max(localM.progreso?.combinar || 0, supaM.progreso?.combinar || 0),
+                            poner_mana: Math.max(localM.progreso?.poner_mana || 0, supaM.progreso?.poner_mana || 0)
+                        }
+                    };
+                }
+            }
             _inventario = {
                 coins: Math.max(coinsLocal, coinsSupa),
                 energy: Math.max(energyLocal, energySupa),
-                cartas: inv.cartas || _inventario?.cartas || {},
-                amigos: inv.amigos || _inventario?.amigos || [],
+                cartas: cartasFusionadas,
+                amigos: amigosFusionados,
                 cartaFavorita: inv.cartaFavorita || _inventario?.cartaFavorita || null,
                 tituloActivo: inv.tituloActivo || _inventario?.tituloActivo || null,
                 perfil: inv.perfil || _inventario?.perfil || { bio: '' },
-                // Bug fix: persistir maestrías y títulos desbloqueados
-                maestrias: inv.maestrias || _inventario?.maestrias || {},
-                titulosDesbloqueados: inv.titulosDesbloqueados || _inventario?.titulosDesbloqueados || []
+                // Bug fix: persistir maestrías y títulos desbloqueados (fusionados)
+                maestrias: maestriasFusionadas,
+                titulosDesbloqueados: titulosFusionados
             };
             // Cargar stats: MERGE en vez de sobrescribir
             // Bug fix: tomar el MÁXIMO de cada stat para no perder progreso local.
@@ -10141,6 +10201,13 @@
             guardarStats();
             guardarMisiones();
             actualizarBarraMonedas();
+            // BUG FIX: forzar guardado en Supabase tras fusionar, para que la próxima
+            // carga tenga los datos más recientes y no se pierdan monedas/cartas.
+            try {
+                if (typeof guardarInventarioSupabase === 'function') {
+                    guardarInventarioSupabase();
+                }
+            } catch (e) { console.error('[Supabase] Error guardando tras fusion:', e); }
             // Forzar re-renderizado de las pantallas si están visibles
             if (!document.getElementById('main-menu').classList.contains('hidden')) {
                 // Menú principal: actualizar barra de monedas
@@ -10762,7 +10829,9 @@
             { id: 'reciclar', icon: '♻️', nombre: 'Reciclador', desc: 'Recicla 1 carta', reward: 50, check: s => s.cartasRecicladas >= 1, progress: s => `${Math.min(s.cartasRecicladas,1)}/1` },
             { id: 'counter_master', icon: '🛡️', nombre: 'Counter Master', desc: 'Usa 10 Counter Ataques con éxito', reward: 200, check: s => s.counterPlays >= 10, progress: s => `${Math.min(s.counterPlays,10)}/10` },
             { id: 'bloqueador_experto', icon: '🚧', nombre: 'Bloqueador experto', desc: 'Usa 10 Bloqueadores con éxito', reward: 150, check: s => s.bloqueadores >= 10, progress: s => `${Math.min(s.bloqueadores,10)}/10` },
-            { id: 'tutorial_completado', icon: '🎓', nombre: 'Graduado', desc: 'Completa todos los tutoriales', reward: 500, check: s => {
+            // Bug fix: el logro 'tutorial_completado' NO da monedas (reward: 0).
+            // Las 500 monedas se dan SOLO desde completarTutorial con flag doble.
+            { id: 'tutorial_completado', icon: '🎓', nombre: 'Graduado', desc: 'Completa todos los tutoriales (la recompensa de 500 GamingCoins se da automáticamente al completarlos)', reward: 0, check: s => {
                 const completados = JSON.parse(localStorage.getItem('gc_tcg_tutoriales_completados') || '[]');
                 return completados.length >= 3;
             }, progress: s => {
@@ -13992,10 +14061,16 @@
                 if (side === 'player') {
                     const titulo = obtenerTituloActivo();
                     if (titulo) {
+                        // Bug fix: añadir clase según longitud del título para que quepa
+                        const tlen = (titulo.nombre || '').length;
+                        let tcls = 'intro-title';
+                        if (tlen > 40) tcls += ' xlong';
+                        else if (tlen > 25) tcls += ' long';
+                        else if (tlen > 15) tcls += ' medium';
                         if (titulo.color === 'rainbow' || titulo.brillante) {
-                            tituloHtml = `<span class="intro-title titulo-brillante">${escapeHtml(titulo.nombre)}</span>`;
+                            tituloHtml = `<span class="${tcls} titulo-brillante">${escapeHtml(titulo.nombre)}</span>`;
                         } else {
-                            tituloHtml = `<span class="intro-title" style="color:${titulo.color};">${escapeHtml(titulo.nombre)}</span>`;
+                            tituloHtml = `<span class="${tcls}" style="color:${titulo.color};">${escapeHtml(titulo.nombre)}</span>`;
                         }
                         nombreTexto = escapeHtml(getNombreJugador());
                     }
@@ -17422,19 +17497,22 @@
         window.addEventListener('load', async () => {
             // Cargar base de datos de cartas
             await cargarBaseDeDatos();
-            // Si hay sesión de Discord, cargar inventario de Supabase (nube)
-            // Esto SOBREESCRIBE el inventario local con el de la nube.
+            // BUG FIX CRÍTICO: cargar SIEMPRE el inventario local ANTES de Supabase.
+            // Antes, si había sesión de Discord, se cargaba solo de Supabase y se
+            // sobrescribía el local. Pero aplicarInventarioDeSupabase hace Math.max
+            // entre coinsLocal y coinsSupa para preservar monedas ganadas pero no
+            // sincronizadas. Si _inventario no estaba cargado, coinsLocal era 0 y se
+            // perdían las monedas locales al hacer F5.
+            cargarInventario();
+            cargarStats();
+            // Si hay sesión de Discord, cargar inventario de Supabase (nube) y fusionar
             const sesionDiscard = getDiscordUser();
             if (sesionDiscard) {
-                const ok = await cargarInventarioSupabaseSiLogueado();
-                if (!ok) {
-                    // Si falla la carga de Supabase, usar localStorage como fallback
-                    cargarInventario();
-                }
-            } else {
-                // Modo invitado: cargar de localStorage
-                cargarInventario();
+                await cargarInventarioSupabaseSiLogueado();
+                // cargarInventarioSupabaseSiLogueado llama a aplicarInventarioDeSupabase
+                // que hace Math.max entre local y Supabase, preservando las monedas locales.
             }
+            // Recargar stats por si aplicarInventarioDeSupabase los modificó
             cargarStats();
             cargarNombreJugador();
             // Discord: manejar callback si viene con ?code=
