@@ -711,7 +711,13 @@
 
         .skill-desc { font-size: 15px; line-height: 1.5; color: #ddd; }
         
-        .close-btn { position: absolute; top: 20px; right: 25px; background: none; border: none; color: white; font-size: 40px; cursor: pointer; opacity: 0.5; z-index: 100; }
+        .close-btn {
+            position: absolute; top: 20px; right: 25px; background: none; border: none;
+            color: white; font-size: 40px; cursor: pointer; opacity: 0.5; z-index: 100;
+            /* Bug fix: la X solo debe verse cuando el panel está abierto */
+            visibility: hidden; pointer-events: none; transition: opacity .25s ease, visibility .25s;
+        }
+        #info-panel.open .close-btn { visibility: visible; pointer-events: auto; }
         .close-btn:hover { opacity: 1; color: var(--gold); }
 
         /* --- ZOOM --- */
@@ -2796,6 +2802,174 @@
         .achievements-modal .ach-content::-webkit-scrollbar { width: 8px; }
         .achievements-modal .ach-content::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); border-radius: 4px; }
         .achievements-modal .ach-content::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 4px; }
+
+        /* ===== MODAL DE MAESTRÍAS DE CARTAS ===== */
+        .mastery-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 3500;
+            display: none; align-items: center; justify-content: center;
+            font-family: inherit; backdrop-filter: blur(6px);
+        }
+        .mastery-overlay.active { display: flex; animation: fadeIn .25s ease; }
+        @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+        .mastery-modal {
+            position: relative; width: 480px; max-width: 94vw; max-height: 90vh;
+            background: linear-gradient(180deg, #1a3a8a 0%, #0d1f4a 100%);
+            border: 3px solid #ffd700; border-radius: 22px; padding: 22px 24px 26px;
+            box-shadow: 0 0 50px rgba(255,215,0,.45), 0 18px 40px rgba(0,0,0,.7);
+            overflow-y: auto; color: #fff; animation: popIn .35s cubic-bezier(.34,1.56,.64,1);
+        }
+        @keyframes popIn { from { transform: scale(.85); opacity: 0 } to { transform: scale(1); opacity: 1 } }
+        .mastery-modal::-webkit-scrollbar { width: 8px; }
+        .mastery-modal::-webkit-scrollbar-thumb { background: #ffd700; border-radius: 4px; }
+        .mastery-modal::-webkit-scrollbar-track { background: rgba(0,0,0,.3); }
+
+        .mastery-header {
+            text-align: center; margin-bottom: 18px;
+            background: linear-gradient(90deg, #00b89c, #00a8e8);
+            padding: 10px 16px; border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0,168,232,.4);
+        }
+        .mastery-header h2 {
+            margin: 0; font-size: 26px; font-weight: 900; color: #fff;
+            text-shadow: 2px 2px 0 #003a5a; letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        .mastery-card-box {
+            display: flex; flex-direction: column; align-items: center; gap: 8px;
+            margin-bottom: 18px;
+        }
+        .mastery-card-portrait {
+            width: 130px; height: 182px; border-radius: 14px;
+            border: 3px solid #ffd700;
+            box-shadow: 0 6px 18px rgba(0,0,0,.6), 0 0 18px rgba(255,215,0,.35);
+            background-size: cover; background-position: center;
+            position: relative; overflow: hidden;
+        }
+        .mastery-card-portrait::after {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(180deg, transparent 60%, rgba(0,0,0,.55) 100%);
+        }
+        .mastery-card-name {
+            font-size: 17px; font-weight: 800; color: #fff;
+            text-shadow: 1px 1px 0 #000; text-align: center; margin-top: 4px;
+        }
+
+        .mastery-mission {
+            border-radius: 14px; padding: 12px 14px; margin-bottom: 12px;
+            position: relative; overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.1);
+            border: 2px solid rgba(0,0,0,.25);
+        }
+        .mastery-mission.m1 { background: linear-gradient(135deg, #00b89c, #008a7a); }
+        .mastery-mission.m2 { background: linear-gradient(135deg, #f1c40f, #c79100); color: #1a1a1a; }
+        .mastery-mission.m3 {
+            background: linear-gradient(135deg, #8e44ad, #5e2980);
+            border-color: #d4a0ff;
+        }
+        .mastery-mission.m3.locked { filter: grayscale(.7) brightness(.55); }
+        .mastery-mission-row {
+            display: flex; align-items: center; gap: 12px;
+        }
+        .mastery-mission-icon {
+            width: 38px; height: 38px; flex-shrink: 0;
+            background: rgba(0,0,0,.35); border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px;
+        }
+        .m2 .mastery-mission-icon { background: rgba(255,255,255,.4); }
+        .mastery-mission-body { flex: 1; min-width: 0; }
+        .mastery-mission-desc {
+            font-size: 13px; font-weight: 700; line-height: 1.35;
+            margin-bottom: 6px; text-shadow: 0 1px 0 rgba(0,0,0,.3);
+        }
+        .m2 .mastery-mission-desc { text-shadow: none; }
+        .mastery-progress-track {
+            background: rgba(0,0,0,.55); height: 22px; border-radius: 11px;
+            overflow: hidden; position: relative;
+            border: 1px solid rgba(0,0,0,.4);
+        }
+        .m2 .mastery-progress-track { background: rgba(255,255,255,.5); }
+        .mastery-progress-fill {
+            height: 100%; background: linear-gradient(180deg, #ffe066, #f1a906);
+            transition: width .6s cubic-bezier(.34,1.56,.64,1);
+            border-radius: 11px 0 0 11px;
+        }
+        .mastery-progress-text {
+            position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+            font-size: 12px; font-weight: 900; color: #fff;
+            text-shadow: 1px 1px 2px #000, -1px -1px 2px #000;
+        }
+        .mastery-reward {
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; min-width: 60px;
+            font-size: 12px; font-weight: 900;
+        }
+        .mastery-reward .icon { font-size: 22px; line-height: 1; }
+        .mastery-reward .amt { font-size: 14px; }
+        .mastery-mission.completed .mastery-progress-fill { background: linear-gradient(180deg, #6cf07c, #2ea83f); }
+        .mastery-mission.completed::after {
+            content: '\2713'; position: absolute; top: 6px; right: 10px;
+            font-size: 22px; color: #6cf07c; font-weight: 900;
+            text-shadow: 0 0 8px rgba(108,240,124,.8);
+        }
+        .mastery-levels-pips {
+            display: flex; gap: 4px; margin-top: 6px; justify-content: flex-end;
+        }
+        .mastery-levels-pips .pip {
+            width: 10px; height: 10px; border-radius: 50%;
+            background: rgba(255,255,255,.25); border: 1px solid rgba(0,0,0,.4);
+        }
+        .mastery-levels-pips .pip.done { background: #ffe066; box-shadow: 0 0 6px #ffe066; }
+
+        .mastery-title-reward {
+            text-align: center; margin-top: 6px; font-size: 14px;
+            color: #ffea66; font-weight: 900; letter-spacing: 1px;
+            text-shadow: 0 0 6px rgba(255,234,102,.5);
+        }
+        .mastery-mission-claim-btn {
+            display: block; margin: 8px auto 0; padding: 6px 18px;
+            background: linear-gradient(180deg, #ffe066, #f1a906);
+            border: 2px solid #fff07c; border-radius: 8px; cursor: pointer;
+            font-weight: 900; font-size: 13px; color: #1a1a1a;
+            box-shadow: 0 3px 0 #8a6010; transition: all .15s;
+        }
+        .mastery-mission-claim-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 0 #8a6010; }
+        .mastery-mission-claim-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #8a6010; }
+        .mastery-mission-claim-btn:disabled { filter: grayscale(1); opacity: .5; cursor: not-allowed; }
+
+        .mastery-close-btn {
+            position: absolute; top: 10px; right: 12px;
+            width: 36px; height: 36px; border-radius: 50%;
+            background: #e74c3c; border: 3px solid #fff; color: #fff;
+            font-size: 20px; font-weight: 900; cursor: pointer;
+            box-shadow: 0 4px 0 #a8281b, 0 6px 12px rgba(0,0,0,.4);
+            transition: all .15s; line-height: 1;
+        }
+        .mastery-close-btn:hover { transform: scale(1.1); }
+        .mastery-close-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #a8281b; }
+
+        /* Botón "Maestría" en el panel de detalle */
+        .mastery-btn {
+            display: block; margin: 18px auto 0;
+            padding: 10px 24px;
+            background: linear-gradient(180deg, #8e44ad, #5e2980);
+            border: 2px solid #d4a0ff; border-radius: 10px;
+            color: #fff; font-weight: 900; font-size: 14px;
+            cursor: pointer; letter-spacing: 1px;
+            box-shadow: 0 4px 0 #3a155f, 0 6px 14px rgba(0,0,0,.4);
+            transition: all .15s; text-transform: uppercase;
+        }
+        .mastery-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 0 #3a155f, 0 8px 18px rgba(0,0,0,.4); }
+        .mastery-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #3a155f; }
+
+        /* Responsive móvil */
+        @media (max-width: 768px) {
+            .mastery-modal { width: 96vw; padding: 16px; }
+            .mastery-card-portrait { width: 100px; height: 140px; }
+            .mastery-header h2 { font-size: 20px; }
+            .mastery-mission-desc { font-size: 12px; }
+        }
+
     </style>
 </head>
 <body>
@@ -2986,6 +3160,21 @@
             <div class="ach-content" id="ach-content"></div>
         </div>
     </div>
+    <!-- Modal de Maestrias de Carta -->
+    <div class="mastery-overlay" id="mastery-overlay">
+        <div class="mastery-modal" id="mastery-modal-content">
+            <button class="mastery-close-btn" onclick="cerrarMaestria()" title="Cerrar">×</button>
+            <div class="mastery-header">
+                <h2>⚔️ Maestría</h2>
+            </div>
+            <div class="mastery-card-box">
+                <div class="mastery-card-portrait" id="mastery-portrait"></div>
+                <div class="mastery-card-name" id="mastery-cardname"></div>
+            </div>
+            <div id="mastery-missions"></div>
+        </div>
+    </div>
+
 
     <div id="collection-wrapper" class="hidden" style="height: 100%; display: flex; flex-direction: column;">
         <header class="top-bar">
@@ -3106,6 +3295,7 @@
                         </div>
                         <p id="craft-info" style="font-size:11px;color:#aaa;text-align:center;margin-top:8px;"></p>
                     </div>
+                    <button class="mastery-btn" id="btn-maestria" onclick="abrirMaestriaDesdePanel()" style="display:none;">⚔️ Maestría</button>
                 </div>
             </aside>
         </main>
@@ -7737,6 +7927,10 @@
     if (quien === 'jugador' && typeof _statsJugador !== 'undefined' && _statsJugador) {
       _statsJugador.despertares = (_statsJugador.despertares || 0) + 1;
       if (typeof guardarStats === 'function') guardarStats();
+      // Hook maestría: rastrear despertar del líder
+      if (typeof trackMaestria_despertarLider === 'function') {
+        try { trackMaestria_despertarLider(z.liderId); } catch(e) {}
+      }
     }
     if (typeof renderizarPartida === 'function') renderizarPartida();
     return true;
@@ -9788,7 +9982,10 @@
                 amigos: inv.amigos || _inventario?.amigos || [],
                 cartaFavorita: inv.cartaFavorita || _inventario?.cartaFavorita || null,
                 tituloActivo: inv.tituloActivo || _inventario?.tituloActivo || null,
-                perfil: inv.perfil || _inventario?.perfil || { bio: '' }
+                perfil: inv.perfil || _inventario?.perfil || { bio: '' },
+                // Bug fix: persistir maestrías y títulos desbloqueados
+                maestrias: inv.maestrias || _inventario?.maestrias || {},
+                titulosDesbloqueados: inv.titulosDesbloqueados || _inventario?.titulosDesbloqueados || []
             };
             // Cargar stats: MERGE en vez de sobrescribir
             // Bug fix: tomar el MÁXIMO de cada stat para no perder progreso local.
@@ -9827,7 +10024,9 @@
                     // Login: usar el de Supabase (más reciente)
                     ultimoLogin: statsSupa.ultimoLogin ?? statsLocal.ultimoLogin ?? null,
                     loginClaimedHoy: statsSupa.loginClaimedHoy ?? statsLocal.loginClaimedHoy ?? false,
-                    primeraVictoriaHoy: statsSupa.primeraVictoriaHoy ?? statsLocal.primeraVictoriaHoy ?? false
+                    primeraVictoriaHoy: statsSupa.primeraVictoriaHoy ?? statsLocal.primeraVictoriaHoy ?? false,
+                    // Bug fix: preservar flag de recompensa de tutorial reclamada
+                    tutorialRewardClaimed: Boolean(statsSupa.tutorialRewardClaimed) || Boolean(statsLocal.tutorialRewardClaimed)
                 };
             }
             // Cargar misiones
@@ -9891,7 +10090,9 @@
                         amigos: _inventario.amigos || [],
                         cartaFavorita: _inventario.cartaFavorita || null,
                         tituloActivo: _inventario.tituloActivo || null,
-                        perfil: _inventario.perfil || { bio: '' }
+                        perfil: _inventario.perfil || { bio: '' },
+                        maestrias: _inventario.maestrias || {},
+                        titulosDesbloqueados: _inventario.titulosDesbloqueados || []
                     })
                 });
                 if (!res.ok) {
@@ -10282,22 +10483,29 @@
                 completados.push(num);
                 localStorage.setItem('gc_tcg_tutoriales_completados', JSON.stringify(completados));
             }
-            // Si completa los 3, dar logro y mazo de regalo
+            // Si completa los 3, dar logro y mazo de regalo (SOLO UNA VEZ)
             if (completados.length >= 3) {
-                // Logro
+                // Logro (solo una vez)
                 if (_statsJugador && !_statsJugador.logrosReclamados.includes('tutorial_completado')) {
                     _statsJugador.logrosReclamados.push('tutorial_completado');
                     guardarStats();
                 }
-                // Mazo de regalo
+                // Mazo de regalo (solo una vez, la función darMazoRegalo ya verifica duplicados)
                 darMazoRegalo();
-                // Recompensa de monedas
-                if (_inventario) {
-                    _inventario.coins += 500;
-                    guardarInventario();
-                    actualizarBarraMonedas();
+                // Bug fix: Recompensa de 500 GamingCoins SOLO UNA VEZ por cuenta.
+                // Antes, repetir el tutorial daba 500 monedas cada vez.
+                if (!_statsJugador.tutorialRewardClaimed) {
+                    _statsJugador.tutorialRewardClaimed = true;
+                    guardarStats();
+                    if (_inventario) {
+                        _inventario.coins += 500;
+                        guardarInventario();
+                        actualizarBarraMonedas();
+                    }
+                    await mostrarDialogoTutorial('¡Has completado todos los tutoriales! Has recibido 500 GamingCoins y el "Mazo de Regalo" en tu sección de Mazos.', '¡Genial!');
+                } else {
+                    await mostrarDialogoTutorial('¡Has vuelto a completar todos los tutoriales! Como ya recibiste la recompensa de 500 GamingCoins, esta vez no hay premio. El "Mazo de Regalo" ya está en tu sección de Mazos si no lo tenías.', '¡Genial!');
                 }
-                await mostrarDialogoTutorial('¡Has completado todos los tutoriales! Has recibido 500 GamingCoins y el "Mazo de Regalo" en tu sección de Mazos.', '¡Genial!');
             } else {
                 await mostrarDialogoTutorial('¡Tutorial ' + num + ' completado! ' + (3 - completados.length) + ' tutorial(es) restante(s).', 'Continuar');
             }
@@ -10469,15 +10677,16 @@
                         cartasUnicas: 0, comunesUnicas: 0, infrecuentesUnicas: 0, rarasUnicas: 0, superRarasUnicas: 0,
                         victoriasIADificil: 0,
                         logrosReclamados: [],
-                        ultimoLogin: null, loginClaimedHoy: false, primeraVictoriaHoy: false
+                        ultimoLogin: null, loginClaimedHoy: false, primeraVictoriaHoy: false,
+                        tutorialRewardClaimed: false
                     };
                     guardarStats();
                 }
             } catch (e) {
-                _statsJugador = { partidasJugadas: 0, victoriasIA: 0, victoriasOnline: 0, derrotas: 0, mejorRacha: 0, rachaActual: 0, sobresAbiertos: 0, despertares: 0, cartasFabricadas: 0, cartasRecicladas: 0, counterPlays: 0, bloqueadores: 0, cartasUnicas: 0, comunesUnicas: 0, infrecuentesUnicas: 0, rarasUnicas: 0, superRarasUnicas: 0, copas: 0, partidasCompetitivas: 0, logrosReclamados: [], ultimoLogin: null, loginClaimedHoy: false, primeraVictoriaHoy: false };
+                _statsJugador = { partidasJugadas: 0, victoriasIA: 0, victoriasOnline: 0, derrotas: 0, mejorRacha: 0, rachaActual: 0, sobresAbiertos: 0, despertares: 0, cartasFabricadas: 0, cartasRecicladas: 0, counterPlays: 0, bloqueadores: 0, cartasUnicas: 0, comunesUnicas: 0, infrecuentesUnicas: 0, rarasUnicas: 0, superRarasUnicas: 0, copas: 0, partidasCompetitivas: 0, logrosReclamados: [], ultimoLogin: null, loginClaimedHoy: false, primeraVictoriaHoy: false, tutorialRewardClaimed: false };
             }
             // Migración: asegurar que todos los campos numéricos existen (evita NaN en logros)
-            const _defaultsStats = { partidasJugadas: 0, victoriasIA: 0, victoriasOnline: 0, derrotas: 0, mejorRacha: 0, rachaActual: 0, sobresAbiertos: 0, despertares: 0, cartasFabricadas: 0, cartasRecicladas: 0, counterPlays: 0, bloqueadores: 0, cartasUnicas: 0, comunesUnicas: 0, infrecuentesUnicas: 0, rarasUnicas: 0, superRarasUnicas: 0, victoriasIADificil: 0, copas: 0, partidasCompetitivas: 0 };
+            const _defaultsStats = { partidasJugadas: 0, victoriasIA: 0, victoriasOnline: 0, derrotas: 0, mejorRacha: 0, rachaActual: 0, sobresAbiertos: 0, despertares: 0, cartasFabricadas: 0, cartasRecicladas: 0, counterPlays: 0, bloqueadores: 0, cartasUnicas: 0, comunesUnicas: 0, infrecuentesUnicas: 0, rarasUnicas: 0, superRarasUnicas: 0, victoriasIADificil: 0, copas: 0, partidasCompetitivas: 0, tutorialRewardClaimed: false };
             let _statsCambiados = false;
             for (const k in _defaultsStats) {
                 if (_statsJugador[k] === undefined || _statsJugador[k] === null || (typeof _statsJugador[k] === 'number' && isNaN(_statsJugador[k]))) {
@@ -10486,6 +10695,8 @@
                 }
             }
             if (!Array.isArray(_statsJugador.logrosReclamados)) { _statsJugador.logrosReclamados = []; _statsCambiados = true; }
+            // Bug fix: migrar tutorialRewardClaimed (para cuentas existentes que no lo tienen)
+            if (_statsJugador.tutorialRewardClaimed === undefined) { _statsJugador.tutorialRewardClaimed = false; _statsCambiados = true; }
             if (_statsCambiados) guardarStats();
             // Cargar misiones
             try {
@@ -10528,6 +10739,14 @@
             // Sync Supabase (debounced)
             programarGuardadoSupabase();
         }
+        // Hook maestría: cargar el estado de maestrías junto con stats
+        (function() {
+            const _orig_cargarStats = cargarStats;
+            cargarStats = function() {
+                _orig_cargarStats();
+                try { cargarMaestriasState(); } catch(e) { console.error('[Maestrias] cargarMaestriasState:', e); }
+            };
+        })();
         function guardarMisiones() {
             try { localStorage.setItem('gc_tcg_misiones', JSON.stringify(_misionesState)); } catch (e) {}
             // Sync Supabase (debounced)
@@ -10996,6 +11215,12 @@
             _inventario.cartas[id] = (_inventario.cartas[id] || 0) + 1;
             guardarInventario();
             actualizarBarraMonedas();
+            // Bug fix: el logro "Artesano/Fabricador" no contaba al fabricar desde el editor de mazos.
+            if (_statsJugador) {
+                _statsJugador.cartasFabricadas = (_statsJugador.cartasFabricadas || 0) + 1;
+                guardarStats();
+                console.log('[Stats] cartasFabricadas (desde mazo):', _statsJugador.cartasFabricadas);
+            }
             pintarDetalleMazo();
             renderizarEditor();
             alert('¡Carta fabricada!');
@@ -11017,6 +11242,8 @@
             _inventario.energy += ganancia;
             guardarInventario();
             actualizarBarraMonedas();
+            // Bug fix: el logro "Reciclador" no contaba al reciclar desde el editor de mazos.
+            if (_statsJugador) { _statsJugador.cartasRecicladas = (_statsJugador.cartasRecicladas || 0) + 1; guardarStats(); }
             pintarDetalleMazo();
             renderizarEditor();
             alert('¡Carta reciclada! +' + ganancia + ' Club Energy');
@@ -15225,6 +15452,10 @@
                     _socketOnline.emit('accion-juego', { tipo: 'anuncio-carta-rival', cardId: jugada, nombre: carta.nombre });
                 }
             }
+            // Hook maestría: rastrear carta jugada (si no fue negada por la IA)
+            if (!cartaNegadaPorIA && typeof trackMaestria_jugarCarta === 'function') {
+                try { trackMaestria_jugarCarta(jugada); } catch(e) {}
+            }
         }
 
         function ataquesPorTurno(id) {
@@ -15840,6 +16071,10 @@
                     estadoPartida.log = 'Tu carta gana el combate y destruye a la defensora.';
                     // Llamar alDestruida del defensor
                     if (window.MotorEfectos) MotorEfectos.dispatch(defensor.id, 'alDestruida', ['rival']);
+                    // Hook maestría: el atacante del jugador destruye una unidad rival
+                    if (typeof trackMaestria_destruirConUnidad === 'function' && atacante?.id) {
+                        try { trackMaestria_destruirConUnidad(atacante.id); } catch(e) {}
+                    }
                 }
             } else if (!resultado.ganaAtacante && !resultado.leoInmortal) {
                 // El atacante pierde la batalla pero NO se destruye.
@@ -15925,6 +16160,13 @@
         }
 
         function intentarCombarDesdeMano(index) {
+            // Hook maestría: rastrear combinación de carta
+            try {
+                const idCombo = estadoPartida?.jugador?.mano?.[index];
+                if (idCombo && typeof trackMaestria_combinarCarta === 'function') {
+                    trackMaestria_combinarCarta(idCombo);
+                }
+            } catch(e) {}
             const id = estadoPartida.jugador.mano[index];
             const carta = getCardById(id);
             if (!carta || esLider(carta) || esToken(carta)) return;
@@ -16899,6 +17141,14 @@
                 }
             }
 
+            // Mostrar botón de Maestría solo si la carta existe en MAESTRIAS_CARTAS y no es token.
+            const btnMaestria = document.getElementById('btn-maestria');
+            if (btnMaestria) {
+                const cardIdMaestria = getCardId(c);
+                const tieneMaestria = (window.MAESTRIAS_CARTAS && window.MAESTRIAS_CARTAS[cardIdMaestria]);
+                btnMaestria.style.display = (tieneMaestria && !esToken(c)) ? 'block' : 'none';
+            }
+
             // Sección de Fabricar / Reciclar (solo en colección, no durante partida)
             const craftSection = document.getElementById('craft-recycle-section');
             if (craftSection) {
@@ -17244,6 +17494,456 @@
         }
         // Exponer para que otros scripts puedan llamarlo si quieren
         window.mostrarErrorAmigable = mostrarErrorAmigable;
+
+        // ====================================================================
+        // ===================== SISTEMA DE MAESTRÍAS ========================
+        // ====================================================================
+        // Cada carta jugable (108 cartas) tiene 3 misiones de maestría:
+        //   - m1: gamingcoins (50 en nivel 1, 100 en nivel 2)
+        //   - m2: club energy (20 en nivel 1, 50 en nivel 2)
+        //   - m3: título de jugador (se desbloquea al completar m1 y m2)
+        // Las m1 y m2 tienen 2 niveles cada una. La m3 es una sola misión final.
+        // El progreso se guarda en _inventario.maestrias = { cardId: { m1: 0|1|2, m2: 0|1|2, m3: 0|1, progreso: {jugar:0, ganar:0, despertar:0, destruir:0, combinar:0} } }
+        // ====================================================================
+
+        // Datos de maestrías (se cargan de maestrias.json)
+        window.MAESTRIAS_CARTAS = null;
+
+        // Estado de progreso del jugador en maestrías (se carga desde _inventario)
+        let _maestriasState = null;
+
+        async function cargarMaestrias() {
+            if (window.MAESTRIAS_CARTAS) return;
+            try {
+                const res = await fetch('maestrias.json');
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                window.MAESTRIAS_CARTAS = await res.json();
+                console.log('[Maestrias] Cargadas', Object.keys(window.MAESTRIAS_CARTAS).length, 'maestrías');
+            } catch (e) {
+                console.error('[Maestrias] Error cargando maestrias.json:', e);
+                window.MAESTRIAS_CARTAS = {};
+            }
+        }
+
+        // Cargar el estado de maestrías desde el inventario (o crear default)
+        function cargarMaestriasState() {
+            if (!_inventario) return;
+            if (!_inventario.maestrias || typeof _inventario.maestrias !== 'object') {
+                _inventario.maestrias = {};
+            }
+            _maestriasState = _inventario.maestrias;
+        }
+
+        // Guardar el estado de maestrías
+        function guardarMaestriasState() {
+            if (!_inventario) return;
+            _inventario.maestrias = _maestriasState || {};
+            guardarInventario();
+            programarGuardadoSupabase();
+        }
+
+        // Obtener (o crear) el estado de maestría para una carta concreta
+        function getMaestriaCardState(cardId) {
+            if (!_maestriasState) cargarMaestriasState();
+            if (!_maestriasState) return null;
+            if (!_maestriasState[cardId]) {
+                _maestriasState[cardId] = {
+                    // Niveles completados: 0 = sin empezar, 1 = nivel 1 completado, 2 = nivel 2 completado
+                    m1: 0,
+                    m2: 0,
+                    m3: 0,  // 0 = no completada, 1 = completada
+                    progreso: {
+                        jugar: 0,    // veces jugada esta carta
+                        ganar: 0,    // veces ganada partida con esta carta en mazo/líder
+                        despertar: 0,// veces despertado este líder
+                        destruir: 0, // unidades rivales destruidas con esta carta
+                        combinar: 0  // veces combinada esta carta
+                    },
+                    // Indica si la recompensa del título fue reclamada
+                    tituloReclamado: false
+                };
+            }
+            return _maestriasState[cardId];
+        }
+
+        // ===== TRACKING DE EVENTOS PARA MAESTRÍAS =====
+        // Estas funciones deben llamarse desde los puntos donde ocurren eventos relevantes.
+
+        // Llamar cuando se juega una carta (cualquier modo, IA u online)
+        function trackMaestria_jugarCarta(cardId) {
+            if (!cardId) return;
+            const s = getMaestriaCardState(cardId);
+            if (!s) return;
+            s.progreso.jugar = (s.progreso.jugar || 0) + 1;
+            guardarMaestriasState();
+        }
+
+        // Llamar cuando se gana una partida, pasando el mazo (líderId + ids de cartas)
+        function trackMaestria_ganarPartida(liderId, cartasEnMazo) {
+            try {
+                const ids = new Set();
+                if (liderId) ids.add(liderId);
+                if (Array.isArray(cartasEnMazo)) {
+                    cartasEnMazo.forEach(id => ids.add(id));
+                } else if (cartasEnMazo && typeof cartasEnMazo === 'object') {
+                    Object.keys(cartasEnMazo).forEach(id => ids.add(id));
+                }
+                ids.forEach(id => {
+                    const s = getMaestriaCardState(id);
+                    if (!s) return;
+                    s.progreso.ganar = (s.progreso.ganar || 0) + 1;
+                });
+                guardarMaestriasState();
+            } catch (e) { console.error('[Maestrias] trackMaestria_ganarPartida:', e); }
+        }
+
+        // Llamar cuando se despierta un líder
+        function trackMaestria_despertarLider(liderId) {
+            if (!liderId) return;
+            const s = getMaestriaCardState(liderId);
+            if (!s) return;
+            s.progreso.despertar = (s.progreso.despertar || 0) + 1;
+            guardarMaestriasState();
+        }
+
+        // Llamar cuando una unidad del jugador destruye una unidad rival
+        function trackMaestria_destruirConUnidad(atacanteCardId) {
+            if (!atacanteCardId) return;
+            const s = getMaestriaCardState(atacanteCardId);
+            if (!s) return;
+            s.progreso.destruir = (s.progreso.destruir || 0) + 1;
+            guardarMaestriasState();
+        }
+
+        // Llamar cuando se combina una carta (combo)
+        function trackMaestria_combinarCarta(cardId) {
+            if (!cardId) return;
+            const s = getMaestriaCardState(cardId);
+            if (!s) return;
+            s.progreso.combinar = (s.progreso.combinar || 0) + 1;
+            guardarMaestriasState();
+        }
+
+        // ===== VERIFICAR SI UNA MISIÓN ESTÁ COMPLETA Y LISTA PARA RECLAMAR =====
+        // Devuelve: { nivel, completada, reclamble, objetivoActual, progresoActual, reward }
+        function getEstadoMision(cardId, misionId) {
+            const maestria = window.MAESTRIAS_CARTAS?.[cardId];
+            const state = getMaestriaCardState(cardId);
+            if (!maestria || !state) return null;
+
+            if (misionId === 'm3') {
+                // Misión de título
+                const m = maestria.misiones.find(x => x.id === 'm3');
+                if (!m) return null;
+                const m1Done = state.m1 >= 2;
+                const m2Done = state.m2 >= 2;
+                const desbloqueada = m1Done && m2Done;
+                const objetivo = m.objetivo;
+                const progreso = state.progreso.ganar || 0;
+                const completada = desbloqueada && progreso >= objetivo;
+                const reclamada = state.tituloReclamado;
+                return {
+                    tipo: 'titulo',
+                    titulo: m.titulo,
+                    desc: m.desc,
+                    desbloqueada,
+                    completada,
+                    reclamada,
+                    objetivo,
+                    progreso: Math.min(progreso, objetivo),
+                    reward: null
+                };
+            }
+
+            // m1 o m2 (misiones con 2 niveles)
+            const m = maestria.misiones.find(x => x.id === misionId);
+            if (!m) return null;
+            const nivelCompletado = state[misionId] || 0; // 0, 1 o 2
+            const nivelActual = nivelCompletado; // índice del próximo nivel a completar (0 o 1)
+            const nivelData = m.niveles[nivelActual];
+            if (!nivelData) {
+                // Ambos niveles completados
+                const ultimo = m.niveles[m.niveles.length - 1];
+                return {
+                    tipo: m.tipo,
+                    desc: ultimo.desc,
+                    completada: true,
+                    reclamada: true,
+                    objetivo: ultimo.objetivo,
+                    progreso: ultimo.objetivo,
+                    reward: ultimo.reward,
+                    nivelActual: nivelActual,
+                    totalNiveles: m.niveles.length
+                };
+            }
+            // Mapear el tipo al campo de progreso
+            const campoProgreso = m.tipo === 'gamingcoins' ? 'ganar' :
+                                  m.tipo === 'club_energy' ? (
+                                      maestria.cardClase === 'Líder' ? 'despertar' :
+                                      maestria.cardClase === 'Unidad' ? 'destruir' :
+                                      'combinar'
+                                  ) : 'ganar';
+            const progreso = state.progreso[campoProgreso] || 0;
+            const progresoEnNivel = Math.min(progreso, nivelData.objetivo);
+            const completada = progreso >= nivelData.objetivo;
+            return {
+                tipo: m.tipo,
+                desc: nivelData.desc,
+                completada,
+                reclamada: false, // se reclama al subir de nivel
+                objetivo: nivelData.objetivo,
+                progreso: progresoEnNivel,
+                reward: nivelData.reward,
+                nivelActual,
+                totalNiveles: m.niveles.length,
+                campoProgreso
+            };
+        }
+
+        // ===== RECLAMAR RECOMPENSA DE MISIÓN (sube de nivel o desbloquea título) =====
+        function reclamarMaestria(cardId, misionId) {
+            const estado = getEstadoMision(cardId, misionId);
+            if (!estado) return;
+            if (!estado.completada) {
+                mostrarNotificacionReward('Misión no completada todavía', 0, '⚠️');
+                return;
+            }
+            const state = getMaestriaCardState(cardId);
+            if (misionId === 'm3') {
+                if (state.tituloReclamado) return;
+                state.tituloReclamado = true;
+                state.m3 = 1;
+                // Añadir el título al inventario de títulos desbloqueados
+                if (!_inventario.titulosDesbloqueados) _inventario.titulosDesbloqueados = [];
+                const maestria = window.MAESTRIAS_CARTAS[cardId];
+                const tituloId = 'maestria_' + cardId;
+                if (!_inventario.titulosDesbloqueados.includes(tituloId)) {
+                    _inventario.titulosDesbloqueados.push(tituloId);
+                }
+                // Añadir a TITULOS array si no está
+                if (typeof TITULOS !== 'undefined') {
+                    const existe = TITULOS.find(t => t.id === tituloId);
+                    if (!existe) {
+                        TITULOS.push({
+                            id: tituloId,
+                            nombre: maestria.titulo,
+                            desc: 'Maestría de ' + maestria.cardName,
+                            color: '#ff60ff',
+                            esMaestria: true,
+                            check: s => true  // Se considera desbloqueado si está en titulosDesbloqueados
+                        });
+                    }
+                }
+                guardarMaestriasState();
+                guardarInventario();
+                mostrarNotificacionReward('¡Título desbloqueado: ' + maestria.titulo + '!', 0, '🏷️');
+                renderizarMaestriaModal(cardId);
+                return;
+            }
+            // m1 o m2: subir de nivel
+            state[misionId] = (state[misionId] || 0) + 1;
+            const maestria = window.MAESTRIAS_CARTAS[cardId];
+            const m = maestria.misiones.find(x => x.id === misionId);
+            const nivelCompletado = state[misionId] - 1;
+            const reward = m.niveles[nivelCompletado].reward;
+            if (m.tipo === 'gamingcoins' && _inventario) {
+                _inventario.coins = (_inventario.coins || 0) + reward;
+                guardarInventario(); actualizarBarraMonedas();
+                mostrarNotificacionReward('Maestría ' + m.niveles[nivelCompletado].desc, reward, '🪙');
+            } else if (m.tipo === 'club_energy' && _inventario) {
+                _inventario.energy = (_inventario.energy || 0) + reward;
+                guardarInventario(); actualizarBarraMonedas();
+                mostrarNotificacionReward('Maestría ' + m.niveles[nivelCompletado].desc, reward, '⚡');
+            }
+            guardarMaestriasState();
+            renderizarMaestriaModal(cardId);
+        }
+
+        // ===== ABRIR MODAL DE MAESTRÍA DESDE EL PANEL DE CARTA =====
+        let _maestriaCardActual = null;
+        function abrirMaestriaDesdePanel() {
+            if (indexActual == null) return;
+            const c = datosCartas[indexActual];
+            if (!c) return;
+            abrirMaestria(getCardId(c));
+        }
+
+        async function abrirMaestria(cardId) {
+            if (!window.MAESTRIAS_CARTAS) await cargarMaestrias();
+            if (!_maestriasState) cargarMaestriasState();
+            const maestria = window.MAESTRIAS_CARTAS?.[cardId];
+            if (!maestria) {
+                alert('Esta carta no tiene maestría disponible.');
+                return;
+            }
+            _maestriaCardActual = cardId;
+            renderizarMaestriaModal(cardId);
+            document.getElementById('mastery-overlay').classList.add('active');
+        }
+
+        function cerrarMaestria() {
+            document.getElementById('mastery-overlay').classList.remove('active');
+            _maestriaCardActual = null;
+        }
+
+        function renderizarMaestriaModal(cardId) {
+            const maestria = window.MAESTRIAS_CARTAS?.[cardId];
+            if (!maestria) return;
+            const c = getCardById(cardId);
+            // Portrait
+            const portrait = document.getElementById('mastery-portrait');
+            if (portrait && c) {
+                portrait.style.backgroundImage = 'url(' + (c.img || '') + ')';
+            }
+            const nameEl = document.getElementById('mastery-cardname');
+            if (nameEl) nameEl.textContent = maestria.cardName + ' (' + maestria.cardClase + ')';
+
+            const cont = document.getElementById('mastery-missions');
+            if (!cont) return;
+            cont.innerHTML = '';
+
+            // Renderizar las 3 misiones
+            ['m1', 'm2', 'm3'].forEach(mid => {
+                const estado = getEstadoMision(cardId, mid);
+                if (!estado) return;
+                const m = maestria.misiones.find(x => x.id === mid);
+                const div = document.createElement('div');
+                div.className = 'mastery-mission ' + mid;
+                if (mid === 'm3' && !estado.desbloqueada) div.classList.add('locked');
+                if (estado.reclamada) div.classList.add('completed');
+
+                let iconCls = '';
+                let iconText = '';
+                let rewardHtml = '';
+                let claimBtn = '';
+                let pipsHtml = '';
+                let titleRewardHtml = '';
+
+                if (mid === 'm1') {
+                    iconText = '🎯';
+                    rewardHtml = '<div class="mastery-reward"><span class="icon">🪙</span><span class="amt">' + estado.reward + '</span></div>';
+                    pipsHtml = '<div class="mastery-levels-pips">';
+                    for (let i = 0; i < estado.totalNiveles; i++) {
+                        pipsHtml += '<span class="pip' + (i < estado.nivelActual ? ' done' : '') + '"></span>';
+                    }
+                    pipsHtml += '</div>';
+                    if (estado.completada && !estado.reclamada) {
+                        claimBtn = '<button class="mastery-mission-claim-btn" onclick="reclamarMaestria(\'' + cardId + '\',\'m1\')">Reclamar</button>';
+                    }
+                } else if (mid === 'm2') {
+                    iconText = '⚔️';
+                    rewardHtml = '<div class="mastery-reward"><span class="icon">⚡</span><span class="amt">' + estado.reward + '</span></div>';
+                    pipsHtml = '<div class="mastery-levels-pips">';
+                    for (let i = 0; i < estado.totalNiveles; i++) {
+                        pipsHtml += '<span class="pip' + (i < estado.nivelActual ? ' done' : '') + '"></span>';
+                    }
+                    pipsHtml += '</div>';
+                    if (estado.completada && !estado.reclamada) {
+                        claimBtn = '<button class="mastery-mission-claim-btn" onclick="reclamarMaestria(\'' + cardId + '\',\'m2\')">Reclamar</button>';
+                    }
+                } else { // m3
+                    iconText = '🏆';
+                    if (estado.reclamada) {
+                        titleRewardHtml = '<div class="mastery-title-reward">Título: ' + estado.titulo + ' ✓</div>';
+                    } else if (estado.desbloqueada) {
+                        titleRewardHtml = '<div class="mastery-title-reward">Título: ' + estado.titulo + '</div>';
+                        if (estado.completada) {
+                            claimBtn = '<button class="mastery-mission-claim-btn" onclick="reclamarMaestria(\'' + cardId + '\',\'m3\')">Reclamar Título</button>';
+                        }
+                    } else {
+                        titleRewardHtml = '<div class="mastery-title-reward" style="opacity:.7">🔒 Completa M1 y M2 para desbloquear</div>';
+                    }
+                }
+
+                // Build progress bar HTML
+                let progressHtml = '';
+                if (mid === 'm3' && !estado.desbloqueada) {
+                    // No mostrar barra si está bloqueada
+                    progressHtml = '<div style="text-align:center;font-size:12px;opacity:.8;padding:6px">Bloqueada</div>';
+                } else {
+                    const pct = (estado.progreso / estado.objetivo) * 100;
+                    progressHtml = '<div class="mastery-progress-track">' +
+                        '<div class="mastery-progress-fill" style="width:' + pct + '%"></div>' +
+                        '<div class="mastery-progress-text">' + estado.progreso + ' / ' + estado.objetivo + '</div>' +
+                        '</div>';
+                }
+
+                div.innerHTML = '<div class="mastery-mission-row">' +
+                    '<div class="mastery-mission-icon">' + iconText + '</div>' +
+                    '<div class="mastery-mission-body">' +
+                        '<div class="mastery-mission-desc">' + estado.desc + '</div>' +
+                        progressHtml +
+                        pipsHtml +
+                    '</div>' +
+                    rewardHtml +
+                '</div>' +
+                titleRewardHtml +
+                claimBtn;
+                cont.appendChild(div);
+            });
+        }
+
+        // ===== INTEGRACIÓN: Hook en eventos del juego =====
+        // Reemplazar registrarFinPartida para trackear misiones de maestría
+        (function() {
+            const _orig_registrarFinPartida = registrarFinPartida;
+            registrarFinPartida = function(resultado, modo) {
+                _orig_registrarFinPartida(resultado, modo);
+                try {
+                    if (resultado === 'victoria' && estadoPartida) {
+                        const liderId = estadoPartida.jugador?.liderId;
+                        const cartasMazo = estadoPartida.jugador?.mazoInicial || estadoPartida.jugador?.mazo || [];
+                        trackMaestria_ganarPartida(liderId, cartasMazo);
+                    }
+                } catch (e) { console.error('[Maestrias] Hook registrarFinPartida:', e); }
+            };
+        })();
+
+        // (Hook de jugar carta movido directamente a resolverJugarCarta)
+
+        // Hook: cuando se despierta un líder
+        (function() {
+            // Buscar la función que detecta despertar del líder (despertarLider o similar)
+            // En el código original, despertares se incrementa en algún sitio. Lo haremos en el hook de stats.
+            const _orig_guardarStats = guardarStats;
+            // No reemplazamos guardarStats (se llama mucho), en su lugar exponemos una función
+            // para que el código existente la llame. Pero como ya hay un código que incrementa
+            // _statsJugador.despertares, vamos a interceptar ese cambio.
+            // Mejor enfoque: hook directo cuando se despierta el líder.
+        })();
+
+        // Función helper para llamar desde el código del juego cuando un líder se despierta
+        // La integraremos en el código existente más adelante
+        window.trackMaestria_despertarLider = trackMaestria_despertarLider;
+        window.trackMaestria_jugarCarta = trackMaestria_jugarCarta;
+        window.trackMaestria_ganarPartida = trackMaestria_ganarPartida;
+        window.trackMaestria_destruirConUnidad = trackMaestria_destruirConUnidad;
+        window.trackMaestria_combinarCarta = trackMaestria_combinarCarta;
+
+        // ===== CARGAR MAESTRÍAS AL INICIO =====
+        // Hacerlo en paralelo con cargarBaseDeDatos
+        (function() {
+            const _orig_cargarBaseDeDatos = cargarBaseDeDatos;
+            cargarBaseDeDatos = async function() {
+                await Promise.all([_orig_cargarBaseDeDatos(), cargarMaestrias()]);
+            };
+        })();
+
+        // ===== INTEGRAR CON actualizarInventario tras cargar de Supabase =====
+        // Asegurar que _maestriasState se carga cuando se aplica el inventario de Supabase
+        (function() {
+            const _orig_aplicarInventarioDeSupabase = aplicarInventarioDeSupabase;
+            aplicarInventarioDeSupabase = function(inv) {
+                _orig_aplicarInventarioDeSupabase(inv);
+                try {
+                    if (_inventario && !_inventario.maestrias) _inventario.maestrias = {};
+                    if (_inventario && _inventario.maestrias) {
+                        _maestriasState = _inventario.maestrias;
+                    }
+                } catch (e) { console.error('[Maestrias] Hook aplicarInventarioDeSupabase:', e); }
+            };
+        })();
+
     </script>
 </body>
 </html>
