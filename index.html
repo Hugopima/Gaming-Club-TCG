@@ -9676,7 +9676,7 @@
                 _statsJugador.cartasRecicladas = (_statsJugador.cartasRecicladas || 0) + aReciclar.reduce((s, r) => s + r.sobran, 0);
                 guardarStats();
             }
-            guardarInventario();
+            guardarInventarioInmediato();
             actualizarBarraMonedas();
             renderizarBiblioteca();
             // BUG FIX (v4): también re-renderizar el editor de mazos por si se
@@ -9806,7 +9806,9 @@
             // Bug fix: NO recargar de Supabase aquí. Si recargamos, se sobrescribe
             // el array local de amigos (que puede tener cambios no guardados aún)
             // con los datos antiguos de Supabase, perdiendo los amigos recién añadidos.
-            const amigos = (_inventario?.amigos) || [];
+            // Bug fix: deduplicar amigos por si hay duplicados de antes.
+            const amigos = deduplicarAmigos((_inventario?.amigos) || []);
+            if (_inventario?.amigos) _inventario.amigos = amigos; // guardar deduplicado
             if (!amigos.length) {
                 listEl.innerHTML = '<div class="friends-empty">No tienes amigos todavía. ¡Busca por nombre para añadir!</div>';
                 return;
@@ -9879,13 +9881,15 @@
         async function anadirAmigo(discordId, username) {
             if (!_inventario) return;
             if (!_inventario.amigos) _inventario.amigos = [];
+            // Bug fix: deduplicar antes de añadir (por si hay duplicados previos)
+            _inventario.amigos = deduplicarAmigos(_inventario.amigos);
             // Bug fix: guardar como objeto { id, username } para mostrar el nombre
             // en la lista de amigos en vez de un ID truncado.
             // Soportar formato antiguo (string) y nuevo (objeto).
             const yaAmigo = _inventario.amigos.some(a => (typeof a === 'string' ? a : a.id) === discordId);
             if (yaAmigo) return alert('Ya es tu amigo.');
             _inventario.amigos.push({ id: discordId, username: username || discordId });
-            guardarInventario();
+            guardarInventarioInmediato();
             // Limpiar búsqueda y refrescar
             document.getElementById('friend-search-input').value = '';
             document.getElementById('friend-search-results').innerHTML = '';
@@ -9896,7 +9900,7 @@
             if (!_inventario) return;
             if (!confirm('¿Eliminar este amigo?')) return;
             _inventario.amigos = (_inventario.amigos || []).filter(a => (typeof a === 'string' ? a : a.id) !== discordId);
-            guardarInventario();
+            guardarInventarioInmediato();
             renderizarListaAmigos();
         }
         async function verPerfilAmigo(discordId) {
@@ -10085,20 +10089,36 @@
             const energyLocal = (_inventario?.energy != null) ? _inventario.energy : 0;
             const coinsSupa = inv.coins ?? 0;
             const energySupa = inv.energy ?? 0;
-            // BUG FIX: fusionar cartas tomando el MÁXIMO de cada carta
-            // (para no perder cartas obtenidas localmente pero no sincronizadas)
+            // BUG FIX CRÍTICO: usar timestamp para decidir qué fuente de cartas es más reciente.
+            // Antes se usaba Math.max(local, supa) pero eso deshace los reciclajes (cuando
+            // local < supa). Ahora: si local es más reciente, mantener local; si supa es
+            // más reciente, usar supa; si no hay timestamp, hacer Math.max como fallback.
             const cartasLocal = _inventario?.cartas || {};
             const cartasSupa = inv.cartas || {};
-            const cartasFusionadas = { ...cartasLocal };
-            for (const cardId in cartasSupa) {
-                const local = Number(cartasLocal[cardId] || 0);
-                const supa = Number(cartasSupa[cardId] || 0);
-                cartasFusionadas[cardId] = Math.max(local, supa);
+            const tsLocal = Number(_inventario?.lastUpdate || 0);
+            const tsSupa = Number(inv.lastUpdate || 0);
+            let cartasFusionadas;
+            if (tsLocal > tsSupa) {
+                // Local es más reciente: mantener local, pero añadir cartas de Supa que no existan localmente
+                cartasFusionadas = { ...cartasSupa, ...cartasLocal };
+            } else if (tsSupa > tsLocal) {
+                // Supabase es más reciente: usar Supa, pero añadir cartas locales que no existan en Supa
+                cartasFusionadas = { ...cartasLocal, ...cartasSupa };
+            } else {
+                // Sin timestamp o iguales: Math.max (fallback seguro para no perder nada)
+                cartasFusionadas = { ...cartasLocal };
+                for (const cardId in cartasSupa) {
+                    const local = Number(cartasLocal[cardId] || 0);
+                    const supa = Number(cartasSupa[cardId] || 0);
+                    cartasFusionadas[cardId] = Math.max(local, supa);
+                }
             }
-            // BUG FIX: fusionar amigos (unión, sin duplicados)
+            // BUG FIX: fusionar amigos deduplicando por ID (no por referencia).
+            // Antes se usaba Set, pero los amigos son objetos {id, username} y
+            // Set no los deduplica por id, causando duplicados en cada sincronización.
             const amigosLocal = _inventario?.amigos || [];
             const amigosSupa = inv.amigos || [];
-            const amigosFusionados = Array.from(new Set([...amigosLocal, ...amigosSupa]));
+            const amigosFusionados = deduplicarAmigos([...amigosLocal, ...amigosSupa]);
             // BUG FIX: fusionar titulosDesbloqueados (unión)
             const titulosLocal = _inventario?.titulosDesbloqueados || [];
             const titulosSupa = inv.titulosDesbloqueados || [];
@@ -11271,11 +11291,30 @@
         // Estructura: { coins: number, energy: number, cartas: { cardId: cantidad } }
         let _inventario = null;
 
+        // Bug fix: deduplicar amigos por ID (los amigos son objetos {id, username}).
+        // Set no funciona con objetos, así que lo hacemos manualmente.
+        function deduplicarAmigos(amigos) {
+            if (!Array.isArray(amigos)) return [];
+            const vistos = new Map();
+            const resultado = [];
+            for (const a of amigos) {
+                // Soportar formato string (antiguo) y objeto {id, username} (nuevo)
+                const id = typeof a === 'string' ? a : (a && a.id);
+                if (!id) continue;
+                if (vistos.has(id)) continue;
+                vistos.set(id, true);
+                resultado.push(a);
+            }
+            return resultado;
+        }
+
         function cargarInventario() {
             try {
                 const data = localStorage.getItem('gc_tcg_inventario');
                 if (data) {
                     _inventario = JSON.parse(data);
+                    // Bug fix: deduplicar amigos al cargar (por si hay duplicados de antes)
+                    if (_inventario.amigos) _inventario.amigos = deduplicarAmigos(_inventario.amigos);
                     // Asegurar estructura mínima
                     if (!_inventario.cartas) _inventario.cartas = {};
                     if (_inventario.coins == null) _inventario.coins = 0;
@@ -11298,10 +11337,26 @@
 
         function guardarInventario() {
             try {
+                // Bug fix: añadir timestamp de última modificación para saber
+                // qué fuente (local vs Supabase) es más reciente al fusionar.
+                if (_inventario) _inventario.lastUpdate = Date.now();
                 localStorage.setItem('gc_tcg_inventario', JSON.stringify(_inventario));
             } catch (e) { console.error('Error guardando inventario:', e); }
             // Sync Supabase (debounced)
             programarGuardadoSupabase();
+        }
+        // Bug fix: guardado INMEDIATO en Supabase para operaciones críticas
+        // (fabricar, reciclar, abrir sobres, ganar monedas). Evita pérdida
+        // de datos si el usuario hace F5 antes del debounce de 2s.
+        function guardarInventarioInmediato() {
+            try {
+                if (_inventario) _inventario.lastUpdate = Date.now();
+                localStorage.setItem('gc_tcg_inventario', JSON.stringify(_inventario));
+            } catch (e) { console.error('Error guardando inventario:', e); }
+            // Guardar en Supabase INMEDIATAMENTE (sin debounce)
+            if (typeof guardarInventarioSupabase === 'function') {
+                guardarInventarioSupabase();
+            }
         }
 
         // === FUNCIÓN DE DESARROLLO (oculta) ===
@@ -11395,7 +11450,7 @@
             if (!confirm('¿Fabricar "' + (c.nombre || id) + '" por ' + coste + ' Club Energy?')) return;
             _inventario.energy -= coste;
             _inventario.cartas[id] = (_inventario.cartas[id] || 0) + 1;
-            guardarInventario();
+            guardarInventarioInmediato();
             actualizarBarraMonedas();
             // Stats — logro Artesano
             if (_statsJugador) {
@@ -11423,7 +11478,7 @@
             _inventario.cartas[id] = cantidad - 1;
             if (_inventario.cartas[id] <= 0) delete _inventario.cartas[id];
             _inventario.energy += ganancia;
-            guardarInventario();
+            guardarInventarioInmediato();
             actualizarBarraMonedas();
             // Stats
             if (_statsJugador) { _statsJugador.cartasRecicladas++; guardarStats(); }
@@ -11445,7 +11500,7 @@
             if (!confirm('¿Fabricar "' + (c.nombre || id) + '" por ' + coste + ' Club Energy?')) return;
             _inventario.energy -= coste;
             _inventario.cartas[id] = (_inventario.cartas[id] || 0) + 1;
-            guardarInventario();
+            guardarInventarioInmediato();
             actualizarBarraMonedas();
             // Bug fix: el logro "Artesano/Fabricador" no contaba al fabricar desde el editor de mazos.
             if (_statsJugador) {
@@ -11472,7 +11527,7 @@
             _inventario.cartas[id] = cantidad - 1;
             if (_inventario.cartas[id] <= 0) delete _inventario.cartas[id];
             _inventario.energy += ganancia;
-            guardarInventario();
+            guardarInventarioInmediato();
             actualizarBarraMonedas();
             // Bug fix: el logro "Reciclador" no contaba al reciclar desde el editor de mazos.
             if (_statsJugador) { _statsJugador.cartasRecicladas = (_statsJugador.cartasRecicladas || 0) + 1; guardarStats(); }
@@ -12037,7 +12092,8 @@
                         _inventario.cartas[id] = (_inventario.cartas[id] || 0) + 1;
                     }
                 });
-                guardarInventario();
+                // Bug fix: guardado inmediato para no perder cartas si se hace F5
+                guardarInventarioInmediato();
                 actualizarBarraMonedas();
             }
             const stage = document.getElementById('pack-stage');
