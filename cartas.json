@@ -37,7 +37,8 @@
         "css": "tag-active",
         "desc": "[Una vez por turno] Mira las 3 primeras cartas de tu mazo. Puedes elegir una carta de tipo \"Animatrónico\" de coste 3 o menos y jugarla gratis. Pon el resto en el fondo de la baraja en cualquier orden."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "red_lider_02",
@@ -82,7 +83,8 @@
         "css": "tag-doble",
         "desc": "Si esta carta inflige daño, inflige 2 puntos de daño en lugar de 1."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "blue_lider_01",
@@ -127,7 +129,8 @@
         "css": "tag-auto",
         "desc": "Cuando este Líder ataca, roba 1 carta. Luego, ambos jugadores deben elegir una carta de su mano y colocarla en su respectiva pila de descartes, y elegir una unidad de su Área de Batalla y mandarla a la pila de descartes. Si tienes \"Anillo de Cobre\" en tu Zona de Campo, solo el rival debe hacer ambas cosas."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "blue_lider_02",
@@ -172,7 +175,8 @@
         "css": "tag-active",
         "desc": "[Una vez por turno] Elige 1 carta de origen <Grupo> o <Minecraft> en tu pila de descartes y devuélvela al fondo de tu mazo: Elige hasta 1 de tus manás azules en modo descanso y cámbialo a modo activo."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "green_lider_01",
@@ -217,7 +221,8 @@
         "css": "tag-active",
         "desc": "[Una vez por turno] Elige una unidad del rival en modo activo y cámbiala a modo descanso. No puede enderezarse en el siguiente turno del rival a menos que este pague 1 de maná."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "green_lider_02",
@@ -262,7 +267,8 @@
         "css": "tag-auto",
         "desc": "[Una vez por turno] Al final de una batalla en la que una de tus unidades verdes haya derrotado a una unidad del rival en combate, inflige 1 punto de daño al Líder de tu oponente."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "black_lider_01",
@@ -302,7 +308,8 @@
         "css": "tag-active",
         "desc": "[Una vez por turno] Descarta una carta de [Desafío] de tu mano: Elige una unidad de tu rival y redúcela en -10000 de poder durante esta batalla."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "black_lider_02",
@@ -347,7 +354,8 @@
         "css": "tag-auto",
         "desc": "Cuando esta carta ataca, elige una unidad rival. Esta no podrá usarse para combar ni bloquear durante este turno."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "alberto",
@@ -375,7 +383,8 @@
         "css": "tag-bloqueo",
         "desc": "Cuando el rival ataca, puedes cambiar esta carta a modo descanso para convertirla en el nuevo objetivo del ataque."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "agus",
@@ -398,7 +407,8 @@
         "css": "tag-auto",
         "desc": "Busca en tu baraja una carta de origen \"Animal\" o un personaje \"Lucas\" y añádela a tu mano."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "anillo",
@@ -421,7 +431,8 @@
         "css": "tag-perm",
         "desc": "Si tienes esta carta en campo, y tu líder es \"INFINITYCRAFT\", no deberás descartar carta cuando él ataca."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "jorlol207",
@@ -444,7 +455,8 @@
         "css": "tag-auto",
         "desc": "Cuando juegas esta carta, si llevas una carta de tu mano a la pila de descartes, puedes coger un \"Anillo de Cobre\" de tu baraja y llevártelo a la mano. Después, baraja tu mazo."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "hugopima",
@@ -467,7 +479,8 @@
         "css": "tag-auto",
         "desc": "Mira las siete primeras cartas. Si es alguien de origen \"Grupo\", súbela a tu mano. Baraja el mazo."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "alejandro",
@@ -490,7 +503,8 @@
         "css": "tag-perm",
         "desc": "Si hay 2 o más cartas con origen \"Grupo\" en tu pila de descartes, reduce el coste de energía de esta carta en tu mano en 1."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "andrea",
@@ -518,7 +532,8 @@
         "css": "tag-perm",
         "desc": "Si tienes 4 cartas o menos en tu mano, todas tus fichas de Deku obtienen doble golpe."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "sergio",
@@ -541,7 +556,8 @@
         "css": "tag-auto",
         "desc": "Cuando juegas esta carta, puedes elegir cualquier carta en el campo de batalla del oponente y devolvérsela a la mano."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "victor-hugo",
@@ -574,7 +590,8 @@
         "css": "tag-doble",
         "desc": "Si esta carta inflige daño, inflige 2 puntos de daño en lugar de 1."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "lucas",
@@ -597,7 +614,8 @@
         "css": "tag-perm",
         "desc": "Gana +5000 por cada carta tipo \"Animal\" en juego."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "carlospro",
@@ -620,7 +638,8 @@
         "css": "tag-critico",
         "desc": "i esta carta inflige daño a un Líder, la carta de vida se coloca en la pila de descartes en lugar de ir a la mano del rival."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "momolac",
@@ -643,7 +662,8 @@
         "css": "tag-auto",
         "desc": "Cuando esta carta se coloca en la pila de descartes desde el Área de Batalla, si tu Carta de Líder es \"INFINITYCRAFT\", puedes colocar 1 carta de tu mano en la pila de descartes. Si lo haces, juega esta carta."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "fideos",
@@ -666,7 +686,8 @@
         "css": "tag-auto",
         "desc": "Cuando haces un Combo con esta carta, si tu Carta de Líder es azul y tu vida es 4 o menos, roba 1 carta y agrega +10000 al Combo de esta carta durante el resto del turno."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "lumi",
@@ -684,7 +705,8 @@
         "css": "tag-counter",
         "desc": "Niega el ataque, luego endereza un maná azul."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "cristian",
@@ -707,7 +729,8 @@
         "css": "tag-auto",
         "desc": "Cuando esta carta ataca o es atacada, obliga a tu oponente a cambiar una de sus unidades activas a modo descanso."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "angel",
@@ -730,7 +753,8 @@
         "css": "tag-auto",
         "desc": "Cuando esta carta ataca, puedes tomar una vida y añadirla a tu mano. Si lo haces, esta carta gana +10000 y [Doble Golpe]."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "hog",
@@ -753,7 +777,8 @@
         "css": "tag-auto",
         "desc": "Cuando juegas esta carta, si tienes 4 o más de maná, elige hasta 2 de tus manás azules en modo descanso y cámbialos a modo activo."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "nyx",
@@ -776,7 +801,8 @@
         "css": "tag-auto",
         "desc": "Cuando juegas esta carta, si tu líder es Azul, ambos jugadores eligen 1 carta de su mano y la mandan a la pila de descartes. Luego, tú robas 1 carta."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "vagabundo",
@@ -804,7 +830,8 @@
         "css": "tag-auto",
         "desc": "Cuando esta carta es atacada por una unidad con más poder que ella, puedes devolver este vagabundo a tu mano en lugar de ir a la pila de descartes."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "correas",
@@ -832,7 +859,8 @@
         "css": "tag-critico",
         "desc": "Si esta carta inflige daño a un Líder, la carta de vida se coloca en la pila de descartes en lugar de ir a la mano del rival"
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "impostor",
@@ -855,7 +883,8 @@
         "css": "tag-auto",
         "desc": "Al entrar al campo, si tu líder es Azul, copia el poder y habilidades de cualquier unidad que el rival tenga en juego hasta el final del turno."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "grito",
@@ -883,7 +912,8 @@
         "css": "tag-doble",
         "desc": "Si esta carta inflige daño, inflige 2 puntos de daño en lugar de 1"
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "brawlera",
@@ -906,7 +936,8 @@
         "css": "tag-auto",
         "desc": "Cuando juegas esta carta, puedes buscar en tu mazo otra copia de una carta de coste 2 o menos de origen \"Grupo\", jugarla en modo descanso, y barajar el mazo."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "echen",
@@ -924,7 +955,8 @@
         "css": "tag-active",
         "desc": "Principal. Ambos jugadores deben elegir una unidad de su propio campo (que no sea el Líder) y mandarla directamente a la pila de descartes. La unidad del rival es elegida por el rival. Si no controlas unidades, tu oponente debe descartar la carta superior de su mazo."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "fnaf",
@@ -942,7 +974,8 @@
         "css": "tag-active",
         "desc": "Batalla: Elige hasta 1 de tus Líderes o unidades en combate; gana +5000 de poder por el resto del turno. Luego, elige hasta 2 de tus manás azules y cámbialos a modo activo."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "freddy",
@@ -965,7 +998,8 @@
         "css": "tag-auto",
         "desc": "Mira las siete primeras cartas. Si es alguien de tipo \"Animatrónico\", subela a tu mano. Baraja el mazo."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "bonnie",
@@ -993,7 +1027,8 @@
         "css": "tag-bloqueo",
         "desc": "Cuando el rival ataca, puedes cambiar esta carta a modo descanso para convertirla en el nuevo objetivo del ataque."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "chica",
@@ -1016,7 +1051,8 @@
         "css": "tag-auto",
         "desc": "Al entrar busca en la baraja una carta de de \"Pizza Slice\" y subela a tu mano. Luego baraja."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "foxy",
@@ -1039,7 +1075,8 @@
         "css": "tag-auto",
         "desc": "¡Vigila tu puerta! O no… Porque con tener las luces encendidas te sirve para que no te ataque."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "springtrap",
@@ -1067,7 +1104,8 @@
         "css": "tag-doble",
         "desc": "Si esta carta inflige daño, inflige 2 puntos de daño en lugar de 1."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "clyde",
@@ -1100,7 +1138,8 @@
         "css": "tag-evolucion",
         "desc": "Pon esta carta sobre una carta de personaje \"Bonnie\" pagando solo 5 de maná (3 de ellos deben de ser rojos) ."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "purple",
@@ -1133,7 +1172,8 @@
         "css": "tag-critico",
         "desc": "Si esta carta inflige daño a un Líder, la carta de vida se coloca en la pila de descartes en lugar de ir a la mano del rival."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "phone",
@@ -1156,7 +1196,8 @@
         "css": "tag-active",
         "desc": "Principal: Durante tu turno, cuando hagas un combo con esta carta de tu mano, destruye todos los bloqueadores de coste 3 o menos del rival."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "vecino",
@@ -1179,7 +1220,8 @@
         "css": "tag-auto",
         "desc": "Roba una carta."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "pizza",
@@ -1197,7 +1239,8 @@
         "css": "tag-active",
         "desc": "Principal: Elige hasta 1 de tus cartas. Esta gana +5000 de poder durante el resto del turno. Luego, elige hasta 2 de tu maná y cambialo a modo activo"
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "golden",
@@ -1220,7 +1263,8 @@
         "css": "tag-auto",
         "desc": "Cuando haces un Combo con esta carta, si tu Carta de Líder es rojo y tu vida es 4 o menos, roba 1 carta y agrega +10000 al Combo de esta carta durante el resto del turno."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "shadow",
@@ -1238,7 +1282,8 @@
         "css": "tag-counter",
         "desc": "Niega el ataque. Después, endereza un maná rojo"
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "balloon",
@@ -1261,7 +1306,8 @@
         "css": "tag-auto",
         "desc": "Cuando juegas esta carta, elige una unidad del rival en juego de coste 3 o menos; esa unidad pierde sus habilidades hasta el próximo turno del rival y no puede realizar combos hasta el final del turno de tu oponente"
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "jeffrey",
@@ -1284,7 +1330,8 @@
         "css": "tag-auto",
         "desc": "Cuando juegas esta carta, tu oponente debe elegir una carta de batalla de coste 2 o menos de su mano y descartala."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "Rdiddy",
@@ -1312,7 +1359,8 @@
         "css": "tag-bloqueo",
         "desc": "Cuando el rival ataca, puedes cambiar esta carta a modo descanso para convertirla en el nuevo objetivo del ataque."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "kirk",
@@ -1345,7 +1393,8 @@
         "css": "tag-perm",
         "desc": "Esta carta puede ser atacada por otras en modo activo"
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "musk",
@@ -1373,7 +1422,8 @@
         "css": "tag-doble",
         "desc": "Si esta carta inflige daño, inflige 2 puntos de daño en lugar de 1."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "hasnain",
@@ -1396,7 +1446,8 @@
         "css": "tag-auto",
         "desc": "Al entrar al campo, puedes mirar las 3 primeras cartas de tu mazo, tomar una y ordenar tu mazo como quieras y poner una de ellas en la parte superior."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "coolboy",
@@ -1419,7 +1470,8 @@
         "css": "tag-perm",
         "desc": "Esta carta no puede ser atacada por unidades rivales que tengan un poder base de 20000 o más."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "muzammill",
@@ -1442,7 +1494,8 @@
         "css": "tag-auto",
         "desc": "Cuando juegas esta carta, si tu Carta de Líder es azul, puedes elegir hasta 2 unidades de tu oponente con un coste de maná de 2 o menos y regresarlas a la mano de su dueño."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "random",
@@ -1465,7 +1518,8 @@
         "css": "tag-auto",
         "desc": "Al entrar al campo, obliga a ambos jugadores a tirar un dado. El jugador que saque la puntuación más baja debe elegir una unidad de su propio campo y destruirla."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "biggy",
@@ -1488,7 +1542,8 @@
         "css": "tag-auto",
         "desc": "Cuando esta carta es destruida en batalla, roba 1 carta."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "twit",
@@ -1506,7 +1561,8 @@
         "css": "tag-active",
         "desc": "Principal :Elige una unidad del rival en juego. Esa unidad pierde sus habilidades hasta el próximo turno del rival"
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "paloma",
@@ -1534,7 +1590,8 @@
         "css": "tag-perm",
         "desc": "Esta carta no puede ser objetivo de las habilidades de las cartas de batalla de tu oponente."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "juegos",
@@ -1552,7 +1609,8 @@
         "css": "tag-counter",
         "desc": "Cuando tu rival vaya a jugar una unidad de coste 4 o menos, niega su invocación y mándala directamente a su pila de descartes."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "todo",
@@ -1570,7 +1628,8 @@
         "css": "tag-active",
         "desc": "Principal: Tira un dado, si este saca una puntuación entre 16 y 20 (inclusive) suma 10000 de poder a una unidad."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "ruleta",
@@ -1588,7 +1647,8 @@
         "css": "tag-active",
         "desc": "Principal: Tira un dado, si este saca puntuación entre 10-19 suma 5k de poder a una unidad."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "cazon",
@@ -1621,7 +1681,8 @@
         "css": "tag-venganza",
         "desc": "Si esta carta pierde una batalla, la carta ganadora es destruida automáticamente al final de la batalla."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "juan",
@@ -1649,7 +1710,8 @@
         "css": "tag-critico",
         "desc": "Si esta carta inflige daño a un Líder, la carta de vida se coloca en la pila de descartes en lugar de ir a la mano del rival."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "dymytry",
@@ -1672,7 +1734,8 @@
         "css": "tag-active",
         "desc": "Absorción: Coloca 1 \"Juan\" de tu mano debajo de esta carta: Elige hasta 1 “Dymytry” con un coste de energía de 5 o menos de tu mazo y colócala encima de esta carta."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "juan2",
@@ -1705,7 +1768,8 @@
         "css": "tag-doble",
         "desc": "Si esta carta inflige daño, inflige 2 puntos de daño en lugar de 1."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "patroclo",
@@ -1738,7 +1802,8 @@
         "css": "tag-evolucion",
         "desc": "Pon esta carta sobre una carta de personaje \"Patroclo\" pagando solo 5 de maná (3 de ellos deben de ser verdes) ."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "energia",
@@ -1761,7 +1826,8 @@
         "css": "tag-perm",
         "desc": "Otorga +5000 a todas las unidades en el campo."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "messi",
@@ -1784,7 +1850,8 @@
         "css": "tag-auto",
         "desc": "Mira las siete primeras cartas de la baraja, coge una carta de origen <Minecraft> y quedatela, baraja el resto."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "podrido",
@@ -1812,7 +1879,8 @@
         "css": "tag-bloqueo",
         "desc": "Cuando el rival ataca, puedes cambiar esta carta a modo descanso para convertirla en el nuevo objetivo del ataque."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "juanfalso",
@@ -1835,7 +1903,8 @@
         "css": "tag-auto",
         "desc": "Cuando haces un Combo con esta carta, si tu Carta de Líder es verde y tu vida es 4 o menos, roba 1 carta y agrega +10000 al Combo de esta carta durante el resto del turno."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "creeper",
@@ -1853,7 +1922,8 @@
         "css": "tag-counter",
         "desc": "Niega el ataque, después, endereza un maná verde."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "sniffer",
@@ -1876,7 +1946,8 @@
         "css": "tag-auto",
         "desc": "Al entrar al campo, mira las 3 primeras cartas de tu mazo. Puedes elegir una carta y sumarla a tu mano. Pon el resto al fondo."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "aceituna",
@@ -1899,7 +1970,8 @@
         "css": "tag-auto",
         "desc": "Cuando juegas esta carta, si controlas a Lucas o tu Líder es Verde, elige hasta 2 de tus manás en modo descanso y cámbiálos a modo activo."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "uwu",
@@ -1927,7 +1999,8 @@
         "css": "tag-venganza",
         "desc": "Si esta carta pierde una batalla, la carta ganadora es destruida automáticamente al final de la batalla."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "bonesy",
@@ -1950,7 +2023,8 @@
         "css": "tag-auto",
         "desc": "Cuando esta carta ataca al Líder rival, tu oponente debe elegir entre mandar la carta superior de su mazo a la pila de descartes o cambiar uno de sus manás activos a modo descanso."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "hogrider",
@@ -1978,7 +2052,8 @@
         "css": "tag-doble",
         "desc": "Si esta carta inflige daño, inflige 2 puntos de daño en lugar de 1"
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "phantom",
@@ -2001,7 +2076,8 @@
         "css": "tag-auto",
         "desc": "Cuando esta carta ataca, si tu oponente no tiene ninguna unidad en modo descanso en su campo, esta carta gana +10000 de poder durante esta batalla."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "aquaman",
@@ -2024,7 +2100,8 @@
         "css": "tag-auto",
         "desc": "Cuando esta carta ataca al Líder rival, si tu oponente tiene al menos 2 unidades en modo descanso en su campo, este ataque no puede ser countereado."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "peppa",
@@ -2047,7 +2124,8 @@
         "css": "tag-perm",
         "desc": "Durante una batalla en la que esta carta esté atacando, Peppa gana +2500 de poder por cada carta que coloques en tu Zona de Combo."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "joe",
@@ -2070,7 +2148,8 @@
         "css": "tag-auto",
         "desc": "Cuando una de tus otras unidades de origen \"Minecraft\" es derrotada en batalla, Joe se enfurece: gana +5000 de poder y [Doble Golpe] hasta el final de tu siguiente turno."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "araña",
@@ -2093,7 +2172,8 @@
         "css": "tag-auto",
         "desc": "Al entrar al campo, elige una unidad del rival en juego. Esa unidad no puede declarar ataques ni ser utilizada para combos hasta el final del próximo turno de tu oponente."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "calaveras",
@@ -2121,7 +2201,8 @@
         "css": "tag-venganza",
         "desc": "Si esta carta pierde una batalla, la carta ganadora es destruida automáticamente al final de la batalla."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "leo",
@@ -2149,7 +2230,8 @@
         "css": "tag-active",
         "desc": "Principal: Si te van a infligir un punto de daño que vacíe tu última vida y te haga perder la partida, puedes destruir a Leopima en su lugar para mantenerte a 1 vida."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "ilegal",
@@ -2167,7 +2249,8 @@
         "css": "tag-active",
         "desc": "Principal: Elige una de tus unidades en juego; esa unidad gana [Triple Golpe] durante este turno. Al final del turno, destruye esa unidad y mándala a tu pila de descartes."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "rostros",
@@ -2190,7 +2273,8 @@
         "css": "tag-desafio",
         "desc": "Esta carta activa el efecto del líder “Iniciador”"
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "layton",
@@ -2213,7 +2297,8 @@
         "css": "tag-desafio",
         "desc": "Esta carta activa el efecto del líder “Iniciador”"
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "desafio",
@@ -2236,7 +2321,8 @@
         "css": "tag-desafio",
         "desc": "Esta carta activa el efecto del líder “Iniciador”"
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "quiz",
@@ -2259,7 +2345,8 @@
         "css": "tag-desafio",
         "desc": "Esta carta activa el efecto del líder “Iniciador”"
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "curriculum",
@@ -2277,7 +2364,8 @@
         "css": "tag-active",
         "desc": "Principal: Elige hasta 1 carta de tu mano y añádela a tu maná."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "tung",
@@ -2300,7 +2388,8 @@
         "css": "tag-auto",
         "desc": "Cuando realizas un combo desde tu mano con esta carta, la unidad atacante gana [Doble Golpe]. Si inflige daño, endereza un maná."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "skibidi",
@@ -2323,7 +2412,8 @@
         "css": "tag-auto",
         "desc": "Cuando juegas esta carta, si tu oponente tiene unidades en juego que no tengan el origen \"Meme\", esas unidades pierden -5000 de poder hasta el final del próximo turno del rival."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "trabajo",
@@ -2346,7 +2436,8 @@
         "css": "tag-auto",
         "desc": "Al entrar al campo, busca un \"Currículum\" de tu baraja y súbelo a tu mano."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "nexus",
@@ -2374,7 +2465,8 @@
         "css": "tag-critico",
         "desc": "Si esta carta inflige daño a un Líder, la carta de vida se coloca en la pila de descartes en lugar de ir a la mano del rival"
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "gato",
@@ -2397,7 +2489,8 @@
         "css": "tag-auto",
         "desc": "Al jugar esta carta, puedes tomar una carta de tu vida. Si lo haces, esta carta gana [Doble Golpe]."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "club",
@@ -2420,7 +2513,8 @@
         "css": "tag-auto",
         "desc": "Puedes descartar esta carta y robar una carta."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "donpollo",
@@ -2443,7 +2537,8 @@
         "css": "tag-auto",
         "desc": "Invoca dos cartas ficha \"Pollo\" (Las cartas \"Pollo\" tienen solo 1000 de poder. Pero tienen un poder de combo de 0+10000)"
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "portal",
@@ -2466,7 +2561,8 @@
         "css": "tag-auto",
         "desc": "Al entrar al campo, roba 1 carta. Luego, puedes elegir 1 carta de origen <Minecraft> de tu mano de coste 2 o menos y jugarla en el campo en modo descanso sin pagar su coste."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "omori",
@@ -2489,7 +2585,8 @@
         "css": "tag-doble",
         "desc": "Si esta carta inflige daño, inflige 2 puntos de daño en lugar de 1."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "kel",
@@ -2512,7 +2609,8 @@
         "css": "tag-perm",
         "desc": "Esta carta puede atacar a unidades del oponente que están en forma activa."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "aubrey",
@@ -2540,7 +2638,8 @@
         "css": "tag-bloqueo",
         "desc": "Cuando el rival ataca, puedes cambiar esta carta a modo descanso para convertirla en el nuevo objetivo del ataque"
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "hero",
@@ -2563,7 +2662,8 @@
         "css": "tag-auto",
         "desc": "Cuando esta carta ataca, puedes poner en forma activa a una carta aliada que cueste menos de 4 y que no sea personaje \"Hero\"."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "basil",
@@ -2586,7 +2686,8 @@
         "css": "tag-auto",
         "desc": "Cuando haces un Combo con esta carta, si tu Carta de Líder es negro y tu vida es 4 o menos, roba 1 carta y agrega +10000 al Combo de esta carta durante el resto del turno."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "release",
@@ -2609,7 +2710,8 @@
         "css": "tag-perm",
         "desc": "Puedes colocar a Omori, Kel, Aubrey y Hero bajo esta carta (cuesta 1 de maná por carta). Si lo haces, busca un \"Omori's gang\" de tu mano, baraja o pila de descartes y juégalo gratis. Cuando RELEASE ENERGY invoca un \"Omori's Gang\", esta carta vuelve a la pila de descartes."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "gang",
@@ -2647,7 +2749,8 @@
         "css": "tag-doble",
         "desc": "Después de que esta carta ataque, puedes cambiarla de modo descanso a activo una vez por turno."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "mewo",
@@ -2670,7 +2773,8 @@
         "css": "tag-auto",
         "desc": "Juegala y roba una carta."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "pluto",
@@ -2698,7 +2802,8 @@
         "css": "tag-doble",
         "desc": "Si esta carta inflige daño, inflige 2 puntos de daño en lugar de 1."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "sweetheart",
@@ -2721,7 +2826,8 @@
         "css": "tag-auto",
         "desc": "Al entrar al campo, obliga a tu oponente a descartar una carta o destruir una unidad suya de coste 4 o menos."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "capitan",
@@ -2744,7 +2850,8 @@
         "css": "tag-active",
         "desc": "Principal: Si tu Líder es Negro, puedes descartar 1 Carta Extra: Gana [Doble Golpe] y cambia una unidad rival de coste 3 o menos a modo descanso."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "sprout",
@@ -2772,7 +2879,8 @@
         "css": "tag-bloqueo",
         "desc": "Cuando el rival ataca, puedes cambiar esta carta a modo descanso para convertirla en el nuevo objetivo del ataque."
       }
-    ]
+    ],
+    "expansion": "Mundos Cruzados"
   },
   {
     "id": "tokenz",
