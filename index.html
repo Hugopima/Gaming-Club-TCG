@@ -8735,7 +8735,9 @@
         async function cargarBaseDeDatos() {
             if (datosCartas.length > 0) return;
             try {
-                const respuesta = await fetch('cartas.json');
+                // Bug fix: añadir cache-buster para evitar versiones antiguas en caché.
+                const cacheBuster = '?v=' + Date.now();
+                const respuesta = await fetch('cartas.json' + cacheBuster, { cache: 'no-store' });
                 datosCartas = await respuesta.json();
                 datosCartas.forEach(c => c.esEvo = false);
                 renderizarBiblioteca();
@@ -17887,7 +17889,10 @@
         async function cargarMaestrias() {
             if (window.MAESTRIAS_CARTAS) return;
             try {
-                const res = await fetch('maestrias.json');
+                // Bug fix: añadir cache-buster (?v=timestamp) para evitar que el
+                // navegador use una versión antigua en caché de maestrias.json.
+                const cacheBuster = '?v=' + Date.now();
+                const res = await fetch('maestrias.json' + cacheBuster, { cache: 'no-store' });
                 if (!res.ok) throw new Error('HTTP ' + res.status);
                 window.MAESTRIAS_CARTAS = await res.json();
                 console.log('[Maestrias] Cargadas', Object.keys(window.MAESTRIAS_CARTAS).length, 'maestrías');
