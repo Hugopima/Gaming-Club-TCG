@@ -713,11 +713,12 @@
         
         .close-btn {
             position: absolute; top: 20px; right: 25px; background: none; border: none;
-            color: white; font-size: 40px; cursor: pointer; opacity: 0.5; z-index: 100;
-            /* Bug fix: la X solo debe verse cuando el panel está abierto */
-            visibility: hidden; pointer-events: none; transition: opacity .25s ease, visibility .25s;
+            color: white; font-size: 40px; cursor: pointer; opacity: 0.7; z-index: 100;
+            transition: opacity .25s ease;
         }
-        #info-panel.open .close-btn { visibility: visible; pointer-events: auto; }
+        /* Bug fix: la X del panel de detalle de carta solo debe verse cuando el panel está abierto */
+        #info-panel:not(.open) .close-btn { visibility: hidden; pointer-events: none; opacity: 0; }
+        #info-panel.open .close-btn { visibility: visible; pointer-events: auto; opacity: 0.5; }
         .close-btn:hover { opacity: 1; color: var(--gold); }
 
         /* --- ZOOM --- */
@@ -903,6 +904,28 @@
         .deck-modal-actions { display: flex; gap: 10px; flex-wrap: wrap; margin: 16px 0 8px; justify-content: center; }
         .deck-modal-actions .plate-btn { min-width: 150px; padding: 12px 18px; font-size: 14px; }
         .deck-modal-close { position: absolute; top: 10px; right: 16px; }
+        /* Botón X de cerrar más visible para modales en partida */
+        .modal-close-x {
+            width: 38px !important; height: 38px !important;
+            border-radius: 50% !important;
+            background: #e74c3c !important;
+            border: 3px solid #fff !important;
+            color: #fff !important;
+            font-size: 24px !important; font-weight: 900 !important;
+            line-height: 1 !important;
+            opacity: 1 !important;
+            box-shadow: 0 4px 0 #a8281b, 0 6px 12px rgba(0,0,0,.4);
+            cursor: pointer !important;
+            display: flex !important; align-items: center !important; justify-content: center !important;
+            transition: transform .15s, box-shadow .15s;
+            z-index: 110;
+        }
+        .modal-close-x:hover {
+            transform: scale(1.1);
+            opacity: 1 !important;
+            color: #fff !important;
+        }
+        .modal-close-x:active { transform: translateY(2px); box-shadow: 0 2px 0 #a8281b; }
         @media (max-width: 850px) {
             .deck-top-zone, .deck-modal-body { grid-template-columns: 1fr; }
             .deck-header { justify-content: center; }
@@ -3425,7 +3448,7 @@
 
     <div id="deck-card-modal">
         <div class="deck-modal-content">
-            <button class="close-btn deck-modal-close" onclick="cerrarDetalleMazo()">×</button>
+            <button class="close-btn deck-modal-close modal-close-x" onclick="cerrarDetalleMazo()" title="Cerrar info de carta">×</button>
             <div id="deck-modal-body" class="deck-modal-body"></div>
         </div>
     </div>
@@ -3634,7 +3657,7 @@
 
     <div id="mana-pay-modal" class="game-modal hidden">
         <div class="game-modal-panel">
-            <button class="close-btn" onclick="cerrarPagoMana()">×</button>
+            <button class="close-btn modal-close-x" onclick="cerrarPagoMana()" title="Cancelar pago">×</button>
             <h2>Pagar coste</h2>
             <p id="mana-pay-text"></p>
             <div id="mana-pay-options" class="mana-pay-options"></div>
@@ -12048,6 +12071,11 @@
             });
             // Recibir snapshot del rival
             _socketOnline.on('accion-rival', (data) => {
+                // Bug fix: si estadoPartida es null o no es online, ignorar el evento
+                // (puede llegar después de terminar la partida o al cerrarla).
+                if (!estadoPartida || estadoPartida.modo !== 'online' || estadoPartida.finalizada) {
+                    return;
+                }
                 // Bug fix: ocultar overlay defensivamente al recibir cualquier acción.
                 if (typeof ocultarReconnectOverlay === 'function') ocultarReconnectOverlay();
                 if (data.tipo === 'snapshot') {
@@ -13361,7 +13389,7 @@
 
         // Recibir fin de turno del rival: ahora me toca a mí
         function recibirFinTurnoRival(data) {
-            if (!estadoPartida || estadoPartida.modo !== 'online') return;
+            if (!estadoPartida || estadoPartida.modo !== 'online' || estadoPartida.finalizada) return;
             const snap = data.snapshot;
             // Bug Rojo fix: limpiar counter play pendiente al iniciar mi turno.
             // Si el rival jugó una unidad y yo no respondí con counter play, ya no puedo hacerlo.
@@ -13498,7 +13526,7 @@
 
         // Recibir snapshot del rival (actualización en medio de su turno)
         function aplicarSnapshotRival(data) {
-            if (!estadoPartida || estadoPartida.modo !== 'online') return;
+            if (!estadoPartida || estadoPartida.modo !== 'online' || estadoPartida.finalizada) return;
             const snap = data.snapshot;
             if (snap.miEstado) {
                 // Detectar si el rival robó una carta (su mano aumentó)
@@ -13618,12 +13646,14 @@
         }
 
         function recibirJugarCartaRival(data) {
+            // Bug fix: si estadoPartida es null (partida cerrada), no hacer nada.
+            if (!estadoPartida || estadoPartida.modo !== 'online' || estadoPartida.finalizada) return;
             // Por ahora solo actualizar con snapshot
             aplicarSnapshotRival(data);
             // Bug Rojo fix: Si la carta jugada por el rival es una unidad, marcar el counter play
             // como pendiente (para que al arrastrar la carta al campo se ejecute).
             // NO mostrar botón automático — el jugador debe arrastrar la carta como las demás.
-            if (data.snapshot && data._cartaJugadaRival) {
+            if (data.snapshot && data._cartaJugadaRival && estadoPartida) {
                 const cardId = data._cartaJugadaRival;
                 const carta = getCardById(cardId);
                 if (carta && claseNormalizada(carta) === 'unidad') {
@@ -13761,6 +13791,7 @@
         }
 
         function recibirAtaqueRival(data) {
+            if (!estadoPartida || estadoPartida.modo !== 'online' || estadoPartida.finalizada) return;
             // Por ahora solo actualizar con snapshot
             aplicarSnapshotRival(data);
         }
@@ -15855,7 +15886,8 @@
         }
 
         function recibirComboDefensora(data) {
-            if (!estadoPartida || estadoPartida.modo !== 'online') return;
+            // Bug fix: también verificar finalizada para evitar errores tras cerrar partida.
+            if (!estadoPartida || estadoPartida.modo !== 'online' || estadoPartida.finalizada) return;
             estadoPartida.faseIndex = 4;
             estadoPartida.log = '¡Puedes combar para defender! Arrastra cartas al área de combo o pulsa Siguiente.';
             estadoPartida.ataqueActual = estadoPartida.ataqueActual || {};
@@ -15887,12 +15919,14 @@
         }
 
         function recibirComboDefensoraTerminado(data) {
-            if (!estadoPartida || !estadoPartida.ataqueActual) return;
+            if (!estadoPartida || estadoPartida.finalizada || !estadoPartida.ataqueActual) return;
             estadoPartida.ataqueActual.defensorCombo = data.defensorCombo || 0;
             terminarAtaque();
         }
 
         async function terminarAtaque() {
+            // Bug fix: si estadoPartida es null (partida cerrada), no hacer nada.
+            if (!estadoPartida || estadoPartida.finalizada) return;
             const ataque = estadoPartida.ataqueActual;
             // === IA COMBO DEFENSIVO (1v1 y tutorial) ===
             // Si el jugador ataca y el rival es la IA, la IA puede combar para defender.
@@ -17383,9 +17417,11 @@
                         });
                         // Sistema de decisiones online (petición/respuesta del rival)
                         _socketOnline.on('peticion-rival-recibida', (data) => {
+                            if (!estadoPartida || estadoPartida.finalizada) return;
                             if (window.MotorEfectos) MotorEfectos.recibirPeticionRival(data);
                         });
                         _socketOnline.on('respuesta-peticion-recibida', (data) => {
+                            if (!estadoPartida || estadoPartida.finalizada) return;
                             if (window.MotorEfectos) MotorEfectos.recibirRespuestaRival(data);
                         });
                         // Bug fix: tras reconectar, enviar snapshot inmediato para que el rival
