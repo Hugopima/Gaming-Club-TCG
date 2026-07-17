@@ -86,7 +86,8 @@ function inventarioDefault(username) {
             counterPlays: 0, bloqueadores: 0,
             cartasUnicas: 0, comunesUnicas: 0, infrecuentesUnicas: 0, rarasUnicas: 0, superRarasUnicas: 0,
             logrosReclamados: [],
-            ultimoLogin: null, loginClaimedHoy: false, primeraVictoriaHoy: false
+            ultimoLogin: null, loginClaimedHoy: false, primeraVictoriaHoy: false,
+            tutorialRewardClaimed: false
         },
         misiones: {
             diarias: [],
@@ -98,7 +99,11 @@ function inventarioDefault(username) {
         amigos: [],
         cartaFavorita: null,
         tituloActivo: null,
-        perfil: { bio: '' }
+        perfil: { bio: '' },
+        // Sistema de maestrías de cartas: { cardId: { m1: 0|1|2, m2: 0|1|2, m3: 0|1, progreso: {...}, tituloReclamado: bool } }
+        maestrias: {},
+        // Títulos desbloqueados por maestrías (IDs: 'maestria_<cardId>')
+        titulosDesbloqueados: []
     };
 }
 
@@ -222,7 +227,7 @@ app.post('/auth/discord', async (req, res) => {
 // Guardar inventario completo
 app.post('/api/guardar-inventario', async (req, res) => {
     try {
-        const { discord_id, coins, energy, cartas, stats, misiones, mazos, amigos, cartaFavorita, tituloActivo, perfil } = req.body;
+        const { discord_id, coins, energy, cartas, stats, misiones, mazos, amigos, cartaFavorita, tituloActivo, perfil, maestrias, titulosDesbloqueados } = req.body;
         if (!discord_id) return res.status(400).json({ error: 'Falta discord_id' });
         if (!supabase) return res.status(500).json({ error: 'Supabase no configurado' });
 
@@ -249,6 +254,8 @@ app.post('/api/guardar-inventario', async (req, res) => {
                     cartaFavorita: cartaFavorita || null,
                     tituloActivo: tituloActivo || null,
                     perfil: perfil || { bio: '' },
+                    maestrias: maestrias || {},
+                    titulosDesbloqueados: titulosDesbloqueados || [],
                     updated_at: new Date()
                 })
                 .eq('discord_id', discord_id)
@@ -272,6 +279,8 @@ app.post('/api/guardar-inventario', async (req, res) => {
                     cartaFavorita: cartaFavorita || null,
                     tituloActivo: tituloActivo || null,
                     perfil: perfil || { bio: '' },
+                    maestrias: maestrias || {},
+                    titulosDesbloqueados: titulosDesbloqueados || [],
                     updated_at: new Date()
                 })
                 .select()
