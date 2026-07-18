@@ -12633,6 +12633,19 @@
                             // Si el atacante rival fue destruido (yo gané la defensa)
                             if (r.atacanteDestruido) {
                                 estadoPartida.log = '¡Tu defensa destruye al atacante rival!';
+                                // Bug fix: hook maestría para el defensor del jugador.
+                                // M2 'Derrota X unidades rivales con esta carta' también debe
+                                // contar cuando se defiende y se destruye al atacante rival.
+                                if (r.objetivo?.index != null && estadoPartida.jugador.batalla[r.objetivo.index]) {
+                                    const defensorJugador = estadoPartida.jugador.batalla[r.objetivo.index];
+                                    // NOTA: la unidad defensora ya pudo ser destruida y quitada del array
+                                    // en el bloque r.defensorDestruido anterior. Si ya no está, usar
+                                    // el ID del objetivo del resultado si está disponible.
+                                    const defensorId = defensorJugador?.id || r.objetivo?.cardId || r.defensorId;
+                                    if (defensorId && typeof trackMaestria_destruirConUnidad === 'function') {
+                                        try { trackMaestria_destruirConUnidad(defensorId); } catch(e) {}
+                                    }
+                                }
                                 // Si el atacante rival era Minecraft, mi Joe se enfurece.
                                 if (r.atacanteId && window.MotorEfectos) {
                                     const atkCarta = getCardById(r.atacanteId);
@@ -15513,13 +15526,8 @@
         }
 
         function ponerManaDesdeMano(index) {
-            // Hook maestría: rastrear puesta de maná
-            try {
-                const idMana = estadoPartida?.jugador?.mano?.[index];
-                if (idMana && typeof trackMaestria_ponerMana === 'function') {
-                    trackMaestria_ponerMana(idMana);
-                }
-            } catch(e) {}
+            // Bug fix: verificar validez ANTES de contar para maestría.
+            // Antes el hook se llamaba al inicio, contando intentos fallidos.
             if (!partidaInteractiva()) return;
             if (estadoPartida.faseIndex !== 0) return alert('Solo puedes cargar mana en la fase de carga.');
             if (estadoPartida.jugador.manaUsadoEsteTurno) return alert('Solo puedes poner una carta como mana por turno.');
@@ -15528,6 +15536,10 @@
             estadoPartida.jugador.manaActivo = estadoPartida.jugador.mana.filter(m => !m.rested).length;
             estadoPartida.jugador.manaUsadoEsteTurno = true;
             estadoPartida.log = `${getCardById(id)?.nombre || 'Una carta'} pasa a MANÁ.`;
+            // Hook maestría: rastrear puesta de maná (solo si la operación fue válida)
+            if (id && typeof trackMaestria_ponerMana === 'function') {
+                try { trackMaestria_ponerMana(id); } catch(e) {}
+            }
             renderizarPartida();
             if (estadoPartida.modo === 'online') sincronizarEstadoOnline('poner-mana');
         }
@@ -15658,6 +15670,11 @@
                 estadoPartida.jugador.batalla.push(u);
                 if (window.MotorEfectos) await MotorEfectos.alJugar('jugador', id, u);
                 estadoPartida.log = carta.nombre + ' evoluciona al campo.';
+                // Bug fix: hook maestría para cartas jugadas por evolución.
+                // Antes se hacía return sin llamar al hook, así que no contaban para M1.
+                if (typeof trackMaestria_jugarCarta === 'function') {
+                    try { trackMaestria_jugarCarta(id); } catch(e) {}
+                }
                 renderizarPartida(); return;
             }
             if (window.MotorEfectos && !MotorEfectos.puedeJugar(carta, estadoPartida.jugador)) return alert('No cumples las condiciones para jugar esta carta.');
@@ -16547,13 +16564,9 @@
         }
 
         function intentarCombarDesdeMano(index) {
-            // Hook maestría: rastrear combinación de carta
-            try {
-                const idCombo = estadoPartida?.jugador?.mano?.[index];
-                if (idCombo && typeof trackMaestria_combinarCarta === 'function') {
-                    trackMaestria_combinarCarta(idCombo);
-                }
-            } catch(e) {}
+            // Bug fix: el hook de combinar se movió a resolverComboPendiente.
+            // Antes se llamaba aquí, pero esto contaba combinaciones fallidas
+            // (es líder, es token, es extra, no tiene maná, etc.).
             const id = estadoPartida.jugador.mano[index];
             const carta = getCardById(id);
             if (!carta || esLider(carta) || esToken(carta)) return;
@@ -16615,6 +16628,11 @@
             manaIndexes.forEach(i => estadoPartida.jugador.mana[i].rested = true);
             estadoPartida.jugador.manaActivo = estadoPartida.jugador.mana.filter(m => !m.rested).length;
             let id = pendiente.cardId;
+            // Bug fix: hook maestría aquí (cuando la combinación se ejecuta realmente).
+            // Antes estaba en intentarCombarDesdeMano/Campo, que contaba combinaciones fallidas.
+            if (id && typeof trackMaestria_combinarCarta === 'function') {
+                try { trackMaestria_combinarCarta(id); } catch(e) {}
+            }
             if (pendiente.origen === 'mano') estadoPartida.jugador.mano.splice(pendiente.index, 1);
             if (pendiente.origen === 'campo') {
                 const atacanteRef = estadoPartida.ataqueActual?.atacanteRef;
@@ -17780,6 +17798,20 @@
                                                 if (window.MotorEfectos && MotorEfectos.marcarMomolacSiAplica) MotorEfectos.marcarMomolacSiAplica('jugador', def.id);
                                                 estadoPartida.jugador.batalla.splice(idx, 1);
                                                 if (window.MotorEfectos) MotorEfectos.dispatch(def.id, 'alDestruida', ['jugador']);
+                                            }
+                                        }
+                                        // Bug fix: si el atacante rival fue destruido (mi defensa ganó),
+                                        // contar para maestría M2 'Derrota X unidades rivales con esta carta'.
+                                        if (r.atacanteDestruido) {
+                                            // El defensor del jugador es la unidad en r.objetivo.index
+                                            // (que ya pudo ser destruida si r.defensorDestruido también es true,
+                                            // pero en ese caso la defensa sería un intercambio).
+                                            // Si el defensor sobrevivió, está en estadoPartida.jugador.batalla[idx].
+                                            const idx = r.objetivo?.index;
+                                            const defensorJugador = (idx != null) ? estadoPartida.jugador.batalla[idx] : null;
+                                            const defensorId = defensorJugador?.id || r.objetivo?.cardId || r.defensorId;
+                                            if (defensorId && typeof trackMaestria_destruirConUnidad === 'function') {
+                                                try { trackMaestria_destruirConUnidad(defensorId); } catch(e) {}
                                             }
                                         }
                                         if (typeof mostrarChoque === 'function' && r.pa != null && r.pd != null) {
