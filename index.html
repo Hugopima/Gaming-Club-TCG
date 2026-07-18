@@ -14304,6 +14304,12 @@
             }
             estadoPartida.finalizada = true;
             estadoPartida.recompensasDadas = true;
+            // Bug fix: limpiar cartas jugadas en partida (para M1 'juega y gana')
+            // cuando se termina la partida. Si fue victoria, trackMaestria_ganarPartida
+            // ya lo limpió; si fue derrota, lo limpiamos aquí.
+            if (resultado !== 'victoria' && typeof limpiarCartasJugadasEnPartida === 'function') {
+                limpiarCartasJugadasEnPartida();
+            }
 
             // === MODO COMPETITIVO: Best of 3 ===
             if (_esCompetitivo && _compSetActual > 0) {
@@ -16806,6 +16812,10 @@
             document.getElementById('game-end-overlay')?.classList.add('hidden');
             document.getElementById('leader-intro-overlay')?.classList.add('hidden');
             document.getElementById('surrender-dialog')?.classList.add('hidden');
+            // Bug fix: limpiar cartas jugadas en partida al salir al menú
+            if (typeof limpiarCartasJugadasEnPartida === 'function') {
+                limpiarCartasJugadasEnPartida();
+            }
             // Abortar el flujo async del tutorial si estábamos en uno
             if (estadoPartida && estadoPartida.modo === 'tutorial') {
                 _tutorialAbortado = true;
@@ -18000,31 +18010,57 @@
         // ===== TRACKING DE EVENTOS PARA MAESTRÍAS =====
         // Estas funciones deben llamarse desde los puntos donde ocurren eventos relevantes.
 
+        // Bug fix: Set temporal que registra qué cartas se han JUGADO como unidad
+        // en la partida actual. Se usa para que M1 'Juega y gana X veces' solo
+        // cuente las cartas que realmente se jugaron (no las que están en el mazo
+        // pero no se usaron, o se usaron solo para maná/combo).
+        let _cartasJugadasEnPartida = new Set();
+
         // Llamar cuando se juega una carta (cualquier modo, IA u online)
         function trackMaestria_jugarCarta(cardId) {
             if (!cardId) return;
+            // Bug fix: registrar la carta como jugada en esta partida
+            _cartasJugadasEnPartida.add(cardId);
             const s = getMaestriaCardState(cardId);
             if (!s) return;
             s.progreso.jugar = (s.progreso.jugar || 0) + 1;
             guardarMaestriasState();
         }
 
+        // Limpiar el Set de cartas jugadas al finalizar la partida.
+        // Debe llamarse al terminar la partida (victoria, derrota, rendición, salir al menú).
+        function limpiarCartasJugadasEnPartida() {
+            _cartasJugadasEnPartida = new Set();
+        }
+
         // Llamar cuando se gana una partida, pasando el mazo (líderId + ids de cartas)
+        // Bug fix: M1 'Juega y gana X veces' solo cuenta si la carta se JUGÓ como unidad.
+        // Las cartas del mazo que no se jugaron (o solo se usaron para maná/combo) NO cuentan.
+        // Los líderes siempre cuentan (se consideran 'jugados' automáticamente).
         function trackMaestria_ganarPartida(liderId, cartasEnMazo) {
             try {
-                const ids = new Set();
-                if (liderId) ids.add(liderId);
+                // Construir el set de cartas del mazo
+                const cartasMazoSet = new Set();
+                if (liderId) cartasMazoSet.add(liderId);
                 if (Array.isArray(cartasEnMazo)) {
-                    cartasEnMazo.forEach(id => ids.add(id));
+                    cartasEnMazo.forEach(id => cartasMazoSet.add(id));
                 } else if (cartasEnMazo && typeof cartasEnMazo === 'object') {
-                    Object.keys(cartasEnMazo).forEach(id => ids.add(id));
+                    Object.keys(cartasEnMazo).forEach(id => cartasMazoSet.add(id));
                 }
-                ids.forEach(id => {
+                // Bug fix: para cada carta del mazo, solo contar la victoria si:
+                // - Es el líder (siempre cuenta), O
+                // - Se jugó como unidad en esta partida (está en _cartasJugadasEnPartida)
+                cartasMazoSet.forEach(id => {
+                    const esLider = (id === liderId);
+                    const fueJugada = _cartasJugadasEnPartida.has(id);
+                    if (!esLider && !fueJugada) return; // No contar
                     const s = getMaestriaCardState(id);
                     if (!s) return;
                     s.progreso.ganar = (s.progreso.ganar || 0) + 1;
                 });
                 guardarMaestriasState();
+                // Limpiar el Set para la próxima partida
+                limpiarCartasJugadasEnPartida();
             } catch (e) { console.error('[Maestrias] trackMaestria_ganarPartida:', e); }
         }
 
@@ -18364,6 +18400,7 @@
         window.trackMaestria_destruirConUnidad = trackMaestria_destruirConUnidad;
         window.trackMaestria_combinarCarta = trackMaestria_combinarCarta;
         window.trackMaestria_ponerMana = trackMaestria_ponerMana;
+        window.limpiarCartasJugadasEnPartida = limpiarCartasJugadasEnPartida;
 
         // ===== CARGAR MAESTRÍAS AL INICIO =====
         // Hacerlo en paralelo con cargarBaseDeDatos
