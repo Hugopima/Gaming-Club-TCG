@@ -227,7 +227,7 @@ app.post('/auth/discord', async (req, res) => {
 // Guardar inventario completo
 app.post('/api/guardar-inventario', async (req, res) => {
     try {
-        const { discord_id, coins, energy, cartas, stats, misiones, mazos, amigos, cartaFavorita, tituloActivo, perfil, maestrias, titulosDesbloqueados } = req.body;
+        const { discord_id, coins, energy, cartas, stats, misiones, mazos, amigos, cartaFavorita, tituloActivo, perfil } = req.body;
         if (!discord_id) return res.status(400).json({ error: 'Falta discord_id' });
         if (!supabase) return res.status(500).json({ error: 'Supabase no configurado' });
 
@@ -254,8 +254,6 @@ app.post('/api/guardar-inventario', async (req, res) => {
                     cartaFavorita: cartaFavorita || null,
                     tituloActivo: tituloActivo || null,
                     perfil: perfil || { bio: '' },
-                    maestrias: maestrias || {},
-                    titulosDesbloqueados: titulosDesbloqueados || [],
                     updated_at: new Date()
                 })
                 .eq('discord_id', discord_id)
@@ -279,8 +277,6 @@ app.post('/api/guardar-inventario', async (req, res) => {
                     cartaFavorita: cartaFavorita || null,
                     tituloActivo: tituloActivo || null,
                     perfil: perfil || { bio: '' },
-                    maestrias: maestrias || {},
-                    titulosDesbloqueados: titulosDesbloqueados || [],
                     updated_at: new Date()
                 })
                 .select()
