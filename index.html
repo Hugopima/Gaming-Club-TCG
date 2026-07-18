@@ -10169,6 +10169,40 @@
             if (inv.stats) {
                 const statsSupa = inv.stats;
                 const statsLocal = _statsJugador || {};
+                // Bug fix: extraer maestrias y titulosDesbloqueados que se guardan DENTRO de stats
+                // (porque la tabla de Supabase no tiene columnas separadas para ellos).
+                const maestriasFromStats = statsSupa._maestrias || {};
+                const titulosFromStats = statsSupa._titulosDesbloqueados || [];
+                // Fusionar las maestrias de stats con las locales
+                const maestriasLocalParaStats = _inventario?.maestrias || {};
+                const maestriasFusionadasFromStats = { ...maestriasLocalParaStats };
+                for (const cardId in maestriasFromStats) {
+                    const localM = maestriasLocalParaStats[cardId];
+                    const supaM = maestriasFromStats[cardId];
+                    if (!localM) {
+                        maestriasFusionadasFromStats[cardId] = supaM;
+                    } else if (supaM) {
+                        maestriasFusionadasFromStats[cardId] = {
+                            m1: Math.max(localM.m1 || 0, supaM.m1 || 0),
+                            m2: Math.max(localM.m2 || 0, supaM.m2 || 0),
+                            m3: Math.max(localM.m3 || 0, supaM.m3 || 0),
+                            tituloReclamado: Boolean(localM.tituloReclamado) || Boolean(supaM.tituloReclamado),
+                            progreso: {
+                                jugar: Math.max(localM.progreso?.jugar || 0, supaM.progreso?.jugar || 0),
+                                ganar: Math.max(localM.progreso?.ganar || 0, supaM.progreso?.ganar || 0),
+                                despertar: Math.max(localM.progreso?.despertar || 0, supaM.progreso?.despertar || 0),
+                                destruir: Math.max(localM.progreso?.destruir || 0, supaM.progreso?.destruir || 0),
+                                combinar: Math.max(localM.progreso?.combinar || 0, supaM.progreso?.combinar || 0),
+                                poner_mana: Math.max(localM.progreso?.poner_mana || 0, supaM.progreso?.poner_mana || 0)
+                            }
+                        };
+                    }
+                }
+                // Actualizar _inventario.maestrias con la fusión
+                _inventario.maestrias = maestriasFusionadasFromStats;
+                // Fusionar titulosDesbloqueados
+                const titulosLocalParaStats = _inventario?.titulosDesbloqueados || [];
+                _inventario.titulosDesbloqueados = Array.from(new Set([...titulosLocalParaStats, ...titulosFromStats]));
                 // Función auxiliar: tomar el máximo de un campo numérico
                 const maxNum = (a, b) => {
                     const na = Number(a); const nb = Number(b);
@@ -10261,6 +10295,12 @@
             }
             console.log('[Supabase] Guardando inventario para discord_id:', user.id, '- coins:', _inventario.coins, '- cartas:', Object.keys(_inventario.cartas).length);
             try {
+                // Bug fix: guardar maestrias y titulosDesbloqueados DENTRO de stats
+                // (no como columnas separadas) para que funcionen sin modificar el schema.
+                const statsParaSupabase = Object.assign({}, _statsJugador || {}, {
+                    _maestrias: _inventario.maestrias || {},
+                    _titulosDesbloqueados: _inventario.titulosDesbloqueados || []
+                });
                 const res = await fetch(DISCORD_API_BASE + '/api/guardar-inventario', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -10269,15 +10309,13 @@
                         coins: _inventario.coins,
                         energy: _inventario.energy,
                         cartas: _inventario.cartas,
-                        stats: _statsJugador,
+                        stats: statsParaSupabase,
                         misiones: _misionesState,
                         mazos: JSON.parse(localStorage.getItem('gc_tcg_mazos') || '[]'),
                         amigos: _inventario.amigos || [],
                         cartaFavorita: _inventario.cartaFavorita || null,
                         tituloActivo: _inventario.tituloActivo || null,
-                        perfil: _inventario.perfil || { bio: '' },
-                        maestrias: _inventario.maestrias || {},
-                        titulosDesbloqueados: _inventario.titulosDesbloqueados || []
+                        perfil: _inventario.perfil || { bio: '' }
                     })
                 });
                 if (!res.ok) {
@@ -10974,8 +11012,9 @@
                 _misionesState = { diarias: generarMisionesDiarias(), semanales: generarMisionesSemanales(), fechaDiarias: new Date().toDateString(), fechaSemanales: new Date().toISOString() };
             }
             guardarMisiones();
-            // Login diario
-            verificarLoginDiario();
+            // Bug fix: NO llamar a verificarLoginDiario aquí. Se llama DESPUÉS
+            // de sincronizar con Supabase, para evitar dar monedas del login
+            // diario múltiples veces (en cada dispositivo nuevo).
         }
 
         function guardarStats() {
@@ -10998,7 +11037,17 @@
         }
 
         function verificarLoginDiario() {
+            if (!_statsJugador) return;
             const hoy = new Date().toDateString();
+            // Bug fix: usar loginClaimedHoy como flag principal.
+            // Si ya se reclamó hoy, NO dar monedas (aunque ultimoLogin sea null).
+            // Esto evita que se den monedas múltiples veces en diferentes dispositivos.
+            const yaClaimedHoy = _statsJugador.loginClaimedHoy === true && _statsJugador.ultimoLogin === hoy;
+            if (yaClaimedHoy) {
+                // Ya se reclamó hoy, no hacer nada
+                return;
+            }
+            // Si ultimoLogin es de otro día (o null), es un nuevo día: dar recompensa
             if (_statsJugador.ultimoLogin !== hoy) {
                 _statsJugador.ultimoLogin = hoy;
                 _statsJugador.loginClaimedHoy = false;
@@ -11006,7 +11055,7 @@
                 // Dar recompensa de login diario (100 monedas)
                 if (_inventario) {
                     _inventario.coins += 100;
-                    guardarInventario();
+                    guardarInventarioInmediato();
                     actualizarBarraMonedas();
                     mostrarNotificacionReward('Login diario', 100, '🪙');
                 }
@@ -17572,6 +17621,10 @@
             }
             // Recargar stats por si aplicarInventarioDeSupabase los modificó
             cargarStats();
+            // Bug fix: llamar a verificarLoginDiario DESPUÉS de sincronizar con Supabase.
+            // Así, si el jugador ya reclamó el login diario hoy desde otro dispositivo,
+            // loginClaimedHoy será true y no se le darán monedas duplicadas.
+            verificarLoginDiario();
             cargarNombreJugador();
             // Discord: manejar callback si viene con ?code=
             await manejarCallbackDiscord();
