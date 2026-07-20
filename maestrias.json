@@ -3308,17 +3308,17 @@
       {
         "id": "m2",
         "tipo": "club_energy",
-        "campoProgreso": "dano_lider",
+        "campoProgreso": "bloquear",
         "niveles": [
           {
             "objetivo": 50,
             "reward": 100,
-            "desc": "Inflige 1 de daño al líder rival 50 veces con esta carta"
+            "desc": "Bloquea con esta carta 50 veces"
           },
           {
             "objetivo": 100,
             "reward": 150,
-            "desc": "Inflige 1 de daño al líder rival 100 veces con esta carta"
+            "desc": "Bloquea con esta carta 100 veces"
           }
         ]
       },
@@ -5415,17 +5415,17 @@
       {
         "id": "m2",
         "tipo": "club_energy",
-        "campoProgreso": "jugar",
+        "campoProgreso": "dano_lider",
         "niveles": [
           {
             "objetivo": 50,
             "reward": 100,
-            "desc": "Juega esta carta 50 veces"
+            "desc": "Inflige 1 de daño al líder rival 50 veces con esta carta"
           },
           {
             "objetivo": 100,
             "reward": 150,
-            "desc": "Juega esta carta 100 veces"
+            "desc": "Inflige 1 de daño al líder rival 100 veces con esta carta"
           }
         ]
       },
@@ -5513,17 +5513,17 @@
       {
         "id": "m2",
         "tipo": "club_energy",
-        "campoProgreso": "destruir",
+        "campoProgreso": "dano_lider",
         "niveles": [
           {
             "objetivo": 50,
             "reward": 100,
-            "desc": "Destruye unidades rivales con esta carta 50 veces"
+            "desc": "Inflige 1 de daño al líder rival 50 veces con esta carta"
           },
           {
             "objetivo": 100,
             "reward": 150,
-            "desc": "Destruye unidades rivales con esta carta 100 veces"
+            "desc": "Inflige 1 de daño al líder rival 100 veces con esta carta"
           }
         ]
       },
@@ -5709,17 +5709,17 @@
       {
         "id": "m2",
         "tipo": "club_energy",
-        "campoProgreso": "jugar",
+        "campoProgreso": "dano_lider",
         "niveles": [
           {
             "objetivo": 50,
             "reward": 100,
-            "desc": "Juega esta carta 50 veces"
+            "desc": "Inflige 1 de daño al líder rival 50 veces con esta carta"
           },
           {
             "objetivo": 100,
             "reward": 150,
-            "desc": "Juega esta carta 100 veces"
+            "desc": "Inflige 1 de daño al líder rival 100 veces con esta carta"
           }
         ]
       },
@@ -5905,17 +5905,17 @@
       {
         "id": "m2",
         "tipo": "club_energy",
-        "campoProgreso": "jugar",
+        "campoProgreso": "combinar",
         "niveles": [
           {
             "objetivo": 50,
             "reward": 100,
-            "desc": "Juega esta carta 50 veces"
+            "desc": "Comba con esta carta 50 veces"
           },
           {
             "objetivo": 100,
             "reward": 150,
-            "desc": "Juega esta carta 100 veces"
+            "desc": "Comba con esta carta 100 veces"
           }
         ]
       },
