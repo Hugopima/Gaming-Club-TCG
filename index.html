@@ -3458,7 +3458,7 @@
                         <div class="info-box"><span class="info-label">Clase</span><span id="p-clase" class="info-value"></span></div>
                         <div class="info-box"><span class="info-label">Personaje</span><span id="p-personaje" class="info-value"></span></div>
                         <div class="info-box"><span class="info-label">Tipo</span><span id="p-tipo" class="info-value"></span></div>
-                        <div class="info-box"><span class="info-label">Origen</span><span id="p-origen" class="info-value"></span></div>
+                        <div class="info-box" id="box-origen"><span class="info-label">Origen</span><span id="p-origen" class="info-value"></span></div>
                         <div class="info-box"><span class="info-label">Poder</span><span id="p-poder" class="info-value"></span></div>
                         <div class="info-box" id="box-coste"><span class="info-label">Coste</span><span id="p-coste" class="info-value"></span></div>
                         <div class="info-box" id="box-combo" style="grid-column: span 2;"><span class="info-label">Combo</span><span id="p-combo" class="info-value"></span></div>
@@ -4805,11 +4805,11 @@
       // 3. La carta del jugador va al descarte (no al campo de batalla).
       //    El maná ya se gastó.
       if (typeof log === 'function') {
-        log('¡Counter Play de la IA! ' + (cp.c.nombre || 'Counter') + ' niega a ' + (cartaJugador.nombre || cardIdJugador) + ' y va al descarte.');
+        log('¡Counter Play de la IA! ' + (cp.c?.nombre || 'Counter') + ' niega a ' + (cartaJugador?.nombre || cardIdJugador) + ' y va al descarte.');
       }
       // 4. Notificación visual (reutiliza la notificación de counter)
       if (typeof mostrarNotificacionCounter === 'function') {
-        mostrarNotificacionCounter(cp.c.nombre || 'Counter de la IA');
+        mostrarNotificacionCounter(cp.c?.nombre || 'Counter de la IA');
       }
       return true;
     }
@@ -5103,7 +5103,7 @@
       const z = zonaJugador('jugador');
       const opts = z.mano.map((id, i) => ({ id, i, c: getCardById(id) }))
         .filter(x => claseNormalizada(x.c) === 'unidad' && Number(x.c?.costeTotal || 99) <= 2)
-        .map(x => ({ label: x.c.nombre, value: x.i, cardId: x.id }));
+        .map(x => ({ label: x.c?.nombre, value: x.i, cardId: x.id }));
       if (!opts.length) {
         window._socketOnline.emit('respuesta-peticion', { token, respuesta: null });
         return;
@@ -5512,7 +5512,7 @@
       const anim = tops.map((id, i) => ({ id, i, c: getCardById(id) }))
         .filter(x => String(x.c?.tipo || '').toLowerCase().includes('animatr') && Number(x.c?.costeTotal || 99) <= 3);
       if (anim.length) {
-        const opts = anim.map(x => ({ label: x.c.nombre + ' (coste ' + (x.c.costeTotal || 0) + ')', value: x.id, cardId: x.id }));
+        const opts = anim.map(x => ({ label: x.c?.nombre + ' (coste ' + (x.c.costeTotal || 0) + ')', value: x.id, cardId: x.id }));
         const pick = await elegirConModal('Adivina evo: elige Animatrónico ≤3 para jugar gratis', opts.concat([{ label: 'No jugar ninguna', value: null }]));
         if (pick) {
           // Jugar la carta gratis.
@@ -5655,7 +5655,7 @@
         const z = zonaJugador(quien);
         const opts = z.descarte.map((id, i) => ({ id, i, c: getCardById(id) }))
           .filter(x => String(x.c?.origen || '').toLowerCase().includes('grupo') || String(x.c?.origen || '').toLowerCase().includes('minecraft'))
-          .map(x => ({ label: x.c.nombre, value: x.i, cardId: x.id }));
+          .map(x => ({ label: x.c?.nombre, value: x.i, cardId: x.id }));
         if (!opts.length) { log('Hugopima evo: no hay cartas Grupo/Minecraft en el descarte.'); return; }
         const idx = await elegirConModal('Hugopima evo: elige carta Grupo/Minecraft del descarte para fondo del mazo', opts);
         if (idx != null) {
@@ -5810,7 +5810,7 @@
       const z = zonaJugador(quien);
       const des = z.mano.map((id, i) => ({ id, i, c: getCardById(id) })).filter(x => esDesafio(x.c));
       if (!des.length) { log('Iniciador evo: no tienes cartas de Desafío en mano.'); return; }
-      const pick = await elegirConModal('Iniciador evo: descarta carta de Desafío', des.map(x => ({ label: x.c.nombre, value: x.i, cardId: x.id })));
+      const pick = await elegirConModal('Iniciador evo: descarta carta de Desafío', des.map(x => ({ label: x.c?.nombre, value: x.i, cardId: x.id })));
       if (pick == null) return;
       descartarCartaMano(quien, pick);
       ctx.liderCritico = true;
@@ -6590,7 +6590,7 @@
         if (opts.length) {
           const pick = opts[Math.floor(Math.random() * opts.length)];
           descartarCartaMano(riv, pick.i);
-          log('Jeffrey Epstein: el rival descarta ' + (pick.c.nombre) + '.');
+          log('Jeffrey Epstein: el rival descarta ' + (pick.c?.nombre) + '.');
         } else {
           log('Jeffrey Epstein: el rival no tiene unidades de coste ≤2 en mano.');
         }
@@ -7703,7 +7703,7 @@
       const z = zonaJugador(quien);
       const opts = z.mano.map((id, i) => ({ id, i, c: getCardById(id) }))
         .filter(x => String(x.c?.origen || '').toLowerCase().includes('minecraft') && Number(x.c?.costeTotal || 99) <= 2)
-        .map(x => ({ label: x.c.nombre, value: x.i, cardId: x.id }));
+        .map(x => ({ label: x.c?.nombre, value: x.i, cardId: x.id }));
       if (opts.length) {
         const idx = await elegirConModal('Tutorial Portal Nether: elige carta Minecraft ≤2 para jugar gratis en modo descanso', opts.concat([{ label: 'No jugar ninguna', value: -1 }]));
         if (idx >= 0) {
@@ -8071,7 +8071,7 @@
       const extras = z.mano.map((id, i) => ({ id, i, c: getCardById(id) }))
         .filter(x => x.c && (String(x.c.clase || '').toLowerCase().includes('extra') || String(x.c.tipo || '').toLowerCase().includes('extra')));
       if (!extras.length) { log('Capitán Spaceboy: no tienes cartas Extra en mano.'); return; }
-      const pick = await elegirConModal('Capitán Spaceboy: descarta una carta Extra', extras.map(x => ({ label: x.c.nombre, value: x.i, cardId: x.id })));
+      const pick = await elegirConModal('Capitán Spaceboy: descarta una carta Extra', extras.map(x => ({ label: x.c?.nombre, value: x.i, cardId: x.id })));
       if (pick != null) {
         descartarCartaMano(quien, pick);
         // Buscar Capitán por id (no por índice que puede ser inválido)
@@ -8464,6 +8464,25 @@
         log('Venganza destruye a la unidad ganadora (atacante).');
       }
     }
+    // ===== ¡CAMPEONES! — flag de batalla ganada por unidad roja =====
+    // La habilidad dice "cuando una de tus unidades rojas gane una batalla".
+    // Esto cubre DOS casos:
+    //   1) La unidad roja derrota a una unidad rival (c.ganaAtacante && objetivo=unidad)
+    //   2) La unidad roja ataca al líder y le inflige daño (c.ganaAtacante && objetivo=líder)
+    // Aplica para TODAS las unidades rojas (no solo España), como dice la carta.
+    if (c.ganaAtacante && c.atacanteRef?.tipo === 'unidad' && c.atacanteId) {
+      try {
+        const atkCartaCC = getCardById(c.atacanteId);
+        const colorAtk = String(atkCartaCC?.color || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        if (atkCartaCC && colorAtk === 'rojo') {
+          const zCC = zonaJugador(c.atacanteQuien);
+          const campoCC = zCC?.campo?.[0];
+          if (campoCC && campoCC.id === 'campo_campeones' && !campoCC.rested) {
+            zCC._cc_batallaGanadaEsteTurno = true;
+          }
+        }
+      } catch (e) { console.error('[CAMPEONES] error al marcar batalla ganada:', e); }
+    }
     dispatch(c.atacanteId, 'alAtacarPost', [c.atacanteQuien, c.atacanteZona]);
     return c;
   }
@@ -8616,7 +8635,13 @@
   async function ejecutarActivar(cardId, habKey, quien, extra) {
     const reg = REGISTRO_EFECTOS[cardId];
     if (reg?.ejecutarActivar) {
-      await reg.ejecutarActivar(habKey, quien, extra);
+      try {
+        await reg.ejecutarActivar(habKey, quien, extra);
+      } catch (e) {
+        console.error('[ejecutarActivar] Error en', cardId, 'hab:', habKey, e);
+        // Mostrar el error pero no romper el juego
+        if (typeof log === 'function') log('Error al ejecutar habilidad: ' + (e?.message || e));
+      }
       if (typeof renderizarPartida === 'function') renderizarPartida();
     }
   }
@@ -8924,7 +8949,7 @@
         return;
       }
       const opts = candidatos.map(x => ({
-        label: x.c.nombre + ' (coste ' + (x.c.costeTotal || 0) + ')',
+        label: x.c?.nombre + ' (coste ' + (x.c.costeTotal || 0) + ')',
         value: x.i,
         cardId: x.id
       }));
@@ -8995,7 +9020,7 @@
         .filter(x => x.c && esCartaEspana(x.c));
       let tomada = null;
       if (españa.length) {
-        const opts = españa.map(x => ({ label: x.c.nombre, value: x.id, cardId: x.id }))
+        const opts = españa.map(x => ({ label: x.c?.nombre, value: x.id, cardId: x.id }))
           .concat([{ label: 'Ninguna', value: null }]);
         const pick = await elegirConModal('Pedro Porro: elige una carta España de las 3 superiores', opts);
         if (pick) {
@@ -9169,7 +9194,7 @@
       const españa = tops.map((id, i) => ({ id, i, c: getCardById(id) }))
         .filter(x => x.c && esCartaEspana(x.c));
       if (españa.length) {
-        const opts = españa.map(x => ({ label: x.c.nombre, value: x.id, cardId: x.id }))
+        const opts = españa.map(x => ({ label: x.c?.nombre, value: x.id, cardId: x.id }))
           .concat([{ label: 'Ninguna', value: null }]);
         const pick = await elegirConModal('Zubimendi: elige una carta España de las 7 superiores', opts);
         if (pick) {
@@ -9252,41 +9277,10 @@
     }
   });
 
-  // Cuando una unidad España (roja) gana combate, marcar el flag para que el botón
-  // de "Robar 1 (batalla ganada)" de ¡CAMPEONES! esté disponible.
-  // Hay dos casos:
-  //  1) La unidad derrota a una unidad rival → alGanarCombate
-  //  2) La unidad ataca al líder sin bloqueador (inflige daño) → alAtacar
-  ['unai_simon','pedro_porro','cucurella','rodri','cubarsi','dani_olmo','merino','lamine_yamal','ferran_torres','fabian_ruiz','oyarzabal','zubimendi'].forEach(_idSp => {
-    const prev = REGISTRO_EFECTOS[_idSp] || {};
-    // Caso 1: derrota a una unidad rival
-    const prevGanarCombate = prev.alGanarCombate;
-    prev.alGanarCombate = function(c) {
-      if (typeof prevGanarCombate === 'function') prevGanarCombate(c);
-      // Marcar flag en el dueño del atacante para que ¡CAMPEONES! pueda robar
-      const quienAtk = c?.atacanteQuien || ctx.atacanteQuien;
-      if (!quienAtk) return;
-      const z = zonaJugador(quienAtk);
-      const campo = z.campo?.[0];
-      if (campo && campo.id === 'campo_campeones' && !campo.rested) {
-        z._cc_batallaGanadaEsteTurno = true;
-      }
-    };
-    // Caso 2: ataca al líder sin bloqueador (inflige daño)
-    const prevAtacar = prev.alAtacar;
-    prev.alAtacar = function(quien, ref, zona, objetivo) {
-      if (typeof prevAtacar === 'function') prevAtacar(quien, ref, zona, objetivo);
-      // Si el objetivo es el líder y no se usó bloqueador, contar como batalla ganada
-      const objTipo = (objetivo?.tipo) || (ctx.objetivo?.tipo);
-      if (objTipo === 'lider' && !estadoPartida?.bloqueadorUsado) {
-        const z = zonaJugador(quien);
-        const campo = z.campo?.[0];
-        if (campo && campo.id === 'campo_campeones' && !campo.rested) {
-          z._cc_batallaGanadaEsteTurno = true;
-        }
-      }
-    };
-  });
+  // NOTA: La lógica de "unidad roja gana batalla" para ¡CAMPEONES! se maneja
+  // centralizadamente en alResolverCombate (más arriba), para que aplique a TODAS
+  // las unidades rojas (no solo España), como dice la carta.
+  // El flag _cc_batallaGanadaEsteTurno se setea allí y se resetea en alInicioPrincipal.
 
   window.MotorEfectos = {
     init, alJugar, alInicioPrincipal, alAtacar, alDeclararAtaque, alResolverCombate,
@@ -10164,7 +10158,7 @@
                         <div class="info-box"><span class="info-label">Clase</span><span class="info-value">${escapeHtml(c.clase || '-')}</span></div>
                         <div class="info-box"><span class="info-label">Personaje</span><span class="info-value">${escapeHtml(c.personaje || 'Desconocido')}</span></div>
                         <div class="info-box"><span class="info-label">Tipo</span><span class="info-value">${escapeHtml(c.tipo || 'Ninguno')}</span></div>
-                        <div class="info-box"><span class="info-label">Origen</span><span class="info-value">${escapeHtml(c.origen || 'Desconocido')}</span></div>
+                        ${c.origen ? `<div class="info-box"><span class="info-label">Origen</span><span class="info-value">${escapeHtml(c.origen)}</span></div>` : ''}
                         <div class="info-box"><span class="info-label">Poder</span><span class="info-value">${escapeHtml(poder)}</span></div>
                         ${lider ? '' : `<div class="info-box"><span class="info-label">Coste</span><span class="info-value">${escapeHtml(c.costeTotal ?? '-')}</span></div>`}
                         <div class="info-box" style="grid-column: span 2;"><span class="info-label">Rareza</span><span class="info-value rarity-val">${escapeHtml(c.rareza || 'Comun')}</span></div>
@@ -16585,8 +16579,8 @@
                 ejecutarCounterPlay(p.handIndex, p.cardId);
                 return;
             }
-            else if (p.tipo === 'release-absorber') {
-                // Pagar maná para colocar carta bajo RELEASE ENERGY
+            else if (p.tipo === 'release-absorber' || p.tipo === 'la-roja-jugar') {
+                // Pagar maná y notificar via callback (La Roja juega unidad España con -1 coste)
                 p.seleccion.forEach(i => estadoPartida.jugador.mana[i].rested = true);
                 estadoPartida.jugador.manaActivo = estadoPartida.jugador.mana.filter(m => !m.rested).length;
                 const cb = p.callback;
@@ -16603,8 +16597,8 @@
             const p = estadoPartida.pagoPendiente;
             document.getElementById('mana-pay-modal').classList.add('hidden');
             estadoPartida.pagoPendiente = null;
-            // Cancel case: if this was a release-absorber payment with a callback, notify cancel
-            if (p && p.tipo === 'release-absorber' && typeof p.callback === 'function') {
+            // Cancel case: if this was a release-absorber or la-roja-jugar payment with a callback, notify cancel
+            if (p && (p.tipo === 'release-absorber' || p.tipo === 'la-roja-jugar') && typeof p.callback === 'function') {
                 p.callback(null);
             }
         }
@@ -18345,7 +18339,17 @@
             document.getElementById('p-clase').innerText = c.clase;
             document.getElementById('p-personaje').innerText = c.personaje || "Desconocido";
             document.getElementById('p-tipo').innerText = c.tipo || "Ninguno";
-            document.getElementById('p-origen').innerText = c.origen || "Desconocido";
+            // Mostrar origen (si la carta no lo tiene, como ¡CAMPEONES!, ocultar el info-box)
+            const boxOrigen = document.getElementById('box-origen');
+            const pOrigen = document.getElementById('p-origen');
+            if (boxOrigen && pOrigen) {
+                if (c.origen) {
+                    boxOrigen.style.display = 'block';
+                    pOrigen.innerText = c.origen;
+                } else {
+                    boxOrigen.style.display = 'none';
+                }
+            }
             document.getElementById('p-rareza').innerText = c.rareza || "Comun";
             document.getElementById('p-poder').innerText = (c.esEvo && c.poderEvo) ? c.poderEvo : (c.poder || "0");
             // Mostrar expansión (si la carta no la tiene, ocultar el info-box)
