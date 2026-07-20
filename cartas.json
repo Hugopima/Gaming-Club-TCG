@@ -2944,5 +2944,401 @@
         "desc": "Cuando haces un combo con esta carta, roba 1 carta."
       }
     ]
+  },
+  {
+    "id": "red_lider_03",
+    "nombre": "Luis de la Fuente",
+    "nombreEvo": "La Roja",
+    "clase": "Líder",
+    "color": "Rojo",
+    "personaje": "Luis de la Fuente",
+    "tipo": "Humano",
+    "origen": "España",
+    "rareza": "Rara",
+    "img": "https://hugopima.github.io/gctcg-assets/imagenes/LP1.png",
+    "imgEvo": "https://hugopima.github.io/gctcg-assets/imagenes/LP2.png",
+    "poder": 10000,
+    "poderEvo": 15000,
+    "lore": "Somos españoles, ¿a qué quieres que te gane?",
+    "habilidades": [
+      {
+        "tag": "Automático",
+        "css": "tag-auto",
+        "desc": "Cuando este Líder ataca, roba 1 carta."
+      },
+      {
+        "tag": "Transformación",
+        "css": "tag-trans",
+        "desc": "A las 4 vidas o menos: roba 2 cartas y dale la vuelta."
+      }
+    ],
+    "habilidadesEvo": [
+      {
+        "tag": "Permanente",
+        "css": "tag-perm",
+        "desc": "Todas tus unidades <España> ganan +2000 de poder."
+      },
+      {
+        "tag": "Activar: Principal",
+        "css": "tag-active",
+        "desc": "[Una vez por turno] Descarta 1 carta: Elige una unidad <España> de tu mano y júgala pagando su coste menos 1."
+      },
+      {
+        "tag": "Automático",
+        "css": "tag-auto",
+        "desc": "Cuando esta carta ataca, roba una carta."
+      }
+    ],
+    "expansion": "Promo"
+  },
+  {
+    "id": "unai_simon",
+    "nombre": "Unai Simón",
+    "clase": "Unidad",
+    "color": "Rojo",
+    "personaje": "Unai Simón",
+    "tipo": "Humano",
+    "origen": "España",
+    "rareza": "Infrecuente",
+    "img": "https://hugopima.github.io/gctcg-assets/imagenes/RUnai.png",
+    "costeTotal": 2,
+    "costeColor": 1,
+    "poder": 10000,
+    "combo": "0+5000",
+    "lore": "La gente mucho lo criticaba, 1 solo gol recibido en todo el mundial.",
+    "habilidades": [
+      {
+        "tag": "Bloqueador",
+        "css": "tag-bloqueo",
+        "desc": "Cuando el rival ataca, puedes cambiar esta carta a modo descanso para convertirla en el nuevo objetivo del ataque."
+      },
+      {
+        "tag": "Automático",
+        "css": "tag-auto",
+        "desc": "Al bloquear un ataque, roba una carta."
+      }
+    ],
+    "expansion": "Promo"
+  },
+  {
+    "id": "pedro_porro",
+    "nombre": "Pedro Porro",
+    "clase": "Unidad",
+    "color": "Rojo",
+    "personaje": "Pedro Porro",
+    "tipo": "Humano",
+    "origen": "España",
+    "rareza": "Infrecuente",
+    "img": "https://hugopima.github.io/gctcg-assets/imagenes/RPorro.png",
+    "costeTotal": 2,
+    "costeColor": 1,
+    "poder": 10000,
+    "combo": "0+5000",
+    "lore": "Ni una palabra de su apellido…",
+    "habilidades": [
+      {
+        "tag": "Automático",
+        "css": "tag-auto",
+        "desc": "Cuando esta carta entra en juego, mira las 3 primeras cartas de tu mazo y añade una de origen <España> a tu mano. Baraja el mazo."
+      },
+      {
+        "tag": "Doble Ataque",
+        "css": "tag-doble",
+        "desc": "Después de que esta carta ataque, puedes cambiarla de modo descanso a activo una vez por turno."
+      }
+    ],
+    "expansion": "Promo"
+  },
+  {
+    "id": "cucurella",
+    "nombre": "Marc Cucurella",
+    "clase": "Unidad",
+    "color": "Rojo",
+    "personaje": "Marc Cucurella",
+    "tipo": "Humano",
+    "origen": "España",
+    "rareza": "Rara",
+    "img": "https://hugopima.github.io/gctcg-assets/imagenes/RCucu.png",
+    "costeTotal": 3,
+    "costeColor": 2,
+    "poder": 15000,
+    "combo": "0+5000",
+    "lore": "Cucu Cucurella, se come una paella. Cucu Cucurella, se bebe una estrella. Haaland tiembla, que viene Cucurella. Haaland tiembla, toma una galleta.",
+    "habilidades": [
+      {
+        "tag": "Bloqueador",
+        "css": "tag-bloqueo",
+        "desc": "Cuando el rival ataca, puedes cambiar esta carta a modo descanso."
+      },
+      {
+        "tag": "Permanente",
+        "css": "tag-perm",
+        "desc": "Esta carta no puede ser atacada mientras esté en modo activo."
+      }
+    ],
+    "expansion": "Promo"
+  },
+  {
+    "id": "rodri",
+    "nombre": "Rodri",
+    "clase": "Unidad",
+    "color": "Rojo",
+    "personaje": "Rodri",
+    "tipo": "Humano",
+    "origen": "España",
+    "rareza": "Infrecuente",
+    "img": "https://hugopima.github.io/gctcg-assets/imagenes/RRodri.png",
+    "costeTotal": 3,
+    "costeColor": 1,
+    "poder": 15000,
+    "combo": "0+5000",
+    "lore": "El Capitán del equipo. Se llevó el premio individual al mejor jugador del mundial.",
+    "habilidades": [
+      {
+        "tag": "Automático",
+        "css": "tag-auto",
+        "desc": "Al entrar, destruye la carta \"Campo\" que tiene el rival (si tiene una)."
+      },
+      {
+        "tag": "Crítico",
+        "css": "tag-critico",
+        "desc": "Si esta carta inflige daño, inflige 2 puntos de daño en lugar de 1."
+      }
+    ],
+    "expansion": "Promo"
+  },
+  {
+    "id": "cubarsi",
+    "nombre": "Pau Cubarsí",
+    "clase": "Unidad",
+    "color": "Rojo",
+    "personaje": "Pau Cubarsí",
+    "tipo": "Humano",
+    "origen": "España",
+    "rareza": "Rara",
+    "img": "https://hugopima.github.io/gctcg-assets/imagenes/RPau.png",
+    "costeTotal": 3,
+    "costeColor": 2,
+    "poder": 15000,
+    "combo": "0+5000",
+    "lore": "Hola Mbappé, Luis de la fuente me dijo que si no te dejo pasar me da una piruleta",
+    "habilidades": [
+      {
+        "tag": "Bloqueador",
+        "css": "tag-bloqueo",
+        "desc": "Cuando el rival ataca, puedes cambiar esta carta a modo descanso."
+      },
+      {
+        "tag": "Automático",
+        "css": "tag-auto",
+        "desc": "Cuando esta carta bloquea, gana +5000 de poder durante esa batalla."
+      }
+    ],
+    "expansion": "Promo"
+  },
+  {
+    "id": "dani_olmo",
+    "nombre": "Dani Olmo",
+    "clase": "Unidad",
+    "color": "Rojo",
+    "personaje": "Dani Olmo",
+    "tipo": "Humano",
+    "origen": "España",
+    "rareza": "Infrecuente",
+    "img": "https://hugopima.github.io/gctcg-assets/imagenes/ROlmo.png",
+    "costeTotal": 3,
+    "costeColor": 2,
+    "poder": 15000,
+    "combo": "0+5000",
+    "lore": "Honestamente, se habla demasiado poco de lo que hizo este hombre en la selección.",
+    "habilidades": [
+      {
+        "tag": "Automático",
+        "css": "tag-auto",
+        "desc": "Cuando ataca, elige hasta 1 unidad rival y cámbiala a modo descanso."
+      }
+    ],
+    "expansion": "Promo"
+  },
+  {
+    "id": "merino",
+    "nombre": "Mikel Merino",
+    "clase": "Unidad",
+    "color": "Rojo",
+    "personaje": "Mikel Merino",
+    "tipo": "Humano",
+    "origen": "España",
+    "rareza": "Rara",
+    "img": "https://hugopima.github.io/gctcg-assets/imagenes/RMerino.png",
+    "costeTotal": 3,
+    "costeColor": 2,
+    "poder": 15000,
+    "combo": "0+5000",
+    "lore": "Llega en el minuto 92 te marca un gol y se va, así de fácil.",
+    "habilidades": [
+      {
+        "tag": "Activar: Batalla",
+        "css": "tag-active",
+        "desc": "Si esta unidad combate, puedes descartar 1 carta de tu mano para darle +5000 de poder durante el combate."
+      }
+    ],
+    "expansion": "Promo"
+  },
+  {
+    "id": "lamine_yamal",
+    "nombre": "Lamine Yamal",
+    "clase": "Unidad",
+    "color": "Rojo",
+    "personaje": "Lamine Yamal",
+    "tipo": "Humano",
+    "origen": "España",
+    "rareza": "Rara",
+    "img": "https://hugopima.github.io/gctcg-assets/imagenes/RYamal.png",
+    "costeTotal": 4,
+    "costeColor": 2,
+    "poder": 15000,
+    "combo": "1+10000",
+    "lore": "No le cae bien a todo el mundo, pero hace magia con el balón y es indudable.",
+    "habilidades": [
+      {
+        "tag": "Doble Ataque",
+        "css": "tag-doble",
+        "desc": "Después de que esta carta ataque, puedes cambiarla de modo descanso a activo una vez por turno."
+      }
+    ],
+    "expansion": "Promo"
+  },
+  {
+    "id": "ferran_torres",
+    "nombre": "Ferrán Torres",
+    "clase": "Unidad",
+    "color": "Rojo",
+    "personaje": "Ferrán Torres",
+    "tipo": "Humano",
+    "origen": "España",
+    "rareza": "Infrecuente",
+    "img": "https://hugopima.github.io/gctcg-assets/imagenes/RFerran.png",
+    "costeTotal": 3,
+    "costeColor": 2,
+    "poder": 15000,
+    "combo": "0+5000",
+    "lore": "Iba a hacer un chiste de \"Oh Ferrán\", pero ahora tengo que decir que nadie se merecía marcar ese último gol más que él.",
+    "habilidades": [
+      {
+        "tag": "Automático",
+        "css": "tag-auto",
+        "desc": "Al atacar al líder, si el rival no tiene bloqueador, gana +5000 de poder más."
+      }
+    ],
+    "expansion": "Promo"
+  },
+  {
+    "id": "fabian_ruiz",
+    "nombre": "Fabián Ruiz",
+    "clase": "Unidad",
+    "color": "Rojo",
+    "personaje": "Fabián Ruiz",
+    "tipo": "Humano",
+    "origen": "España",
+    "rareza": "Infrecuente",
+    "img": "https://hugopima.github.io/gctcg-assets/imagenes/RFabian.png",
+    "costeTotal": 4,
+    "costeColor": 3,
+    "poder": 20000,
+    "combo": "1+10000",
+    "lore": "El único tío que puede poner el balón bajo su camiseta y hacerse meme por ello",
+    "habilidades": [
+      {
+        "tag": "Automático",
+        "css": "tag-auto",
+        "desc": "Al entrar al campo, elige una unidad del rival con coste 3 o menos y destrúyela."
+      }
+    ],
+    "expansion": "Promo"
+  },
+  {
+    "id": "oyarzabal",
+    "nombre": "Mikel Oyarzabal",
+    "clase": "Unidad",
+    "color": "Rojo",
+    "personaje": "Mikel Oyarzabal",
+    "tipo": "Humano",
+    "origen": "España",
+    "rareza": "Súper Rara",
+    "img": "https://hugopima.github.io/gctcg-assets/imagenes/Royarzabal.png",
+    "costeTotal": 5,
+    "costeColor": 3,
+    "poder": 5000,
+    "combo": "1+10000",
+    "lore": "¿Cómo no voy a hacer al máximo goleador de la selección una carta super rara? Pero si es el GOAT",
+    "habilidades": [
+      {
+        "tag": "Permanente",
+        "css": "tag-perm",
+        "desc": "Esta carta gana +5000 de poder por cada carta de origen \"España\" en tu pila de descartes."
+      }
+    ],
+    "expansion": "Promo"
+  },
+  {
+    "id": "zubimendi",
+    "nombre": "Zubimendi",
+    "clase": "Unidad",
+    "color": "Rojo",
+    "personaje": "Zubimendi",
+    "tipo": "Humano",
+    "origen": "España",
+    "rareza": "Infrecuente",
+    "img": "https://hugopima.github.io/gctcg-assets/imagenes/RZubimendi.png",
+    "costeTotal": 1,
+    "costeColor": 1,
+    "poder": 5000,
+    "combo": "0+5000",
+    "lore": "Fiel al Real Sociedad y también a las cartas, de toda la vida",
+    "habilidades": [
+      {
+        "tag": "Automático",
+        "css": "tag-auto",
+        "desc": "Cuando esta carta entra, mira las 7 primeras cartas y toma una carta de origen \"España\"."
+      },
+      {
+        "tag": "Venganza",
+        "css": "tag-venganza",
+        "desc": "Venganza: Cuando esta carta está en tu pila de descartes, puedes jugáramela pagando su coste si una unidad tuya es destruida."
+      }
+    ],
+    "expansion": "Promo"
+  },
+  {
+    "id": "campo_campeones",
+    "nombre": "¡CAMPEONES!",
+    "clase": "Extra",
+    "color": "Rojo",
+    "personaje": "La Roja",
+    "tipo": "Campo",
+    "origen": "España",
+    "rareza": "Rara",
+    "img": "https://hugopima.github.io/gctcg-assets/imagenes/Rcopa.png",
+    "costeTotal": 3,
+    "costeColor": 2,
+    "lore": "¡VIVA ESPAÑA!",
+    "habilidades": [
+      {
+        "tag": "Campo",
+        "css": "tag-campo",
+        "desc": "Al jugar esta carta, colócala en tu Zona de Campo. Esta carta permanece en juego hasta que sea destruida o reemplazada por otra carta de Campo."
+      },
+      {
+        "tag": "Activar: Principal",
+        "css": "tag-active",
+        "desc": "[Una vez por turno] Cuando una de tus unidades rojas gane una batalla, roba 1 carta."
+      },
+      {
+        "tag": "Activar: Principal",
+        "css": "tag-active",
+        "desc": "Si controlas a \"Rodri\" y \"Unai Simón\", puedes girar esta carta para robar 2 cartas."
+      }
+    ],
+    "expansion": "Promo"
   }
 ]
