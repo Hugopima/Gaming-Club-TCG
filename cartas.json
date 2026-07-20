@@ -2976,7 +2976,7 @@
       {
         "tag": "Permanente",
         "css": "tag-perm",
-        "desc": "Todas tus unidades <España> ganan +2000 de poder."
+        "desc": "Todas tus unidades <España> ganan +2500 de poder."
       },
       {
         "tag": "Activar: Principal",
@@ -3316,7 +3316,7 @@
     "color": "Rojo",
     "personaje": "La Roja",
     "tipo": "Campo",
-    "origen": "España",
+    "origen": "Estadio",
     "rareza": "Rara",
     "img": "https://hugopima.github.io/gctcg-assets/imagenes/Rcopa.png",
     "costeTotal": 3,
