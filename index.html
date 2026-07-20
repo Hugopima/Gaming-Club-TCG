@@ -1883,6 +1883,89 @@
             font-weight: 900; color: var(--gold-light);
         }
         .shop-currency .coin-icon { font-size: 18px; }
+
+        /* ===== LAYOUT TIENDA: SIDEBAR + CONTENIDO ===== */
+        .shop-layout {
+            display: flex; gap: 0; min-height: calc(100vh - 80px);
+            max-width: 1400px; margin: 0 auto; width: 100%;
+        }
+        .shop-sidebar {
+            width: 260px; flex-shrink: 0; padding: 24px 16px;
+            background: linear-gradient(180deg, rgba(20,10,40,.6), rgba(10,5,25,.8));
+            border-right: 2px solid rgba(184,100,255,.3);
+            display: flex; flex-direction: column; gap: 12px;
+        }
+        .shop-sidebar-title {
+            color: var(--gold-light); font-size: 12px; font-weight: 900;
+            text-transform: uppercase; letter-spacing: 2px;
+            margin: 0 0 8px 4px; opacity: .7;
+        }
+        .sidebar-tab {
+            display: flex; flex-direction: column; align-items: flex-start; gap: 4px;
+            background: rgba(40,20,80,.4); border: 2px solid rgba(184,100,255,.3);
+            border-radius: 12px; padding: 14px 16px; color: #c9b8e0;
+            font-weight: 700; font-size: 14px; cursor: pointer; text-align: left;
+            transition: all .2s; font-family: inherit;
+        }
+        .sidebar-tab:hover { background: rgba(60,30,100,.6); border-color: var(--gold-light); transform: translateX(2px); }
+        .sidebar-tab.active {
+            background: linear-gradient(135deg, rgba(184,100,255,.4), rgba(120,40,160,.5));
+            border-color: var(--gold); color: white;
+            box-shadow: 0 0 20px rgba(184,100,255,.4);
+        }
+        .sidebar-tab .tab-emoji { font-size: 22px; }
+        .sidebar-tab .tab-name { font-size: 14px; font-weight: 900; }
+        .sidebar-tab .tab-sub { font-size: 11px; opacity: .8; }
+        .sidebar-tab .tab-countdown {
+            display: inline-block; background: #c0392b; color: white;
+            padding: 3px 8px; border-radius: 999px; font-size: 10px; font-weight: 900;
+            margin-top: 4px; letter-spacing: 1px; text-transform: uppercase;
+            box-shadow: 0 0 10px rgba(231,76,60,.5);
+        }
+        .sidebar-tab .tab-countdown.expired { background: #555; box-shadow: none; }
+        .shop-content { padding: 32px 30px 80px; flex: 1; max-width: 1100px; }
+        .expansion-section.hidden { display: none; }
+        .expansion-banner.spain-banner {
+            background: linear-gradient(135deg, rgba(200,30,30,.4), rgba(140,20,20,.5));
+            border-color: #ffb300;
+            box-shadow: 0 0 40px rgba(255,179,0,.25);
+        }
+        .expansion-banner.spain-banner h2 {
+            color: #ffd54f; text-shadow: 0 0 12px rgba(255,179,0,.6);
+        }
+        .expansion-banner.spain-banner p { color: #ffe5b3; }
+        .countdown-banner {
+            display: inline-block; background: rgba(0,0,0,.4); border: 1px solid #ffb300;
+            border-radius: 999px; padding: 6px 16px; margin-top: 12px;
+            color: #ffd54f; font-weight: 900; font-size: 13px; letter-spacing: 1px;
+        }
+        .countdown-banner.expired { color: #aaa; border-color: #555; }
+        .pack-info-modal.spain-info { max-width: 560px; max-height: 80vh; overflow-y: auto; }
+        .pack-info-modal.spain-info .spain-card-list {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px; margin-top: 12px;
+        }
+        .pack-info-modal.spain-info .spain-card-item {
+            background: rgba(40,20,80,.5); border: 1px solid rgba(184,100,255,.3);
+            border-radius: 8px; padding: 6px; text-align: center;
+        }
+        .pack-info-modal.spain-info .spain-card-item img {
+            width: 100%; height: 130px; object-fit: cover; border-radius: 6px;
+        }
+        .pack-info-modal.spain-info .spain-card-item .sc-name {
+            color: var(--gold-light); font-size: 11px; font-weight: 700; margin-top: 4px;
+        }
+        .pack-info-modal.spain-info .spain-card-item .sc-rarity {
+            font-size: 9px; margin-top: 2px;
+        }
+        .pack-buy-btn.spain-btn {
+            background: linear-gradient(145deg, #c0392b, #7d1f15);
+            border-color: #ffb300;
+        }
+        .pack-buy-btn.spain-btn:hover {
+            background: linear-gradient(145deg, #e74c3c, #a0281a);
+        }
+        .pack-buy-btn:disabled { opacity: .5; cursor: not-allowed; transform: none !important; }
         .shop-content { padding: 40px 30px 80px; max-width: 1200px; margin: 0 auto; width: 100%; }
         .expansion-section { margin-bottom: 40px; }
         .expansion-banner {
@@ -3554,24 +3637,66 @@
             <p style="font-size:11px;color:#aaa;text-align:center;margin-top:12px;">Garantía mínima: al menos 1 Rara o superior por sobre.</p>
             <button class="info-close" onclick="toggleInfoModal()">Cerrar</button>
         </div>
-        <div class="shop-content">
-            <div class="expansion-section">
-                <div class="expansion-banner">
-                    <h2>🌍 Mundos Cruzados</h2>
-                    <p>La primera expansión de Gaming Club TCG. 108 cartas de todos los orígenes: Minecraft, OMORI, FNAF, Grupo y más.</p>
+        <div class="pack-info-modal spain-info" id="pack-info-modal-spain" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:3600;display:none">
+            <h3>🇪🇸 Contenido del Sobre Selección Española</h3>
+            <p style="font-size:12px;color:#aaa;text-align:center;margin:0 0 10px">Este sobre contiene <b>1 copia de cada carta nueva</b> (14 cartas en total). No hay tiradas aleatorias: cada compra garantiza todas las cartas.</p>
+            <div class="spain-card-list" id="spain-card-list"></div>
+            <p style="font-size:11px;color:#aaa;text-align:center;margin-top:14px">Coste: <b style="color:var(--gold-light)">500 GamingCoins</b> · Solo 1 sobre por compra.</p>
+            <button class="info-close" onclick="toggleInfoModalSpain()">Cerrar</button>
+        </div>
+        <div class="shop-layout">
+            <aside class="shop-sidebar">
+                <div class="shop-sidebar-title">Expansiones</div>
+                <button class="sidebar-tab active" id="tab-mundos-cruzados" onclick="seleccionarExpansionTienda('Mundos Cruzados')">
+                    <span class="tab-emoji">🌍</span>
+                    <span class="tab-name">Mundos Cruzados</span>
+                    <span class="tab-sub">Expansión base · 108 cartas</span>
+                </button>
+                <button class="sidebar-tab" id="tab-seleccion-espanola" onclick="seleccionarExpansionTienda('Selección Española')">
+                    <span class="tab-emoji">🇪🇸</span>
+                    <span class="tab-name">Selección Española</span>
+                    <span class="tab-sub">Edición limitada · 14 cartas</span>
+                    <span class="tab-countdown" id="sidebar-countdown">Cargando...</span>
+                </button>
+            </aside>
+            <div class="shop-content">
+                <div class="expansion-section" id="expansion-mundos-cruzados">
+                    <div class="expansion-banner">
+                        <h2>🌍 Mundos Cruzados</h2>
+                        <p>La primera expansión de Gaming Club TCG. 108 cartas de todos los orígenes: Minecraft, OMORI, FNAF, Grupo y más.</p>
+                    </div>
+                    <div class="pack-grid">
+                        <div class="pack-card">
+                            <img src="https://hugopima.github.io/gctcg-assets/imagenes/pack1.png" alt="Sobre Mundos Cruzados" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22140%22 height=%22200%22><rect width=%22140%22 height=%22200%22 fill=%22%234020a0%22/><text x=%2270%22 y=%22100%22 fill=%22white%22 font-size=%2218%22 text-anchor=%22middle%22>PACK</text></svg>'">
+                            <div class="pack-name">Sobre Mundos Cruzados</div>
+                            <div class="pack-desc">6 cartas por sobre.<br>Garantía mínima: 1 Rara o superior.</div>
+                            <div class="pack-actions">
+                                <button class="pack-buy-btn" onclick="abrirSobre(1)">
+                                    <span class="price-tag"><img src="https://hugopima.github.io/gctcg-assets/imagenes/moneda.png" style="width:16px;height:16px;vertical-align:middle" onerror="display:none"> 100 — Abrir 1 sobre</span>
+                                </button>
+                                <button class="pack-buy-btn ten" onclick="abrirSobre(10)">
+                                    <span class="price-tag"><img src="https://hugopima.github.io/gctcg-assets/imagenes/moneda.png" style="width:16px;height:16px;vertical-align:middle" onerror="display:none"> 900 — Abrir 10 sobres</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="pack-grid">
-                    <div class="pack-card">
-                        <img src="https://hugopima.github.io/gctcg-assets/imagenes/pack1.png" alt="Sobre Mundos Cruzados" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22140%22 height=%22200%22><rect width=%22140%22 height=%22200%22 fill=%22%234020a0%22/><text x=%2270%22 y=%22100%22 fill=%22white%22 font-size=%2218%22 text-anchor=%22middle%22>PACK</text></svg>'">
-                        <div class="pack-name">Sobre Mundos Cruzados</div>
-                        <div class="pack-desc">6 cartas por sobre.<br>Garantía mínima: 1 Rara o superior.</div>
-                        <div class="pack-actions">
-                            <button class="pack-buy-btn" onclick="abrirSobre(1)">
-                                <span class="price-tag"><img src="https://hugopima.github.io/gctcg-assets/imagenes/moneda.png" style="width:16px;height:16px;vertical-align:middle" onerror="display:none"> 100 — Abrir 1 sobre</span>
-                            </button>
-                            <button class="pack-buy-btn ten" onclick="abrirSobre(10)">
-                                <span class="price-tag"><img src="https://hugopima.github.io/gctcg-assets/imagenes/moneda.png" style="width:16px;height:16px;vertical-align:middle" onerror="display:none"> 900 — Abrir 10 sobres</span>
-                            </button>
+                <div class="expansion-section hidden" id="expansion-seleccion-espanola">
+                    <div class="expansion-banner spain-banner">
+                        <h2>🇪🇸 Selección Española</h2>
+                        <p>Edición limitada dedicada a La Roja. Contiene 14 cartas exclusivas: Luis de la Fuente (Líder), los jugadores clave y el Campo ¡CAMPEONES!. Cada sobre incluye 1 copia de cada carta nueva. <button onclick="toggleInfoModalSpain()" style="background:rgba(0,0,0,.5);color:#ffd54f;border:1px solid #ffb300;border-radius:999px;padding:2px 12px;cursor:pointer;font-weight:900;font-size:11px;margin-left:6px;">i</button></p>
+                        <div class="countdown-banner" id="spain-countdown-banner">Cargando...</div>
+                    </div>
+                    <div class="pack-grid">
+                        <div class="pack-card">
+                            <img src="https://hugopima.github.io/gctcg-assets/imagenes/pack2.png" alt="Sobre Selección Española" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22140%22 height=%22200%22><rect width=%22140%22 height=%22200%22 fill=%22%23c0392b%22/><text x=%2270%22 y=%22100%22 fill=%22white%22 font-size=%2218%22 text-anchor=%22middle%22>PACK</text></svg>'">
+                            <div class="pack-name">Sobre Selección Española</div>
+                            <div class="pack-desc">14 cartas: 1 copia de cada carta nueva.<br>Solo 1 sobre por compra · 500 monedas.</div>
+                            <div class="pack-actions">
+                                <button class="pack-buy-btn spain-btn" id="btn-comprar-espana" onclick="abrirSobreEspana()">
+                                    <span class="price-tag"><img src="https://hugopima.github.io/gctcg-assets/imagenes/moneda.png" style="width:16px;height:16px;vertical-align:middle" onerror="display:none"> 500 — Abrir 1 sobre</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -4181,6 +4306,10 @@
     for (let i = 0; i < dano; i++) quitarVida(quienRecibe, critico);
     if (typeof mostrarPerdidaVida === 'function') mostrarPerdidaVida(quienRecibe, dano);
     log(`${getCardById(atacanteId)?.nombre || 'Atacante'} inflige ${dano} de daño al líder ${quienRecibe === 'jugador' ? 'propio' : 'rival'}.`);
+    // Hook maestría: si el jugador local inflige daño al líder rival, contar para M2.
+    if (quienRecibe === 'rival' && atacanteId && typeof trackMaestria_danoLider === 'function') {
+      try { trackMaestria_danoLider(atacanteId); } catch(e) {}
+    }
     if (typeof renderizarPartida === 'function') renderizarPartida();
   }
 
@@ -8419,6 +8548,17 @@
         reg.activables(quien, u, i).forEach(a => list.push(Object.assign({ quien, cardId: u.id, index: i }, a)));
       }
     });
+    // ===== ACTIVABLES DE CAMPO (Zona de Campo) =====
+    // Permite que las cartas de Campo (z.campo[0]) ofrezcan habilidades Activar: Principal.
+    // El cardId es el id del campo, y se marca esCampo: true para que el motor sepa
+    // que debe pasar la referencia del campo (no de una unidad) al ejecutarActivar.
+    if (z.campo && z.campo.length) {
+      const campoCard = z.campo[0];
+      const regCampo = REGISTRO_EFECTOS[campoCard.id];
+      if (regCampo?.activables) {
+        regCampo.activables(quien, campoCard, -1).forEach(a => list.push(Object.assign({ quien, cardId: campoCard.id, esCampo: true }, a)));
+      }
+    }
     z.mano.forEach((id, hi) => {
       const reg = REGISTRO_EFECTOS[id];
       if (reg?.activablesMano) {
@@ -8520,6 +8660,10 @@
     if (defensorQuien === 'jugador' && typeof _statsJugador !== 'undefined' && _statsJugador) {
       _statsJugador.bloqueadores = (_statsJugador.bloqueadores || 0) + 1;
       if (typeof guardarStats === 'function') guardarStats();
+    }
+    // Hook maestría: si el jugador local bloquea, contar para M2.
+    if (defensorQuien === 'jugador' && u?.id && typeof trackMaestria_bloquear === 'function') {
+      try { trackMaestria_bloquear(u.id); } catch(e) {}
     }
     dispatch(u.id, 'alUsarBloqueador', [defensorQuien, u, ataqueCtx]);
     log(`${getCardById(u.id)?.nombre} bloquea el ataque.`);
@@ -8694,6 +8838,351 @@
     }
     return false;
   }
+
+  // ====================================================================
+  // ===== CARTAS DE "SELECCIÓN ESPAÑOLA" (Expansión Promo) =====
+  // ====================================================================
+  // Helpers locales para España
+  function esCartaEspana(c) {
+    return String(c?.origen || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') === 'espana';
+  }
+  function liderEspanaDespierto(quien) {
+    const z = zonaJugador(quien);
+    return !!(z.liderId === 'red_lider_03' && z.liderDespierto);
+  }
+  function controlarCarta(quien, cardId) {
+    const z = zonaJugador(quien);
+    return z.batalla.some(u => u.id === cardId);
+  }
+
+  // —— 1) LUIS DE LA FUENTE / LA ROJA (Líder Rojo) ——
+  R('red_lider_03', {
+    // Frente: Cuando este Líder ataca, roba 1 carta.
+    alAtacarLider(quien) { robar(quien, 1); },
+    // Despierto (La Roja): Cuando esta carta ataca, roba una carta.
+    // (la transformación "roba 2 cartas y dale la vuelta" la gestiona el motor
+    //  estándar de Transformación al llegar a 4 vidas o menos)
+    alAtacarLiderEvo(quien) { robar(quien, 1); log('La Roja (Despierto): roba 1 carta al atacar.'); },
+    // Despierto: [Activar: Principal] [Una vez por turno] Descarta 1 carta:
+    // Elige una unidad <España> de tu mano y júgala pagando su coste menos 1.
+    activablesLider(quien) {
+      const z = zonaJugador(quien);
+      const esEvo = !!(z.liderDespierto && liderCarta(quien).esEvo);
+      if (!esEvo) return [];
+      if (habilidadUsada(claveTurno(quien, 'rl3_act'))) return [];
+      // Verificar que hay al menos una unidad España en mano
+      const tiene = z.mano.some(id => {
+        const c = getCardById(id);
+        return c && esCartaEspana(c) && claseNormalizada(c) === 'unidad';
+      });
+      if (!tiene) return [];
+      return [{ key: 'rl3_jugar_espana', label: 'Descarta 1 — juega España con -1 coste' }];
+    },
+    async ejecutarActivar(key, quien) {
+      if (key !== 'rl3_jugar_espana') return;
+      const z = zonaJugador(quien);
+      // 1. Descartar 1 carta
+      await elegirDescarteObligatorio(quien, 'La Roja (Despierto): descarta 1 carta');
+      // 2. Elegir unidad España de la mano
+      const candidatos = z.mano.map((id, i) => ({ id, i, c: getCardById(id) }))
+        .filter(x => x.c && esCartaEspana(x.c) && claseNormalizada(x.c) === 'unidad');
+      if (!candidatos.length) {
+        log('La Roja: no te quedan unidades España en mano.');
+        marcarHabilidadUsada(claveTurno(quien, 'rl3_act'));
+        return;
+      }
+      const opts = candidatos.map(x => ({
+        label: x.c.nombre + ' (coste ' + (x.c.costeTotal || 0) + ')',
+        value: x.i,
+        cardId: x.id
+      }));
+      const idx = await elegirConModal('La Roja: elige unidad España para jugar con -1 coste', opts);
+      if (idx == null) {
+        marcarHabilidadUsada(claveTurno(quien, 'rl3_act'));
+        return;
+      }
+      const cardId = z.mano[idx];
+      const costeOriginal = Number(getCardById(cardId)?.costeTotal || 0);
+      const costeFinal = Math.max(0, costeOriginal - 1);
+      // 3. Pagar el coste reducido (descansar manás)
+      if (z.manaActivo < costeFinal) {
+        log('La Roja: no tienes maná suficiente (' + costeFinal + ' necesario, ' + z.manaActivo + ' disponible).');
+        marcarHabilidadUsada(claveTurno(quien, 'rl3_act'));
+        return;
+      }
+      if (costeFinal > 0) descansarMana(quien, null, costeFinal);
+      // 4. Quitar de mano y poner en campo
+      z.mano.splice(idx, 1);
+      const nuevaUnidad = crearUnidadCampo(cardId, { rested: false });
+      z.batalla.push(nuevaUnidad);
+      if (window.MotorEfectos) await MotorEfectos.alJugar(quien, cardId, z.batalla[z.batalla.length - 1]);
+      log('La Roja: juega "' + (getCardById(cardId)?.nombre || cardId) + '" con -1 de coste.');
+      marcarHabilidadUsada(claveTurno(quien, 'rl3_act'));
+      if (typeof renderizarPartida === 'function') renderizarPartida();
+    }
+  });
+
+  // —— 2) UNAI SIMÓN —— Bloqueador + al bloquear roba 1
+  R('unai_simon', {
+    async alUsarBloqueador(quien) {
+      robar(quien, 1);
+      log('Unai Simón bloquea y roba 1 carta.');
+      if (typeof renderizarPartida === 'function') renderizarPartida();
+      if (estadoPartida?.modo === 'online' && typeof sincronizarEstadoOnline === 'function') sincronizarEstadoOnline('unai_simon');
+    }
+  });
+
+  // —— 3) PEDRO PORRO —— Al entrar mira 3, toma España, baraja. Doble Ataque (tag auto)
+  R('pedro_porro', {
+    async alJugar(quien) {
+      const z = zonaJugador(quien);
+      // Sacar las 3 cartas superiores del mazo (sin barajar todavía)
+      const tops = [];
+      for (let i = 0; i < 3 && z.mazo.length; i++) tops.push(z.mazo.pop());
+      if (!tops.length) { log('Pedro Porro: no tienes cartas en el mazo.'); return; }
+      // Filtrar las que son de origen España
+      const españa = tops.map((id, i) => ({ id, i, c: getCardById(id) }))
+        .filter(x => x.c && esCartaEspana(x.c));
+      let tomada = null;
+      if (españa.length) {
+        const opts = españa.map(x => ({ label: x.c.nombre, value: x.id, cardId: x.id }))
+          .concat([{ label: 'Ninguna', value: null }]);
+        const pick = await elegirConModal('Pedro Porro: elige una carta España de las 3 superiores', opts);
+        if (pick) {
+          z.mano.push(pick);
+          tomada = pick;
+          log('Pedro Porro añade "' + (getCardById(pick)?.nombre || pick) + '" a tu mano.');
+        }
+      } else {
+        log('Pedro Porro: no había cartas España entre las 3 superiores.');
+      }
+      // Devolver todas las no elegidas al mazo y barajar
+      tops.filter(id => id !== tomada).reverse().forEach(id => z.mazo.push(id));
+      barajar(quien);
+      if (typeof renderizarPartida === 'function') renderizarPartida();
+    }
+  });
+
+  // —— 4) MARC CUCURELLA —— Bloqueador + Permanente "no atacable en activo" (regla estándar)
+  // No necesita hooks adicionales: el Bloqueador tag lo gestiona el motor, y la regla
+  // "no atacable en activo" ya la aplica el motor por defecto (solo se atacan unidades descansadas).
+  R('cucurella', {});
+
+  // —— 5) RODRI —— Al entrar destruye Campo rival. Crítico (tag auto)
+  R('rodri', {
+    alJugar(quien) {
+      const riv = rivalDe(quien);
+      const zR = zonaJugador(riv);
+      if (zR.campo && zR.campo.length) {
+        const destruido = zR.campo[0];
+        zR.campo = [];
+        log('Rodri destruye el Campo rival: ' + (getCardById(destruido.id)?.nombre || destruido.id) + '.');
+        if (estadoPartida?.modo === 'online' && typeof sincronizarEstadoOnline === 'function') sincronizarEstadoOnline('rodri');
+      } else {
+        log('Rodri: el rival no tiene carta de Campo.');
+      }
+      if (typeof renderizarPartida === 'function') renderizarPartida();
+    }
+  });
+
+  // —— 6) PAU CUBARSÍ —— Bloqueador + al bloquear gana +5000 esa batalla
+  R('cubarsi', {
+    alUsarBloqueador(quien, u, ataqueCtx) {
+      if (!u) return;
+      addBuff(u, 'batalla', 5000);
+      log('Pau Cubarsí bloquea y gana +5000 de poder esta batalla.');
+      if (typeof renderizarPartida === 'function') renderizarPartida();
+    }
+  });
+
+  // —— 7) DANI OLMO —— Al atacar, cambia 1 unidad rival a descanso
+  R('dani_olmo', {
+    async alAtacar(quien) {
+      const riv = rivalDe(quien);
+      const opts = opcionesUnidades(riv, (u, i, c) => !u.rested)
+        .map(o => ({ ...o, cardId: zonaJugador(riv).batalla[o.value]?.id }));
+      if (!opts.length) { log('Dani Olmo: el rival no tiene unidades activas para descansar.'); return; }
+      const idx = await elegirConModal('Dani Olmo: elige unidad rival activa para descansar (o cancelar)', opts.concat([{ label: 'Cancelar', value: -1 }]));
+      if (idx >= 0) {
+        const u = zonaJugador(riv).batalla[idx];
+        if (u) {
+          u.rested = true;
+          log('Dani Olmo cambia a ' + (getCardById(u.id)?.nombre || u.id) + ' a modo descanso.');
+          if (estadoPartida?.modo === 'online' && typeof enviarEfectoRival === 'function' && u.id) {
+            enviarEfectoRival({ tipo: 'descansar-unidad', cardId: u.id, nombre: 'Dani Olmo' });
+          }
+          if (typeof renderizarPartida === 'function') renderizarPartida();
+        }
+      }
+    }
+  });
+
+  // —— 8) MIKEL MERINO —— Activar: Batalla: descartar 1 para +5000 en el combate
+  // Lo implementamos como alAtacar (al declarar ataque, preguntar si quiere descartar)
+  R('merino', {
+    async alAtacar(quien, ref, zona) {
+      if (!zona) return;
+      // Una vez por batalla
+      if (habilidadUsada(claveTurno(quien, 'merino_' + (zona._uid || (zona._uid = 'm_' + Date.now() + '_' + Math.random()))))) return;
+      const z = zonaJugador(quien);
+      if (!z.mano.length) return;
+      const ok = await elegirConModal('Mikel Merino: ¿Descartar 1 carta para +5000 esta batalla?', [
+        { label: 'Sí, descartar 1 y ganar +5000', value: true, cardId: 'merino' },
+        { label: 'No', value: false, cardId: 'merino' }
+      ]);
+      if (ok) {
+        await elegirDescarteObligatorio(quien, 'Mikel Merino: elige una carta para descartar');
+        addBuff(zona, 'batalla', 5000);
+        marcarHabilidadUsada(claveTurno(quien, 'merino_' + zona._uid));
+        log('Mikel Merino gana +5000 de poder en esta batalla.');
+        if (typeof renderizarPartida === 'function') renderizarPartida();
+      }
+    }
+  });
+
+  // —— 9) LAMINE YAMAL —— Doble Ataque (tag auto, ya gestiona el motor)
+  R('lamine_yamal', {});
+
+  // —— 10) FERRÁN TORRES —— Al atacar al líder sin bloqueador, +5000
+  R('ferran_torres', {
+    alDeclararAtaque(quien, ref, obj) {
+      // Solo si ataca al líder y el rival no ha usado bloqueador
+      if (obj?.tipo === 'lider' && !estadoPartida?.bloqueadorUsado) {
+        ctx.bonusSinBloqueador = (ctx.bonusSinBloqueador || 0) + 5000;
+      }
+      return obj;
+    }
+  });
+
+  // —— 11) FABIÁN RUIZ —— Al entrar, destruye unidad rival de coste ≤3
+  R('fabian_ruiz', {
+    async alJugar(quien) {
+      const riv = rivalDe(quien);
+      const opts = opcionesUnidades(riv, (u, i, c) => Number(c?.costeTotal || 99) <= 3)
+        .map(o => ({ ...o, cardId: zonaJugador(riv).batalla[o.value]?.id }));
+      if (!opts.length) { log('Fabián Ruiz: el rival no tiene unidades de coste 3 o menos.'); return; }
+      const idx = await elegirConModal('Fabián Ruiz: elige unidad rival (coste ≤3) para destruir', opts);
+      if (idx != null) {
+        const u = zonaJugador(riv).batalla[idx];
+        destruirUnidad(riv, idx);
+        log('Fabián Ruiz destruye a ' + (u ? (getCardById(u.id)?.nombre || u.id) : 'unidad') + '.');
+        if (estadoPartida?.modo === 'online' && typeof sincronizarEstadoOnline === 'function') sincronizarEstadoOnline('fabian_ruiz');
+        if (typeof renderizarPartida === 'function') renderizarPartida();
+      }
+    }
+  });
+
+  // —— 12) MIKEL OYARZABAL —— +5000 por cada España en descartes (Permanente)
+  R('oyarzabal', {
+    modificarPoder(id, zona, c, p) {
+      const quienCarta = c?.quien
+        || (estadoPartida?.rival?.batalla?.some(u => u === zona) ? 'rival' : 'jugador');
+      const z = zonaJugador(quienCarta);
+      const nEspana = (z.descarte || []).filter(idD => {
+        const cc = getCardById(idD);
+        return cc && esCartaEspana(cc);
+      }).length;
+      return p + nEspana * 5000;
+    }
+  });
+
+  // —— 13) ZUBIMENDI —— Al entrar, mira 7 y toma una España. Venganza (tag auto)
+  R('zubimendi', {
+    async alJugar(quien) {
+      const z = zonaJugador(quien);
+      const tops = [];
+      for (let i = 0; i < 7 && z.mazo.length; i++) tops.push(z.mazo.pop());
+      if (!tops.length) { log('Zubimendi: no tienes cartas en el mazo.'); return; }
+      const españa = tops.map((id, i) => ({ id, i, c: getCardById(id) }))
+        .filter(x => x.c && esCartaEspana(x.c));
+      if (españa.length) {
+        const opts = españa.map(x => ({ label: x.c.nombre, value: x.id, cardId: x.id }))
+          .concat([{ label: 'Ninguna', value: null }]);
+        const pick = await elegirConModal('Zubimendi: elige una carta España de las 7 superiores', opts);
+        if (pick) {
+          z.mano.push(pick);
+          log('Zubimendi añade "' + (getCardById(pick)?.nombre || pick) + '" a tu mano.');
+        }
+      } else {
+        log('Zubimendi: no había cartas España entre las 7 superiores.');
+      }
+      // Devolver todas las no elegidas al mazo y barajar
+      const enMano = z.mano[z.mano.length - 1];
+      const restantes = tops.filter(id => id !== enMano);
+      restantes.reverse().forEach(id => z.mazo.push(id));
+      barajar(quien);
+      if (typeof renderizarPartida === 'function') renderizarPartida();
+    }
+  });
+
+  // —— 14) ¡CAMPEONES! (Campo) ——
+  // Al jugar: poner en zona de campo. Dos activables:
+  //  - Una vez por turno, cuando una unidad roja gana batalla, roba 1 (automático)
+  //  - Si controlas Rodri y Unai Simón, girar esta carta para robar 2
+  R('campo_campeones', {
+    alJugar(quien) {
+      const z = zonaJugador(quien);
+      z.campo = [{ id: 'campo_campeones', rested: false }];
+      log('¡CAMPEONES! entra en tu Zona de Campo. ¡VIVA ESPAÑA!');
+      if (typeof renderizarPartida === 'function') renderizarPartida();
+    },
+    // Robo automático (una vez por turno) cuando una unidad roja gana batalla.
+    // Las unidades España (todas rojas) llaman a este helper desde su alGanarCombate.
+    alGanarCombateEspana(quien) {
+      const z = zonaJugador(quien);
+      const campo = z.campo?.[0];
+      if (!campo || campo.id !== 'campo_campeones') return;
+      if (campo.rested) return; // Si está girada, no funciona
+      if (habilidadUsada(claveTurno(quien, 'cc_roba1'))) return;
+      marcarHabilidadUsada(claveTurno(quien, 'cc_roba1'));
+      robar(quien, 1);
+      log('¡CAMPEONES!: tu unidad roja gana la batalla, robas 1 carta.');
+      if (typeof renderizarPartida === 'function') renderizarPartida();
+    },
+    // Activable manual: girar para robar 2 si controlas Rodri y Unai Simón
+    activables(quien, u) {
+      // u aquí es el campo (z.campo[0]), no una unidad
+      const z = zonaJugador(quien);
+      const campo = z.campo?.[0];
+      if (!campo || campo.id !== 'campo_campeones') return [];
+      if (campo.rested) return [];
+      if (!controlarCarta(quien, 'rodri') || !controlarCarta(quien, 'unai_simon')) return [];
+      return [{ key: 'cc_roba2', label: 'Girar ¡CAMPEONES!: robar 2 cartas' }];
+    },
+    async ejecutarActivar(key, quien, u) {
+      if (key !== 'cc_roba2') return;
+      const z = zonaJugador(quien);
+      const campo = z.campo?.[0];
+      if (!campo || campo.id !== 'campo_campeones') return;
+      if (campo.rested) return;
+      campo.rested = true;
+      robar(quien, 2);
+      log('¡CAMPEONES!: girada para robar 2 cartas (tienes a Rodri y Unai Simón).');
+      if (estadoPartida?.modo === 'online' && typeof sincronizarEstadoOnline === 'function') sincronizarEstadoOnline('campo_campeones');
+      if (typeof renderizarPartida === 'function') renderizarPartida();
+    }
+  });
+
+  // Helper global: cuando una unidad España gana combate, disparar el efecto del campo
+  // Lo registramos en cada unidad España (todas rojas) para que llamen al campo.
+  ['unai_simon','pedro_porro','cucurella','rodri','cubarsi','dani_olmo','merino','lamine_yamal','ferran_torres','fabian_ruiz','oyarzabal','zubimendi'].forEach(_idSp => {
+    const prev = REGISTRO_EFECTOS[_idSp] || {};
+    const prevGanarCombate = prev.alGanarCombate;
+    prev.alGanarCombate = function(c) {
+      if (typeof prevGanarCombate === 'function') prevGanarCombate(c);
+      // Disparar efecto del campo ¡CAMPEONES! si el dueño lo tiene
+      const quienAtk = c?.atacanteQuien;
+      if (!quienAtk) return;
+      const z = zonaJugador(quienAtk);
+      const campo = z.campo?.[0];
+      if (campo && campo.id === 'campo_campeones' && !campo.rested) {
+        const regCampo = REGISTRO_EFECTOS['campo_campeones'];
+        if (regCampo && typeof regCampo.alGanarCombateEspana === 'function') {
+          regCampo.alGanarCombateEspana(quienAtk);
+        }
+      }
+    };
+  });
 
   window.MotorEfectos = {
     init, alJugar, alInicioPrincipal, alAtacar, alDeclararAtaque, alResolverCombate,
@@ -10193,7 +10682,9 @@
                                 despertar: Math.max(localM.progreso?.despertar || 0, supaM.progreso?.despertar || 0),
                                 destruir: Math.max(localM.progreso?.destruir || 0, supaM.progreso?.destruir || 0),
                                 combinar: Math.max(localM.progreso?.combinar || 0, supaM.progreso?.combinar || 0),
-                                poner_mana: Math.max(localM.progreso?.poner_mana || 0, supaM.progreso?.poner_mana || 0)
+                                poner_mana: Math.max(localM.progreso?.poner_mana || 0, supaM.progreso?.poner_mana || 0),
+                                dano_lider: Math.max(localM.progreso?.dano_lider || 0, supaM.progreso?.dano_lider || 0),
+                                bloquear: Math.max(localM.progreso?.bloquear || 0, supaM.progreso?.bloquear || 0)
                             }
                         };
                     }
@@ -12229,6 +12720,199 @@
             document.getElementById('mega-summary-overlay').classList.remove('active');
             document.getElementById('mega-summary-content').innerHTML = '';
         }
+
+
+        // ====================================================================
+        // ===== EXPANSIÓN "SELECCIÓN ESPAÑOLA" — SOBRE LIMITADO =====
+        // ====================================================================
+        // Configuración: el sobre está disponible durante 30 días desde una
+        // fecha de inicio prefijada. Pasado ese tiempo, el botón de compra
+        // se deshabilita y el contador muestra "Expirado".
+        const SPAIN_PACK_START = new Date('2026-07-20T00:00:00'); // Inicio de la promo
+        const SPAIN_PACK_DURATION_DAYS = 30;                      // 1 mes
+        const SPAIN_PACK_COST = 500;                              // 500 GamingCoins
+        const SPAIN_PACK_EXPANSION = 'Promo';                     // Expansion en cartas.json
+        // IDs de las 14 cartas incluidas en el sobre de España (1 copia de cada)
+        const SPAIN_PACK_CARD_IDS = [
+            'red_lider_03',  // Luis de la Fuente / La Roja
+            'unai_simon',
+            'pedro_porro',
+            'cucurella',
+            'rodri',
+            'cubarsi',
+            'dani_olmo',
+            'merino',
+            'lamine_yamal',
+            'ferran_torres',
+            'fabian_ruiz',
+            'oyarzabal',
+            'zubimendi',
+            'campo_campeones'  // ¡CAMPEONES! (Campo)
+        ];
+
+        // Estado de la expansión activa en la tienda ('Mundos Cruzados' | 'Selección Española')
+        let _expansionTiendaActiva = 'Mundos Cruzados';
+
+        // Devuelve los días restantes (>= 0) o -1 si expiró
+        function spainPackDiasRestantes() {
+            const now = new Date();
+            const end = new Date(SPAIN_PACK_START);
+            end.setDate(end.getDate() + SPAIN_PACK_DURATION_DAYS);
+            if (now >= end) return -1;
+            const ms = end - now;
+            return Math.ceil(ms / (1000 * 60 * 60 * 24));
+        }
+
+        // Actualiza los contadores visibles (sidebar + banner)
+        function actualizarContadorSpain() {
+            const dias = spainPackDiasRestantes();
+            const txt = dias < 0 ? 'Expirado' : `Quedan ${dias} ${dias === 1 ? 'día' : 'días'}`;
+            const sidebarEl = document.getElementById('sidebar-countdown');
+            const bannerEl = document.getElementById('spain-countdown-banner');
+            const btn = document.getElementById('btn-comprar-espana');
+            if (sidebarEl) {
+                sidebarEl.textContent = txt;
+                sidebarEl.classList.toggle('expired', dias < 0);
+            }
+            if (bannerEl) {
+                bannerEl.textContent = '⏳ ' + txt;
+                bannerEl.classList.toggle('expired', dias < 0);
+            }
+            if (btn) {
+                btn.disabled = (dias < 0);
+                if (dias < 0) {
+                    btn.querySelector('.price-tag').innerHTML = 'Promoción expirada';
+                }
+            }
+        }
+
+        // Switcher de expansión en la tienda
+        function seleccionarExpansionTienda(expansion) {
+            _expansionTiendaActiva = expansion;
+            const tabMC = document.getElementById('tab-mundos-cruzados');
+            const tabSE = document.getElementById('tab-seleccion-espanola');
+            const secMC = document.getElementById('expansion-mundos-cruzados');
+            const secSE = document.getElementById('expansion-seleccion-espanola');
+            if (expansion === 'Mundos Cruzados') {
+                if (tabMC) tabMC.classList.add('active');
+                if (tabSE) tabSE.classList.remove('active');
+                if (secMC) secMC.classList.remove('hidden');
+                if (secSE) secSE.classList.add('hidden');
+            } else {
+                if (tabMC) tabMC.classList.remove('active');
+                if (tabSE) tabSE.classList.add('active');
+                if (secMC) secMC.classList.add('hidden');
+                if (secSE) secSE.classList.remove('hidden');
+                // Al mostrar la pestaña de España, refrescar contador
+                actualizarContadorSpain();
+            }
+        }
+
+        // Modal info específico para el sobre de España
+        function toggleInfoModalSpain() {
+            const modal = document.getElementById('pack-info-modal-spain');
+            if (!modal) return;
+            const visible = modal.style.display === 'block';
+            if (visible) {
+                modal.style.display = 'none';
+                return;
+            }
+            // Rellenar la lista de cartas la primera vez
+            const list = document.getElementById('spain-card-list');
+            if (list && !list.dataset.filled) {
+                if (!datosCartas || !datosCartas.length) {
+                    cargarBaseDeDatos().then(() => poblarListaSpain(list));
+                } else {
+                    poblarListaSpain(list);
+                }
+                list.dataset.filled = '1';
+            }
+            modal.style.display = 'block';
+        }
+
+        function poblarListaSpain(container) {
+            const html = SPAIN_PACK_CARD_IDS.map(id => {
+                const c = getCardById(id);
+                if (!c) return '';
+                const rareza = (c.rareza || 'Común').toString().toLowerCase();
+                const rarezaClase = rareza === 'super rara' ? 'super-rara' : rareza;
+                const rarezaTexto = rareza === 'super rara' ? 'Súper Rara'
+                    : (rareza.charAt(0).toUpperCase() + rareza.slice(1));
+                const clase = (c.clase || 'Carta').toLowerCase();
+                const colorRarity = rareza === 'comun' ? '#c0c0c0'
+                    : rareza === 'infrecuente' ? '#4ee06a'
+                    : rareza === 'rara' ? '#5aa0ff'
+                    : '#ff60ff';
+                return `<div class="spain-card-item">
+                    <img src="${c.img || ''}" alt="${escapeHtml(c.nombre || '')}" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22120%22 height=%22130%22><rect width=%22120%22 height=%22130%22 fill=%22%23333%22/></svg>'">
+                    <div class="sc-name">${escapeHtml(c.nombre || '')}</div>
+                    <div class="sc-rarity" style="color:${colorRarity};font-weight:900">${rarezaTexto} · ${escapeHtml(c.clase || '')}</div>
+                </div>`;
+            }).join('');
+            container.innerHTML = html;
+        }
+
+        // Compra y apertura del sobre de Selección Española
+        function abrirSobreEspana() {
+            // Verificar disponibilidad
+            const dias = spainPackDiasRestantes();
+            if (dias < 0) {
+                alert('La promoción de Selección Española ha expirado.');
+                return;
+            }
+            // Verificar carga de cartas
+            if (!datosCartas || !datosCartas.length) {
+                alert('Las cartas aún se están cargando. Espera un momento.');
+                return;
+            }
+            // Verificar monedas
+            if (!_inventario) cargarInventario();
+            if (_inventario.coins < SPAIN_PACK_COST) {
+                alert('No tienes suficientes GamingCoins. Necesitas ' + SPAIN_PACK_COST + ' y tienes ' + _inventario.coins + '.');
+                return;
+            }
+            // Construir el sobre: 1 copia de cada carta nueva
+            const cartasSobre = SPAIN_PACK_CARD_IDS.map(id => {
+                const c = getCardById(id);
+                if (!c) {
+                    console.warn('[Sobre España] No se encontró la carta con id:', id);
+                    return null;
+                }
+                const rareza = normalizarRareza(c.rareza);
+                return { carta: c, rareza };
+            }).filter(Boolean);
+
+            if (cartasSobre.length === 0) {
+                alert('Error: no se pudieron cargar las cartas del sobre.');
+                return;
+            }
+
+            // Pagar
+            _inventario.coins -= SPAIN_PACK_COST;
+            guardarInventario();
+            actualizarBarraMonedas();
+
+            // Stats: cuenta como 1 sobre abierto
+            if (_statsJugador) {
+                _statsJugador.sobresAbiertos += 1;
+                actualizarMisiones('abre_sobre', 1);
+                guardarStats();
+            }
+
+            // Iniciar la sesión de apertura (reutilizamos el sistema existente)
+            iniciarSesionApertura([cartasSobre]);
+        }
+
+        // Override de la función irATienda para inicializar el contador al entrar
+        (function() {
+            const _orig_irATienda = irATienda;
+            irATienda = function() {
+                _orig_irATienda.apply(this, arguments);
+                // Dar tiempo a que el DOM se pinte y luego actualizar el contador
+                setTimeout(actualizarContadorSpain, 50);
+                setTimeout(actualizarContadorSpain, 300);
+            };
+        })();
 
 
         function ocultarPantallasPrincipales() {
@@ -14995,6 +15679,10 @@
                         estadoPartida.bloqueadorUsado = true;
                         // Incrementar stat de bloqueadores usados (logro Bloqueador experto)
                         if (typeof _statsJugador !== 'undefined' && _statsJugador) { _statsJugador.bloqueadores = (_statsJugador.bloqueadores || 0) + 1; if (typeof guardarStats === 'function') guardarStats(); }
+                        // Hook maestría: el jugador bloqueó con esta carta
+                        if (bu?.id && typeof trackMaestria_bloquear === 'function') {
+                            try { trackMaestria_bloquear(bu.id); } catch(e) {}
+                        }
                         estadoPartida.log = (getCardById(bu.id)?.nombre || 'Tu unidad') + ' bloquea el ataque.';
                         renderizarPartida();
                         await sleep(500);
@@ -15204,6 +15892,10 @@
                         estadoPartida.bloqueadorUsado = true;
                         // Incrementar stat de bloqueadores usados (logro Bloqueador experto)
                         if (typeof _statsJugador !== 'undefined' && _statsJugador) { _statsJugador.bloqueadores = (_statsJugador.bloqueadores || 0) + 1; if (typeof guardarStats === 'function') guardarStats(); }
+                        // Hook maestría: el jugador bloqueó con esta carta
+                        if (bu?.id && typeof trackMaestria_bloquear === 'function') {
+                            try { trackMaestria_bloquear(bu.id); } catch(e) {}
+                        }
                         estadoPartida.log = (getCardById(bu.id)?.nombre || 'Tu unidad') + ' bloquea el ataque del líder rival.';
                         renderizarPartida();
                         await sleep(500);
@@ -18030,7 +18722,9 @@
                         despertar: 0,  // veces despertado este líder
                         destruir: 0,   // unidades rivales destruidas con esta carta
                         combinar: 0,   // veces combinada esta carta
-                        poner_mana: 0  // veces puesta como maná
+                        poner_mana: 0, // veces puesta como maná
+                        dano_lider: 0, // veces que esta carta ha infligido daño al líder rival
+                        bloquear: 0    // veces que esta carta ha bloqueado un ataque
                     },
                     // Indica si la recompensa del título fue reclamada
                     tituloReclamado: false
@@ -18129,6 +18823,25 @@
             const s = getMaestriaCardState(cardId);
             if (!s) return;
             s.progreso.poner_mana = (s.progreso.poner_mana || 0) + 1;
+            guardarMaestriasState();
+        }
+
+        // Llamar cuando una carta del jugador inflige daño al líder rival.
+        // Cuenta +1 por cada instancia de daño (no por cantidad de daño).
+        function trackMaestria_danoLider(cardId) {
+            if (!cardId) return;
+            const s = getMaestriaCardState(cardId);
+            if (!s) return;
+            s.progreso.dano_lider = (s.progreso.dano_lider || 0) + 1;
+            guardarMaestriasState();
+        }
+
+        // Llamar cuando el jugador bloquea con una carta (Bloqueador)
+        function trackMaestria_bloquear(cardId) {
+            if (!cardId) return;
+            const s = getMaestriaCardState(cardId);
+            if (!s) return;
+            s.progreso.bloquear = (s.progreso.bloquear || 0) + 1;
             guardarMaestriasState();
         }
 
@@ -18432,6 +19145,8 @@
         window.trackMaestria_destruirConUnidad = trackMaestria_destruirConUnidad;
         window.trackMaestria_combinarCarta = trackMaestria_combinarCarta;
         window.trackMaestria_ponerMana = trackMaestria_ponerMana;
+        window.trackMaestria_danoLider = trackMaestria_danoLider;
+        window.trackMaestria_bloquear = trackMaestria_bloquear;
         window.limpiarCartasJugadasEnPartida = limpiarCartasJugadasEnPartida;
 
         // ===== CARGAR MAESTRÍAS AL INICIO =====
