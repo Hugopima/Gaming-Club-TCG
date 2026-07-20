@@ -4636,8 +4636,10 @@
 
   function liderCarta(quien) {
     const z = zonaJugador(quien);
+    if (!z) return null;
     const base = getCardById(z.liderId);
-    if (z.liderDespierto && base) {
+    if (!base) return null;
+    if (z.liderDespierto) {
       return Object.assign({}, base, {
         nombre: base.nombreEvo || base.nombre,
         poder: base.poderEvo || base.poder,
@@ -5434,8 +5436,11 @@
         }
       }
     }
-    if (c.atacanteId === id && ctx.bonusSinBloqueador) mod += ctx.bonusSinBloqueador;
-    if (c.atacanteId === id && ctx.bonusVsBloqueador) mod += ctx.bonusVsBloqueador;
+    // BUG FIX: solo aplicar bonusSinBloqueador y bonusVsBloqueador si estamos en un
+    // contexto de combate real (c tiene atacanteId Y objetivo). Esto evita que el
+    // bonus persista y se aplique a todas las cartas durante el renderizado.
+    if (c.atacanteId === id && c.objetivo && ctx.bonusSinBloqueador) mod += ctx.bonusSinBloqueador;
+    if (c.atacanteId === id && c.objetivo && ctx.bonusVsBloqueador) mod += ctx.bonusVsBloqueador;
     // ctx.phantomBonus eliminado: ahora Mega Phantom usa addBuff(zona, 'batalla', 10000) directamente
     if (c.defensorId === id && ctx.debuffDefensor) mod += ctx.debuffDefensor;
     if (ctx.batallaMods?.['def_' + c.objetivo?.index] && c.objetivo?.tipo === 'unidad') {
@@ -5493,7 +5498,7 @@
     },
     activablesLider(quien) {
       const z = zonaJugador(quien);
-      const esEvo = !!(z.liderDespierto && liderCarta(quien).esEvo);
+      const esEvo = !!(z.liderDespierto && liderCarta(quien)?.esEvo);
       if (!esEvo) return [];
       if (habilidadUsada(claveTurno(quien, 'rl1_act'))) return [];
       return [{ key: 'mira3', label: 'Mira 3 — jugar Animatrónico ≤3' }];
@@ -5535,7 +5540,7 @@
   R('red_lider_02', {
     alAtacarLider(quien) { robar(quien, 1); },
     activablesLider(quien) {
-      if (liderCarta(quien).esEvo) return [];
+      if (liderCarta(quien)?.esEvo) return [];
       if (habilidadUsada(claveTurno(quien, 'rl2_act'))) return [];
       if (zonaJugador(quien).mano.length < 5) return [];
       const tieneUnidadRoja = unidadesEnCampo(quien, (u, i, c) => colorNormalizadoCarta(c) === 'rojo').length > 0;
@@ -5618,7 +5623,7 @@
     alAtacarLider(quien) { robar(quien, 1); },
     activablesLider(quien) {
       const z = zonaJugador(quien);
-      const esEvo = !!(z.liderDespierto && liderCarta(quien).esEvo);
+      const esEvo = !!(z.liderDespierto && liderCarta(quien)?.esEvo);
       if (esEvo) {
         // Evo (Hugopima y sus Withers): recupera carta Grupo/Minecraft del descarte + endereza maná azul
         if (habilidadUsada(claveTurno(quien, 'bl2_evo'))) return [];
@@ -5675,7 +5680,7 @@
     alAtacarLider(quien) { robar(quien, 1); },
     activablesLider(quien) {
       const z = zonaJugador(quien);
-      const esEvo = !!(z.liderDespierto && liderCarta(quien).esEvo);
+      const esEvo = !!(z.liderDespierto && liderCarta(quien)?.esEvo);
       if (esEvo) {
         // Toñi la infectada (evo): Activar: Principal con botón
         if (estadoPartida?.faseIndex !== 1) return [];
@@ -5745,7 +5750,7 @@
   R('green_lider_02', {
     alAtacarLider(quien) { robar(quien, 1); },
     activablesLider(quien) {
-      if (liderCarta(quien).esEvo || habilidadUsada(claveTurno(quien, 'gl2_act'))) return [];
+      if (liderCarta(quien)?.esEvo || habilidadUsada(claveTurno(quien, 'gl2_act'))) return [];
       const riv = unidadesEnCampo(rivalDe(quien), u => u.rested);
       if (!riv.length) return [];
       return [{ key: 'buffVerde', label: '+5000 unidad verde (este turno)' }];
@@ -5798,7 +5803,7 @@
       }
     },
     activablesLider(quien) {
-      if (!liderCarta(quien).esEvo || habilidadUsada(claveTurno(quien, 'bl1_bat'))) return [];
+      if (!liderCarta(quien)?.esEvo || habilidadUsada(claveTurno(quien, 'bl1_bat'))) return [];
       return [{ key: 'desafioBat', label: 'Descarta Desafío: -10000 rival' }];
     },
     async ejecutarActivar(key, quien) {
@@ -8208,7 +8213,7 @@
   function puedeAtacarObjetivo(atacanteId, objetivo, quien) {
     const lider = liderCarta(quien);
     const liderId = zonaJugador(quien).liderId;
-    if (atacanteId === liderId || atacanteId === getCardId(lider)) {
+    if (atacanteId === liderId || (lider && atacanteId === getCardId(lider))) {
       const lid = liderCarta(quien);
       if (String(lid?.personaje || lid?.nombre || '').toUpperCase().includes('INFINITYCRAFT')) {
         if (objetivo?.tipo === 'unidad') return false;
@@ -8894,7 +8899,7 @@
     // Elige una unidad <España> de tu mano y júgala pagando su coste menos 1.
     activablesLider(quien) {
       const z = zonaJugador(quien);
-      const esEvo = !!(z.liderDespierto && liderCarta(quien).esEvo);
+      const esEvo = !!(z.liderDespierto && liderCarta(quien)?.esEvo);
       if (!esEvo) return [];
       if (habilidadUsada(claveTurno(quien, 'rl3_act'))) return [];
       // Verificar que hay al menos una unidad España en mano
@@ -9100,13 +9105,16 @@
 
   // —— 10) FERRÁN TORRES —— Al atacar al líder sin bloqueador, +5000
   R('ferran_torres', {
-    // IMPORTANTE: alAtacar se ejecuta DESPUÉS de la fase de bloqueo (a diferencia de
-    // alDeclararAtaque que se ejecuta antes). Así comprobamos correctamente si el
-    // rival NO ha bloqueado, y aplicamos el +5000 silenciosamente (sin log para no
-    // anunciarlo antes de tiempo en el cuadro de texto).
+    // IMPORTANTE: Usamos addBuff directamente sobre la zona (no ctx.bonusSinBloqueador)
+    // para evitar que el bonus persista entre batallas y afecte a otras cartas
+    // durante el renderizado (lo que causaba el bug de +5000 en todas las cartas).
     alAtacar(quien, ref, zona) {
-      if (ctx.objetivo?.tipo === 'lider' && !estadoPartida?.bloqueadorUsado) {
-        ctx.bonusSinBloqueador = (ctx.bonusSinBloqueador || 0) + 5000;
+      if (zona && ctx.objetivo?.tipo === 'lider' && !estadoPartida?.bloqueadorUsado) {
+        addBuff(zona, 'batalla', 5000);
+        // Online sync: notificar al rival del buff para que lo vea
+        if (estadoPartida?.modo === 'online' && typeof enviarEfectoRival === 'function' && zona.id) {
+          enviarEfectoRival({ tipo: 'buff-batalla', cardId: zona.id, cantidad: 5000, nombre: 'Ferrán Torres' });
+        }
       }
     }
   });
@@ -9246,18 +9254,36 @@
 
   // Cuando una unidad España (roja) gana combate, marcar el flag para que el botón
   // de "Robar 1 (batalla ganada)" de ¡CAMPEONES! esté disponible.
+  // Hay dos casos:
+  //  1) La unidad derrota a una unidad rival → alGanarCombate
+  //  2) La unidad ataca al líder sin bloqueador (inflige daño) → alAtacar
   ['unai_simon','pedro_porro','cucurella','rodri','cubarsi','dani_olmo','merino','lamine_yamal','ferran_torres','fabian_ruiz','oyarzabal','zubimendi'].forEach(_idSp => {
     const prev = REGISTRO_EFECTOS[_idSp] || {};
+    // Caso 1: derrota a una unidad rival
     const prevGanarCombate = prev.alGanarCombate;
     prev.alGanarCombate = function(c) {
       if (typeof prevGanarCombate === 'function') prevGanarCombate(c);
       // Marcar flag en el dueño del atacante para que ¡CAMPEONES! pueda robar
-      const quienAtk = c?.atacanteQuien;
+      const quienAtk = c?.atacanteQuien || ctx.atacanteQuien;
       if (!quienAtk) return;
       const z = zonaJugador(quienAtk);
       const campo = z.campo?.[0];
       if (campo && campo.id === 'campo_campeones' && !campo.rested) {
         z._cc_batallaGanadaEsteTurno = true;
+      }
+    };
+    // Caso 2: ataca al líder sin bloqueador (inflige daño)
+    const prevAtacar = prev.alAtacar;
+    prev.alAtacar = function(quien, ref, zona, objetivo) {
+      if (typeof prevAtacar === 'function') prevAtacar(quien, ref, zona, objetivo);
+      // Si el objetivo es el líder y no se usó bloqueador, contar como batalla ganada
+      const objTipo = (objetivo?.tipo) || (ctx.objetivo?.tipo);
+      if (objTipo === 'lider' && !estadoPartida?.bloqueadorUsado) {
+        const z = zonaJugador(quien);
+        const campo = z.campo?.[0];
+        if (campo && campo.id === 'campo_campeones' && !campo.rested) {
+          z._cc_batallaGanadaEsteTurno = true;
+        }
       }
     };
   });
@@ -9314,6 +9340,7 @@
         }
 
         function claseNormalizada(carta) {
+            if (!carta) return "";
             return (carta.clase || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         }
 
@@ -9331,7 +9358,7 @@
                 if (!carta || esToken(carta)) delete miMazo.cartas[id];
             });
         }
-        function getCardId(carta) { return carta.id || carta.nombre; }
+        function getCardId(carta) { return carta ? (carta.id || carta.nombre) : null; }
         function getCardById(id) { return datosCartas.find(c => getCardId(c) === id); }
         function totalCartasMazo() { return Object.values(miMazo.cartas).reduce((sum, n) => sum + n, 0); }
         function copiasEnMazo(id) { return miMazo.cartas[id] || 0; }
