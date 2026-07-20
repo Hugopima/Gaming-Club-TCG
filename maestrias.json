@@ -5349,42 +5349,42 @@
       {
         "id": "m1",
         "tipo": "gamingcoins",
-        "campoProgreso": "jugar",
+        "campoProgreso": "ganar",
         "niveles": [
           {
-            "objetivo": 30,
+            "objetivo": 50,
             "reward": 150,
-            "desc": "Juega esta carta 30 veces"
+            "desc": "Juega esta carta y gana 50 veces"
           },
           {
-            "objetivo": 80,
+            "objetivo": 100,
             "reward": 200,
-            "desc": "Juega esta carta 80 veces"
+            "desc": "Juega esta carta y gana 100 veces"
           }
         ]
       },
       {
         "id": "m2",
         "tipo": "club_energy",
-        "campoProgreso": "destruir",
+        "campoProgreso": "bloquear",
         "niveles": [
           {
-            "objetivo": 20,
+            "objetivo": 50,
             "reward": 100,
-            "desc": "Destruye 20 unidades rivales con esta carta"
+            "desc": "Bloquea con esta carta 50 veces"
           },
           {
-            "objetivo": 60,
+            "objetivo": 100,
             "reward": 150,
-            "desc": "Destruye 60 unidades rivales con esta carta"
+            "desc": "Bloquea con esta carta 100 veces"
           }
         ]
       },
       {
         "id": "m3",
         "tipo": "titulo",
-        "objetivo": 120,
-        "desc": "Juega esta carta y gana 120 partidas (tras completar las otras dos)",
+        "objetivo": 150,
+        "desc": "Incluye esta carta en tu mazo y gana 150 partidas (tras completar las otras dos)",
         "titulo": "El Muro"
       }
     ]
@@ -5398,42 +5398,42 @@
       {
         "id": "m1",
         "tipo": "gamingcoins",
-        "campoProgreso": "jugar",
+        "campoProgreso": "ganar",
         "niveles": [
           {
-            "objetivo": 30,
+            "objetivo": 50,
             "reward": 150,
-            "desc": "Juega esta carta 30 veces"
+            "desc": "Juega esta carta y gana 50 veces"
           },
           {
-            "objetivo": 80,
+            "objetivo": 100,
             "reward": 200,
-            "desc": "Juega esta carta 80 veces"
+            "desc": "Juega esta carta y gana 100 veces"
           }
         ]
       },
       {
         "id": "m2",
         "tipo": "club_energy",
-        "campoProgreso": "destruir",
+        "campoProgreso": "jugar",
         "niveles": [
           {
-            "objetivo": 20,
+            "objetivo": 50,
             "reward": 100,
-            "desc": "Destruye 20 unidades rivales con esta carta"
+            "desc": "Juega esta carta 50 veces"
           },
           {
-            "objetivo": 60,
+            "objetivo": 100,
             "reward": 150,
-            "desc": "Destruye 60 unidades rivales con esta carta"
+            "desc": "Juega esta carta 100 veces"
           }
         ]
       },
       {
         "id": "m3",
         "tipo": "titulo",
-        "objetivo": 120,
-        "desc": "Juega esta carta y gana 120 partidas (tras completar las otras dos)",
+        "objetivo": 150,
+        "desc": "Incluye esta carta en tu mazo y gana 150 partidas (tras completar las otras dos)",
         "titulo": "Porro"
       }
     ]
@@ -5447,42 +5447,42 @@
       {
         "id": "m1",
         "tipo": "gamingcoins",
-        "campoProgreso": "jugar",
+        "campoProgreso": "ganar",
         "niveles": [
           {
-            "objetivo": 30,
+            "objetivo": 50,
             "reward": 150,
-            "desc": "Juega esta carta 30 veces"
+            "desc": "Juega esta carta y gana 50 veces"
           },
           {
-            "objetivo": 80,
+            "objetivo": 100,
             "reward": 200,
-            "desc": "Juega esta carta 80 veces"
+            "desc": "Juega esta carta y gana 100 veces"
           }
         ]
       },
       {
         "id": "m2",
         "tipo": "club_energy",
-        "campoProgreso": "destruir",
+        "campoProgreso": "bloquear",
         "niveles": [
           {
-            "objetivo": 20,
+            "objetivo": 50,
             "reward": 100,
-            "desc": "Destruye 20 unidades rivales con esta carta"
+            "desc": "Bloquea con esta carta 50 veces"
           },
           {
-            "objetivo": 60,
+            "objetivo": 100,
             "reward": 150,
-            "desc": "Destruye 60 unidades rivales con esta carta"
+            "desc": "Bloquea con esta carta 100 veces"
           }
         ]
       },
       {
         "id": "m3",
         "tipo": "titulo",
-        "objetivo": 120,
-        "desc": "Juega esta carta y gana 120 partidas (tras completar las otras dos)",
+        "objetivo": 150,
+        "desc": "Incluye esta carta en tu mazo y gana 150 partidas (tras completar las otras dos)",
         "titulo": "Se come una paella"
       }
     ]
@@ -5496,17 +5496,17 @@
       {
         "id": "m1",
         "tipo": "gamingcoins",
-        "campoProgreso": "jugar",
+        "campoProgreso": "ganar",
         "niveles": [
           {
-            "objetivo": 30,
+            "objetivo": 50,
             "reward": 150,
-            "desc": "Juega esta carta 30 veces"
+            "desc": "Juega esta carta y gana 50 veces"
           },
           {
-            "objetivo": 80,
+            "objetivo": 100,
             "reward": 200,
-            "desc": "Juega esta carta 80 veces"
+            "desc": "Juega esta carta y gana 100 veces"
           }
         ]
       },
@@ -5516,22 +5516,22 @@
         "campoProgreso": "destruir",
         "niveles": [
           {
-            "objetivo": 20,
+            "objetivo": 50,
             "reward": 100,
-            "desc": "Destruye 20 unidades rivales con esta carta"
+            "desc": "Destruye unidades rivales con esta carta 50 veces"
           },
           {
-            "objetivo": 60,
+            "objetivo": 100,
             "reward": 150,
-            "desc": "Destruye 60 unidades rivales con esta carta"
+            "desc": "Destruye unidades rivales con esta carta 100 veces"
           }
         ]
       },
       {
         "id": "m3",
         "tipo": "titulo",
-        "objetivo": 120,
-        "desc": "Juega esta carta y gana 120 partidas (tras completar las otras dos)",
+        "objetivo": 150,
+        "desc": "Incluye esta carta en tu mazo y gana 150 partidas (tras completar las otras dos)",
         "titulo": "Capitán"
       }
     ]
@@ -5545,42 +5545,42 @@
       {
         "id": "m1",
         "tipo": "gamingcoins",
-        "campoProgreso": "jugar",
+        "campoProgreso": "ganar",
         "niveles": [
           {
-            "objetivo": 30,
+            "objetivo": 50,
             "reward": 150,
-            "desc": "Juega esta carta 30 veces"
+            "desc": "Juega esta carta y gana 50 veces"
           },
           {
-            "objetivo": 80,
+            "objetivo": 100,
             "reward": 200,
-            "desc": "Juega esta carta 80 veces"
+            "desc": "Juega esta carta y gana 100 veces"
           }
         ]
       },
       {
         "id": "m2",
         "tipo": "club_energy",
-        "campoProgreso": "destruir",
+        "campoProgreso": "bloquear",
         "niveles": [
           {
-            "objetivo": 20,
+            "objetivo": 50,
             "reward": 100,
-            "desc": "Destruye 20 unidades rivales con esta carta"
+            "desc": "Bloquea con esta carta 50 veces"
           },
           {
-            "objetivo": 60,
+            "objetivo": 100,
             "reward": 150,
-            "desc": "Destruye 60 unidades rivales con esta carta"
+            "desc": "Bloquea con esta carta 100 veces"
           }
         ]
       },
       {
         "id": "m3",
         "tipo": "titulo",
-        "objetivo": 120,
-        "desc": "Juega esta carta y gana 120 partidas (tras completar las otras dos)",
+        "objetivo": 150,
+        "desc": "Incluye esta carta en tu mazo y gana 150 partidas (tras completar las otras dos)",
         "titulo": "Jóven"
       }
     ]
@@ -5594,42 +5594,42 @@
       {
         "id": "m1",
         "tipo": "gamingcoins",
-        "campoProgreso": "jugar",
+        "campoProgreso": "ganar",
         "niveles": [
           {
-            "objetivo": 30,
+            "objetivo": 50,
             "reward": 150,
-            "desc": "Juega esta carta 30 veces"
+            "desc": "Juega esta carta y gana 50 veces"
           },
           {
-            "objetivo": 80,
+            "objetivo": 100,
             "reward": 200,
-            "desc": "Juega esta carta 80 veces"
+            "desc": "Juega esta carta y gana 100 veces"
           }
         ]
       },
       {
         "id": "m2",
         "tipo": "club_energy",
-        "campoProgreso": "destruir",
+        "campoProgreso": "jugar",
         "niveles": [
           {
-            "objetivo": 20,
+            "objetivo": 50,
             "reward": 100,
-            "desc": "Destruye 20 unidades rivales con esta carta"
+            "desc": "Juega esta carta 50 veces"
           },
           {
-            "objetivo": 60,
+            "objetivo": 100,
             "reward": 150,
-            "desc": "Destruye 60 unidades rivales con esta carta"
+            "desc": "Juega esta carta 100 veces"
           }
         ]
       },
       {
         "id": "m3",
         "tipo": "titulo",
-        "objetivo": 120,
-        "desc": "Juega esta carta y gana 120 partidas (tras completar las otras dos)",
+        "objetivo": 150,
+        "desc": "Incluye esta carta en tu mazo y gana 150 partidas (tras completar las otras dos)",
         "titulo": "Rubio"
       }
     ]
@@ -5643,42 +5643,42 @@
       {
         "id": "m1",
         "tipo": "gamingcoins",
-        "campoProgreso": "jugar",
+        "campoProgreso": "ganar",
         "niveles": [
           {
-            "objetivo": 30,
+            "objetivo": 50,
             "reward": 150,
-            "desc": "Juega esta carta 30 veces"
+            "desc": "Juega esta carta y gana 50 veces"
           },
           {
-            "objetivo": 80,
+            "objetivo": 100,
             "reward": 200,
-            "desc": "Juega esta carta 80 veces"
+            "desc": "Juega esta carta y gana 100 veces"
           }
         ]
       },
       {
         "id": "m2",
         "tipo": "club_energy",
-        "campoProgreso": "destruir",
+        "campoProgreso": "jugar",
         "niveles": [
           {
-            "objetivo": 20,
+            "objetivo": 50,
             "reward": 100,
-            "desc": "Destruye 20 unidades rivales con esta carta"
+            "desc": "Juega esta carta 50 veces"
           },
           {
-            "objetivo": 60,
+            "objetivo": 100,
             "reward": 150,
-            "desc": "Destruye 60 unidades rivales con esta carta"
+            "desc": "Juega esta carta 100 veces"
           }
         ]
       },
       {
         "id": "m3",
         "tipo": "titulo",
-        "objetivo": 120,
-        "desc": "Juega esta carta y gana 120 partidas (tras completar las otras dos)",
+        "objetivo": 150,
+        "desc": "Incluye esta carta en tu mazo y gana 150 partidas (tras completar las otras dos)",
         "titulo": "Minuto 92"
       }
     ]
@@ -5692,42 +5692,42 @@
       {
         "id": "m1",
         "tipo": "gamingcoins",
-        "campoProgreso": "jugar",
+        "campoProgreso": "ganar",
         "niveles": [
           {
-            "objetivo": 30,
+            "objetivo": 50,
             "reward": 150,
-            "desc": "Juega esta carta 30 veces"
+            "desc": "Juega esta carta y gana 50 veces"
           },
           {
-            "objetivo": 80,
+            "objetivo": 100,
             "reward": 200,
-            "desc": "Juega esta carta 80 veces"
+            "desc": "Juega esta carta y gana 100 veces"
           }
         ]
       },
       {
         "id": "m2",
         "tipo": "club_energy",
-        "campoProgreso": "destruir",
+        "campoProgreso": "jugar",
         "niveles": [
           {
-            "objetivo": 20,
+            "objetivo": 50,
             "reward": 100,
-            "desc": "Destruye 20 unidades rivales con esta carta"
+            "desc": "Juega esta carta 50 veces"
           },
           {
-            "objetivo": 60,
+            "objetivo": 100,
             "reward": 150,
-            "desc": "Destruye 60 unidades rivales con esta carta"
+            "desc": "Juega esta carta 100 veces"
           }
         ]
       },
       {
         "id": "m3",
         "tipo": "titulo",
-        "objetivo": 120,
-        "desc": "Juega esta carta y gana 120 partidas (tras completar las otras dos)",
+        "objetivo": 150,
+        "desc": "Incluye esta carta en tu mazo y gana 150 partidas (tras completar las otras dos)",
         "titulo": "Cada día te quiero más"
       }
     ]
@@ -5741,42 +5741,42 @@
       {
         "id": "m1",
         "tipo": "gamingcoins",
-        "campoProgreso": "jugar",
+        "campoProgreso": "ganar",
         "niveles": [
           {
-            "objetivo": 30,
+            "objetivo": 50,
             "reward": 150,
-            "desc": "Juega esta carta 30 veces"
+            "desc": "Juega esta carta y gana 50 veces"
           },
           {
-            "objetivo": 80,
+            "objetivo": 100,
             "reward": 200,
-            "desc": "Juega esta carta 80 veces"
+            "desc": "Juega esta carta y gana 100 veces"
           }
         ]
       },
       {
         "id": "m2",
         "tipo": "club_energy",
-        "campoProgreso": "destruir",
+        "campoProgreso": "jugar",
         "niveles": [
           {
-            "objetivo": 20,
+            "objetivo": 50,
             "reward": 100,
-            "desc": "Destruye 20 unidades rivales con esta carta"
+            "desc": "Juega esta carta 50 veces"
           },
           {
-            "objetivo": 60,
+            "objetivo": 100,
             "reward": 150,
-            "desc": "Destruye 60 unidades rivales con esta carta"
+            "desc": "Juega esta carta 100 veces"
           }
         ]
       },
       {
         "id": "m3",
         "tipo": "titulo",
-        "objetivo": 120,
-        "desc": "Juega esta carta y gana 120 partidas (tras completar las otras dos)",
+        "objetivo": 150,
+        "desc": "Incluye esta carta en tu mazo y gana 150 partidas (tras completar las otras dos)",
         "titulo": "Oh Ferrán"
       }
     ]
@@ -5790,17 +5790,17 @@
       {
         "id": "m1",
         "tipo": "gamingcoins",
-        "campoProgreso": "jugar",
+        "campoProgreso": "ganar",
         "niveles": [
           {
-            "objetivo": 30,
+            "objetivo": 50,
             "reward": 150,
-            "desc": "Juega esta carta 30 veces"
+            "desc": "Juega esta carta y gana 50 veces"
           },
           {
-            "objetivo": 80,
+            "objetivo": 100,
             "reward": 200,
-            "desc": "Juega esta carta 80 veces"
+            "desc": "Juega esta carta y gana 100 veces"
           }
         ]
       },
@@ -5810,22 +5810,22 @@
         "campoProgreso": "destruir",
         "niveles": [
           {
-            "objetivo": 20,
+            "objetivo": 50,
             "reward": 100,
-            "desc": "Destruye 20 unidades rivales con esta carta"
+            "desc": "Destruye unidades rivales con esta carta 50 veces"
           },
           {
-            "objetivo": 60,
+            "objetivo": 100,
             "reward": 150,
-            "desc": "Destruye 60 unidades rivales con esta carta"
+            "desc": "Destruye unidades rivales con esta carta 100 veces"
           }
         ]
       },
       {
         "id": "m3",
         "tipo": "titulo",
-        "objetivo": 120,
-        "desc": "Juega esta carta y gana 120 partidas (tras completar las otras dos)",
+        "objetivo": 150,
+        "desc": "Incluye esta carta en tu mazo y gana 150 partidas (tras completar las otras dos)",
         "titulo": "Centrocampista"
       }
     ]
@@ -5839,42 +5839,42 @@
       {
         "id": "m1",
         "tipo": "gamingcoins",
-        "campoProgreso": "jugar",
+        "campoProgreso": "ganar",
         "niveles": [
           {
-            "objetivo": 30,
+            "objetivo": 50,
             "reward": 150,
-            "desc": "Juega esta carta 30 veces"
+            "desc": "Juega esta carta y gana 50 veces"
           },
           {
-            "objetivo": 80,
+            "objetivo": 100,
             "reward": 200,
-            "desc": "Juega esta carta 80 veces"
+            "desc": "Juega esta carta y gana 100 veces"
           }
         ]
       },
       {
         "id": "m2",
         "tipo": "club_energy",
-        "campoProgreso": "destruir",
+        "campoProgreso": "jugar",
         "niveles": [
           {
-            "objetivo": 20,
+            "objetivo": 50,
             "reward": 100,
-            "desc": "Destruye 20 unidades rivales con esta carta"
+            "desc": "Juega esta carta 50 veces"
           },
           {
-            "objetivo": 60,
+            "objetivo": 100,
             "reward": 150,
-            "desc": "Destruye 60 unidades rivales con esta carta"
+            "desc": "Juega esta carta 100 veces"
           }
         ]
       },
       {
         "id": "m3",
         "tipo": "titulo",
-        "objetivo": 120,
-        "desc": "Juega esta carta y gana 120 partidas (tras completar las otras dos)",
+        "objetivo": 150,
+        "desc": "Incluye esta carta en tu mazo y gana 150 partidas (tras completar las otras dos)",
         "titulo": "Oyargoat"
       }
     ]
@@ -5888,42 +5888,42 @@
       {
         "id": "m1",
         "tipo": "gamingcoins",
-        "campoProgreso": "jugar",
+        "campoProgreso": "ganar",
         "niveles": [
           {
-            "objetivo": 30,
+            "objetivo": 50,
             "reward": 150,
-            "desc": "Juega esta carta 30 veces"
+            "desc": "Juega esta carta y gana 50 veces"
           },
           {
-            "objetivo": 80,
+            "objetivo": 100,
             "reward": 200,
-            "desc": "Juega esta carta 80 veces"
+            "desc": "Juega esta carta y gana 100 veces"
           }
         ]
       },
       {
         "id": "m2",
         "tipo": "club_energy",
-        "campoProgreso": "destruir",
+        "campoProgreso": "jugar",
         "niveles": [
           {
-            "objetivo": 20,
+            "objetivo": 50,
             "reward": 100,
-            "desc": "Destruye 20 unidades rivales con esta carta"
+            "desc": "Juega esta carta 50 veces"
           },
           {
-            "objetivo": 60,
+            "objetivo": 100,
             "reward": 150,
-            "desc": "Destruye 60 unidades rivales con esta carta"
+            "desc": "Juega esta carta 100 veces"
           }
         ]
       },
       {
         "id": "m3",
         "tipo": "titulo",
-        "objetivo": 120,
-        "desc": "Juega esta carta y gana 120 partidas (tras completar las otras dos)",
+        "objetivo": 150,
+        "desc": "Incluye esta carta en tu mazo y gana 150 partidas (tras completar las otras dos)",
         "titulo": "Maestro de Ajedrez"
       }
     ]
@@ -5937,42 +5937,42 @@
       {
         "id": "m1",
         "tipo": "gamingcoins",
-        "campoProgreso": "jugar",
+        "campoProgreso": "ganar",
         "niveles": [
           {
-            "objetivo": 30,
+            "objetivo": 25,
             "reward": 150,
-            "desc": "Juega esta carta 30 veces"
+            "desc": "Juega esta carta y gana 25 veces"
           },
           {
-            "objetivo": 80,
+            "objetivo": 75,
             "reward": 200,
-            "desc": "Juega esta carta 80 veces"
+            "desc": "Juega esta carta y gana 75 veces"
           }
         ]
       },
       {
         "id": "m2",
         "tipo": "club_energy",
-        "campoProgreso": "ganar",
+        "campoProgreso": "poner_mana",
         "niveles": [
           {
-            "objetivo": 30,
+            "objetivo": 15,
             "reward": 100,
-            "desc": "Gana 30 partidas teniendo esta carta en tu mazo"
+            "desc": "Pon 15 veces esta carta como maná"
           },
           {
-            "objetivo": 80,
+            "objetivo": 50,
             "reward": 150,
-            "desc": "Gana 80 partidas teniendo esta carta en tu mazo"
+            "desc": "Pon 50 veces esta carta como maná"
           }
         ]
       },
       {
         "id": "m3",
         "tipo": "titulo",
-        "objetivo": 120,
-        "desc": "Juega esta carta y gana 120 partidas (tras completar las otras dos)",
+        "objetivo": 150,
+        "desc": "Incluye esta carta en tu mazo y gana 150 partidas (tras completar las otras dos)",
         "titulo": "Campeón del Mundo"
       }
     ]
