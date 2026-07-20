@@ -2009,12 +2009,13 @@
             position: fixed; inset: 0; z-index: 3500; display: none;
             background: radial-gradient(circle at center, #2a1040, #050008);
             align-items: center; justify-content: center; flex-direction: column;
-            perspective: 1400px; overflow: hidden;
+            perspective: 1400px; overflow: auto;
         }
         #pack-opening-overlay.active { display: flex; }
         .pack-stage {
-            position: relative; width: 100%; height: 100%;
+            position: relative; width: 100%; min-height: 100%;
             display: flex; align-items: center; justify-content: center;
+            padding: 20px 0;
         }
         .pack-3d {
             position: relative; width: 220px; height: 308px;
@@ -2228,7 +2229,8 @@
 
         /* Resumen del sobre (más compacto) */
         .pack-summary {
-            width: min(720px, 92vw); display: none; flex-direction: column; align-items: center;
+            width: min(720px, 92vw); max-height: 90vh; overflow-y: auto;
+            display: none; flex-direction: column; align-items: center;
             gap: 14px; padding: 20px;
         }
         .pack-summary.active { display: flex; animation: fadeIn .4s ease; }
@@ -2238,6 +2240,8 @@
             letter-spacing: 2px; margin: 0; text-shadow: 0 0 12px rgba(255,240,124,.4);
         }
         .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; }
+        /* Para sobres grandes (selección española, 14 cartas) usar 4-5 columnas */
+        .summary-grid.many { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; }
         .summary-card { position: relative; border-radius: 10px; overflow: hidden; }
         .summary-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; display: block; }
         .summary-card .summary-rarity {
@@ -4223,6 +4227,15 @@
     return `${quien}_${estadoPartida?.turno || 0}_${suffix}`;
   }
 
+  // ===== Helper: ¿es una carta de origen España? =====
+  // Definido aquí (arriba del IIFE) para que modificarPoderBatalla pueda usarlo
+  // antes de que se definan las cartas de Selección Española más abajo.
+  function esCartaEspanaHelper(carta) {
+    if (!carta) return false;
+    const o = String(carta.origen || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    return o === 'espana';
+  }
+
   function crearUnidadCampo(id, opts) {
     opts = opts || {};
     const ataques = typeof ataquesPorTurno === 'function' ? ataquesPorTurno(id) : 1;
@@ -5406,6 +5419,20 @@
       // Campo propio del jugador siendo calculado
       const quienCalc = c.quien || c.atacanteQuien || 'jugador';
       if (campoActivo(quienCalc)?.id === 'energia') mod += 5000;
+    }
+    // ===== La Roja (Despierto) — Luis de la Fuente evo =====
+    // Permanente: Todas tus unidades <España> ganan +2500 de poder.
+    // Solo aplica si el dueño de la carta tiene a red_lider_03 como líder DESPIERTO.
+    if (!esLiderCalc && estadoPartida) {
+      const quienCalc = c.quien || c.atacanteQuien || 'jugador';
+      const z = zonaJugador(quienCalc);
+      if (z && z.liderId === 'red_lider_03' && z.liderDespierto) {
+        // Comprobar que la carta siendo calculada es de origen España
+        const cartaCalc = cartaEnZona(id, zona);
+        if (cartaCalc && esCartaEspanaHelper(cartaCalc)) {
+          mod += 2500;
+        }
+      }
     }
     if (c.atacanteId === id && ctx.bonusSinBloqueador) mod += ctx.bonusSinBloqueador;
     if (c.atacanteId === id && ctx.bonusVsBloqueador) mod += ctx.bonusVsBloqueador;
@@ -8844,7 +8871,7 @@
   // ====================================================================
   // Helpers locales para España
   function esCartaEspana(c) {
-    return String(c?.origen || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') === 'espana';
+    return esCartaEspanaHelper(c);
   }
   function liderEspanaDespierto(quien) {
     const z = zonaJugador(quien);
@@ -8903,6 +8930,8 @@
       }
       const cardId = z.mano[idx];
       const costeOriginal = Number(getCardById(cardId)?.costeTotal || 0);
+      // BUG FIX: el coste final es costeOriginal - 1 (mínimo 0), NO gratis.
+      // Antes el código era correcto pero no verificaba el coste de color.
       const costeFinal = Math.max(0, costeOriginal - 1);
       // 3. Pagar el coste reducido (descansar manás)
       if (z.manaActivo < costeFinal) {
@@ -8910,13 +8939,26 @@
         marcarHabilidadUsada(claveTurno(quien, 'rl3_act'));
         return;
       }
-      if (costeFinal > 0) descansarMana(quien, null, costeFinal);
+      // Si el jugador local, abrir el selector de maná para que elija cuáles gastar
+      if (quien === 'jugador' && typeof abrirPagoMana === 'function' && costeFinal > 0) {
+        const seleccion = await new Promise(resolve => {
+          abrirPagoMana({ tipo: 'la-roja-jugar', coste: costeFinal, cardId: cardId, callback: resolve });
+        });
+        if (!seleccion) {
+          log('La Roja: pago de maná cancelado.');
+          marcarHabilidadUsada(claveTurno(quien, 'rl3_act'));
+          return;
+        }
+      } else if (costeFinal > 0) {
+        // IA o rival online: descansar automáticamente los primeros manás activos
+        descansarMana(quien, null, costeFinal);
+      }
       // 4. Quitar de mano y poner en campo
       z.mano.splice(idx, 1);
       const nuevaUnidad = crearUnidadCampo(cardId, { rested: false });
       z.batalla.push(nuevaUnidad);
       if (window.MotorEfectos) await MotorEfectos.alJugar(quien, cardId, z.batalla[z.batalla.length - 1]);
-      log('La Roja: juega "' + (getCardById(cardId)?.nombre || cardId) + '" con -1 de coste.');
+      log('La Roja: juega "' + (getCardById(cardId)?.nombre || cardId) + '" pagando ' + costeFinal + ' de maná (coste original ' + costeOriginal + ').');
       marcarHabilidadUsada(claveTurno(quien, 'rl3_act'));
       if (typeof renderizarPartida === 'function') renderizarPartida();
     }
@@ -8924,9 +8966,12 @@
 
   // —— 2) UNAI SIMÓN —— Bloqueador + al bloquear roba 1
   R('unai_simon', {
-    async alUsarBloqueador(quien) {
-      robar(quien, 1);
-      log('Unai Simón bloquea y roba 1 carta.');
+    alUsarBloqueador(quien, u, ataqueCtx) {
+      // Al bloquear, el dueño de Unai Simón roba 1 carta
+      try {
+        robar(quien, 1);
+        log('Unai Simón bloquea y roba 1 carta.');
+      } catch (e) { console.error('[Unai Simón] error al robar:', e); }
       if (typeof renderizarPartida === 'function') renderizarPartida();
       if (estadoPartida?.modo === 'online' && typeof sincronizarEstadoOnline === 'function') sincronizarEstadoOnline('unai_simon');
     }
@@ -8973,11 +9018,21 @@
     alJugar(quien) {
       const riv = rivalDe(quien);
       const zR = zonaJugador(riv);
-      if (zR.campo && zR.campo.length) {
-        const destruido = zR.campo[0];
+      // Verificar múltiples formas de almacenar el campo (por si acaso)
+      const campoRiv = zR.campo;
+      if (campoRiv && Array.isArray(campoRiv) && campoRiv.length) {
+        const destruido = campoRiv[0];
+        const nombreCampo = getCardById(destruido.id)?.nombre || destruido.id;
+        // Mover el campo al descarte del rival
+        zR.descarte.push(destruido.id);
         zR.campo = [];
-        log('Rodri destruye el Campo rival: ' + (getCardById(destruido.id)?.nombre || destruido.id) + '.');
-        if (estadoPartida?.modo === 'online' && typeof sincronizarEstadoOnline === 'function') sincronizarEstadoOnline('rodri');
+        log('Rodri destruye el Campo rival: ' + nombreCampo + '.');
+        // Sincronizar en online
+        if (estadoPartida?.modo === 'online' && typeof enviarEfectoRival === 'function') {
+          enviarEfectoRival({ tipo: 'destruir-campo', cardId: destruido.id, nombre: 'Rodri' });
+        } else if (estadoPartida?.modo === 'online' && typeof sincronizarEstadoOnline === 'function') {
+          sincronizarEstadoOnline('rodri');
+        }
       } else {
         log('Rodri: el rival no tiene carta de Campo.');
       }
@@ -9045,12 +9100,14 @@
 
   // —— 10) FERRÁN TORRES —— Al atacar al líder sin bloqueador, +5000
   R('ferran_torres', {
-    alDeclararAtaque(quien, ref, obj) {
-      // Solo si ataca al líder y el rival no ha usado bloqueador
-      if (obj?.tipo === 'lider' && !estadoPartida?.bloqueadorUsado) {
+    // IMPORTANTE: alAtacar se ejecuta DESPUÉS de la fase de bloqueo (a diferencia de
+    // alDeclararAtaque que se ejecuta antes). Así comprobamos correctamente si el
+    // rival NO ha bloqueado, y aplicamos el +5000 silenciosamente (sin log para no
+    // anunciarlo antes de tiempo en el cuadro de texto).
+    alAtacar(quien, ref, zona) {
+      if (ctx.objetivo?.tipo === 'lider' && !estadoPartida?.bloqueadorUsado) {
         ctx.bonusSinBloqueador = (ctx.bonusSinBloqueador || 0) + 5000;
       }
-      return obj;
     }
   });
 
@@ -9064,9 +9121,17 @@
       const idx = await elegirConModal('Fabián Ruiz: elige unidad rival (coste ≤3) para destruir', opts);
       if (idx != null) {
         const u = zonaJugador(riv).batalla[idx];
+        const cardIdDestruida = u?.id;
+        const nombreDestruida = u ? (getCardById(u.id)?.nombre || u.id) : 'unidad';
         destruirUnidad(riv, idx);
-        log('Fabián Ruiz destruye a ' + (u ? (getCardById(u.id)?.nombre || u.id) : 'unidad') + '.');
-        if (estadoPartida?.modo === 'online' && typeof sincronizarEstadoOnline === 'function') sincronizarEstadoOnline('fabian_ruiz');
+        log('Fabián Ruiz destruye a ' + nombreDestruida + '.');
+        // BUG FIX: sincronizar en online para que el rival vea la destrucción
+        // (antes usaba sincronizarEstadoOnline que no always llega a tiempo).
+        if (estadoPartida?.modo === 'online' && typeof enviarEfectoRival === 'function' && cardIdDestruida) {
+          enviarEfectoRival({ tipo: 'destruir-unidad', cardId: cardIdDestruida, nombre: 'Fabián Ruiz' });
+        } else if (estadoPartida?.modo === 'online' && typeof sincronizarEstadoOnline === 'function') {
+          sincronizarEstadoOnline('fabian_ruiz');
+        }
         if (typeof renderizarPartida === 'function') renderizarPartida();
       }
     }
@@ -9116,9 +9181,11 @@
   });
 
   // —— 14) ¡CAMPEONES! (Campo) ——
-  // Al jugar: poner en zona de campo. Dos activables:
-  //  - Una vez por turno, cuando una unidad roja gana batalla, roba 1 (automático)
-  //  - Si controlas Rodri y Unai Simón, girar esta carta para robar 2
+  // Al jugar: poner en zona de campo.
+  // Habilidad 1 (manual, botón en tablero, una vez por turno): Roba 1 carta cuando una
+  //   de tus unidades rojas gana una batalla. El jugador decide cuándo activarlo.
+  // Habilidad 2 (manual, botón en tablero): Si controlas a Rodri y Unai Simón, gira
+  //   esta carta para robar 2 cartas.
   R('campo_campeones', {
     alJugar(quien) {
       const z = zonaJugador(quien);
@@ -9126,60 +9193,71 @@
       log('¡CAMPEONES! entra en tu Zona de Campo. ¡VIVA ESPAÑA!');
       if (typeof renderizarPartida === 'function') renderizarPartida();
     },
-    // Robo automático (una vez por turno) cuando una unidad roja gana batalla.
-    // Las unidades España (todas rojas) llaman a este helper desde su alGanarCombate.
-    alGanarCombateEspana(quien) {
+    // Resetear el flag de batalla ganada al inicio del turno propio
+    alInicioPrincipal(quien) {
       const z = zonaJugador(quien);
-      const campo = z.campo?.[0];
-      if (!campo || campo.id !== 'campo_campeones') return;
-      if (campo.rested) return; // Si está girada, no funciona
-      if (habilidadUsada(claveTurno(quien, 'cc_roba1'))) return;
-      marcarHabilidadUsada(claveTurno(quien, 'cc_roba1'));
-      robar(quien, 1);
-      log('¡CAMPEONES!: tu unidad roja gana la batalla, robas 1 carta.');
-      if (typeof renderizarPartida === 'function') renderizarPartida();
+      if (z) z._cc_batallaGanadaEsteTurno = false;
     },
-    // Activable manual: girar para robar 2 si controlas Rodri y Unai Simón
+    // Habilidad 1: botón "Robar 1 (batalla ganada)"
+    // Solo disponible si: es tu turno, no se ha usado este turno, Y tienes una unidad
+    // roja que ganó una batalla este turno (lo rastreamos con un flag).
     activables(quien, u) {
-      // u aquí es el campo (z.campo[0]), no una unidad
       const z = zonaJugador(quien);
       const campo = z.campo?.[0];
       if (!campo || campo.id !== 'campo_campeones') return [];
-      if (campo.rested) return [];
-      if (!controlarCarta(quien, 'rodri') || !controlarCarta(quien, 'unai_simon')) return [];
-      return [{ key: 'cc_roba2', label: 'Girar ¡CAMPEONES!: robar 2 cartas' }];
+      const list = [];
+      // Habilidad 1: robar 1 tras batalla ganada (una vez por turno)
+      if (!campo.rested && !habilidadUsada(claveTurno(quien, 'cc_roba1')) && z._cc_batallaGanadaEsteTurno) {
+        list.push({ key: 'cc_roba1', label: '🇪🇸 Robar 1 (batalla ganada)' });
+      }
+      // Habilidad 2: girar para robar 2 si controlas Rodri y Unai Simón
+      if (!campo.rested && controlarCarta(quien, 'rodri') && controlarCarta(quien, 'unai_simon')) {
+        list.push({ key: 'cc_roba2', label: '🇪🇸 Girar: robar 2 (Rodri + Unai)' });
+      }
+      return list;
     },
     async ejecutarActivar(key, quien, u) {
-      if (key !== 'cc_roba2') return;
       const z = zonaJugador(quien);
       const campo = z.campo?.[0];
       if (!campo || campo.id !== 'campo_campeones') return;
-      if (campo.rested) return;
-      campo.rested = true;
-      robar(quien, 2);
-      log('¡CAMPEONES!: girada para robar 2 cartas (tienes a Rodri y Unai Simón).');
-      if (estadoPartida?.modo === 'online' && typeof sincronizarEstadoOnline === 'function') sincronizarEstadoOnline('campo_campeones');
-      if (typeof renderizarPartida === 'function') renderizarPartida();
+      if (key === 'cc_roba1') {
+        if (campo.rested) return;
+        if (habilidadUsada(claveTurno(quien, 'cc_roba1'))) return;
+        if (!z._cc_batallaGanadaEsteTurno) {
+          log('¡CAMPEONES!: necesitas que una unidad roja gane una batalla primero.');
+          return;
+        }
+        robar(quien, 1);
+        marcarHabilidadUsada(claveTurno(quien, 'cc_roba1'));
+        z._cc_batallaGanadaEsteTurno = false; // consumir
+        log('¡CAMPEONES!: robas 1 carta tras ganar una batalla con una unidad roja.');
+        if (estadoPartida?.modo === 'online' && typeof sincronizarEstadoOnline === 'function') sincronizarEstadoOnline('campo_campeones_roba1');
+        if (typeof renderizarPartida === 'function') renderizarPartida();
+      } else if (key === 'cc_roba2') {
+        if (campo.rested) return;
+        campo.rested = true;
+        robar(quien, 2);
+        log('¡CAMPEONES!: girada para robar 2 cartas (tienes a Rodri y Unai Simón).');
+        if (estadoPartida?.modo === 'online' && typeof sincronizarEstadoOnline === 'function') sincronizarEstadoOnline('campo_campeones');
+        if (typeof renderizarPartida === 'function') renderizarPartida();
+      }
     }
   });
 
-  // Helper global: cuando una unidad España gana combate, disparar el efecto del campo
-  // Lo registramos en cada unidad España (todas rojas) para que llamen al campo.
+  // Cuando una unidad España (roja) gana combate, marcar el flag para que el botón
+  // de "Robar 1 (batalla ganada)" de ¡CAMPEONES! esté disponible.
   ['unai_simon','pedro_porro','cucurella','rodri','cubarsi','dani_olmo','merino','lamine_yamal','ferran_torres','fabian_ruiz','oyarzabal','zubimendi'].forEach(_idSp => {
     const prev = REGISTRO_EFECTOS[_idSp] || {};
     const prevGanarCombate = prev.alGanarCombate;
     prev.alGanarCombate = function(c) {
       if (typeof prevGanarCombate === 'function') prevGanarCombate(c);
-      // Disparar efecto del campo ¡CAMPEONES! si el dueño lo tiene
+      // Marcar flag en el dueño del atacante para que ¡CAMPEONES! pueda robar
       const quienAtk = c?.atacanteQuien;
       if (!quienAtk) return;
       const z = zonaJugador(quienAtk);
       const campo = z.campo?.[0];
       if (campo && campo.id === 'campo_campeones' && !campo.rested) {
-        const regCampo = REGISTRO_EFECTOS['campo_campeones'];
-        if (regCampo && typeof regCampo.alGanarCombateEspana === 'function') {
-          regCampo.alGanarCombateEspana(quienAtk);
-        }
+        z._cc_batallaGanadaEsteTurno = true;
       }
     };
   });
@@ -12220,7 +12298,8 @@
         }
 
         // Iniciar sesión de apertura: sobres es un array de sobres (cada uno = 6 cartas)
-        function iniciarSesionApertura(sobres) {
+        // tipoSobre: 'mundos' (pack1.png) | 'espana' (pack2.png) — por defecto 'mundos'
+        function iniciarSesionApertura(sobres, tipoSobre) {
             _packState = {
                 sobres: sobres,         // array de sobres
                 sobreActual: 0,         // índice del sobre actual
@@ -12228,7 +12307,8 @@
                 indice: 0,              // índice de la carta actual
                 fase: 'pack',           // 'pack' | 'revelando' | 'resumen' | 'cambiar-sobre'
                 totalSobres: sobres.length,
-                todosLosSobres: JSON.parse(JSON.stringify(sobres))  // copia para mega resumen
+                todosLosSobres: JSON.parse(JSON.stringify(sobres)),  // copia para mega resumen
+                tipoSobre: tipoSobre || 'mundos'  // para elegir la imagen del pack
             };
             const overlay = document.getElementById('pack-opening-overlay');
             overlay.classList.add('active');
@@ -12252,10 +12332,15 @@
             if (skipBtn) skipBtn.style.display = 'none';
             if (remCounter) remCounter.style.display = 'none';
             _packState.fase = 'pack';
+            // Elegir la imagen del sobre según el tipo
+            const packImg = _packState.tipoSobre === 'espana'
+                ? 'https://hugopima.github.io/gctcg-assets/imagenes/pack2.png'
+                : 'https://hugopima.github.io/gctcg-assets/imagenes/pack1.png';
+            const packFallbackColor = _packState.tipoSobre === 'espana' ? '#c0392b' : '#4020a0';
             stage.innerHTML = `
                 <div class="pack-3d" id="pack-3d" onclick="iniciarRevelado()">
                     <div class="pack-glow"></div>
-                    <img src="https://hugopima.github.io/gctcg-assets/imagenes/pack1.png" alt="Sobre" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22280%22><rect width=%22200%22 height=%22280%22 fill=%22%234020a0%22/><text x=%22100%22 y=%22140%22 fill=%22white%22 font-size=%2224%22 text-anchor=%22middle%22>PACK</text></svg>'">
+                    <img src="${packImg}" alt="Sobre" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22280%22><rect width=%22200%22 height=%22280%22 fill=%22${packFallbackColor}%22/><text x=%22100%22 y=%22140%22 fill=%22white%22 font-size=%2224%22 text-anchor=%22middle%22>PACK</text></svg>'">
                 </div>
                 <div class="pack-hint">👆 Toca el sobre para abrirlo</div>
             `;
@@ -12641,6 +12726,8 @@
             const stage = document.getElementById('pack-stage');
             const navBtn = document.getElementById('pack-nav-btn');
             const cartas = _packState.cartas;
+            // Si hay muchas cartas (>6), usar la clase 'many' para una grid más compacta
+            const gridClass = cartas.length > 6 ? 'summary-grid many' : 'summary-grid';
             const gridHtml = cartas.map(item => {
                 const r = item.rareza;
                 const clase = r === 'super rara' ? 'super-rara' : r;
@@ -12656,7 +12743,7 @@
             stage.innerHTML = `
                 <div class="pack-summary active">
                     <h2>${titulo}</h2>
-                    <div class="summary-grid">${gridHtml}</div>
+                    <div class="${gridClass}">${gridHtml}</div>
                 </div>
             `;
             if (_packState.sobreActual < _packState.totalSobres - 1) {
@@ -12900,7 +12987,7 @@
             }
 
             // Iniciar la sesión de apertura (reutilizamos el sistema existente)
-            iniciarSesionApertura([cartasSobre]);
+            iniciarSesionApertura([cartasSobre], 'espana');
         }
 
         // Override de la función irATienda para inicializar el contador al entrar
@@ -14186,6 +14273,18 @@
                             if (window.MotorEfectos) MotorEfectos.dispatch(def.id, 'alDestruida', ['jugador']);
                         }
                         estadoPartida.log = `${efecto.nombre || 'El rival'} destruye una de tus unidades.`;
+                        break;
+                    }
+                    case 'destruir-campo': {
+                        // El rival (Rodri) destruye nuestra carta de Campo
+                        const campoActual = z.campo && z.campo[0];
+                        if (campoActual) {
+                            z.descarte.push(campoActual.id);
+                            z.campo = [];
+                            estadoPartida.log = `${efecto.nombre || 'El rival'} destruye tu carta de Campo: ${getCardById(campoActual.id)?.nombre || campoActual.id}.`;
+                        } else {
+                            estadoPartida.log = `${efecto.nombre || 'El rival'} intentó destruir tu carta de Campo, pero no tienes ninguna.`;
+                        }
                         break;
                     }
                     case 'mill-top': {
@@ -15683,6 +15782,13 @@
                         if (bu?.id && typeof trackMaestria_bloquear === 'function') {
                             try { trackMaestria_bloquear(bu.id); } catch(e) {}
                         }
+                        // BUG FIX: disparar alUsarBloqueador de la carta bloqueadora (Unai Simón roba, etc.)
+                        // Antes esto no se llamaba aquí, solo en intentarBloqueador (que se usa para el rival).
+                        if (window.MotorEfectos && bu?.id) {
+                            try {
+                                MotorEfectos.dispatch(bu.id, 'alUsarBloqueador', ['jugador', bu, { objetivo }]);
+                            } catch (e) { console.error('[Bloqueo jugador] error en alUsarBloqueador:', e); }
+                        }
                         estadoPartida.log = (getCardById(bu.id)?.nombre || 'Tu unidad') + ' bloquea el ataque.';
                         renderizarPartida();
                         await sleep(500);
@@ -15895,6 +16001,12 @@
                         // Hook maestría: el jugador bloqueó con esta carta
                         if (bu?.id && typeof trackMaestria_bloquear === 'function') {
                             try { trackMaestria_bloquear(bu.id); } catch(e) {}
+                        }
+                        // BUG FIX: disparar alUsarBloqueador de la carta bloqueadora (Unai Simón roba, etc.)
+                        if (window.MotorEfectos && bu?.id) {
+                            try {
+                                MotorEfectos.dispatch(bu.id, 'alUsarBloqueador', ['jugador', bu, { objetivo }]);
+                            } catch (e) { console.error('[Bloqueo jugador vs líder] error en alUsarBloqueador:', e); }
                         }
                         estadoPartida.log = (getCardById(bu.id)?.nombre || 'Tu unidad') + ' bloquea el ataque del líder rival.';
                         renderizarPartida();
@@ -17509,6 +17621,16 @@
             renderizarPartida();
         }
 
+        // Ejecuta una habilidad activable de la carta de Campo en juego (¡CAMPEONES!).
+        // Pasa la referencia al campo (z.campo[0]) en lugar de una unidad.
+        async function ejecutarHabilidadActivableCampo(cardId, habKey) {
+            if (!window.MotorEfectos || !estadoPartida) return;
+            const campo = estadoPartida.jugador.campo?.[0];
+            await MotorEfectos.ejecutarActivar(cardId, habKey, 'jugador', { esCampo: true, campoRef: campo });
+            pintarDetalleMazo();
+            renderizarPartida();
+        }
+
         function volverAlMenuDesdePartida() {
             // Si estamos en partida online activa, preguntar si quiere rendirse
             if (estadoPartida && estadoPartida.modo === 'online' && !estadoPartida.finalizada) {
@@ -18122,7 +18244,17 @@
             renderZona('player-field-zone', j.campo.map(c => {
                 // Si el campo es RELEASE ENERGY, pasar el objeto completo para mostrar contador de cartas debajo
                 const campoObj = (typeof c === 'object') ? c : { id: c };
-                return miniCarta(campoObj);
+                const cardId = campoObj.id;
+                // Añadir botones activables del campo (¡CAMPEONES!: robar 2 cartas)
+                let activarHtml = '';
+                if (window.MotorEfectos && estadoPartida.faseIndex >= 1 && cardId) {
+                    const activables = MotorEfectos.obtenerActivables('jugador').filter(a => a.esCampo && a.cardId === cardId);
+                    activables.forEach(a => {
+                        activarHtml += `<button class="activable-btn-overlay" onclick="event.stopPropagation(); ejecutarHabilidadActivableCampo('${a.cardId}','${a.key}')">${escapeHtml(a.label || a.key)}</button>`;
+                    });
+                }
+                const cardHtml = miniCarta(campoObj);
+                return activarHtml ? `<div class="activable-wrap">${cardHtml}${activarHtml}</div>` : cardHtml;
             }).join(''));
             renderZona('op-field-zone', r.campo.map(c => {
                 const campoObj = (typeof c === 'object') ? c : { id: c };
