@@ -9379,9 +9379,15 @@
 
         function irAColeccion() {
             transicionarPantalla('main-menu', 'collection-wrapper');
+            // BUG FIX: al entrar a la colección, resetear filtros y scroll arriba.
+            // Antes el scroll se mantenía donde se dejó la última vez.
+            resetFiltros('collection');
+            scrollArribaPantalla('collection-wrapper');
             cargarBaseDeDatos().then(() => {
                 cargarInventario();
                 renderizarBiblioteca();
+                // Hacer scroll arriba también después de renderizar (por si acaso)
+                scrollArribaPantalla('collection-wrapper');
             });
         }
 
@@ -9391,17 +9397,26 @@
             cargarInventario();
             cargarMazosGuardados();
             renderizarSelectorMazos();
+            // BUG FIX: al entrar al selector de mazos, scroll arriba.
+            scrollArribaPantalla('deck-menu-screen');
+        }
+
+        // Hace scroll arriba en una pantalla (el contenedor y el main interno)
+        function scrollArribaPantalla(id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.scrollTop = 0;
+            const main = el.querySelector('main');
+            if (main) main.scrollTop = 0;
+            // También cualquier contenedor con scroll
+            el.querySelectorAll('.scroll-container, .collection-wrapper, .deck-menu-main, .deck-builder-main').forEach(s => { s.scrollTop = 0; });
         }
 
         function irAlMenu() {
             cerrarPanel();
             // BUG FIX: al salir de la colección, resetear todos los filtros y hacer scroll arriba.
             resetFiltros('collection');
-            // Hacer scroll arriba en la colección para la próxima vez
-            const col = document.getElementById('collection-wrapper');
-            if (col) col.scrollTop = 0;
-            const colMain = col?.querySelector('main');
-            if (colMain) colMain.scrollTop = 0;
+            scrollArribaPantalla('collection-wrapper');
             transicionarPantalla('collection-wrapper', 'main-menu');
         }
 
@@ -9426,6 +9441,8 @@
             transicionarPantalla('deck-builder-screen', 'deck-menu-screen');
             cargarMazosGuardados();
             renderizarSelectorMazos();
+            // BUG FIX: scroll arriba al volver al selector de mazos.
+            scrollArribaPantalla('deck-menu-screen');
         }
 
         function volverAlMenuDesdeMazos() { volverASelectorMazos(); }
@@ -11425,10 +11442,26 @@
             return { completadas, total };
         }
 
+        // Cuenta las cartas únicas de la expansión "Mundos Cruzados" que el jugador posee.
+        // BUG FIX: el logro "Coleccionista Total" solo debe contar cartas de Mundos Cruzados (108),
+        // no las de España (Promo) ni tokens.
+        function contarCartasMundosCruzados() {
+            if (!_inventario || !datosCartas) return 0;
+            let n = 0;
+            datosCartas.forEach(c => {
+                if (!c || esToken(c)) return;
+                // Solo contar cartas de Mundos Cruzados (excluir Promo y otras expansiones)
+                if (c.expansion && c.expansion !== 'Mundos Cruzados') return;
+                const id = getCardId(c);
+                if (_inventario.cartas[id] && _inventario.cartas[id] > 0) n++;
+            });
+            return n;
+        }
+
         const TITULOS = [
-            { id: 'coleccionista_tercio', nombre: 'Coleccionista', desc: 'Consigue 1/3 de las cartas (36)', color: '#4ee06a', check: s => (s.cartasUnicas || 0) >= 36 },
-            { id: 'coleccionista_mitad', nombre: 'Gran Coleccionista', desc: 'Consigue la mitad de las cartas (54)', color: '#5aa0ff', check: s => (s.cartasUnicas || 0) >= 54 },
-            { id: 'coleccionista_total', nombre: 'Coleccionista Total', desc: 'Consigue todas las cartas (108)', color: '#ff60ff', check: s => (s.cartasUnicas || 0) >= 108 },
+            // BUG FIX: eliminados los títulos "Coleccionista" y "Gran Coleccionista".
+            // Solo queda "Coleccionista Total" (108 cartas de Mundos Cruzados).
+            { id: 'coleccionista_total', nombre: 'Coleccionista Total', desc: 'Consigue todas las cartas de Mundos Cruzados (108)', color: '#ff60ff', check: s => contarCartasMundosCruzados() >= 108 },
             { id: 'dominador_dificil', nombre: 'Dominador', desc: 'Vence a la IA en modo difícil 20 veces', color: '#ff5050', check: s => (s.victoriasIADificil || 0) >= 20 },
             { id: 'competidor', nombre: 'Competidor', desc: 'Gana 20 partidas competitivas', color: '#ffd700', check: s => (s.copas || 0) >= 20 },
             // Título especial de maestrías: brilla con animación arcoíris
@@ -11494,9 +11527,9 @@
             { id: 'ia_dificil_20', icon: '🏆', nombre: 'Leyenda Difícil', desc: 'Gana 20 partidas contra la IA en modo Difícil', reward: 1000, check: s => (s.victoriasIADificil || 0) >= 20, progress: s => `${Math.min(s.victoriasIADificil || 0,20)}/20` },
             // === LOGROS DE TÍTULOS ===
             // Estos logros desbloquean títulos que se muestran en el perfil y en el choque de líderes.
-            { id: 'titulo_coleccionista', icon: '🏷️', nombre: 'Título: Coleccionista', desc: 'Consigue 1/3 de las cartas (36) para desbloquear el título "Coleccionista"', reward: 0, esTitulo: true, tituloId: 'coleccionista_tercio', check: s => (s.cartasUnicas || 0) >= 36, progress: s => `${Math.min(s.cartasUnicas || 0,36)}/36` },
-            { id: 'titulo_gran_coleccionista', icon: '🏷️', nombre: 'Título: Gran Coleccionista', desc: 'Consigue la mitad de las cartas (54) para desbloquear el título "Gran Coleccionista"', reward: 0, esTitulo: true, tituloId: 'coleccionista_mitad', check: s => (s.cartasUnicas || 0) >= 54, progress: s => `${Math.min(s.cartasUnicas || 0,54)}/54` },
-            { id: 'titulo_coleccionista_total', icon: '🏷️', nombre: 'Título: Coleccionista Total', desc: 'Consigue todas las cartas (108) para desbloquear el título "Coleccionista Total"', reward: 0, esTitulo: true, tituloId: 'coleccionista_total', check: s => (s.cartasUnicas || 0) >= 108, progress: s => `${s.cartasUnicas || 0}/108` },
+            // BUG FIX: eliminados los títulos "Coleccionista" y "Gran Coleccionista" (solo queda "Coleccionista Total").
+            // BUG FIX: "Coleccionista Total" solo cuenta cartas de Mundos Cruzados (108), no las de España.
+            { id: 'titulo_coleccionista_total', icon: '🏷️', nombre: 'Título: Coleccionista Total', desc: 'Consigue todas las cartas de la expansión "Mundos Cruzados" (108) para desbloquear el título "Coleccionista Total"', reward: 0, esTitulo: true, tituloId: 'coleccionista_total', check: s => contarCartasMundosCruzados() >= 108, progress: s => `${contarCartasMundosCruzados()}/108` },
             { id: 'titulo_dominador', icon: '🏷️', nombre: 'Título: Dominador', desc: 'Vence a la IA en modo Difícil 20 veces para desbloquear el título "Dominador"', reward: 0, esTitulo: true, tituloId: 'dominador_dificil', check: s => (s.victoriasIADificil || 0) >= 20, progress: s => `${Math.min(s.victoriasIADificil || 0,20)}/20` },
             { id: 'primera_sangre', icon: '🩸', nombre: 'Primera sangre online', desc: 'Gana 1 partida online', reward: 100, check: s => s.victoriasOnline >= 1, progress: s => `${Math.min(s.victoriasOnline,1)}/1` },
             { id: 'duelista', icon: '🗡️', nombre: 'Duelista online', desc: 'Gana 10 partidas online', reward: 300, check: s => s.victoriasOnline >= 10, progress: s => `${Math.min(s.victoriasOnline,10)}/10` },
@@ -12005,6 +12038,15 @@
                     if (_inventario.cartaFavorita === undefined) _inventario.cartaFavorita = null;
                     if (_inventario.tituloActivo === undefined) _inventario.tituloActivo = null;
                     if (!_inventario.perfil) _inventario.perfil = { bio: '' };
+                    // BUG FIX: limpiar títulos eliminados ("Coleccionista" y "Gran Coleccionista")
+                    // del inventario de jugadores que los tenían. Estos títulos ya no existen.
+                    const titulosEliminados = ['coleccionista_tercio', 'coleccionista_mitad'];
+                    if (_inventario.tituloActivo && titulosEliminados.includes(_inventario.tituloActivo)) {
+                        _inventario.tituloActivo = null;
+                    }
+                    if (Array.isArray(_inventario.titulosDesbloqueados)) {
+                        _inventario.titulosDesbloqueados = _inventario.titulosDesbloqueados.filter(tid => !titulosEliminados.includes(tid));
+                    }
                 } else {
                     // Empezar de cero: 0 cartas, 0 monedas, 0 energy
                     _inventario = { coins: 0, energy: 0, cartas: {}, amigos: [], cartaFavorita: null, tituloActivo: null, perfil: { bio: '' } };
