@@ -4337,17 +4337,17 @@
       {
         "id": "m2",
         "tipo": "club_energy",
-        "campoProgreso": "dano_lider",
+        "campoProgreso": "combinar",
         "niveles": [
           {
             "objetivo": 50,
             "reward": 100,
-            "desc": "Inflige 1 de daño al líder rival 50 veces con esta carta"
+            "desc": "Comba con esta carta 50 veces"
           },
           {
             "objetivo": 100,
             "reward": 150,
-            "desc": "Inflige 1 de daño al líder rival 100 veces con esta carta"
+            "desc": "Comba con esta carta 100 veces"
           }
         ]
       },
@@ -5589,7 +5589,7 @@
     "cardId": "dani_olmo",
     "cardName": "Dani Olmo",
     "cardClase": "Unidad",
-    "titulo": "Rubio",
+    "titulo": "No me pidas peras",
     "misiones": [
       {
         "id": "m1",
@@ -5630,7 +5630,7 @@
         "tipo": "titulo",
         "objetivo": 150,
         "desc": "Incluye esta carta en tu mazo y gana 150 partidas (tras completar las otras dos)",
-        "titulo": "Rubio"
+        "titulo": "No me pidas peras"
       }
     ]
   },
