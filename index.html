@@ -5417,27 +5417,31 @@
     if (id === 'peppa' && c.atacanteId === id) {
       mod += (zonaJugador(c.atacanteQuien).combo?.length || 0) * 2500;
     }
-    // Energía de Patroclo: +5000 solo a unidades (no al líder)
+    // Energía de Patroclo: +5000 solo a UNIDADES (no al líder, no a extras, no a la propia carta de Campo)
     // Determinar si la carta siendo calculada es un líder
     const esLiderCalc = zona?.id && estadoPartida && (
       zona.id === estadoPartida.jugador.liderId || zona.id === estadoPartida.rival.liderId
     ) && !zona?.copiaDe && (zona === estadoPartida.jugador.liderZona || zona === estadoPartida.rival.liderZona);
     if (!esLiderCalc) {
-      const campoQ = c.atacanteQuien || c.quien || 'jugador';
-      // Campo propio del jugador siendo calculado
       const quienCalc = c.quien || c.atacanteQuien || 'jugador';
-      if (campoActivo(quienCalc)?.id === 'energia') mod += 5000;
+      if (campoActivo(quienCalc)?.id === 'energia') {
+        // BUG FIX: solo aplicar +5000 a UNIDADES, no a extras ni a la propia carta de Campo.
+        const cartaCalcEnergia = cartaEnZona(id, zona);
+        if (cartaCalcEnergia && claseNormalizada(cartaCalcEnergia) === 'unidad' && id !== 'energia') {
+          mod += 5000;
+        }
+      }
     }
     // ===== La Roja (Despierto) — Luis de la Fuente evo =====
     // Permanente: Todas tus unidades <España> ganan +2500 de poder.
     // Solo aplica si el dueño de la carta tiene a red_lider_03 como líder DESPIERTO
     // Y es el turno de ese jugador (no durante el ataque del rival).
+    // BUG FIX: solo aplicar durante el TURNO del dueño (no durante el ataque del rival).
+    // Esto evita que el +2500 se muestre en el marcador visual cuando no corresponde.
     if (!esLiderCalc && estadoPartida) {
       const quienCalc = c.quien || c.atacanteQuien || 'jugador';
       const z = zonaJugador(quienCalc);
       if (z && z.liderId === 'red_lider_03' && z.liderDespierto) {
-        // BUG FIX: solo aplicar el buff durante el turno del dueño de La Roja.
-        // Durante el ataque del rival, las unidades NO reciben el +2500.
         const esTurnoDelDueno = (quienCalc === 'jugador' && estadoPartida.turnoDelJugadorLocal !== false)
           || (quienCalc === 'rival' && estadoPartida.turnoDelJugadorLocal === false);
         if (esTurnoDelDueno) {
@@ -5453,7 +5457,7 @@
     // bonus persista y se aplique a todas las cartas durante el renderizado.
     if (c.atacanteId === id && c.objetivo && ctx.bonusSinBloqueador) mod += ctx.bonusSinBloqueador;
     if (c.atacanteId === id && c.objetivo && ctx.bonusVsBloqueador) mod += ctx.bonusVsBloqueador;
-    // ctx.phantomBonus eliminado: ahora Mega Phantom usa addBuff(zona, 'batalla', 10000) directamente
+    // ctx.phantomBonus eliminado: ahora Mega Phantom usa addBuff(zona, 'batalla', 5000) directamente
     if (c.defensorId === id && ctx.debuffDefensor) mod += ctx.debuffDefensor;
     if (ctx.batallaMods?.['def_' + c.objetivo?.index] && c.objetivo?.tipo === 'unidad') {
       mod += ctx.batallaMods['def_' + c.objetivo.index];
@@ -6029,9 +6033,7 @@
   R('andrea', {
     alJugar(quien) {
       invocarToken(quien, 'tokend', true);
-      invocarToken(quien, 'tokend', true);
-      log('Andrea invoca 2 Deku.');
-      // Aplicar doble golpe si mano ≤4 en el momento de jugar
+      log('Andrea invoca 1 Deku.');
       andrea_actualizarDekus(quien);
       if (typeof renderizarPartida === 'function') renderizarPartida();
     },
@@ -6264,7 +6266,7 @@
       const vistos = new Set();
       const uniq = candidatos.filter(id => { if (vistos.has(id)) return false; vistos.add(id); return true; });
       const opts = uniq.map(id => ({ label: getCardById(id)?.nombre || id, value: id, cardId: id }));
-      const pick = await elegirConModal('Andrea la Brawlera: elige una carta de Origen Grupo con coste ≤2 del mazo', opts);
+      const pick = await elegirConModal('Andrea la Brawlera: elige una carta de Origen Grupo con coste ≤2 del mazo', opts, { noCancelable: true });
       if (pick) {
         const idx = z.mazo.lastIndexOf(pick);
         if (idx >= 0) z.mazo.splice(idx, 1);
@@ -6433,11 +6435,25 @@
   R('springtrap', {
     alJugar(quien) {
       const riv = rivalDe(quien);
-      for (let i = zonaJugador(riv).batalla.length - 1; i >= 0; i--) {
-        const c = getCardById(zonaJugador(riv).batalla[i].id);
-        if (Number(c?.poder || 0) <= 15000) destruirUnidad(riv, i);
+      const zR = zonaJugador(riv);
+      const destruidas = [];
+      for (let i = zR.batalla.length - 1; i >= 0; i--) {
+        const u = zR.batalla[i];
+        const c = getCardById(u?.id);
+        if (Number(c?.poder || 0) <= 15000) {
+          const cardId = u?.id;
+          destruidas.push(cardId);
+          destruirUnidad(riv, i);
+        }
       }
       log('Springtrap destruye unidades ≤15000.');
+      // BUG FIX: sincronizar en online para que el rival vea las unidades destruidas.
+      if (estadoPartida?.modo === 'online' && typeof enviarEfectoRival === 'function') {
+        destruidas.forEach(cardId => {
+          enviarEfectoRival({ tipo: 'destruir-unidad', cardId: cardId, nombre: 'Springtrap' });
+        });
+      }
+      if (typeof renderizarPartida === 'function') renderizarPartida();
     }
   });
 
@@ -6554,13 +6570,13 @@
         const u = zonaJugador(rivalDe(quien)).batalla[idx];
         if (u) {
           u.silenciado = Math.max(u.silenciado || 0, 1);
-          u.noCombo = true;
           if (!u.flags) u.flags = {};
           u.flags.silenciadoBalloon = true;
-          log('Balloon Boy: unidad rival silenciada y sin combo hasta el final de tu siguiente turno.');
-          // En online, avisar al rival para que silencie su unidad en su pantalla.
+          // BUG FIX: eliminada la mecánica de noCombo. Balloon Boy solo silencia,
+          // no impide que la unidad haga combos.
+          log('Balloon Boy: unidad rival silenciada hasta el final de tu siguiente turno.');
           if (estadoPartida?.modo === 'online' && typeof enviarEfectoRival === 'function' && u.id) {
-            enviarEfectoRival({ tipo: 'silenciar', cardId: u.id, turnos: 1, flag: 'silenciadoBalloon', noCombo: true, nombre: 'Balloon Boy' });
+            enviarEfectoRival({ tipo: 'silenciar', cardId: u.id, turnos: 1, flag: 'silenciadoBalloon', nombre: 'Balloon Boy' });
           }
         }
       }
@@ -6884,6 +6900,9 @@
         if (v === 'lider') { addBuff(zonaJugador(quien).liderZona, 'batalla', 10000); log('+10000 al Líder este turno.'); }
         else if (v != null) { addBuff(zonaJugador(quien).batalla[v], 'batalla', 10000); log('+10000 a la unidad este turno.'); }
       } else { log(`Todo al Verde: no sacaste entre 16 y 20 (sacaste ${d}), sin efecto.`); }
+      // BUFF: siempre endereza 1 maná verde, independientemente del dado.
+      const enderezadas = enderezarMana(quien, 'verde', 1);
+      if (enderezadas > 0) log('Todo al Verde endereza 1 maná verde.');
       if (typeof renderizarPartida === 'function') renderizarPartida();
       if (estadoPartida && estadoPartida.modo === 'online' && window._socketOnline) {
         window._socketOnline.emit('accion-juego', { tipo: 'animacion-dado', resultado: d });
@@ -6913,6 +6932,9 @@
         if (v === 'lider') { addBuff(zonaJugador(quien).liderZona, 'batalla', 5000); log('+5000 al Líder este turno.'); }
         else if (v != null) { addBuff(zonaJugador(quien).batalla[v], 'batalla', 5000); log('+5000 a la unidad este turno.'); }
       } else { log(`Ruleta: sacaste ${d}, sin efecto (necesitas 10-19).`); }
+      // BUFF: siempre endereza 1 maná verde, independientemente del dado.
+      const enderezadasR = enderezarMana(quien, 'verde', 1);
+      if (enderezadasR > 0) log('Ruleta endereza 1 maná verde.');
       if (typeof renderizarPartida === 'function') renderizarPartida();
       // Enviar la animación del dado al rival ANTES del syncOnline para que la vea.
       if (window._socketOnline) window._socketOnline.emit('accion-juego', { tipo: 'animacion-dado', resultado: d });
@@ -6929,7 +6951,7 @@
 
   R('juan', {
     async alJugar(quien) {
-      if (zonaJugador(quien).mana.length >= 6) {
+      if (zonaJugador(quien).mana.length >= 5) {
         const opts = opcionesUnidades(rivalDe(quien));
         if (opts.length) {
           const idx = await elegirConModal('Juan destruye unidad rival', opts);
@@ -7122,52 +7144,24 @@
 
   R('podrido', {
     alDestruida(quien) {
-      // Bug 1 fix: invocar SOLO 1 Podrido Rabioso.
-      // El token recién creado se marca con _origenPodrido = true y destruirFinTurno = false
-      // para diferenciarlo de cualquier otro tokenz "fantasma" que pudiera aparecer por
-      // sincronización online. Al final, nos aseguramos de que solo quede 1 tokenz con
-      // _origenPodrido = true en la zona, eliminando cualquier duplicado fantasma.
+      // BUG FIX: invocar 1 Podrido Rabioso por cada Podrido derrotado.
+      // Antes solo se invocaba si no había ninguno (tokensLegitimos === 0).
+      // Ahora se invoca SIEMPRE que un Podrido sea destruido.
       const z = zonaJugador(quien);
-      // Contar tokens tokenz legítimos (con _origenPodrido) ya existentes
-      const tokensLegitimos = z.batalla.filter(u => u && u.id === 'tokenz' && u.flags && u.flags._origenPodrido).length;
-      if (tokensLegitimos === 0) {
-        invocarToken(quien, 'tokenz', true);
-        log('Podrido invoca a 1 Podrido Rabioso.');
-      }
+      invocarToken(quien, 'tokenz', true);
+      log('Podrido invoca a 1 Podrido Rabioso.');
       // Marcar TODOS los tokenz como persistentes (destruirFinTurno = false)
-      // y eliminar cualquier duplicado fantasma (sin _origenPodrido) que pudiera existir.
-      const tokenzIndices = [];
+      // y marcar el nuevo como legítimo.
       z.batalla.forEach((u, i) => {
         if (u && u.id === 'tokenz') {
           if (!u.flags) u.flags = {};
           u.flags.destruirFinTurno = false;
-          tokenzIndices.push(i);
-        }
-      });
-      // El PRIMER tokenz de la lista es el legítimo (el más antiguo).
-      // Los tokenz adicionales que no tengan _origenPodrido son fantasmas y se eliminan.
-      if (tokenzIndices.length > 1) {
-        // Marcar el primero como legítimo
-        const primerIdx = tokenzIndices[0];
-        if (z.batalla[primerIdx]) {
-          if (!z.batalla[primerIdx].flags) z.batalla[primerIdx].flags = {};
-          z.batalla[primerIdx].flags._origenPodrido = true;
-        }
-        // Eliminar los demás (fantasmas) - hacerlo en orden inverso para no romper índices
-        for (let k = tokenzIndices.length - 1; k >= 1; k--) {
-          z.batalla.splice(tokenzIndices[k], 1);
-        }
-      } else if (tokenzIndices.length === 1) {
-        // Solo hay 1 tokenz, marcarlo como legítimo
-        const u = z.batalla[tokenzIndices[0]];
-        if (u) {
-          if (!u.flags) u.flags = {};
           u.flags._origenPodrido = true;
           if (estadoPartida && quien !== 'jugador') {
             u.noAtacar = true;
           }
         }
-      }
+      });
       if (typeof renderizarPartida === 'function') renderizarPartida();
       // En online, NO enviamos syncOnline('podrido') porque el tipo 'podrido' no está
       // manejado en el receptor (sería un no-op) y cada cliente ya crea su propio token
@@ -7259,7 +7253,7 @@
       // Hog Rider aplica -10000 al defensor SOLO si el objetivo es una unidad.
       // El debuff se aplica una sola vez en modificarPoderBatalla (al calcular pd).
       // NO aplicar también en alAtacar ni en alResolverCombate para evitar doble aplicación.
-      if (obj?.tipo === 'unidad') ctx.debuffDefensor = -10000;
+      if (obj?.tipo === 'unidad') ctx.debuffDefensor = -5000;
       else ctx.debuffDefensor = 0;
       return obj;
     }
@@ -7289,16 +7283,16 @@
       // Si el rival ahora tiene unidades descansadas, quitar el buff si lo tenía
       if (zona.flags?._phantomBuffed) {
         zona.flags._phantomBuffed = false;
-        if (zona.buffs) zona.buffs.batalla = Math.max(0, (zona.buffs.batalla || 0) - 10000);
+        if (zona.buffs) zona.buffs.batalla = Math.max(0, (zona.buffs.batalla || 0) - 5000);
       }
       return;
     }
     // Aplicar buff directo a la carta SOLO si no se ha aplicado ya
     if (!zona.flags?._phantomBuffed) {
-      addBuff(zona, 'batalla', 10000);
+      addBuff(zona, 'batalla', 5000);
       if (!zona.flags) zona.flags = {};
       zona.flags._phantomBuffed = true;
-      log('Mega Phantom gana +10000 (el rival no tiene unidades en descanso).');
+      log('Mega Phantom gana +5000 (el rival no tiene unidades en descanso).');
       if (typeof renderizarPartida === 'function') renderizarPartida();
     }
   }
@@ -7559,15 +7553,45 @@
       // Requiere tener al menos 1 carta en mano además de Curriculum.
       const z = zonaJugador(quien);
       if (z.mano.filter(id => id !== 'curriculum').length === 0) return [];
+      // BUG FIX: verificar que el jugador puede pagar el coste de Curriculum.
+      const costeCurr = window.MotorEfectos ? MotorEfectos.costeEfectivo(getCardById('curriculum'), quien) : Number(getCardById('curriculum')?.costeTotal || 0);
+      if (z.manaActivo < costeCurr) return [];
       return [{ key: 'curriculum', label: 'Activar: carta de mano → maná' }];
     },
     async ejecutarActivar(key, quien, extra) {
       const z = zonaJugador(quien);
+      // BUG FIX: pagar el coste de Curriculum antes de usar su habilidad.
+      const cartaCurr = getCardById('curriculum');
+      const costeCurr = window.MotorEfectos ? MotorEfectos.costeEfectivo(cartaCurr, quien) : Number(cartaCurr?.costeTotal || 0);
+      if (z.manaActivo < costeCurr) {
+        log('Currículum: no tienes maná suficiente.');
+        return;
+      }
+      // Si el jugador local, abrir selector de maná
+      if (quien === 'jugador' && typeof abrirPagoMana === 'function' && costeCurr > 0) {
+        const handIdx = z.mano.indexOf('curriculum');
+        const seleccion = await new Promise(resolve => {
+          abrirPagoMana({ tipo: 'activar', key: 'curriculum', coste: costeCurr, cardId: 'curriculum', handIndex: handIdx, callback: resolve });
+        });
+        // Si el callback devuelve null, fue cancelado
+        if (seleccion === null) {
+          log('Currículum: pago cancelado.');
+          return;
+        }
+        // Pagar maná y continuar con la habilidad
+        if (Array.isArray(seleccion)) {
+          seleccion.forEach(i => z.mana[i].rested = true);
+          z.manaActivo = z.mana.filter(m => !m.rested).length;
+        }
+      } else if (costeCurr > 0) {
+        // IA o rival: descansar maná automáticamente
+        descansarMana(quien, null, costeCurr);
+      }
       // Elegir carta de la mano (excluyendo la propia Curriculum) para añadir como maná.
       const opts = z.mano.map((id, i) => ({ label: getCardById(id)?.nombre || id, value: i, cardId: id }))
         .filter(o => o.cardId !== 'curriculum');
       if (!opts.length) { log('Currículum: no hay cartas para añadir como maná.'); return; }
-      const idx = await elegirConModal('Currículum: elige carta de tu mano para añadir como maná', opts);
+      const idx = await elegirConModal('Currículum: elige carta de tu mano para añadir como maná', opts, { noCancelable: true });
       if (idx != null) {
         const [id] = z.mano.splice(idx, 1);
         z.mana.push({ id, rested: true });
@@ -8069,21 +8093,19 @@
       // Tracking por carta individual (una vez por turno por copia)
       if (!u) return [];
       const z = zonaJugador(quien);
-      const tieneExtra = z.mano.some(id => {
-        const c = getCardById(id);
-        return c && (String(c.clase || '').toLowerCase().includes('extra') || String(c.tipo || '').toLowerCase().includes('extra'));
-      });
-      if (!tieneExtra) return [];
+      // BUFF: cualquier carta sirve, no solo Extra.
+      if (!z.mano || z.mano.length === 0) return [];
       if (!u._uid) u._uid = `capitan_${Date.now()}_${Math.random()}`;
       if (habilidadUsada(claveTurno(quien, 'capitan_' + u._uid))) return [];
-      return [{ key: 'capitan', label: 'Descarta carta Extra: Doble Golpe + descansa unidad rival ≤3' }];
+      return [{ key: 'capitan', label: 'Descarta 1 carta: Doble Golpe + descansa unidad rival ≤3' }];
     },
     async ejecutarActivar(key, quien, extra) {
       const z = zonaJugador(quien);
-      const extras = z.mano.map((id, i) => ({ id, i, c: getCardById(id) }))
-        .filter(x => x.c && (String(x.c.clase || '').toLowerCase().includes('extra') || String(x.c.tipo || '').toLowerCase().includes('extra')));
-      if (!extras.length) { log('Capitán Spaceboy: no tienes cartas Extra en mano.'); return; }
-      const pick = await elegirConModal('Capitán Spaceboy: descarta una carta Extra', extras.map(x => ({ label: x.c?.nombre, value: x.i, cardId: x.id })));
+      // BUFF: cualquier carta sirve, no solo Extra.
+      const cartas = z.mano.map((id, i) => ({ id, i, c: getCardById(id) }))
+        .filter(x => x.c);
+      if (!cartas.length) { log('Capitán Spaceboy: no tienes cartas en mano.'); return; }
+      const pick = await elegirConModal('Capitán Spaceboy: descarta una carta', cartas.map(x => ({ label: x.c?.nombre, value: x.i, cardId: x.id })));
       if (pick != null) {
         descartarCartaMano(quien, pick);
         // Buscar Capitán por id (no por índice que puede ser inválido)
@@ -8552,7 +8574,7 @@
           if (u.silenciado <= 0) {
             u.flags.silenciadoTwitter = false;
             u.flags.silenciadoBalloon = false;
-            if (u.noCombo) u.noCombo = false;
+            // BUG FIX: noCombo eliminado de Balloon Boy. Ya no se setea, así que no hace falta resetearlo aquí.
           }
         }
       }
@@ -9196,7 +9218,7 @@
         const cc = getCardById(idD);
         return cc && esCartaEspana(cc);
       }).length;
-      return p + nEspana * 5000;
+      return p + nEspana * 1500;
     }
   });
 
@@ -12923,7 +12945,7 @@
         // fecha de inicio prefijada. Pasado ese tiempo, el botón de compra
         // se deshabilita y el contador muestra "Expirado".
         const SPAIN_PACK_START = new Date('2026-07-20T00:00:00'); // Inicio de la promo
-        const SPAIN_PACK_DURATION_DAYS = 30;                      // 1 mes
+        const SPAIN_PACK_END = new Date('2026-12-31T23:59:59');  // Fin: 31 de Diciembre
         const SPAIN_PACK_COST = 500;                              // 500 GamingCoins
         const SPAIN_PACK_EXPANSION = 'Promo';                     // Expansion en cartas.json
         // IDs de las 14 cartas incluidas en el sobre de España (1 copia de cada)
@@ -12950,8 +12972,7 @@
         // Devuelve los días restantes (>= 0) o -1 si expiró
         function spainPackDiasRestantes() {
             const now = new Date();
-            const end = new Date(SPAIN_PACK_START);
-            end.setDate(end.getDate() + SPAIN_PACK_DURATION_DAYS);
+            const end = SPAIN_PACK_END;
             if (now >= end) return -1;
             const ms = end - now;
             return Math.ceil(ms / (1000 * 60 * 60 * 24));
@@ -15028,7 +15049,9 @@
         function partidaInteractiva() {
             if (!estadoPartida || estadoPartida.finalizada || estadoPartida.introActiva) return false;
             // Safety: si estamos en fase 3 o 4 sin ataque actual, resetear
-            if ((estadoPartida.faseIndex === 3 || estadoPartida.faseIndex === 4) && !estadoPartida.ataqueActual) {
+            // BUG FIX: NO resetear en fase 4 si estamos esperando combo defensora de la IA.
+            // Si _comboDefensoraResolver está seteado, estamos esperando al jugador.
+            if ((estadoPartida.faseIndex === 3 || estadoPartida.faseIndex === 4) && !estadoPartida.ataqueActual && !_comboDefensoraResolver) {
                 estadoPartida.faseIndex = 2;
                 estadoPartida.atacanteSeleccionado = null;
                 estadoPartida.turnoDelJugadorLocal = true;
@@ -16655,6 +16678,14 @@
                 // Pagar maná y luego activar la habilidad (ej. Curriculum).
                 p.seleccion.forEach(i => estadoPartida.jugador.mana[i].rested = true);
                 estadoPartida.jugador.manaActivo = estadoPartida.jugador.mana.filter(m => !m.rested).length;
+                // BUG FIX: si hay callback, notificar en lugar de ejecutar directamente.
+                if (typeof p.callback === 'function') {
+                    const cb = p.callback;
+                    document.getElementById('mana-pay-modal').classList.add('hidden');
+                    estadoPartida.pagoPendiente = null;
+                    cb(p.seleccion);
+                    return;
+                }
                 if (window.MotorEfectos) MotorEfectos.ejecutarActivar(p.key, 'jugador', { handIndex: p.handIndex });
                 renderizarPartida();
             }
@@ -16686,8 +16717,8 @@
             const p = estadoPartida.pagoPendiente;
             document.getElementById('mana-pay-modal').classList.add('hidden');
             estadoPartida.pagoPendiente = null;
-            // Cancel case: if this was a release-absorber or la-roja-jugar payment with a callback, notify cancel
-            if (p && (p.tipo === 'release-absorber' || p.tipo === 'la-roja-jugar') && typeof p.callback === 'function') {
+            // Cancel case: if this was a payment with a callback, notify cancel
+            if (p && typeof p.callback === 'function') {
                 p.callback(null);
             }
         }
@@ -17005,19 +17036,29 @@
                     }
                 }
                 // Defensor = jugador
+                // BUG FIX: usar poderCarta para incluir buffs (igual que con el atacante)
+                // y usar ataqueActual.atacanteZonaRef para encontrar la unidad correcta.
                 if (ataque?.objetivo?.tipo === 'lider') {
                     const lid = getCardById(estadoPartida.jugador.liderId);
                     defensorNombre = lid?.nombre || 'Tu líder';
                     defensorImg = (estadoPartida.jugador.liderDespierto && lid?.imgEvo) ? lid.imgEvo : lid?.img || '';
                     defensorEsLider = true;
-                    defensorPoder = estadoPartida.jugador.liderDespierto ? Number(lid?.poderEvo || 0) : Number(lid?.poder || 0);
+                    const liderZonaJ = estadoPartida.jugador.liderZona || { id: estadoPartida.jugador.liderId, rested: false, buffs: { poder: 0, combo: 0, batalla: 0 } };
+                    defensorPoder = (window.MotorEfectos
+                        ? MotorEfectos.poderCarta(estadoPartida.jugador.liderId, liderZonaJ, { quien: 'jugador', defensorId: estadoPartida.jugador.liderId, defensorZona: liderZonaJ })
+                        : (estadoPartida.jugador.liderDespierto ? Number(lid?.poderEvo || 0) : Number(lid?.poder || 0)) + (liderZonaJ.buffs?.poder || 0) + (liderZonaJ.buffs?.batalla || 0));
                 } else if (ataque?.objetivo?.tipo === 'unidad') {
-                    const u = estadoPartida.jugador.batalla[ataque.objetivo.index];
+                    // BUG FIX: buscar la unidad por cardId en lugar de por índice,
+                    // porque el índice puede cambiar si se destruyeron/movieron unidades.
+                    const objIdx = ataque.objetivo.index;
+                    const u = estadoPartida.jugador.batalla[objIdx];
                     if (u) {
                         const c = getCardById(u.id);
                         defensorNombre = c?.nombre || 'Tu unidad';
                         defensorImg = c?.img || '';
-                        defensorPoder = Number(c?.poder || 0);
+                        defensorPoder = (window.MotorEfectos
+                            ? MotorEfectos.poderCarta(u.id, u, { quien: 'jugador', defensorId: u.id, defensorZona: u, defensorIndex: objIdx })
+                            : Number(c?.poder || 0) + (u.buffs?.poder || 0) + (u.buffs?.batalla || 0));
                     }
                 }
                 defensorPoder += (ataque?.defensorCombo || 0);
