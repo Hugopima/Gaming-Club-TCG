@@ -2267,6 +2267,39 @@
         }
 
         /* ===== BARRA SUPERIOR DE MONEDAS (MENÚ PRINCIPAL) ===== */
+        /* ===== EVENTO FIN DE AÑO - NOTIFICACIÓN ===== */
+        .event-notification {
+            position: fixed; top: 14px; right: 180px; z-index: 201;
+            display: flex; align-items: center; gap: 8px;
+            background: linear-gradient(145deg, #c0392b, #8e1c10);
+            border: 2px solid #ffb300; border-radius: 12px; padding: 6px 12px;
+            cursor: pointer; box-shadow: 0 0 20px rgba(255,179,0,.4);
+            animation: eventBounce 1.2s ease-in-out infinite;
+            transition: transform .15s;
+        }
+        .event-notification:hover { transform: scale(1.05); }
+        .event-notification.hidden { display: none; }
+        .event-badge {
+            width: 28px; height: 28px; border-radius: 50%;
+            background: #ffd700; color: #c0392b;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px; font-weight: 900; flex-shrink: 0;
+            box-shadow: 0 0 10px rgba(255,215,0,.6);
+        }
+        .event-text { display: flex; flex-direction: column; gap: 0; }
+        .event-title { color: #ffd54f; font-size: 12px; font-weight: 900; letter-spacing: 1px; line-height: 1.2; }
+        .event-sub { color: #ffe5b3; font-size: 10px; font-weight: 700; line-height: 1.2; }
+        @keyframes eventBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+        @media (max-width: 768px) {
+            .event-notification { right: 10px; top: 50px; padding: 4px 8px; }
+            .event-title { font-size: 10px; }
+            .event-sub { font-size: 9px; }
+            .event-badge { width: 22px; height: 22px; font-size: 16px; }
+        }
+
         .currency-bar {
             position: fixed; top: 14px; right: 16px; z-index: 200;
             display: flex; gap: 10px; align-items: center;
@@ -3189,6 +3222,15 @@
             <div class="currency-pill energy" id="energy-pill" title="Club Energy">
                 <img src="https://hugopima.github.io/gctcg-assets/imagenes/energy.png" alt="energy" onerror="this.style.display='none'">
                 <span id="energy-amount">0</span>
+            </div>
+        </div>
+
+        <!-- ===== EVENTO FIN DE AÑO ===== -->
+        <div id="event-notification" class="event-notification" onclick="abrirEventModal()">
+            <div class="event-badge">!</div>
+            <div class="event-text">
+                <div class="event-title">🎄 Evento Fin de Año</div>
+                <div class="event-sub">x2 Maestrías · x1.5 Coins Victoria</div>
             </div>
         </div>
 
@@ -11750,6 +11792,44 @@
             }
         }
 
+        // ===== EVENTO FIN DE AÑO =====
+        // Evento activo hasta el 31 de Diciembre: x2 maestrías + x1.5 coins por victoria
+        const EVENT_END = new Date('2026-12-31T23:59:59');
+        function eventoActivo() {
+            return new Date() < EVENT_END;
+        }
+        // Multiplicador de maestría: x2 durante el evento, x1 normalmente
+        function multiplicadorMaestria() {
+            return eventoActivo() ? 2 : 1;
+        }
+        // Multiplicador de coins por victoria: x1.5 durante el evento, x1 normalmente
+        function multiplicadorCoinsVictoria() {
+            return eventoActivo() ? 1.5 : 1;
+        }
+
+        // Mostrar/ocultar la notificación del evento según si está activo
+        function actualizarEventoNotificacion() {
+            const el = document.getElementById('event-notification');
+            if (!el) return;
+            if (eventoActivo()) {
+                el.classList.remove('hidden');
+            } else {
+                el.classList.add('hidden');
+            }
+        }
+
+        // Modal del evento (al hacer click en la notificación)
+        function abrirEventModal() {
+            const dias = Math.ceil((EVENT_END - new Date()) / (1000 * 60 * 60 * 24));
+            alert(
+                '🎄 EVENTO FIN DE AÑO 🎄\n\n' +
+                '✦ x2 Maestrías: Todos los requisitos de maestría cuentan el doble.\n' +
+                '   (Por cada 1 vez que cumplas un requisito, contará por 2)\n\n' +
+                '✦ x1.5 GamingCoins por victoria: Cada victoria te da 50% más monedas.\n\n' +
+                '⏰ Disponible hasta el 31 de Diciembre (' + dias + ' días restantes)'
+            );
+        }
+
         function mostrarNotificacionReward(texto, cantidad, icono) {
             const n = document.createElement('div');
             n.style.cssText = 'position:fixed;top:80px;left:50%;transform:translateX(-50%);z-index:4000;background:linear-gradient(145deg,#d4a017,#8a6010);color:#1a0a30;padding:12px 28px;border-radius:999px;font-weight:900;font-size:15px;box-shadow:0 0 25px rgba(255,215,0,.6);border:2px solid #fff07c;animation:notifPulse .5s ease;';
@@ -11765,23 +11845,31 @@
             // Asegurar que el stat victoriasIADificil existe
             if (_statsJugador.victoriasIADificil === undefined) _statsJugador.victoriasIADificil = 0;
             _statsJugador.partidasJugadas++;
+            // Multiplicador de coins por victoria (evento fin de año: x1.5)
+            const multCoins = multiplicadorCoinsVictoria();
             if (resultado === 'victoria') {
                 if (modo === 'online') {
                     _statsJugador.victoriasOnline++;
-                    if (_inventario) { _inventario.coins += 75; guardarInventario(); actualizarBarraMonedas(); }
+                    const coins = Math.floor(75 * multCoins);
+                    if (_inventario) { _inventario.coins += coins; guardarInventario(); actualizarBarraMonedas(); }
+                    if (multCoins > 1) mostrarNotificacionReward('Victoria online (x' + multCoins + ')', coins, '🪙');
                 } else {
                     _statsJugador.victoriasIA++;
                     // Modo difícil: 150 monedas y stat separado
                     if (estadoPartida && estadoPartida.dificultad === 'dificil') {
                         _statsJugador.victoriasIADificil++;
-                        if (_inventario) { _inventario.coins += 150; guardarInventario(); actualizarBarraMonedas(); }
+                        const coins = Math.floor(150 * multCoins);
+                        if (_inventario) { _inventario.coins += coins; guardarInventario(); actualizarBarraMonedas(); }
+                        if (multCoins > 1) mostrarNotificacionReward('Victoria difícil (x' + multCoins + ')', coins, '🪙');
                     } else {
-                        if (_inventario) { _inventario.coins += 75; guardarInventario(); actualizarBarraMonedas(); }
+                        const coins = Math.floor(75 * multCoins);
+                        if (_inventario) { _inventario.coins += coins; guardarInventario(); actualizarBarraMonedas(); }
+                        if (multCoins > 1) mostrarNotificacionReward('Victoria (x' + multCoins + ')', coins, '🪙');
                     }
                 }
                 _statsJugador.rachaActual++;
                 if (_statsJugador.rachaActual > _statsJugador.mejorRacha) _statsJugador.mejorRacha = _statsJugador.rachaActual;
-                // Primera victoria del día (+100 bonus)
+                // Primera victoria del día (+100 bonus, sin multiplicar)
                 if (!_statsJugador.primeraVictoriaHoy) {
                     _statsJugador.primeraVictoriaHoy = true;
                     if (_inventario) { _inventario.coins += 100; guardarInventario(); actualizarBarraMonedas(); mostrarNotificacionReward('Primera victoria del día', 100, '🪙'); }
@@ -11789,7 +11877,7 @@
             } else if (resultado === 'derrota') {
                 _statsJugador.derrotas++;
                 _statsJugador.rachaActual = 0;
-                // Solo dar monedas de consolación en online (no en IA)
+                // Solo dar monedas de consolación en online (no en IA), sin multiplicar
                 if (modo === 'online' && _inventario) {
                     _inventario.coins += 25; guardarInventario(); actualizarBarraMonedas();
                 }
@@ -18610,6 +18698,8 @@
         // === PROTECCIÓN F5 Y RECONEXIÓN ===
         // Al cargar la página, comprobar si hay una partida online guardada
         window.addEventListener('load', async () => {
+            // Mostrar notificación de evento si está activo
+            actualizarEventoNotificacion();
             // Cargar base de datos de cartas
             await cargarBaseDeDatos();
             // BUG FIX CRÍTICO: cargar SIEMPRE el inventario local ANTES de Supabase.
@@ -19033,11 +19123,10 @@
         // Llamar cuando se juega una carta (cualquier modo, IA u online)
         function trackMaestria_jugarCarta(cardId) {
             if (!cardId) return;
-            // Bug fix: registrar la carta como jugada en esta partida
             _cartasJugadasEnPartida.add(cardId);
             const s = getMaestriaCardState(cardId);
             if (!s) return;
-            s.progreso.jugar = (s.progreso.jugar || 0) + 1;
+            s.progreso.jugar = (s.progreso.jugar || 0) + multiplicadorMaestria();
             guardarMaestriasState();
         }
 
@@ -19070,7 +19159,7 @@
                     if (!esLider && !fueJugada) return; // No contar
                     const s = getMaestriaCardState(id);
                     if (!s) return;
-                    s.progreso.ganar = (s.progreso.ganar || 0) + 1;
+                    s.progreso.ganar = (s.progreso.ganar || 0) + multiplicadorMaestria();
                 });
                 guardarMaestriasState();
                 // Limpiar el Set para la próxima partida
@@ -19083,7 +19172,7 @@
             if (!liderId) return;
             const s = getMaestriaCardState(liderId);
             if (!s) return;
-            s.progreso.despertar = (s.progreso.despertar || 0) + 1;
+            s.progreso.despertar = (s.progreso.despertar || 0) + multiplicadorMaestria();
             guardarMaestriasState();
         }
 
@@ -19092,7 +19181,7 @@
             if (!atacanteCardId) return;
             const s = getMaestriaCardState(atacanteCardId);
             if (!s) return;
-            s.progreso.destruir = (s.progreso.destruir || 0) + 1;
+            s.progreso.destruir = (s.progreso.destruir || 0) + multiplicadorMaestria();
             guardarMaestriasState();
         }
 
@@ -19101,7 +19190,7 @@
             if (!cardId) return;
             const s = getMaestriaCardState(cardId);
             if (!s) return;
-            s.progreso.combinar = (s.progreso.combinar || 0) + 1;
+            s.progreso.combinar = (s.progreso.combinar || 0) + multiplicadorMaestria();
             guardarMaestriasState();
         }
 
@@ -19110,17 +19199,16 @@
             if (!cardId) return;
             const s = getMaestriaCardState(cardId);
             if (!s) return;
-            s.progreso.poner_mana = (s.progreso.poner_mana || 0) + 1;
+            s.progreso.poner_mana = (s.progreso.poner_mana || 0) + multiplicadorMaestria();
             guardarMaestriasState();
         }
 
         // Llamar cuando una carta del jugador inflige daño al líder rival.
-        // Cuenta +1 por cada instancia de daño (no por cantidad de daño).
         function trackMaestria_danoLider(cardId) {
             if (!cardId) return;
             const s = getMaestriaCardState(cardId);
             if (!s) return;
-            s.progreso.dano_lider = (s.progreso.dano_lider || 0) + 1;
+            s.progreso.dano_lider = (s.progreso.dano_lider || 0) + multiplicadorMaestria();
             guardarMaestriasState();
         }
 
@@ -19129,7 +19217,7 @@
             if (!cardId) return;
             const s = getMaestriaCardState(cardId);
             if (!s) return;
-            s.progreso.bloquear = (s.progreso.bloquear || 0) + 1;
+            s.progreso.bloquear = (s.progreso.bloquear || 0) + multiplicadorMaestria();
             guardarMaestriasState();
         }
 
