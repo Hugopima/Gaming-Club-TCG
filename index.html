@@ -2269,7 +2269,7 @@
         /* ===== BARRA SUPERIOR DE MONEDAS (MENÚ PRINCIPAL) ===== */
         /* ===== EVENTO FIN DE AÑO - NOTIFICACIÓN ===== */
         .event-notification {
-            position: fixed; top: 14px; right: 180px; z-index: 201;
+            position: fixed; top: 14px; right: 220px; z-index: 201;
             display: flex; align-items: center; gap: 8px;
             background: linear-gradient(145deg, #c0392b, #8e1c10);
             border: 2px solid #ffb300; border-radius: 12px; padding: 6px 12px;
@@ -2294,7 +2294,7 @@
             50% { transform: translateY(-6px); }
         }
         @media (max-width: 768px) {
-            .event-notification { right: 10px; top: 50px; padding: 4px 8px; }
+            .event-notification { right: 130px; top: 50px; padding: 4px 8px; }
             .event-title { font-size: 10px; }
             .event-sub { font-size: 9px; }
             .event-badge { width: 22px; height: 22px; font-size: 16px; }
@@ -16541,6 +16541,11 @@
         function soltarEnCombo(event) {
             event.preventDefault();
             if (!estadoPartida || (estadoPartida.faseIndex !== 3 && estadoPartida.faseIndex !== 4) || !estadoPartida.ataqueActual) return;
+            // BUG FIX: el defensor NO puede poner cartas en el área de combo durante la fase 3 (ataque del rival).
+            // Solo puede hacerlo en la fase 4 (combo defensora).
+            if (estadoPartida.faseIndex === 3 && estadoPartida.turnoDelJugadorLocal === false) {
+                return alert('No puedes combear durante el ataque del rival. Espera a la fase de defensa.');
+            }
             const handData = event.dataTransfer.getData('hand-index');
             const battleData = event.dataTransfer.getData('battle-index');
             // Importante: getData devuelve '' si no se estableció, y Number('') === 0 (NO NaN)
@@ -17607,9 +17612,11 @@
         }
 
         function intentarCombarDesdeMano(index) {
-            // Bug fix: el hook de combinar se movió a resolverComboPendiente.
-            // Antes se llamaba aquí, pero esto contaba combinaciones fallidas
-            // (es líder, es token, es extra, no tiene maná, etc.).
+            // BUG FIX: el defensor NO puede combear durante la fase de combo del atacante (fase 3).
+            // Solo puede combear en la fase 4 (combo defensora).
+            if (estadoPartida.faseIndex === 3 && estadoPartida.turnoDelJugadorLocal === false) {
+                return alert('No puedes combear durante el ataque del rival. Espera a la fase de defensa.');
+            }
             const id = estadoPartida.jugador.mano[index];
             const carta = getCardById(id);
             if (!carta || esLider(carta) || esToken(carta)) return;
@@ -17622,6 +17629,11 @@
         }
 
         function intentarCombarDesdeCampo(index) {
+            // BUG FIX: el defensor NO puede combear durante la fase de combo del atacante (fase 3).
+            // Solo puede combear en la fase 4 (combo defensora).
+            if (estadoPartida.faseIndex === 3 && estadoPartida.turnoDelJugadorLocal === false) {
+                return alert('No puedes combear durante el ataque del rival. Espera a la fase de defensa.');
+            }
             const zona = estadoPartida.jugador.batalla[index];
             if (!zona) return;
             // No se puede combear la propia unidad atacante (comparar por referencia del objeto, no por id)
